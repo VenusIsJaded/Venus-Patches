@@ -5,6 +5,72 @@ const vm = require('node:vm');
 const raw = fs.readFileSync('patches/src/main/resources/venus/bootstrap.js', 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
+// Node's lexical semantics cannot reproduce Hermes native eval's default
+// ES6BlockScoping=false. Run this explicitly with HERMES_BIN when investigating
+// startup; a skipped test is NOT Hermes or Android verification.
+test('Hermes native eval retains hook and concurrent size callback captures',
+    {skip: !process.env.HERMES_BIN}, () => {
+        const path = require('node:path');
+        const {spawnSync} = require('node:child_process');
+        const directory = fs.mkdtempSync(path.resolve('work/hermes-eval-'));
+        const fixture = path.join(directory, 'probe.js');
+        const source = raw.replace('/*__FEATURES__*/', '{picker:true,voice:true}');
+        fs.writeFileSync(fixture, `(0,eval)(${JSON.stringify(source)});\n` + String.raw`
+var factories = {};
+globalThis.__d = function(factory, id) { factories[id] = factory; };
+function check(value, message) { if (!value) throw new Error(message); }
+function load(id, exports) {
+    __d(function(g, r, i, a, module) { module.exports = exports; }, id, []);
+    var module = {exports:{}};
+    factories[id](globalThis, null, null, null, module, module.exports, []);
+    return module.exports;
+}
+load(120, {default:function(){}}).default();
+var providers = [];
+var registry = {
+    registerComponent:function(name, provider) {
+        check(this === registry, 'registerComponent receiver changed');
+        providers.push(provider);
+        return name;
+    },
+    getAttachmentPayload:function(value) { return value; },
+    get:function(){}, put:function(){},
+    post:function(value) { check(this === registry, 'post receiver changed'); return value; }
+};
+// Multiple operations in one export exercise independent per-iteration bindings.
+load(1271, registry);
+check(registry.registerComponent('Discord', function(){return function(){return 'root';};}) === 'Discord', 'registration result');
+check(providers[0]()({}) === 'root', 'root provider');
+var payload = {};
+check(registry.getAttachmentPayload(payload) === payload, 'serializer dispatch');
+check(registry.post(payload) === payload, 'HTTP dispatch');
+var seen = [];
+load(1151, {default:{
+    getConstants:function(){return {};}, readFile:function(){}, writeFile:function(){},
+    getSize:function(uri){seen.push(uri);return Promise.resolve(Number(uri.slice(7)));}
+}});
+Promise.all([
+    __venusPatches.getSize('file://1'), __venusPatches.getSize('file://2'),
+    __venusPatches.getSize('file://3'), __venusPatches.getSize('file://4'),
+    __venusPatches.getSize('file://5')
+]).then(function(values) {
+    check(values.join(',') === '1,2,3,4,5', 'concurrent size callbacks crossed entries');
+    check(seen.join(',') === 'file://1,file://2,file://3,file://4,file://5', 'wrong URIs read');
+    print('HERMES_NATIVE_EVAL_PASS');
+}, function(error) { throw error; });
+`);
+        try {
+            const result = spawnSync(path.resolve(process.env.HERMES_BIN), [fixture],
+                {encoding:'utf8', timeout:30000});
+            assert.ifError(result.error);
+            assert.equal(result.status, 0, result.stdout + result.stderr);
+            assert.match(result.stdout, /HERMES_NATIVE_EVAL_PASS/,
+                'Asynchronous regression did not complete: ' + result.stdout + result.stderr);
+        } finally {
+            fs.rmSync(directory, {recursive:true, force:true});
+        }
+    });
+
 function boot(features = {picker:true, voice:true}, ready = true) {
     const warnings = [];
     const context = vm.createContext({console: {warn: (...args) => warnings.push(args)}});
