@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.0-dev.2 — single-load startup revision
+
+Replacement `.mpp` on the existing `v1.0.0-dev.1` prerelease; manifest/source version advances to distinguish cached copies.
+
+- Remove injected private native loader calls and the separate bootstrap main-bundle load entirely.
+- Insert a guarded, fail-open prelude in the pinned HBC98 global entry while preserving original instructions and other original bytecode tables.
+- Defer feature hooks until the actual `setUpDefaltReactNativeEnvironment` initializer returns successfully; guard reentrant and failed initialization.
+- Preserve mutable export identity and add single-load DEX, HBC relocation/footer and startup regressions.
+- Keep the earlier native Kotlin helper/field linkage fixes. Repatch the original APKM and verify Morphe shows **1.0.0-dev.2**.
+
+Android device launch and server playback still require device testing; the prior opcode-only hotfix did not resolve the reported crashes.
+
 ## 1.0.0-dev.1 — 2026-10-03
 
 ### Startup hotfix — replacement asset

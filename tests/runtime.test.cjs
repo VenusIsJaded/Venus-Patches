@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const raw = fs.readFileSync('patches/src/main/resources/venus/bootstrap.js', 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
-function boot(features = {picker:true, voice:true}) {
+function boot(features = {picker:true, voice:true}, ready = true) {
     const warnings = [];
     const context = vm.createContext({console: {warn: (...args) => warnings.push(args)}});
     const source = raw.replace('/*__FEATURES__*/', JSON.stringify(features));
@@ -13,7 +13,7 @@ function boot(features = {picker:true, voice:true}) {
     const factories = new Map();
     context.__d = (factory, id) => factories.set(id, factory);
     function load(exports, factory, explicitId) {
-        const value = exports && exports.default || exports;
+        const value = explicitId === undefined ? exports && exports.default || exports : exports;
         let id = explicitId;
         if (id === undefined) {
             id = value.getSize ? 1151 : value.createElement ? 19 : value.View ? 17 :
@@ -25,6 +25,7 @@ function boot(features = {picker:true, voice:true}) {
         factories.get(id)(context, () => {}, () => {}, () => {}, module, module.exports, []);
         return module.exports;
     }
+    if (ready) load({default:function setUpDefaltReactNativeEnvironment(){}}, null, 120).default();
     return {context, api:context.__venusPatches, load, warnings, source, factories};
 }
 function native(overrides = {}) {
@@ -95,6 +96,11 @@ test('pre-existing Metro definition is decorated', () => {
     context.__d((g,r,i,a,module) => { module.exports = {getAttachmentPayload:() => ({})}; }, 5377, []);
     const module = {exports:{}};
     factories.get(5377)(context,null,null,null,module,module.exports);
+    assert.equal(context.__venusPatches.status.attachment, false);
+    context.__d((g,r,i,a,module) => { module.exports = {default(){}}; }, 120, []);
+    const setup = {exports:{}};
+    factories.get(120)(context,null,null,null,setup,setup.exports);
+    setup.exports.default();
     assert.equal(context.__venusPatches.status.attachment, true);
 });
 test('file-size formatter handles zero, units, invalid metadata', () => {
@@ -343,6 +349,53 @@ test('turning conversion off cancels inflight native work and does not mutate or
     assert.equal(upload.item.uri,'content://pending');assert.equal(upload.calls,1);
     assert.ok(commands.some(command => command.action==='cancel'));
     assert.ok(commands.some(command => command.action==='release'));
+});
+test('RN environment initialization finishes before any feature hook reads native exports', async () => {
+    const b=boot({picker:true,voice:true},false);
+    let initialized=false, reads=0;
+    const bridge=native({getConstants(){ assert.equal(initialized,true); reads++; return {DocumentsDirPath:'/data/files'}; }});
+    const nativeExport={};
+    Object.defineProperty(nativeExport,'default',{get(){ assert.equal(initialized,true); return bridge; }});
+    const registry={registerComponent(){return 'registered';}};
+    const setup=b.load({default(){
+        b.load(nativeExport,null,1151);
+        assert.equal(b.load(registry,null,245),registry);
+        assert.equal(b.api.status.menu,false);
+        assert.equal(reads,0);
+        initialized=true;
+        return 42;
+    }},null,120);
+    assert.equal(setup.default(),42);
+    assert.equal(reads,1);
+    registry.registerComponent('Discord',()=>function(){});
+    assert.equal(b.api.status.menu,true);
+    assert.equal(registry.registerComponent('Other',()=>function(){}),'registered');
+    await flush();
+});
+test('failed or reentrant environment setup never activates hooks prematurely', () => {
+    const b=boot({picker:true,voice:true},false);
+    const registry={registerComponent(){}};
+    b.load(registry,null,245);
+    const failed=b.load({default(){throw Error('original RN setup failure');}},null,120);
+    assert.throws(()=>failed.default(),/original RN setup failure/);
+    assert.equal(b.api.status.menu,false);
+    let calls=0, setup;
+    setup=b.load({default(){
+        if (++calls===1) {
+            setup.default();
+            assert.equal(b.api.status.menu,false);
+        }
+    }},null,120);
+    setup.default();
+    registry.registerComponent('Discord',()=>function(){});
+    assert.equal(b.api.status.menu,true);
+});
+test('mutable export wrappers preserve object identity and have no receiver TDZ', () => {
+    const b=boot();
+    const http={get(){},put(){},post(request){assert.equal(this,http);return request;}};
+    assert.equal(b.load(http),http);
+    const request={url:'/unrelated'};
+    assert.equal(http.post(request),request);
 });
 test('conversion disabled has no codec bridge calls for audio uploads', async () => {
     const b=boot();let calls=0;

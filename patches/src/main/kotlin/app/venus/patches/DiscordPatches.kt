@@ -51,10 +51,18 @@ private val runtimeAssets = rawResourcePatch {
             ?: throw PatchException("Venus runtime asset missing from bundle")
         val asset = get("assets/venus/bootstrap.js", false)
         asset.parentFile.mkdirs()
-        asset.writeText(bootstrap.replace(
+        val selected = bootstrap.replace(
             "/*__FEATURES__*/",
             "{picker:$pickerSelected,voice:$voiceSelected}"
-        ))
+        )
+        asset.writeText(selected)
+        // One main bundle load: the prelude runs inside the existing HBC98 global entry,
+        // so RN cannot mark a separate bootstrap bundle ready or flush native calls early.
+        val injected = HbcPrelude.inject(get("assets/index.android.bundle"), selected)
+        get("assets/venus/injection.json", false).writeText(
+            "{\"revision\":\"1.0.0-dev.2\",\"prefixSize\":${injected.prefixSize}," +
+                "\"originalCodeSize\":${injected.originalCodeSize},\"codeOffset\":${injected.codeOffset}}"
+        )
     }
 }
 
@@ -75,15 +83,9 @@ val venusSettings = bytecodePatch(
     execute {
         val method = BundleLoader.method
         val owner = BundleLoader.originalClassDef
-        val nativeLoader = owner.methods.singleOrNull {
-            it.name == "loadJSBundleFromAssets" && it.returnType == "V" &&
-                it.parameterTypes == listOf("Landroid/content/res/AssetManager;", "Ljava/lang/String;")
-        }
         if (owner.fields.none {
             it.name == "context" && it.type == "Lcom/facebook/react/runtime/BridgelessReactContext;"
-        } || nativeLoader == null || nativeLoader.accessFlags and 0x2 == 0 ||
-            nativeLoader.accessFlags and 0x100 == 0)
-            throw PatchException("Discord's private native startup ABI changed; refusing unsafe injection")
+        }) throw PatchException("Discord's React Native context ABI changed")
         val loader = Fingerprint(
             definingClass = "Lcom/facebook/react/bridge/JSBundleLoader;",
             name = "createAssetLoader",
@@ -101,10 +103,6 @@ val venusSettings = bytecodePatch(
             const/4 p1, 0x0
             invoke-static {v0, v1, p1}, Lcom/facebook/react/bridge/JSBundleLoader;->createAssetLoader(Landroid/content/Context;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
             move-result-object p1
-            invoke-virtual {v0}, Landroid/content/Context;->getAssets()Landroid/content/res/AssetManager;
-            move-result-object v0
-            const-string v1, "assets://venus/bootstrap.js"
-            invoke-direct {p0, v0, v1}, $INSTANCE->loadJSBundleFromAssets(Landroid/content/res/AssetManager;Ljava/lang/String;)V
         """)
     }
 }

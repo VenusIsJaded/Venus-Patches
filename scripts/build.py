@@ -13,7 +13,11 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "work" / "tools"
 BUILD = ROOT / "patches" / "build"
-VERSION = next(line.split("=", 1)[1].strip() for line in (ROOT / "gradle.properties").read_text().splitlines() if line.startswith("version"))
+PROPERTIES = dict(line.split("=", 1) for line in (ROOT / "gradle.properties").read_text().splitlines() if "=" in line)
+PROPERTIES = {key.strip(): value.strip() for key, value in PROPERTIES.items()}
+VERSION = PROPERTIES["version"]
+RELEASE_TAG = PROPERTIES.get("releaseTag", f"v{VERSION}")
+ASSET_NAME = PROPERTIES.get("releaseAsset", f"patches-{VERSION}.mpp")
 DEPENDENCIES = {
     "android-platform.zip": (
         "https://dl.google.com/android/repository/platform-35_r02.zip",
@@ -111,7 +115,7 @@ def build():
         "Source: https://github.com/VenusIsJaded/Venus-Patches",
         "Author: VenusIsJaded", "License: GPL-3.0", "", "",
     ])
-    bundle = libs / f"patches-{VERSION}.mpp"
+    bundle = libs / ASSET_NAME
     with zipfile.ZipFile(bundle, "w", zipfile.ZIP_DEFLATED) as out:
         out.writestr("META-INF/MANIFEST.MF", manifest)
         with zipfile.ZipFile(classes) as compiled:
@@ -135,7 +139,8 @@ def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
         "description": "Experimental Discord 347.12 patches: picker sizes, native Ogg/Opus voice conversion and persistent controls. Android device tests pending.",
-        "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/v{VERSION}/patches-{VERSION}.mpp",
+        "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
+        "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",
         "version": VERSION,
     }

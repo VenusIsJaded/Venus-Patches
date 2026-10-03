@@ -17,6 +17,8 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import java.io.File
 import java.security.MessageDigest
 import java.util.zip.ZipFile
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 fun main(args: Array<String>) {
     require(args.isNotEmpty()) { "Usage: VerifyApkKt patched.apk [signed]" }
@@ -25,14 +27,27 @@ fun main(args: Array<String>) {
         val script = zip.getInputStream(zip.getEntry("assets/venus/bootstrap.js")).bufferedReader().readText()
         check("/*__FEATURES__*/" !in script) { "Unresolved feature selection placeholder" }
         check("const features = {picker:" in script)
+        val metadata = zip.getInputStream(zip.getEntry("assets/venus/injection.json")).bufferedReader().readText()
+        check("1.0.0-dev.2" in metadata && "1.0.0-dev.2 / single-load" in script)
+        fun number(key: String) = Regex("\"$key\":([0-9]+)").find(metadata)!!.groupValues[1].toInt()
+        val hbc = zip.getInputStream(zip.getEntry("assets/index.android.bundle")).readBytes()
+        val header = ByteBuffer.wrap(hbc).order(ByteOrder.LITTLE_ENDIAN)
+        check(header.getInt(8) == 98 && header.getInt(32) == hbc.size && header.getInt(36) == 0)
+        val large = (((header.getInt(132) ushr 14) and 255) shl 24) or (header.getInt(128) and 0x1ffffff)
+        val offset = header.getInt(large)
+        check(offset == number("codeOffset"))
+        check(header.getInt(large + 12) == number("prefixSize") + number("originalCodeSize"))
+        check(hbc[large + 36].toInt() and 8 != 0 && hbc[large + 36].toInt() and 16 == 0)
+        check(header.getInt(large + 40) == 1)
+        check(header.getInt(large + 44) == 0 && header.getInt(large + 48) == number("prefixSize") - 7)
+        check(header.getInt(large + 52) == number("prefixSize") - 2)
         val hash = MessageDigest.getInstance("SHA-256")
-        zip.getInputStream(zip.getEntry("assets/index.android.bundle")).use { stream ->
-            val buffer = ByteArray(65536)
-            var size = stream.read(buffer)
-            while (size >= 0) { hash.update(buffer, 0, size); size = stream.read(buffer) }
-        }
+        hash.update(hbc, offset + number("prefixSize"), number("originalCodeSize"))
         check(hash.digest().joinToString("") { "%02x".format(it) } ==
-            "834bb2c88a7d8e508039e11be90a2a09f9f87017fdceef1999cf099933a6be35")
+            "f392ecbf2de34d1960b89a97035d692edcd024f75e2e98e4328eba77d083e697")
+        val footer = MessageDigest.getInstance("SHA-1")
+        footer.update(hbc, 0, hbc.size - 20)
+        check(footer.digest().contentEquals(hbc.copyOfRange(hbc.size - 20, hbc.size)))
     }
     val dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault())
     val instances = dex.dexEntryNames.flatMap { name ->
@@ -57,18 +72,14 @@ fun main(args: Array<String>) {
     }
     val refs = instructions.mapNotNull { (it as? ReferenceInstruction)?.reference }
     val assets = refs.filterIsInstance<StringReference>().map { it.string }
-    check("assets://venus/bootstrap.js" in assets && "assets://index.android.bundle" in assets)
+    check("assets://venus/bootstrap.js" !in assets && "assets://index.android.bundle" in assets)
     val calls = refs.filterIsInstance<MethodReference>().map { it.name }
     check(calls.count { it == "createAssetLoader" } == 1)
-    check(calls.count { it == "loadJSBundleFromAssets" } == 1)
-    check(calls.indexOf("loadJSBundleFromAssets") < calls.indexOf("loadScript"))
-    val nativeLoader = owner.methods.single { it.name == "loadJSBundleFromAssets" }
-    val bootstrapCall = instructions.single {
-        ((it as? ReferenceInstruction)?.reference as? MethodReference)?.name == "loadJSBundleFromAssets"
+    check(calls.none { it == "loadJSBundleFromAssets" || it == "loadJSBundleFromFile" }) {
+        "Private native loader must not be invoked from the patched entry point"
     }
+    check(calls.count { it == "loadScript" } == 1) { "Expected one main bundle load" }
     val abiErrors = mutableListOf<String>()
-    if (nativeLoader.accessFlags and 0x2 != 0 && bootstrapCall.opcode != Opcode.INVOKE_DIRECT)
-        abiErrors.add("Private native asset loader must use invoke-direct, got ${bootstrapCall.opcode}")
     val allClasses = dex.dexEntryNames.flatMap { dex.getEntry(it)!!.dexFile.classes }.associateBy { it.type }
     fun resolve(reference: MethodReference, type: String = reference.definingClass, seen: MutableSet<String> = mutableSetOf()): Method? {
         if (!seen.add(type)) return null
@@ -146,5 +157,5 @@ fun main(args: Array<String>) {
         check(verification.isVerified) { "APK signature invalid: ${verification.errors}" }
         println("APK signing certificate and signature verified")
     }
-    println("PASS: private native invoke ABI, host extension method/field/type linkage, ordinary-size fast path, unique patched classes, valid loader registers, extension present, stubs excluded, unchanged Hermes asset")
+    println("PASS: no private startup invocation, one main bundle load, guarded HBC98 prelude and footer, preserved original global instructions, host extension method/field/type linkage, ordinary-size bypass, unique classes, valid registers, stubs excluded")
 }

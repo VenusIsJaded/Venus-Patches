@@ -5,6 +5,11 @@
     const features = /*__FEATURES__*/;
     // Inspected Metro IDs for the SHA-256-pinned 347.12 bundle. Only these eight factories are wrapped.
     const targetModules = new Set([17, 19, 245, 414, 1151, 1271, 5375, 5377]);
+    const revision = "1.0.0-dev.2 / single-load";
+    // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
+    // Defer every feature hook until that initializer returns successfully.
+    let environmentReady = false;
+    const deferredModules = new Map();
     const settings = { picker: true, voice: false };
     const status = { picker: false, attachment: false, request: false, menu: false, conversion: false, audioError: "", storage: "waiting" };
     const listeners = new Set();
@@ -333,7 +338,7 @@
                     h(RN.ScrollView, { style: { flexGrow: 0, maxHeight: "85%", backgroundColor: "#232428", borderRadius: 16 },
                         contentContainerStyle: { padding: 20 } },
                         label("Venus Patches", { fontSize: 24, fontWeight: "700" }),
-                        label("Discord attachment tools", { color: "#b5bac1", marginTop: 4 }),
+                        label("Discord attachment tools - " + revision, { color: "#b5bac1", marginTop: 4 }),
                         toggle("picker", "File sizes in picker", "Local metadata only; at most four reads at once."),
                         toggle("voice", "Send audio as voice messages", "Real Ogg/Opus, duration and waveform. Android 10+, one audio file without text."),
                         features.voice ? label("Uses one background codec worker. Unsupported audio stays an ordinary attachment; original files are never changed.",
@@ -371,6 +376,7 @@
             typeof data(exports, "writeFile") === "function") initFiles(exports);
         if (features.voice && owns(exports, "CloudUpload")) instrumentCloudUpload(exports.CloudUpload);
         const replacements = new Map();
+        let proxy = exports;
         if (features.picker) {
             const patched = pickerComponent(exports);
             if (patched !== exports) return patched;
@@ -397,37 +403,72 @@
             if (replacement !== candidate) replacements.set(key, replacement);
         }
         if (!replacements.size) return exports;
-        // Accessor exports in this build are non-configurable. A module-export proxy preserves them.
+        // Preserve module identity and cached aliases wherever descriptors allow it.
+        for (const [key, replacement] of Array.from(replacements)) {
+            const descriptor = Object.getOwnPropertyDescriptor(exports, key);
+            if (descriptor && descriptor.configurable) {
+                Object.defineProperty(exports, key, { value: replacement, writable: true,
+                    configurable: true, enumerable: descriptor.enumerable });
+                replacements.delete(key);
+            } else if (descriptor && "value" in descriptor && descriptor.writable) {
+                exports[key] = replacement;
+                replacements.delete(key);
+            }
+        }
+        if (!replacements.size) return exports;
+        // Only immutable accessor exports need a proxy; never inspect them during RN initialization.
         // Do not violate Proxy invariants on non-writable, non-configurable data properties.
         for (const key of Array.from(replacements.keys())) {
             const descriptor = Object.getOwnPropertyDescriptor(exports, key);
             if (descriptor && !descriptor.configurable && "value" in descriptor && !descriptor.writable)
                 replacements.delete(key);
         }
-        const proxy = new Proxy(exports, { get(target, key, receiver) {
+        proxy = new Proxy(exports, { get(target, key, receiver) {
             return replacements.has(key) ? replacements.get(key) : Reflect.get(target, key, receiver);
         } });
         return replacements.size ? proxy : exports;
     }
+    function activateModule(id, module) {
+        try {
+            if (id === 1151) {
+                const nativeFiles = module.exports.default;
+                if (nativeFiles && typeof nativeFiles.getSize === "function" &&
+                    typeof nativeFiles.readFile === "function" && typeof nativeFiles.writeFile === "function")
+                    initFiles(nativeFiles);
+            }
+            module.exports = instrument(module.exports, 0);
+        } catch (error) {
+            status.audioError = "Hook unavailable: " + String(error);
+            if (global.console && typeof global.console.warn === "function")
+                global.console.warn("[Venus] Hook unavailable", String(error));
+        }
+    }
     function decorateDefine(define) {
         if (typeof define !== "function") return define;
         return function (factory, id, dependencies) {
-            if (typeof factory !== "function" || !targetModules.has(id)) return define.apply(this, arguments);
+            if (typeof factory !== "function" || (!targetModules.has(id) && id !== 120)) return define.apply(this, arguments);
             const args = Array.from(arguments);
             args[0] = function () {
                 const result = factory.apply(this, arguments);
                 const module = arguments[4]; // Verified Metro factory ABI in Discord 347.12.
                 if (module && module.exports) {
-                    try {
-                        if (id === 1151) {
-                            const nativeFiles = module.exports.default;
-                            if (nativeFiles && typeof nativeFiles.getSize === "function" &&
-                                typeof nativeFiles.readFile === "function" && typeof nativeFiles.writeFile === "function")
-                                initFiles(nativeFiles);
-                        }
-                        module.exports = instrument(module.exports, 0);
-                    }
-                    catch (error) { if (global.console) global.console.warn("[Venus] Hook unavailable", String(error)); }
+                    if (id === 120) {
+                        const initialize = module.exports.default;
+                        let initializing = false;
+                        if (typeof initialize === "function") module.exports.default = function () {
+                            // Original errors propagate unchanged; only the outer successful init is ready.
+                            if (initializing) return initialize.apply(this, arguments);
+                            initializing = true;
+                            let value;
+                            try { value = initialize.apply(this, arguments); }
+                            finally { initializing = false; }
+                            environmentReady = true;
+                            for (const [pendingId, pending] of deferredModules) activateModule(pendingId, pending);
+                            deferredModules.clear();
+                            return value;
+                        };
+                    } else if (!environmentReady) deferredModules.set(id, module);
+                    else activateModule(id, module);
                 }
                 return result;
             };
@@ -439,5 +480,5 @@
     Object.defineProperty(global, "__d", { configurable: true, enumerable: true,
         get: () => define, set: value => { define = decorateDefine(value); } });
     // Local diagnostics/test API; not a network endpoint or a dependency on Vendetta globals.
-    global.__venusPatches = Object.freeze({ settings, features, status, setSetting, formatSize, getSize });
+    global.__venusPatches = Object.freeze({ revision, settings, features, status, setSetting, formatSize, getSize });
 })(globalThis);

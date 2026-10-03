@@ -31,7 +31,7 @@ The `main` branch's `patches-bundle.json` points to the experimental release. It
 
 **Local import:** download `patches-1.0.0-dev.1.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself.
 
-**Startup hotfix (2026-10-03):** the `1.0.0-dev.1` prerelease asset was replaced. Refresh/redownload the Venus source before patching the **original APKM** again; do not reuse a cached bundle or patch the crashing APK. Local sources must be reimported. Keep your existing Morphe signing key if you want to install the result as an update without clearing app data.
+**Single-load startup revision (2026-10-03):** the existing `1.0.0-dev.1` prerelease asset is replaced with bundle revision **1.0.0-dev.2**. The download filename stays `patches-1.0.0-dev.1.mpp`, but Morphe must show **1.0.0-dev.2** after updating. Refresh/redownload the source before patching the **original APKM**; do not reuse a cached bundle or the crashing APK. Local sources must be reimported. Keep your existing Morphe signing key to install as an update without clearing app data. The Venus menu also shows `1.0.0-dev.2 / single-load`.
 
 **Signing:** a patched APK has a different signing certificate from official Discord. Android may require uninstalling official Discord first; understand the loss of local app data before doing so. Future patched updates must use the same signing key. Never share your signing key.
 
@@ -72,7 +72,7 @@ Send **one audio attachment with no accompanying text, stickers, poll or extra a
 - Abandoned converted outputs are pruned during subsequent conversions: at most 32 outputs retained, with six-hour expiry. Original source files are never deleted.
 
 **Runtime**
-- Only **eight inspected Metro factories** are wrapped; unrelated factories pass through unchanged. No eager module scans, polling timers or extra network requests.
+- Only **nine inspected Metro factories** are wrapped: eight feature modules and the exact RN environment initializer. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers or extra network requests.
 - The feature code is included in the patched APK. No Vendetta/Revenge runtime, downloaded JavaScript, analytics or account-token handling.
 - Switches are stored in `venus-patches.json` in Discord's private documents directory. Failed persistence is reported in the menu; switches still work for the session.
 
@@ -86,7 +86,8 @@ The patches refuse a different embedded JavaScript bundle, even if its displayed
 
 | Integration | Inspected location |
 | --- | --- |
-| Bundled runtime | `ReactInstance.loadJSBundle(JSBundleLoader)` |
+| Bundled runtime | Guarded prelude in the HBC98 global entry; one main bundle load, with no injected private native loader call |
+| Environment readiness | `setUpDefaltReactNativeEnvironment`, Metro module `120`; activate feature hooks only after successful outermost initialization |
 | Native voice bridge | `FileModule.getSize(String, Promise)`—private `venus-voice-v1:` requests dispatch to the extension; normal sizes fall through |
 | React / React Native | Metro modules `19` / `17` |
 | Menu registration | `AppRegistry`, module `245`; only the `Discord` root is wrapped |
@@ -118,9 +119,11 @@ Runtime regression tests can also be run independently:
 node --test tests/runtime.test.cjs
 ```
 
-`tests/native/PcmToolsTest.kt` checks generated PCM signals, durations, sample rates, downmixing, waveform amplitude and chunk invariance. `tests/native/VerifyApk.kt` checks the patched DEX entry points, private native invocation opcode, extension method/field/type resolution against Discord's actual obfuscated classes, ordinary-size bypass, packaged asset and signing certificate. These checks do **not** simulate a physical Android codec or Discord's servers.
+`tests/native/PcmToolsTest.kt` checks generated PCM signals, durations, sample rates, downmixing, waveform amplitude and chunk invariance. `tests/native/VerifyApk.kt` forbids injected private native startup calls and a second main bundle load, and checks extension method/field/type linkage, the guarded HBC98 prelude, original global-instruction identity, bytecode footer, ordinary-size bypass and APK signature. These checks do **not** simulate physical Android codecs or Discord's servers.
 
-The startup hotfix corrects an `invoke-virtual` call to a **private** native loader to `invoke-direct`. It also removes native extension calls to Kotlin helper methods and the renamed `kotlin.Unit.INSTANCE` field absent from Discord's R8-obfuscated runtime, using Java APIs and explicit cleanup guards instead. Ordinary `getSize` requests are prefix-checked before invoking the extension. The strengthened verifier rejects the original release for these ABI faults.
+The new startup path removes the native private-loader call **entirely**, rather than changing its opcode again. A separate main bundle load can mark RN ready and flush queued calls before Discord initializes. Venus instead inserts a fail-open prelude into the pinned HBC98 global entry, retaining all original global instructions and other tables, and activates feature hooks only after the real RN environment initializer returns. Prelude failure falls through to Discord instead of becoming a fatal bootstrap exception. Runtime tests cover deferred, failed and reentrant setup. The prior Kotlin helper/singleton ABI fixes remain in place.
+
+`tests/native/HbcPreludeTest.kt` checks relocation, original-byte preservation, footer integrity and refusal of a different format. `tests/hermes-startup.js` isolates the APK's **actual** RN environment initializer using mocked native services; it does not execute Discord's account/network code or replace a device launch test.
 
 ### Device acceptance checklist
 
