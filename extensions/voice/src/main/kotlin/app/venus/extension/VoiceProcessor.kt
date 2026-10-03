@@ -17,6 +17,10 @@ import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Comparator
+import java.util.regex.Pattern
 
 /** Dispatch on the existing Promise-bearing file bridge, leaving ordinary getSize calls unchanged. */
 object VoiceProcessor {
@@ -28,11 +32,11 @@ object VoiceProcessor {
 
     @JvmStatic
     fun dispatch(request: String, promise: Promise, context: Context): Boolean {
-        if (!request.startsWith(PREFIX)) return false
+        if (request.length < PREFIX.length || request.substring(0, PREFIX.length) != PREFIX) return false
         try {
             val command = JSONObject(request.substring(PREFIX.length))
             val id = command.optString("id")
-            require(id.matches(Regex("[A-Za-z0-9_-]{1,80}"))) { "Invalid audio job ID" }
+            require(Pattern.matches("[A-Za-z0-9_-]{1,80}", id)) { "Invalid audio job ID" }
             when (command.getString("action")) {
                 "cancel" -> { jobs[id]?.set(true); promise.resolve("cancelled") }
                 "release" -> {
@@ -73,9 +77,18 @@ object VoiceProcessor {
         check(!cancelled.get()) { "Audio conversion cancelled" }
         val directory = File(context.cacheDir, "venus-voice").apply { mkdirs() }
         // Bound abandoned outputs; conversion retries reuse the same upload's in-flight Promise in JS.
-        val old = directory.listFiles()?.filter { it.name.endsWith(".ogg") }?.sortedBy { it.lastModified() } ?: emptyList()
-        old.filter { System.currentTimeMillis() - it.lastModified() > 6 * 3600000L }.forEach { it.delete() }
-        old.filter { it.exists() }.dropLast(31).forEach { it.delete() }
+        // Do not call Kotlin collection/text helpers: their ABIs are obfuscated in Discord.
+        val old = ArrayList<File>()
+        val cached = directory.listFiles()
+        if (cached != null) for (file in cached) {
+            val name = file.name
+            if (name.length < 4 || name.substring(name.length - 4) != ".ogg") continue
+            if (System.currentTimeMillis() - file.lastModified() > 6 * 3600000L) file.delete()
+            if (file.exists()) old.add(file)
+        }
+        Collections.sort(old, Comparator { left, right -> java.lang.Long.compare(left.lastModified(), right.lastModified()) })
+        var prune = 0
+        while (prune < old.size - 31) old[prune++].delete()
         val output = File(directory, "$id.ogg")
         val extractor = MediaExtractor()
         var decoder: MediaCodec? = null
@@ -93,9 +106,17 @@ object VoiceProcessor {
         try {
             checkActive()
             extractor.setDataSource(context, uri, null)
-            val track = (0 until extractor.trackCount).firstOrNull {
-                extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true
-            } ?: throw IllegalArgumentException("No decodable audio track found")
+            var track = -1
+            var candidate = 0
+            while (candidate < extractor.trackCount) {
+                val candidateMime = extractor.getTrackFormat(candidate).getString(MediaFormat.KEY_MIME)
+                if (candidateMime != null && candidateMime.length >= 6 && candidateMime.substring(0, 6) == "audio/") {
+                    track = candidate
+                    break
+                }
+                candidate++
+            }
+            require(track >= 0) { "No decodable audio track found" }
             extractor.selectTrack(track)
             val inputFormat = extractor.getTrackFormat(track)
             val mime = inputFormat.getString(MediaFormat.KEY_MIME)!!
@@ -229,12 +250,13 @@ object VoiceProcessor {
                 .put("durationSecs", samples.outputFrames.toDouble() / 48000)
                 .put("waveform", samples.waveform.base64())
         } finally {
-            if (decoderStarted) runCatching { decoder?.stop() }
-            runCatching { decoder?.release() }
-            if (encoderStarted) runCatching { encoder?.stop() }
-            runCatching { encoder?.release() }
-            if (muxerStarted) runCatching { muxer?.stop() }
-            runCatching { muxer?.release() }
+            // Explicit try/catch avoids dependencies on the host's obfuscated kotlin.Result ABI.
+            if (decoderStarted) try { decoder?.stop() } catch (_: Exception) { }
+            try { decoder?.release() } catch (_: Exception) { }
+            if (encoderStarted) try { encoder?.stop() } catch (_: Exception) { }
+            try { encoder?.release() } catch (_: Exception) { }
+            if (muxerStarted) try { muxer?.stop() } catch (_: Exception) { }
+            try { muxer?.release() } catch (_: Exception) { }
             extractor.release()
             if (!success) output.delete()
         }

@@ -4,10 +4,7 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.Base64
-import kotlin.math.abs
-import kotlin.math.min
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
+// Use Java math/arrays: Discord obfuscates the corresponding Kotlin stdlib helpers.
 
 /** Fixed-memory waveform accumulator: actual PCM peaks, not placeholder bars. */
 class Waveform {
@@ -17,7 +14,7 @@ class Waveform {
     private var peak = 0
 
     fun add(sample: Int) {
-        peak = maxOf(peak, abs(sample))
+        peak = Math.max(peak, Math.abs(sample))
         if (++frames == 4800) flush()
     }
     private fun flush() {
@@ -28,14 +25,15 @@ class Waveform {
     }
     fun base64(): String {
         if (frames > 0) flush()
-        val result = ByteArray(min(64, maxOf(1, count)))
-        val max = windows.take(count).maxOrNull() ?: 0
+        val result = ByteArray(Math.min(64, Math.max(1, count)))
+        var max = 0
+        for (i in 0 until count) max = Math.max(max, windows[i])
         for (bin in result.indices) {
             val start = bin * count / result.size
             val end = maxOf(start + 1, (bin + 1) * count / result.size)
             var value = 0
-            for (i in start until min(end, count)) value = maxOf(value, windows[i])
-            result[bin] = if (max == 0) 0 else (sqrt(value.toDouble() / max) * 255).roundToInt().toByte()
+            for (i in start until Math.min(end, count)) value = Math.max(value, windows[i])
+            result[bin] = if (max == 0) 0 else Math.round(Math.sqrt(value.toDouble() / max) * 255).toByte()
         }
         return Base64.getEncoder().encodeToString(result)
     }
@@ -56,7 +54,7 @@ class PcmResampler(private val rate: Int, private val channels: Int, private val
 
     private fun write(value: Double, out: ByteArrayOutputStream) {
         check(outputFrames < 48000L * 1200) { "Audio exceeds the 20-minute safety limit" }
-        val sample = value.roundToInt().coerceIn(-32768, 32767)
+        val sample = Math.max(-32768L, Math.min(32767L, Math.round(value))).toInt()
         out.write(sample and 255)
         out.write((sample shr 8) and 255)
         waveform.add(sample)
@@ -74,7 +72,7 @@ class PcmResampler(private val rate: Int, private val channels: Int, private val
             if (inputFrames == 0L) previous = current
             while (nextPosition <= inputFrames.toDouble()) {
                 val fraction = if (inputFrames == 0L) 1.0 else nextPosition - (inputFrames - 1)
-                write(previous + (current - previous) * fraction.coerceIn(0.0, 1.0), out)
+                write(previous + (current - previous) * Math.max(0.0, Math.min(1.0, fraction)), out)
                 nextPosition += step
             }
             previous = current

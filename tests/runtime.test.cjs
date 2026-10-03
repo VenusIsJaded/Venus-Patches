@@ -77,6 +77,17 @@ test('bootstrap is idempotent and modules stay lazy', () => {
     assert.equal(count, 0);
     assert.equal(b.warnings.length, 0);
 });
+test('pre-React-Native bootstrap needs neither Promise nor console polyfills', () => {
+    const context = vm.createContext({Promise:undefined, console:undefined});
+    const source = raw.replace('/*__FEATURES__*/', '{picker:true,voice:true}');
+    assert.doesNotThrow(() => vm.runInContext(source, context));
+    assert.equal(context.__venusPatches.status.storage, 'waiting');
+    const factories = new Map();
+    context.__d = (factory, id) => factories.set(id, factory);
+    context.__d((g,r,i,a,module) => { module.exports = {createElement(){}, useState(){}}; }, 19, []);
+    factories.get(19)(context,null,null,null,{exports:{}});
+    assert.equal(context.__venusPatches.status.storage, 'waiting');
+});
 test('pre-existing Metro definition is decorated', () => {
     const factories = new Map();
     const context = vm.createContext({__d:(f,id) => factories.set(id,f), console});
