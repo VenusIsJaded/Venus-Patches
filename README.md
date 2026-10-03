@@ -118,9 +118,9 @@ Runtime regression tests can also be run independently:
 node --test tests/runtime.test.cjs
 ```
 
-`tests/native/PcmToolsTest.kt` checks generated PCM signals, durations, sample rates, downmixing, waveform amplitude and chunk invariance. `tests/native/VerifyApk.kt` checks the patched DEX entry points, private native invocation opcode, extension method resolution against Discord's actual obfuscated classes, ordinary-size bypass, packaged asset and signing certificate. These checks do **not** simulate a physical Android codec or Discord's servers.
+`tests/native/PcmToolsTest.kt` checks generated PCM signals, durations, sample rates, downmixing, waveform amplitude and chunk invariance. `tests/native/VerifyApk.kt` checks the patched DEX entry points, private native invocation opcode, extension method/field/type resolution against Discord's actual obfuscated classes, ordinary-size bypass, packaged asset and signing certificate. These checks do **not** simulate a physical Android codec or Discord's servers.
 
-The startup hotfix corrects an `invoke-virtual` call to a **private** native loader to `invoke-direct`. It also removes native extension calls to Kotlin helper methods absent from Discord's R8-obfuscated runtime, using Java APIs instead. Ordinary `getSize` requests are prefix-checked before invoking the extension. The strengthened verifier rejects the original release for these ABI faults.
+The startup hotfix corrects an `invoke-virtual` call to a **private** native loader to `invoke-direct`. It also removes native extension calls to Kotlin helper methods and the renamed `kotlin.Unit.INSTANCE` field absent from Discord's R8-obfuscated runtime, using Java APIs and explicit cleanup guards instead. Ordinary `getSize` requests are prefix-checked before invoking the extension. The strengthened verifier rejects the original release for these ABI faults.
 
 ### Device acceptance checklist
 
