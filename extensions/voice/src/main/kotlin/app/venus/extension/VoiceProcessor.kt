@@ -207,6 +207,9 @@ object VoiceProcessor {
                         } else {
                             decoder.queueInputBuffer(index, 0, size, maxOf(0, extractor.sampleTime), 0)
                             extractor.advance()
+                            // Match the assignment-only EOS branch instead of returning advance()'s
+                            // boolean: mixed Unit/Boolean branches generate the renamed Unit.INSTANCE.
+                            inputDone = false
                         }
                     }
                 }
@@ -251,12 +254,19 @@ object VoiceProcessor {
                 .put("waveform", samples.waveform.base64())
         } finally {
             // Explicit try/catch avoids dependencies on the host's obfuscated kotlin.Result ABI.
-            if (decoderStarted) try { decoder?.stop() } catch (_: Exception) { }
-            try { decoder?.release() } catch (_: Exception) { }
-            if (encoderStarted) try { encoder?.stop() } catch (_: Exception) { }
-            try { encoder?.release() } catch (_: Exception) { }
-            if (muxerStarted) try { muxer?.stop() } catch (_: Exception) { }
-            try { muxer?.release() } catch (_: Exception) { }
+            // Explicit null guards keep cleanup entirely on Java/Android void APIs.
+            if (decoder != null) {
+                if (decoderStarted) try { decoder.stop() } catch (_: Exception) { }
+                try { decoder.release() } catch (_: Exception) { }
+            }
+            if (encoder != null) {
+                if (encoderStarted) try { encoder.stop() } catch (_: Exception) { }
+                try { encoder.release() } catch (_: Exception) { }
+            }
+            if (muxer != null) {
+                if (muxerStarted) try { muxer.stop() } catch (_: Exception) { }
+                try { muxer.release() } catch (_: Exception) { }
+            }
             extractor.release()
             if (!success) output.delete()
         }

@@ -4,6 +4,9 @@ import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.Field
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -80,14 +83,33 @@ fun main(args: Array<String>) {
     val extensionClasses = allClasses.values.filter { it.type.startsWith("Lapp/venus/extension/") }
     val references = extensionClasses.flatMap { definition -> definition.methods.flatMap { method ->
         method.implementation?.instructions?.mapNotNull { (it as? ReferenceInstruction)?.reference }?.toList() ?: emptyList()
-    } }.filterIsInstance<MethodReference>().distinct()
+    } }.distinct()
+    fun resolveField(reference: FieldReference, type: String = reference.definingClass, seen: MutableSet<String> = mutableSetOf()): Field? {
+        if (!seen.add(type)) return null
+        val definition = allClasses[type] ?: return null
+        return definition.fields.firstOrNull { it.name == reference.name && it.type == reference.type }
+            ?: definition.superclass?.let { resolveField(reference, it, seen) }
+            ?: definition.interfaces.firstNotNullOfOrNull { resolveField(reference, it, seen) }
+    }
+    fun isHost(type: String) = type.startsWith("Lkotlin/") || type.startsWith("Lapp/venus/") ||
+        type.startsWith("Lcom/facebook/react/")
     for (reference in references) {
-        if (!reference.definingClass.startsWith("Lkotlin/") && !reference.definingClass.startsWith("Lapp/venus/") &&
-            !reference.definingClass.startsWith("Lcom/facebook/react/")) continue
-        val resolved = resolve(reference)
-        if (resolved == null) abiErrors.add("Unresolved extension dependency: $reference")
-        else if (!reference.definingClass.startsWith("Lapp/venus/") && resolved.accessFlags and 0x1 == 0)
-            abiErrors.add("Non-public host dependency: $reference")
+        when (reference) {
+            is MethodReference -> if (isHost(reference.definingClass)) {
+                val resolved = resolve(reference)
+                if (resolved == null) abiErrors.add("Unresolved extension dependency: $reference")
+                else if (!reference.definingClass.startsWith("Lapp/venus/") && resolved.accessFlags and 0x1 == 0)
+                    abiErrors.add("Non-public host dependency: $reference")
+            }
+            is FieldReference -> if (isHost(reference.definingClass)) {
+                val resolved = resolveField(reference)
+                if (resolved == null) abiErrors.add("Unresolved extension field: $reference")
+                else if (!reference.definingClass.startsWith("Lapp/venus/") && resolved.accessFlags and 0x1 == 0)
+                    abiErrors.add("Non-public host field: $reference")
+            }
+            is TypeReference -> if (isHost(reference.type) && reference.type !in allClasses)
+                abiErrors.add("Unresolved extension type: $reference")
+        }
     }
     check(abiErrors.isEmpty()) { abiErrors.joinToString("\n") }
     val fileModules = dex.dexEntryNames.flatMap { name ->
@@ -124,5 +146,5 @@ fun main(args: Array<String>) {
         check(verification.isVerified) { "APK signature invalid: ${verification.errors}" }
         println("APK signing certificate and signature verified")
     }
-    println("PASS: private native invoke ABI, host extension linkage, ordinary-size fast path, unique patched classes, valid loader registers, extension present, stubs excluded, unchanged Hermes asset")
+    println("PASS: private native invoke ABI, host extension method/field/type linkage, ordinary-size fast path, unique patched classes, valid loader registers, extension present, stubs excluded, unchanged Hermes asset")
 }

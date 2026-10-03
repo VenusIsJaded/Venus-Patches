@@ -5,9 +5,9 @@
 ### Startup hotfix — replacement asset
 
 - Correct the ReactInstance private native asset-loader call from `invoke-virtual` to `invoke-direct`; enforce its private/native ABI before patching.
-- Replace extension calls to Kotlin helpers absent from Discord's obfuscated runtime with Java APIs.
+- Replace extension calls to Kotlin helpers and the renamed `kotlin.Unit.INSTANCE` field absent from Discord's obfuscated runtime with Java APIs and explicit cleanup guards.
 - Bypass the voice extension entirely for ordinary file-size requests.
-- Add private-invoke and real-host method-linkage regressions; the verifier rejects the original release.
+- Add private-invoke and real-host method/field/type linkage regressions; the verifier rejects the original release.
 - Replace the `.mpp`, checksum and verification report on the existing prerelease. Redownload the source and repatch the original APKM using the same signing key.
 
 ### Initial features
