@@ -93,22 +93,24 @@
         const unit = Math.max(0, Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1));
         return Number((bytes / Math.pow(1024, unit)).toFixed(2)) + " " + units[unit];
     }
+    // Hermes's native eval configuration can lower loop-local const/let to var.
+    // Give asynchronous callbacks an invocation scope, not a loop capture.
+    function readSize(entry) {
+        activeReads++;
+        Promise.resolve().then(() => files.getSize(entry.uri)).then(value => {
+            const bytes = Number(value);
+            entry.value = Number.isFinite(bytes) && bytes >= 0 ? bytes : null;
+        }, () => { entry.value = null; }).then(() => {
+            entry.expires = Date.now() + (entry.value === null ? 30000 : 300000);
+            entry.done = true;
+            entry.resolve(entry.value);
+            activeReads--;
+            drainSizes();
+        });
+    }
     function drainSizes() {
         if (!files) return;
-        while (activeReads < 4 && sizeQueue.length) {
-            const entry = sizeQueue.shift();
-            activeReads++;
-            Promise.resolve().then(() => files.getSize(entry.uri)).then(value => {
-                const bytes = Number(value);
-                entry.value = Number.isFinite(bytes) && bytes >= 0 ? bytes : null;
-            }, () => { entry.value = null; }).then(() => {
-                entry.expires = Date.now() + (entry.value === null ? 30000 : 300000);
-                entry.done = true;
-                entry.resolve(entry.value);
-                activeReads--;
-                drainSizes();
-            });
-        }
+        while (activeReads < 4 && sizeQueue.length) readSize(sizeQueue.shift());
     }
     function getSize(uri) {
         if (!enabled("picker") || typeof uri !== "string" || !/^(content|file):\/\//.test(uri))
@@ -381,6 +383,10 @@
             const patched = pickerComponent(exports);
             if (patched !== exports) return patched;
         }
+        // Invocation-scoped captures also work when Hermes eval disables block scoping.
+        function replacementFor(operation, original) {
+            return function () { return operation(original, this === proxy ? exports : this, arguments); };
+        }
         // Only read explicitly identified export keys, never enumerate or invoke unrelated getters.
         for (const key of ["registerComponent", "getAttachmentPayload", "post"]) {
             if (!owns(exports, key)) continue;
@@ -390,7 +396,7 @@
             try { original = exports[key]; } catch (_) { continue; }
             if (typeof original !== "function") continue;
             const operation = key === "registerComponent" ? registerRoot : key === "post" ? postRequest : attachmentPayload;
-            const replacement = function () { return operation(original, this === proxy ? exports : this, arguments); };
+            const replacement = replacementFor(operation, original);
             replacements.set(key, replacement);
             if (key === "post") status.request = true;
             if (key === "getAttachmentPayload") status.attachment = true;
