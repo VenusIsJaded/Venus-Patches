@@ -5,7 +5,7 @@
     const features = /*__FEATURES__*/;
     // Inspected Metro IDs for the SHA-256-pinned 347.12 bundle. Only these eight factories are wrapped.
     const targetModules = new Set([17, 19, 245, 414, 1151, 1271, 5375, 5377]);
-    const revision = "1.0.0-dev.2 / single-load";
+    const revision = "1.0.0-dev.3 / eval-scope";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -384,7 +384,11 @@
             if (patched !== exports) return patched;
         }
         // Invocation-scoped captures also work when Hermes eval disables block scoping.
+        // The binding check fails fast at hook time (caught as "Hook unavailable",
+        // leaving the module stock) instead of crashing the app at call time.
         function replacementFor(operation, original) {
+            if (typeof operation !== "function" || typeof original !== "function")
+                throw new Error("Venus: unusable export binding for hook");
             return function () { return operation(original, this === proxy ? exports : this, arguments); };
         }
         // Only read explicitly identified export keys, never enumerate or invoke unrelated getters.

@@ -60,7 +60,7 @@ private val runtimeAssets = rawResourcePatch {
         // so RN cannot mark a separate bootstrap bundle ready or flush native calls early.
         val injected = HbcPrelude.inject(get("assets/index.android.bundle"), selected)
         get("assets/venus/injection.json", false).writeText(
-            "{\"revision\":\"1.0.0-dev.2\",\"prefixSize\":${injected.prefixSize}," +
+            "{\"revision\":\"1.0.0-dev.3\",\"prefixSize\":${injected.prefixSize}," +
                 "\"originalCodeSize\":${injected.originalCodeSize},\"codeOffset\":${injected.codeOffset}}"
         )
     }

@@ -31,6 +31,8 @@ The `main` branch's `patches-bundle.json` points to the experimental release. It
 
 **Local import:** download `patches-1.0.0-dev.1.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself.
 
+**Eval-scope capture revision (2026-10-04):** new `v1.0.0-dev.3` prerelease with `patches-1.0.0-dev.3.mpp` (bundle revision **1.0.0-dev.3**). Fixes the instant-crash on Discord boot. Refresh/redownload the source before patching the **original APKM**; do not reuse a cached bundle or the crashing APK. Local sources must be reimported. Keep your existing Morphe signing key to install as an update without clearing app data. The Venus menu also shows `1.0.0-dev.3 / eval-scope`.
+
 **Single-load startup revision (2026-10-03):** the existing `1.0.0-dev.1` prerelease asset is replaced with bundle revision **1.0.0-dev.2**. The download filename stays `patches-1.0.0-dev.1.mpp`, but Morphe must show **1.0.0-dev.2** after updating. Refresh/redownload the source before patching the **original APKM**; do not reuse a cached bundle or the crashing APK. Local sources must be reimported. Keep your existing Morphe signing key to install as an update without clearing app data. The Venus menu also shows `1.0.0-dev.2 / single-load`.
 
 **Signing:** a patched APK has a different signing certificate from official Discord. Android may require uninstalling official Discord first; understand the loss of local app data before doing so. Future patched updates must use the same signing key. Never share your signing key.
@@ -111,7 +113,7 @@ python3 scripts/build.py
 
 Toolchain downloads are pinned and SHA-256 checked. The `.mpp` contains JVM patch classes, Android patch DEX, bundled JavaScript and a native `.mpe` extension. Discord APKs, compile-only bridge stubs and downloaded tool binaries are not distributed in the bundle.
 
-Output: `patches/build/libs/patches-1.0.0-dev.1.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
+Output: `patches/build/libs/patches-1.0.0-dev.3.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
 
 Runtime regression tests can also be run independently:
 

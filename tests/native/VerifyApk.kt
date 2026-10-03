@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
         check("/*__FEATURES__*/" !in script) { "Unresolved feature selection placeholder" }
         check("const features = {picker:" in script)
         val metadata = zip.getInputStream(zip.getEntry("assets/venus/injection.json")).bufferedReader().readText()
-        check("1.0.0-dev.2" in metadata && "1.0.0-dev.2 / single-load" in script)
+        check("1.0.0-dev.3" in metadata && "1.0.0-dev.3 / eval-scope" in script)
         fun number(key: String) = Regex("\"$key\":([0-9]+)").find(metadata)!!.groupValues[1].toInt()
         val hbc = zip.getInputStream(zip.getEntry("assets/index.android.bundle")).readBytes()
         val header = ByteBuffer.wrap(hbc).order(ByteOrder.LITTLE_ENDIAN)

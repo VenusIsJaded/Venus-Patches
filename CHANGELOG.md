@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0-dev.3 — eval-scope capture revision
+
+New `v1.0.0-dev.3` prerelease with `patches-1.0.0-dev.3.mpp`. Repatch the original APKM and verify Morphe shows **1.0.0-dev.3**.
+
+- Isolate loop-captured hook bindings behind invocation parameters (`replacementFor`) and give async size callbacks an invocation scope (`readSize`).
+- Fail fast at hook time with a Venus-marked error when an export binding is unusable, so the module stays stock and Discord boots instead of crashing at call time.
+- No behavior change on engines with correct block scoping; the guards never fire there.
+
+Fixes the instant-crash `TypeError: undefined is not a function` at `replacement` during Hermes bundle init (Discord 347.12, `replacement@387`/`@393`), traced to shared loop captures in eval-compiled prelude code via HBC disassembly.
+
 ## 1.0.0-dev.2 — single-load startup revision
 
 Replacement `.mpp` on the existing `v1.0.0-dev.1` prerelease; manifest/source version advances to distinguish cached copies.
