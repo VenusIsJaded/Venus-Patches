@@ -31,6 +31,8 @@ The `main` branch's `patches-bundle.json` points to the experimental release. It
 
 **Local import:** download `patches-1.0.0-dev.1.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself.
 
+**Startup hotfix (2026-10-03):** the `1.0.0-dev.1` prerelease asset was replaced. Refresh/redownload the Venus source before patching the **original APKM** again; do not reuse a cached bundle or patch the crashing APK. Local sources must be reimported. Keep your existing Morphe signing key if you want to install the result as an update without clearing app data.
+
 **Signing:** a patched APK has a different signing certificate from official Discord. Android may require uninstalling official Discord first; understand the loss of local app data before doing so. Future patched updates must use the same signing key. Never share your signing key.
 
 ## Voice messages: closer to native, without pretending
@@ -116,7 +118,9 @@ Runtime regression tests can also be run independently:
 node --test tests/runtime.test.cjs
 ```
 
-`tests/native/PcmToolsTest.kt` checks generated PCM signals, durations, sample rates, downmixing, waveform amplitude and chunk invariance. `tests/native/VerifyApk.kt` checks the patched DEX entry points, packaged asset and signing certificate. These checks do **not** simulate a physical Android codec or Discord's servers.
+`tests/native/PcmToolsTest.kt` checks generated PCM signals, durations, sample rates, downmixing, waveform amplitude and chunk invariance. `tests/native/VerifyApk.kt` checks the patched DEX entry points, private native invocation opcode, extension method resolution against Discord's actual obfuscated classes, ordinary-size bypass, packaged asset and signing certificate. These checks do **not** simulate a physical Android codec or Discord's servers.
+
+The startup hotfix corrects an `invoke-virtual` call to a **private** native loader to `invoke-direct`. It also removes native extension calls to Kotlin helper methods absent from Discord's R8-obfuscated runtime, using Java APIs instead. Ordinary `getSize` requests are prefix-checked before invoking the extension. The strengthened verifier rejects the original release for these ABI faults.
 
 ### Device acceptance checklist
 

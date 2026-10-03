@@ -75,12 +75,15 @@ val venusSettings = bytecodePatch(
     execute {
         val method = BundleLoader.method
         val owner = BundleLoader.originalClassDef
+        val nativeLoader = owner.methods.singleOrNull {
+            it.name == "loadJSBundleFromAssets" && it.returnType == "V" &&
+                it.parameterTypes == listOf("Landroid/content/res/AssetManager;", "Ljava/lang/String;")
+        }
         if (owner.fields.none {
             it.name == "context" && it.type == "Lcom/facebook/react/runtime/BridgelessReactContext;"
-        } || owner.methods.none {
-            it.name == "loadJSBundleFromAssets" &&
-                it.parameterTypes == listOf("Landroid/content/res/AssetManager;", "Ljava/lang/String;")
-        }) throw PatchException("Discord's React Native startup ABI changed; refusing unsafe injection")
+        } || nativeLoader == null || nativeLoader.accessFlags and 0x2 == 0 ||
+            nativeLoader.accessFlags and 0x100 == 0)
+            throw PatchException("Discord's private native startup ABI changed; refusing unsafe injection")
         val loader = Fingerprint(
             definingClass = "Lcom/facebook/react/bridge/JSBundleLoader;",
             name = "createAssetLoader",
@@ -101,7 +104,7 @@ val venusSettings = bytecodePatch(
             invoke-virtual {v0}, Landroid/content/Context;->getAssets()Landroid/content/res/AssetManager;
             move-result-object v0
             const-string v1, "assets://venus/bootstrap.js"
-            invoke-virtual {p0, v0, v1}, $INSTANCE->loadJSBundleFromAssets(Landroid/content/res/AssetManager;Ljava/lang/String;)V
+            invoke-direct {p0, v0, v1}, $INSTANCE->loadJSBundleFromAssets(Landroid/content/res/AssetManager;Ljava/lang/String;)V
         """)
     }
 }
@@ -137,6 +140,10 @@ val customVoiceMessages = bytecodePatch(
         // Existing TurboModule schemas cannot expose arbitrary new ReactMethod functions.
         // Dispatch a private URI prefix through the existing Promise bridge; normal size requests fall through.
         fileSize.addInstructions(0, """
+            const-string v0, "venus-voice-v1:"
+            invoke-virtual {p1, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+            move-result v0
+            if-eqz v0, :venus_original_size
             invoke-virtual {p0}, Lcom/facebook/react/bridge/ReactContextBaseJavaModule;->getReactApplicationContext()Lcom/facebook/react/bridge/ReactApplicationContext;
             move-result-object v0
             invoke-static {p1, p2, v0}, Lapp/venus/extension/VoiceProcessor;->dispatch(Ljava/lang/String;Lcom/facebook/react/bridge/Promise;Landroid/content/Context;)Z

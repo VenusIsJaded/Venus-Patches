@@ -1,6 +1,9 @@
 import com.android.apksig.ApkVerifier
 import com.android.tools.smali.dexlib2.DexFileFactory
 import com.android.tools.smali.dexlib2.Opcodes
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -56,13 +59,54 @@ fun main(args: Array<String>) {
     check(calls.count { it == "createAssetLoader" } == 1)
     check(calls.count { it == "loadJSBundleFromAssets" } == 1)
     check(calls.indexOf("loadJSBundleFromAssets") < calls.indexOf("loadScript"))
-    check(owner.methods.any { it.name == "loadJSBundleFromAssets" })
+    val nativeLoader = owner.methods.single { it.name == "loadJSBundleFromAssets" }
+    val bootstrapCall = instructions.single {
+        ((it as? ReferenceInstruction)?.reference as? MethodReference)?.name == "loadJSBundleFromAssets"
+    }
+    val abiErrors = mutableListOf<String>()
+    if (nativeLoader.accessFlags and 0x2 != 0 && bootstrapCall.opcode != Opcode.INVOKE_DIRECT)
+        abiErrors.add("Private native asset loader must use invoke-direct, got ${bootstrapCall.opcode}")
+    val allClasses = dex.dexEntryNames.flatMap { dex.getEntry(it)!!.dexFile.classes }.associateBy { it.type }
+    fun resolve(reference: MethodReference, type: String = reference.definingClass, seen: MutableSet<String> = mutableSetOf()): Method? {
+        if (!seen.add(type)) return null
+        val definition = allClasses[type] ?: return null
+        return definition.methods.firstOrNull {
+            it.name == reference.name && it.parameterTypes == reference.parameterTypes && it.returnType == reference.returnType
+        } ?: definition.superclass?.let { resolve(reference, it, seen) }
+            ?: definition.interfaces.firstNotNullOfOrNull { resolve(reference, it, seen) }
+    }
+    // A successful D8 build does not prove that an obfuscated host supplies Kotlin helper ABIs.
+    // Check real definitions (including inherited methods), not the compiler's stock stdlib.
+    val extensionClasses = allClasses.values.filter { it.type.startsWith("Lapp/venus/extension/") }
+    val references = extensionClasses.flatMap { definition -> definition.methods.flatMap { method ->
+        method.implementation?.instructions?.mapNotNull { (it as? ReferenceInstruction)?.reference }?.toList() ?: emptyList()
+    } }.filterIsInstance<MethodReference>().distinct()
+    for (reference in references) {
+        if (!reference.definingClass.startsWith("Lkotlin/") && !reference.definingClass.startsWith("Lapp/venus/") &&
+            !reference.definingClass.startsWith("Lcom/facebook/react/")) continue
+        val resolved = resolve(reference)
+        if (resolved == null) abiErrors.add("Unresolved extension dependency: $reference")
+        else if (!reference.definingClass.startsWith("Lapp/venus/") && resolved.accessFlags and 0x1 == 0)
+            abiErrors.add("Non-public host dependency: $reference")
+    }
+    check(abiErrors.isEmpty()) { abiErrors.joinToString("\n") }
     val fileModules = dex.dexEntryNames.flatMap { name ->
         dex.getEntry(name)!!.dexFile.classes.filter { it.type == "Lcom/discord/file_manager/FileModule;" }
     }
     check(fileModules.size == 1) { "Expected one FileModule definition" }
     val bridge = fileModules.single().methods.single { it.name == "getSize" }
     val bridgeRefs = bridge.implementation!!.instructions.mapNotNull { (it as? ReferenceInstruction)?.reference }
+    val bridgeInstructions = bridge.implementation!!.instructions.toList()
+    val prefixGuard = bridgeInstructions.indexOfFirst {
+        ((it as? ReferenceInstruction)?.reference as? MethodReference)?.let { ref ->
+            ref.definingClass == "Ljava/lang/String;" && ref.name == "startsWith"
+        } == true
+    }
+    val dispatchCall = bridgeInstructions.indexOfFirst {
+        ((it as? ReferenceInstruction)?.reference as? MethodReference)?.definingClass == "Lapp/venus/extension/VoiceProcessor;"
+    }
+    check(prefixGuard >= 0 && prefixGuard < dispatchCall) { "Ordinary getSize calls must bypass extension linkage" }
+    check(bridgeInstructions.subList(prefixGuard + 1, dispatchCall).any { it.opcode == Opcode.IF_EQZ })
     check(bridgeRefs.filterIsInstance<MethodReference>().any {
         it.definingClass == "Lapp/venus/extension/VoiceProcessor;" && it.name == "dispatch"
     }) { "Native conversion dispatch missing from getSize" }
@@ -80,5 +124,5 @@ fun main(args: Array<String>) {
         check(verification.isVerified) { "APK signature invalid: ${verification.errors}" }
         println("APK signing certificate and signature verified")
     }
-    println("PASS: unique patched classes, valid loader registers, guarded native bridge, extension present, stubs excluded, unchanged Hermes asset")
+    println("PASS: private native invoke ABI, host extension linkage, ordinary-size fast path, unique patched classes, valid loader registers, extension present, stubs excluded, unchanged Hermes asset")
 }
