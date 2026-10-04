@@ -138,7 +138,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: native Venus settings, CopyBios, Dashless, FavouriteAnything and FreeNitro with separate emoji/sticker switches. Real-device validation pending.",
+        "description": "Discord 347.12: media/FreeMoji fixes, attachment tools in Plugins, No typing, QuickDelete, NoDelete, JumpToTop and Hidden Channels. Real-device validation pending.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

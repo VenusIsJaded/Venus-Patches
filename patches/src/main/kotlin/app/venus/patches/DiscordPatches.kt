@@ -31,8 +31,10 @@ private var copyBiosSelected = false
 private var dashlessSelected = false
 private var favouriteAnythingSelected = false
 private var freeNitroSelected = false
+private val additionalSelections = mutableSetOf<String>()
 private val runtimeAssets = rawResourcePatch {
     execute {
+        additionalSelections.clear()
         pickerSelected = false
         voiceSelected = false
         copyBiosSelected = false
@@ -62,14 +64,16 @@ private val runtimeAssets = rawResourcePatch {
         val selected = bootstrap.replace(
             "/*__FEATURES__*/",
             "{picker:$pickerSelected,voice:$voiceSelected,copyBios:$copyBiosSelected," +
-                "dashless:$dashlessSelected,favouriteAnything:$favouriteAnythingSelected,freeNitro:$freeNitroSelected}"
+                "dashless:$dashlessSelected,favouriteAnything:$favouriteAnythingSelected,freeNitro:$freeNitroSelected," +
+                listOf("noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels")
+                    .joinToString(",") { "$it:${it in additionalSelections}" } + "}"
         )
         asset.writeText(selected)
         // One main bundle load: the prelude runs inside the existing HBC98 global entry,
         // so RN cannot mark a separate bootstrap bundle ready or flush native calls early.
         val injected = HbcPrelude.inject(get("assets/index.android.bundle"), selected)
         get("assets/venus/injection.json", false).writeText(
-            "{\"revision\":\"1.0.0\",\"prefixSize\":${injected.prefixSize}," +
+            "{\"revision\":\"1.1.0\",\"prefixSize\":${injected.prefixSize}," +
                 "\"originalCodeSize\":${injected.originalCodeSize},\"codeOffset\":${injected.codeOffset}}"
         )
     }
@@ -202,3 +206,28 @@ val customVoiceMessages = bytecodePatch(
         """)
     }
 }
+
+// Independently selectable offline ports; no Vendetta/Revenge loader dependency.
+private fun bundledPlugin(key: String, title: String, summary: String) = rawResourcePatch(
+    name = title,
+    description = summary
+) {
+    compatibleWith(discord)
+    dependsOn(venusSettings)
+    execute { additionalSelections += key }
+}
+
+@Suppress("unused")
+val noTyping = bundledPlugin("noTyping", "No typing", "Hides outgoing typing indicators without changing incoming typing events.")
+
+@Suppress("unused")
+val quickDelete = bundledPlugin("quickDelete", "QuickDelete", "Opt-in removal of message and embed confirmations, matched using Discord's localized strings.")
+
+@Suppress("unused")
+val noDelete = bundledPlugin("noDelete", "NoDelete", "Opt-in, session-only retention of cached deleted messages, visibly marked and bounded to 512 entries.")
+
+@Suppress("unused")
+val jumpToTop = bundledPlugin("jumpToTop", "JumpToTop", "Adds a jump-to-start control to the native chat without replacing Jump to Present.")
+
+@Suppress("unused")
+val hiddenChannels = bundledPlugin("hiddenChannels", "Hidden Channels", "Opt-in display of already-received locked channel metadata. Does not grant message or voice access.")

@@ -1,8 +1,8 @@
 {
-  "created_at": "2026-10-04T00:21:40.461499+00:00",
-  "description": "Discord 347.12: native Venus settings, CopyBios, Dashless, FavouriteAnything and FreeNitro with separate emoji/sticker switches. Real-device validation pending.",
-  "download_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/download/v1.0.0/patches-1.0.0.mpp",
-  "page_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/tag/v1.0.0",
+  "created_at": "2026-10-04T01:14:55.216337+00:00",
+  "description": "Discord 347.12: media/FreeMoji fixes, attachment tools in Plugins, No typing, QuickDelete, NoDelete, JumpToTop and Hidden Channels. Real-device validation pending.",
+  "download_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/download/v1.1.0/patches-1.1.0.mpp",
+  "page_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/tag/v1.1.0",
   "signature_download_url": "",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

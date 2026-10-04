@@ -470,14 +470,14 @@ test('conversion disabled has no codec bridge calls for audio uploads', async ()
     await upload.reactNativeCompressAndExtractData();assert.equal(calls,0);
 });
 
-const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true};
+const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true, noTyping:true, quickDelete:true, noDelete:true, jumpToTop:true, hiddenChannels:true};
 function reactHarness(b) {
     const React = {
         createElement(type, props, ...children) { return {type, props:{...props, ...(children.length ? {children:children.length === 1 ? children[0] : children} : {})}}; },
         cloneElement(node, props) {return {...node, props:{...node.props,...props}};},
         useState:() => [0, () => {}], useEffect() {},
     };
-    const RN = {View:'View', Text:'Text', Modal:'Modal'};
+    const RN = {View:'View', Text:'Text', Modal:'Modal', Pressable:'Pressable'};
     b.load(React, null, 19); b.load(RN, null, 17);
     return {React,RN};
 }
@@ -505,9 +505,9 @@ function nitroHarness() {
     b.load({default:{getChannel:id => id === 'channel' ? channel : undefined}},null,2041);
     b.load({default:{getCustomEmojiById:id => emojis[id]}},null,5708);
     b.load({default:{getStickerById:id => stickers[id]}},null,5751);
-    const premium=b.load({canUseEmojisEverywhere:user => user.premiumType===2,
+    const premium=b.load({default:{canUseEmojisEverywhere:user => user.premiumType===2,
         canUseAnimatedEmojis:user => user.premiumType===2,
-        canUseCustomStickersEverywhere:user => user.premiumType===2},null,4446);
+        canUseCustomStickersEverywhere:user => user.premiumType===2}},null,4446).default;
     const rules=b.load({StickerSendability:{SENDABLE:0,SENDABLE_WITH_PREMIUM:1,NONSENDABLE:2},
         getStickerSendability:sticker => !sticker || sticker.available === false ? 2 : sticker.guild_id==='home' || user.premiumType===2 ? 0 : 1,
         isSendableSticker:sticker => !!sticker && (sticker.guild_id==='home' || user.premiumType===2)},null,7611);
@@ -701,4 +701,237 @@ test('double-backtick inline code and empty sticker sends remain unchanged', () 
     const b=nitroHarness();const message={content:'``<:x:2>``'};
     b.actions.sendMessage('channel',message);assert.equal(b.sent[0][1],message);
     const ids=[];b.actions.sendStickers('channel',ids,'hello');assert.equal(b.sent[1][1],ids);assert.equal(b.sent[1][2],'hello');
+});
+
+
+test('Metro default imports preserve non-enumerable module markers for media viewer components', () => {
+    const b=boot(allFeatures);
+    const memo={$$typeof:Symbol.for('react.memo'),type:props=>props,compare:null};
+    const exports={default:memo};Object.defineProperty(exports,'__esModule',{value:true});
+    const patched=b.load(exports,null,13288);
+    const metroDefault=patched.__esModule ? patched.default : patched;
+    assert.equal(patched,exports);assert.equal(patched.__esModule,true);
+    assert.equal(metroDefault.$$typeof,Symbol.for('react.memo'));
+    assert.equal(typeof metroDefault.type,'function');
+});
+test('frozen component exports preserve React tags, symbols and lazy getter descriptors', () => {
+    const b=boot(allFeatures);const symbol=Symbol('metadata');let reads=0;
+    const memo={type:props=>props,compare:()=>true};
+    Object.defineProperty(memo,'$$typeof',{value:Symbol.for('react.memo')});
+    Object.defineProperty(memo,'displayName',{get(){reads++;return 'GIFFavButton';}});
+    memo[symbol]='preserved';Object.freeze(memo);
+    const exports={default:memo};Object.defineProperty(exports,'__esModule',{value:true});Object.freeze(exports);
+    const patched=b.load(exports,null,13288);assert.equal(reads,0);
+    assert.equal(patched.__esModule,true);assert.equal(patched.default.$$typeof,Symbol.for('react.memo'));
+    assert.equal(patched.default[symbol],'preserved');assert.equal(patched.default.compare,memo.compare);
+    assert.equal(Object.getOwnPropertyDescriptor(patched.default,'displayName').get,Object.getOwnPropertyDescriptor(memo,'displayName').get);
+});
+test('immutable function export hooks retain the Metro module marker and stock descriptors', () => {
+    const b=boot(allFeatures);const exports={};
+    Object.defineProperty(exports,'__esModule',{value:true});
+    Object.defineProperty(exports,'addFavoriteGIF',{value:item=>item});
+    const patched=b.load(exports,null,10661);assert.equal(patched.__esModule,true);
+    assert.equal(patched.addFavoriteGIF({url:'https://example.com/movie.mp4',format:1}).format,2);
+});
+
+
+test('attachment tools and all five ports live in Plugins, never General', () => {
+    const b=settingsHarness();
+    const general=b.registry.VENUS_GENERAL.screen.getComponent()().props.node;
+    assert.equal(general.sections.length,1);assert.equal(general.sections[0].label,'About');
+    for (const id of ['PICKER','VOICE','NOTYPING','NODELETE','JUMPTOTOP','HIDDENCHANNELS','QUICKDELETE'])
+        assert.equal(b.registry['VENUS_'+id].parent,'VENUS_PLUGINS');
+    for (const key of ['quickDelete','quickDeleteEmbeds','noDelete','hiddenChannels']) assert.equal(b.api.settings[key],false);
+});
+test('unselected new plugins do not wrap any optional factory or expose switches', () => {
+    const b=boot({});const factory=()=>{};
+    for (const id of [12272,5141,1115,573,5008,7730,12549,10518,11207,2096,4427,14280,1074,1101]) {
+        b.context.__d(factory,id,[]);assert.equal(b.factories.get(id),factory);
+    }
+    const settings=settingsHarness({});assert.equal(settings.registry.VENUS_NOTYPING,undefined);
+});
+test('No typing restores both original methods and receiver when switched off', () => {
+    const b=boot(allFeatures);const calls=[];
+    const actions={startTyping(...args){assert.equal(this,actions);calls.push(args);return 'start';},
+        stopTyping(...args){assert.equal(this,actions);calls.push(args);return 'stop';}};
+    const patched=b.load({default:actions},null,12272).default;
+    patched.startTyping('123');patched.stopTyping('123');assert.equal(calls.length,0);
+    b.api.setSetting('noTyping',false);
+    assert.equal(patched.startTyping('123'),'start');assert.equal(patched.stopTyping('456'),'stop');
+    assert.deepEqual(calls,[['123'],['456']]);
+});
+test('QuickDelete uses exact localized strings, independent switches and stock fallback', () => {
+    const b=boot(allFeatures);let shown=0,confirmed=0;
+    const tokens={AMvpS4:'message', 'vXZ+Fo':'embed'};const translations={message:'Supprimer le message ?',embed:'Supprimer cet aperçu ?'};
+    b.load({t:tokens,intl:{string:key=>translations[key]}},null,1115);
+    const popup={show(value){shown++;return value;}};
+    const action=b.load({default:popup},null,5141).default;
+    const message={children:{props:{title:translations.message}},onConfirm(){confirmed++;return 'confirmed';}};
+    assert.equal(action.show(message),message);b.api.setSetting('quickDelete',true);
+    assert.equal(action.show(message),'confirmed');assert.equal(confirmed,1);
+    const other={body:'Delete channel',onConfirm(){throw Error('must not confirm');}};assert.equal(action.show(other),other);
+    const substring={body:'Unrelated '+translations.message,onConfirm(){throw Error('unsafe matching');}};assert.equal(action.show(substring),substring);
+    const embed={body:translations.embed,onConfirm(){confirmed++;}};action.show(embed);assert.equal(confirmed,1);
+    b.api.setSetting('quickDeleteEmbeds',true);action.show(embed);assert.equal(confirmed,2);
+    b.api.setSetting('quickDelete',false);action.show(message);assert.equal(confirmed,2);assert.equal(shown,5);
+    translations.embed='';assert.equal(action.show(embed),embed);
+});
+function deletionHarness() {
+    const b=boot(allFeatures), messages=new Map(),events=[],network=[];
+    b.load({default:{getMessage:(channel,id)=>messages.get(channel+':'+id)}},null,5008);
+    const flux={dispatch(event){assert.equal(this,flux);events.push(event);
+        if (event.type==='MESSAGE_DELETE') messages.delete(event.channelId+':'+event.id);
+        if (event.type==='MESSAGE_DELETE_BULK') event.ids.forEach(id=>messages.delete(event.channelId+':'+id));
+        return 'dispatched';}};
+    const dispatch=b.load({default:flux},null,573).default;
+    const actions=b.load({default:{deleteMessage(...args){network.push(args);return 'remote';}}},null,7730).default;
+    return {...b,messages,events,network,dispatch,actions};
+}
+test('NoDelete retains only cached messages, marks once and dismisses locally without server traffic', async () => {
+    const b=deletionHarness();const event=Object.freeze({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
+    b.messages.set('c:1',{content:'hello'});assert.equal(b.dispatch.dispatch(event),'dispatched');assert.equal(b.messages.size,0);
+    b.api.setSetting('noDelete',true);b.messages.set('c:1',{content:'hello'});
+    b.dispatch.dispatch(event);assert.equal(b.messages.get('c:1').content,'hello');
+    assert.equal(b.events.at(-1).type,'MESSAGE_EDIT_FAILED_AUTOMOD');assert.match(b.events.at(-1).errorResponseBody.message,/deleted/);
+    const n=b.events.length;b.dispatch.dispatch(event);assert.equal(b.events.length,n);
+    await b.actions.deleteMessage('c','1');assert.equal(b.messages.size,0);assert.equal(b.network.length,0);
+    assert.equal(b.actions.deleteMessage('c','2'),'remote');assert.equal(b.network.length,1);
+    const unknown={...event,id:'missing'};assert.equal(b.dispatch.dispatch(unknown),'dispatched');assert.equal(b.events.at(-1),unknown);
+});
+test('NoDelete bulk handling is immutable, bounded and clears kept messages on disable', () => {
+    const b=deletionHarness();b.api.setSetting('noDelete',true);
+    b.messages.set('c:1',{});b.messages.set('c:2',{});
+    const event=Object.freeze({type:'MESSAGE_DELETE_BULK',channelId:'c',ids:Object.freeze(['1','2','3']),extra:true});
+    b.dispatch.dispatch(event);assert.equal(event.ids.length,3);
+    assert.deepEqual(Array.from(b.events.at(-1).ids),['3']);assert.equal(b.events.at(-1).extra,true);
+    for(let i=4;i<519;i++){b.messages.set('c:'+i,{});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:String(i)});}
+    assert.equal(b.messages.size,512);b.api.setSetting('noDelete',false);assert.equal(b.messages.size,0);
+});
+test('NoDelete clears session state at logout and lets unrelated events and arguments through', () => {
+    const b=deletionHarness();b.api.setSetting('noDelete',true);b.messages.set('c:1',{});
+    b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
+    const event={type:'LOGOUT'};assert.equal(b.dispatch.dispatch(event),'dispatched');assert.equal(b.events.at(-1),event);
+    assert.equal(b.actions.deleteMessage('c','1'),'remote');
+});
+test('real default-export capability hooks unlock emoji selection but preserve native conversion checks', () => {
+    const b=nitroHarness();const animation={},everywhere={},unrelated={};
+    const catalog=b.load({ANIMATED_EMOJIS:animation,EMOJIS_EVERYWHERE:everywhere,
+        canUserUse:(feature,user)=>user.premiumType===2},null,14280);
+    const premium=b.load({default:{canUseEmojisEverywhere:user=>catalog.canUserUse(everywhere,user),
+        canUseAnimatedEmojis:user=>catalog.canUserUse(animation,user),canUseCustomStickersEverywhere:()=>false}},null,4446).default;
+    assert.equal(premium.canUseEmojisEverywhere(b.user),true);assert.equal(catalog.canUserUse(animation,b.user),true);
+    assert.equal(catalog.canUserUse(unrelated,b.user),false);assert.equal(catalog.canUserUse(animation,{id:'other',premiumType:null}),false);
+    b.actions.sendMessage('channel',{content:'<a:test:3> <:other:2>'});assert.match(b.sent[0][1].content,/3.gif/);assert.match(b.sent[0][1].content,/2.webp/);
+    b.user.premiumType=2;b.actions.sendMessage('channel',{content:'<a:test:3>'});assert.equal(b.sent[1][1].content,'<a:test:3>');
+    b.api.setSetting('emojis',false);b.user.premiumType=null;assert.equal(premium.canUseEmojisEverywhere(b.user),false);
+});
+test('JumpToTop clones frozen controls, keeps Jump to Present and uses each current channel ID', () => {
+    const b=boot(allFeatures);const {React}=reactHarness(b),jumps=[];let present=0;
+    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,7730);
+    const child=Object.freeze(React.createElement('Button',{onPress:()=>present++,icon:'down'}));
+    const result=Object.freeze(React.createElement('View',{children:child}));
+    const component=b.load({default:()=>result},null,12549).default;
+    const first=component({channelId:'100'});const controls=first.props.children.props.children;
+    controls[0].props.children.props.onPress();controls[1].props.onPress();
+    assert.equal(present,1);assert.equal(jumps[0].channelId,'100');assert.equal(jumps[0].messageId,'100');assert.equal(result.props.children,child);
+    component({channelId:'200'}).props.children.props.children[0].props.children.props.onPress();assert.equal(jumps[1].channelId,'200');
+    b.api.setSetting('jumpToTop',false);assert.equal(component({channelId:'100'}),result);
+});
+test('JumpToTop is available when Jump to Present is absent without wrapping unrelated voice controls', () => {
+    const b=boot(allFeatures);reactHarness(b);const jumps=[];
+    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,7730);
+    const component=b.load({default:()=>null},null,12549).default;
+    const result=component({channelId:'123'});result.props.children.props.onPress();assert.equal(jumps[0].messageId,'123');
+    assert.equal(component({}),null);
+});
+function hiddenHarness() {
+    const b=boot(allFeatures);const {RN}=reactHarness(b);const alerts=[];RN.Alert={alert:(...args)=>alerts.push(args)};
+    const category={id:'cat',type:4,guild_id:'g',name:'private',position:2};
+    const text={id:'hidden',type:0,guild_id:'g',name:'staff-chat',position:3,parent_id:'cat',topic:'Staff only'};
+    const other={id:'second',type:0,guild_id:'g',name:'second',position:4,parent_id:'cat'};
+    const voice={id:'voice',type:2,guild_id:'g',name:'voice',position:1};
+    const visible={id:'public',type:0,guild_id:'g',name:'public',position:0};
+    const channels={cat:category,hidden:text,second:other,voice,public:visible};const allowed=new Set(['public']);
+    b.load({default:{getChannel:id=>channels[id],getMutableGuildChannelsForGuild:()=>channels}},null,2041);
+    const viewPermission={nativeBit:1024};
+    b.load({Permissions:{VIEW_CHANNEL:viewPermission}},null,1074);
+    const permission={can:(permission,channel)=>{assert.equal(permission,viewPermission);return allowed.has(channel.id);}};
+    b.load({default:permission},null,4427);
+    const result=Object.freeze({id:'g',SELECTABLE:Object.freeze([{channel:visible,comparator:0}]),VOCAL:Object.freeze([]),4:Object.freeze([])});
+    const store=b.load({default:{getChannels:()=>result}},null,2096).default;
+    const fetched=[];const actions=b.load({default:{fetchMessages:value=>fetched.push(value)}},null,7730).default;
+    const label=b.load({default:channel=>channel.name},null,4941).default;
+    return {...b,channels,allowed,permission,viewPermission,result,store,actions,fetched,alerts,label};
+}
+test('Hidden Channels adds cached metadata immutably, deduplicates categories and leaves permissions intact', () => {
+    const b=hiddenHarness();assert.equal(b.store.getChannels('g'),b.result);b.api.setSetting('hiddenChannels',true);
+    const result=b.store.getChannels('g');assert.equal(result.SELECTABLE.length,3);assert.equal(result.VOCAL.length,1);assert.equal(result[4].length,1);
+    assert.equal(b.result.SELECTABLE.length,1);assert.equal(b.store.getChannels('g'),result);
+    assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),false);assert.equal(b.label(b.channels.hidden),'staff chat [locked]');
+    b.allowed.add('hidden');const next=b.store.getChannels('g');assert.notEqual(next,result);assert.equal(b.label(b.channels.hidden),'staff chat');
+    b.api.setSetting('hiddenChannels',false);assert.equal(b.store.getChannels('g'),b.result);
+});
+test('Hidden Channels refuses message fetches for locked channels and preserves visible or disabled traffic', async () => {
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    await b.actions.fetchMessages({channelId:'hidden'});assert.equal(b.fetched.length,0);assert.match(b.alerts[0][1],/Staff only/);
+    b.actions.fetchMessages({channelId:'public'});assert.equal(b.fetched.length,1);
+    b.api.setSetting('hiddenChannels',false);b.actions.fetchMessages({channelId:'hidden'});assert.equal(b.fetched.length,2);
+});
+
+test('Hidden Channels blocks only locked channel navigation, including voice, with real native flag objects', () => {
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);const calls=[];
+    const navigation=b.load({transitionTo:(...args)=>calls.push(args),replaceWith:(...args)=>calls.push(args),transitionToGuild:(...args)=>calls.push(args)},null,1101);
+    navigation.transitionTo('/channels/g/hidden');navigation.replaceWith('/channels/g/voice');navigation.transitionToGuild('g','hidden');
+    assert.equal(calls.length,0);assert.equal(b.alerts.length,3);
+    navigation.transitionTo('/channels/g/public',{keep:true});navigation.transitionTo('/settings/hidden');navigation.transitionToGuild('g','public');
+    assert.equal(calls.length,3);assert.deepEqual(calls[0][1],{keep:true});
+    b.api.setSetting('hiddenChannels',false);navigation.transitionTo('/channels/g/hidden');assert.equal(calls.length,4);
+});
+test('Hidden Channels cache refreshes replaced records and parent metadata without stale references', () => {
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);const first=b.store.getChannels('g');
+    b.channels.hidden={...b.channels.hidden,topic:'updated'};const next=b.store.getChannels('g');assert.notEqual(next,first);
+    assert.equal(next.SELECTABLE.find(e=>e.channel.id==='hidden').channel.topic,'updated');
+    b.channels.cat={...b.channels.cat,name:'new parent'};assert.notEqual(b.store.getChannels('g'),next);
+});
+test('JumpToTop adds native-style action-sheet rows without mutating frozen trees and closes on press', () => {
+    const b=boot(allFeatures);const {React}=reactHarness(b);const jumps=[];let closed=0;
+    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,7730);
+    const row=Object.freeze(React.createElement('ActionSheetRow',{label:'Mute',onPress:()=>{},icon:'old'}));
+    const group=Object.freeze(React.createElement('Group',{children:Object.freeze([row])}));
+    const sheet=b.load({default:()=>group},null,10518).default;
+    const result=sheet({thread:{id:'99',type:11},onClose:()=>closed++});
+    assert.equal(group.props.children.length,1);assert.equal(result.props.children.length,2);
+    assert.equal(result.props.children[0].props.label,'Jump to top');result.props.children[0].props.onPress();
+    assert.equal(jumps[0].messageId,'99');assert.equal(closed,1);
+    b.api.setSetting('jumpToTop',false);assert.equal(sheet({thread:{id:'99',type:11}}),group);
+});
+test('connected channel action sheets preserve memo tags when injecting JumpToTop', () => {
+    const b=boot(allFeatures);const {React}=reactHarness(b);b.load({default:{jumpToMessage:()=>{}}},null,7730);
+    const memo=Object.freeze({$$typeof:Symbol.for('react.memo'),type:()=>React.createElement('Group',{children:[React.createElement('Row',{label:'Mute',onPress:()=>{}})]}),compare:null});
+    const wrapper=b.load({default:()=>React.createElement(memo,{channel:{id:'100',type:0}})},null,11207).default;
+    const tree=wrapper({channel:{id:'100',type:0}});assert.equal(tree.type.$$typeof,Symbol.for('react.memo'));
+    assert.equal(tree.type.type(tree.props).props.children[0].props.label,'Jump to top');assert.equal(tree.type.compare,null);
+});
+
+test('prototype Flux methods are shadowed on the same live instance, preserving private dispatch state', () => {
+    const b=boot(allFeatures);let calls=0;
+    class Flux {
+        #dispatches=0;
+        dispatch(event){this.#dispatches++;calls++;return event;}
+        count(){return this.#dispatches;}
+    }
+    const flux=new Flux();const patched=b.load({default:flux},null,573).default;
+    assert.equal(patched,flux);const event={type:'OTHER'};assert.equal(patched.dispatch(event),event);
+    assert.equal(flux.count(),1);assert.equal(calls,1);
+});
+test('prototype channel-store hooks retain store identity and inherited subscription methods', () => {
+    const b=hiddenHarness();
+    class Store {
+        #result=b.result;
+        getChannels(){return this.#result;}
+        subscribe(){return this;}
+    }
+    const store=new Store();const patched=b.load({default:store},null,2096).default;
+    assert.equal(patched,store);assert.equal(patched.subscribe(),store);assert.equal(patched.getChannels('g'),b.result);
+    b.api.setSetting('hiddenChannels',true);assert.equal(patched.getChannels('g').SELECTABLE.length,3);
 });
