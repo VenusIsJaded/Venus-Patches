@@ -97,7 +97,7 @@ context.Terser.minify(source, {compress:false, mangle:false,
     result = subprocess.run(["node", "-e", script, str(TOOLS / "terser.js"), str(source)],
                             cwd=ROOT, check=True, capture_output=True, text=True)
     content = result.stdout
-    if content.count("/*__FEATURES__*/") != 1 or len(content) > 65000:
+    if content.count("/*__FEATURES__*/") != 1 or len(content) > 99000:
         raise SystemExit("Invalid or oversized compact runtime")
     BUILD.mkdir(parents=True, exist_ok=True)
     output = BUILD / "bootstrap.js"
@@ -199,7 +199,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: faster mono PCM conversion, scoped picker updates, coalesced preferences, metadata and cancellation fixes, reproducible bundle. Real-device validation pending.",
+        "description": "Discord 347.12: native JumpToTop, mobile hidden metadata, saved NoDelete, Pastelize, profile PlatformIndicators, opt-in ReviewDB and streaming WAV/AIFF voice conversion. Device validation pending.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

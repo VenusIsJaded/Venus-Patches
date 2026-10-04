@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
         check("/*__FEATURES__*/" !in script) { "Unresolved feature selection placeholder" }
         check(Regex("const features\\s*=\\s*\\{picker:").containsMatchIn(script))
         val metadata = zip.getInputStream(zip.getEntry("assets/venus/injection.json")).bufferedReader().readText()
-        check("\"revision\":\"1.1.1\"" in metadata && Regex("const revision\\s*=\\s*\"1\\.1\\.1\"").containsMatchIn(script))
+        check("\"revision\":\"1.2.0\"" in metadata && Regex("const revision\\s*=\\s*\"1\\.2\\.0\"").containsMatchIn(script))
         for (feature in listOf("copyBios", "dashless", "favouriteAnything", "freeNitro", "noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels"))
             check("$feature:true" in script) { "Missing selected feature: $feature" }
         check("VenusRoot" !in script && "RN.Modal" !in script && "registerRoot" !in script)

@@ -1,5 +1,7 @@
 import app.venus.extension.PcmResampler
 import app.venus.extension.Waveform
+import app.venus.extension.PcmFileInput
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -48,9 +50,70 @@ private fun benchmark() {
         println("BENCH rate=$rate channels=$channels median_ms=${times[4] / 1000000.0} checksum=$checksum")
     }
 }
+private fun pcmFileChecks(): Int {
+    var checks=0
+    fun chunk(name:String,bytes:ByteArray,little:Boolean):ByteArray {
+        val out=ByteArrayOutputStream();out.write(name.toByteArray(Charsets.US_ASCII));out.write(ByteBuffer.allocate(4).order(if(little)ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN).putInt(bytes.size).array());out.write(bytes);if(bytes.size%2==1)out.write(0);return out.toByteArray()
+    }
+    fun wav(bits:Int,floating:Boolean,little:Boolean,extensible:Boolean=false):ByteArray {
+        val order=if(little)ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN
+        val format=ByteBuffer.allocate(if(extensible)40 else 16).order(order)
+            .putShort((if(extensible)65534 else if(floating)3 else 1).toShort()).putShort(1).putInt(48000).putInt(48000*(bits/8)).putShort((bits/8).toShort()).putShort(bits.toShort())
+        if(extensible){format.putShort(22).putShort(bits.toShort()).putInt(0).putInt(if(floating)3 else 1);format.put(byteArrayOf(0,0,16,0,-128,0,0,-86,0,56,-101,113))}
+        val data=ByteBuffer.allocate(bits/8*3).order(order)
+        for(value in listOf(-0.5,0.0,0.5)) {
+            if(floating) {if(bits==64)data.putDouble(value) else data.putFloat(value.toFloat())}
+            else when(bits){
+                8->data.put((value*128+128).toInt().toByte())
+                16->data.putShort((value*32768).toInt().toShort())
+                24->{val raw=(value*8388608).toInt();if(little){data.put(raw.toByte());data.put((raw shr 8).toByte());data.put((raw shr 16).toByte())}else{data.put((raw shr 16).toByte());data.put((raw shr 8).toByte());data.put(raw.toByte())}}
+                32->data.putInt((value*2147483648.0).toInt())
+            }
+        }
+        val body="WAVE".toByteArray()+chunk("JUNK",byteArrayOf(1,2,3),little)+chunk("fmt ",format.array(),little)+chunk("data",data.array(),little)
+        return (if(little)"RIFF" else "RIFX").toByteArray()+ByteBuffer.allocate(4).order(order).putInt(body.size).array()+body
+    }
+    for(bits in listOf(8,16,24,32)) for(little in listOf(true,false)) {
+        val source=checkNotNull(PcmFileInput.open(ByteArrayInputStream(wav(bits,false,little))))
+        check(source.rate==48000 && source.channels==1)
+        val pcm=checkNotNull(source.readFrames());for(value in listOf(-0.5f,0f,0.5f))check(abs(pcm.float-value)<0.000001f)
+        check(source.readFrames()==null);checks++
+    }
+    for(bits in listOf(32,64)) for(little in listOf(true,false)) {
+        val source=checkNotNull(PcmFileInput.open(ByteArrayInputStream(wav(bits,true,little))))
+        val pcm=source.readFrames()!!;for(value in listOf(-0.5f,0f,0.5f))check(pcm.float==value);checks++
+    }
+    for(floating in listOf(true,false)) {
+        val source=checkNotNull(PcmFileInput.open(ByteArrayInputStream(wav(32,floating,true,true))));check(source.readFrames()!!.float==-0.5f);checks++
+    }
+    fun aiff(codec:String,bits:Int=16):ByteArray {
+        val comm=ByteBuffer.allocate(if(codec=="AIFF")18 else 22).order(ByteOrder.BIG_ENDIAN)
+            .putShort(1).putInt(3).putShort(bits.toShort()).putShort(16398).putInt(0xbb800000.toInt()).putInt(0) // extended-80 48 kHz
+        if(codec!="AIFF")comm.put(codec.toByteArray())
+        val data=ByteBuffer.allocate(8+3*(bits/8)).order(ByteOrder.BIG_ENDIAN).putInt(2).putInt(0)
+        data.order(if(codec=="sowt")ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN)
+        for(value in listOf(-0.5,0.0,0.5)){if(bits==32)data.putFloat(value.toFloat()) else if(bits==64)data.putDouble(value) else data.putShort((value*32768).toInt().toShort())}
+        val ssnd=data.array().copyOfRange(0,8)+byteArrayOf(1,2)+data.array().copyOfRange(8,data.capacity())
+        val body=(if(codec=="AIFF")"AIFF" else "AIFC").toByteArray()+chunk("COMM",comm.array(),false)+chunk("SSND",ssnd,false)
+        return "FORM".toByteArray()+ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(body.size).array()+body
+    }
+    for((codec,bits) in listOf("AIFF" to 16,"NONE" to 16,"twos" to 16,"sowt" to 16,"fl32" to 32,"fl64" to 64)) {
+        val source=checkNotNull(PcmFileInput.open(ByteArrayInputStream(aiff(codec,bits))))
+        check(source.rate==48000);val pcm=source.readFrames()!!;for(value in listOf(-0.5f,0f,0.5f))check(pcm.float==value);checks++
+    }
+    check(PcmFileInput.open(ByteArrayInputStream("not a pcm container".toByteArray()))==null);checks++
+    val truncated=wav(16,false,true).dropLast(1).toByteArray()
+    val reader=PcmFileInput.open(ByteArrayInputStream(truncated))!!;check(runCatching{reader.readFrames()}.isFailure);checks++
+    val nan=wav(32,true,true);ByteBuffer.wrap(nan).order(ByteOrder.LITTLE_ENDIAN).putFloat(nan.size-12,Float.NaN)
+    check(runCatching{PcmFileInput.open(ByteArrayInputStream(nan))!!.readFrames()}.isFailure);checks++
+    val invalid=wav(16,false,true);ByteBuffer.wrap(invalid).order(ByteOrder.LITTLE_ENDIAN).putInt(4,8)
+    check(runCatching{PcmFileInput.open(ByteArrayInputStream(invalid))}.isFailure);checks++
+    check(runCatching{PcmFileInput.open(ByteArrayInputStream(aiff("ulaw")))}.isFailure);checks++
+    return checks
+}
 fun main(args: Array<String>) {
     if (args.contains("--benchmark")) { benchmark(); return }
-    var passed = 0
+    var passed = pcmFileChecks()
     val mono = input(48000, 48000)
     val exact = convert(48000, mono, 960)
     check(exact.first.contentEquals(mono)) { "48k PCM16 mono must be bit-identical" }; passed++
