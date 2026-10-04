@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.1 — five plugin repairs
+
+- Fixed Pastelize's CommonJS MurmurHashV3 binding, native name colors, source-role preservation and guild-member guards.
+- Fixed ReviewDB OAuth: live service rejects `clientMod=venus`; use the original supported `vendetta` protocol value. Add timeout, service errors and cancellation/account-switch protection. Session credentials only.
+- Replaced obfuscated No Access labels in both native channel formatters with already-received names; include locked and empty categories in the list-local metadata facade, leaving real permissions/navigation protected.
+- Replaced profile platform text labels with Discord's native status-tinted Screen/Phone/Globe/Controller icons; use own SessionsStore and clean up both subscriptions. Profile-only scope remains explicit.
+- Fixed NoDelete retention for real immutable ChannelMessages (no public clone method); send a changed native update payload and add red gutter/background plus native deleted notice without AutoMod dispatcher events.
+- Added ten targeted regressions; 109 Node tests pass, with one optional Hermes eval test skipped when no interpreter is configured. The same suite runs against compact release JavaScript.
+
+This is code/schema and automated validation, not a physical-device or successful user OAuth test. Repatch the original 347.12 APKM with patches-1.2.1.mpp. Missing channel metadata and uncached deleted content cannot be recovered.
+
 ## 1.2.0 — chat reliability, requested ports and voice formats
 
 - Native themed JumpToTop fallback with composer/suggestion height hooks.

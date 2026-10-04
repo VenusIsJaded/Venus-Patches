@@ -792,7 +792,7 @@ test('NoDelete retains only cached messages, marks once and dismisses locally wi
     b.messages.set('c:1',{content:'hello'});assert.equal(b.dispatch.dispatch(event),'dispatched');assert.equal(b.messages.size,0);
     b.api.setSetting('noDelete',true);b.messages.set('c:1',{content:'hello'});
     b.dispatch.dispatch(event);assert.equal(b.messages.get('c:1').content,'hello');
-    assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'hello');
+    assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'[Deleted] hello');
     const n=b.events.length;b.dispatch.dispatch(event);assert.equal(b.events.length,n);
     await b.actions.deleteMessage('c','1');assert.equal(b.messages.size,0);assert.equal(b.network.length,0);
     assert.equal(b.actions.deleteMessage('c','2'),'remote');assert.equal(b.network.length,1);
@@ -1111,12 +1111,13 @@ test('Hidden Channels fills numeric native channel-type buckets and gets direct 
 
 test('Pastelize preserves role colors and immutable mentions, supports webhook and content controls',()=>{
     const b=boot(allFeatures);const {RN}=reactHarness(b);RN.processColor=hex=>parseInt(hex.slice(1),16)|0xff000000;
-    b.load({default:seed=>Array.from(seed).reduce((a,c)=>a+c.charCodeAt(0),0)},null,1240);
+    // Pinned module 1240 is CommonJS: a direct function, not {default:fn}.
+    b.load(seed=>Array.from(seed).reduce((a,c)=>a+c.charCodeAt(0),0),null,1240);
     class Rows {generate(row){return row.result;}}
     b.load({default:Rows},null,8222);
     const message=Object.freeze({authorId:'123',username:'Test',roleColor:null,content:Object.freeze([Object.freeze({type:'mention',userId:'456',content:'test'})])});
     const row={rowType:1,message:{},result:Object.freeze({message})}, rows=new Rows();
-    const result=rows.generate(row);assert.notEqual(result,row.result);assert.equal(message.roleColor,null);assert.match(result.message.colorString,/^#[0-9a-f]{6}$/);assert.equal(message.content[0].colorString,undefined);
+    const result=rows.generate(row);assert.notEqual(result,row.result);assert.equal(message.roleColor,null);assert.equal(typeof result.message.colorString,'number');assert.equal(result.message.colorString,result.message.roleColor);assert.equal(message.content[0].colorString,undefined);
     assert.match(result.message.content[0].colorString,/^#/);assert.equal(rows.generate(row).message.colorString,result.message.colorString);
     const colored={...row,result:{message:{...message,roleColor:123,content:[]}}};assert.equal(rows.generate(colored).message.roleColor,123);
     b.api.setSetting('pastelAll',true);assert.notEqual(rows.generate(colored).message.roleColor,123);
@@ -1126,23 +1127,27 @@ test('Pastelize preserves role colors and immutable mentions, supports webhook a
 test('PlatformIndicators uses real client status, hides unknown/offline clients and preserves immutable profiles',()=>{
     const b=boot(allFeatures),{React}=reactHarness(b);const clients={desktop:'online',mobile:'idle',web:'offline',unknown:'dnd'};
     b.load({default:{getClientStatus:()=>clients,addChangeListener(){},removeChangeListener(){}}},null,4828);
+    b.load({ScreenIcon:'ScreenIcon'},null,9193);b.load({MobilePhoneIcon:'MobilePhoneIcon'},null,7235);
     function DisplayName(props){return Object.freeze(React.createElement('Name',{children:props.user.id}));}
     const profile=Object.freeze(React.createElement('View',{children:React.createElement(DisplayName,{user:{id:'u'}})}));
     const exports=b.load({DisplayName,default:()=>profile},null,11448);
     const tree=exports.default({});assert.notEqual(tree,profile);const named=tree.props.children.type(tree.props.children.props);
-    const badges=named.props.children[1];const rendered=badges.type(badges.props);assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children),['Desktop','Mobile']);
+    const badges=named.props.children[1];const rendered=badges.type(badges.props);assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children.type),['ScreenIcon','MobilePhoneIcon']);
+    assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children.props.color),['#23a55a','#f0b232']);
+    assert.deepEqual(Array.from(rendered.props.children,c=>c.props.accessibilityLabel),['Desktop: online','Mobile: idle']);
     b.api.setSetting('platformIndicators',false);assert.equal(badges.type(badges.props),null);
 });
 function reviewHarness() {
-    const b=boot(allFeatures),{React,RN}=reactHarness(b);RN.Alert={alert(){}};RN.ScrollView='ScrollView';RN.TextInput='TextInput';RN.ActivityIndicator='Spinner';
+    const b=boot(allFeatures),{React,RN}=reactHarness(b);const alerts=[];RN.Alert={alert(...args){alerts.push(args);}};RN.ScrollView='ScrollView';RN.TextInput='TextInput';RN.ActivityIndicator='Spinner';
     const requests=[];b.context.URL=URL;b.context.fetch=async(url,options)=>{requests.push([url,options]);return {ok:true,json:async()=>url.includes('/auth')?{success:true,token:'review-only-token'}:{success:true,reviews:[{id:1,comment:'hello',sender:{discordID:'other',username:'Other'}}]}};};
-    b.load({default:{getCurrentUser:()=>({id:'111111111111111111'})}},null,1372);
+    const account={id:'111111111111111111'};
+    b.load({default:{getCurrentUser:()=>account}},null,1372);
     b.load({TableRow:'NativeRow'},null,5854);
     let pushed;const popped=[];b.load({pushModal:value=>pushed=value,popModal:key=>popped.push(key)},null,4645);b.load({default:'OAuthModal'},null,9358);
     function PrimaryInfo(){return React.createElement('Info',null);}
     const profile=b.load({PrimaryInfo,default:()=>React.createElement('Profile',{children:React.createElement(PrimaryInfo,{user:{id:'222222222222222222'}})})},null,13382);
     const tree=profile.default({}),info=tree.props.children.type(tree.props.children.props);const panel=info.props.children[1];
-    return {...b,React,RN,requests,panel,popped,getPushed:()=>pushed};
+    return {...b,React,RN,requests,panel,popped,alerts,account,getPushed:()=>pushed};
 }
 test('ReviewDB has no startup requests and expands a native opt-in profile panel only after enabling',()=>{
     const b=reviewHarness();assert.equal(b.requests.length,0);assert.equal(b.panel.type(b.panel.props),null);
@@ -1159,6 +1164,164 @@ test('ReviewDB explicit expansion fetches only its API; OAuth rejects untrusted 
     const modal=b.getPushed();assert.equal(modal.modal.props.clientId,'915703782174752809');
     await modal.modal.props.callback({location:'https://evil.example/auth?code=x'});assert.equal(b.requests.length,1);
     await modal.modal.props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});assert.equal(b.requests.length,2);assert.equal(b.popped.length,1);
+    const redirect=new URL(b.requests.at(-1)[0]);assert.equal(redirect.searchParams.get('clientMod'),'vendetta');assert.equal(redirect.searchParams.get('returnType'),'json');
     index=0;panel=b.panel.type(b.panel.props);assert.equal(panel.props.children[1].props.children.at(-1).type,b.RN.View);
     b.api.setSetting('reviewDB',false);assert.equal(b.api.settings.reviewToken,undefined);
+});
+
+// Schemas below reflect the inspected 347.12 boundaries; the older clone()-only
+// mock hid a real native integration failure. These are not Android device tests.
+class NativeChannelMessages {
+    constructor(messages=[],state={ready:true,hasMoreBefore:true,jumpType:'ANIMATED'}) {Object.assign(this,state);this.messages=messages;}
+    merge(records) {
+        const merged=new Map(this.messages.map(message=>[message.id,message]));
+        records.forEach(message=>merged.set(message.id,message));
+        return new NativeChannelMessages(Array.from(merged.values()).sort((a,b)=>a.id.localeCompare(b.id)),this);
+    }
+    toArray(){return this.messages;}
+}
+test('NoDelete supports actual immutable ChannelMessages without clone and changes the update payload',()=>{
+    const b=deletionHarness();let collection=new NativeChannelMessages([{id:'1',channel_id:'c',content:'kept',author:{id:'u'}}]);
+    const store=b.load({default:{getMessage:(c,id)=>collection.toArray().find(message=>message.id===id),getMessages:()=>collection}},null,5008).default;
+    b.api.setSetting('noDelete',true);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
+    assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'[Deleted] kept');
+    assert.equal(typeof collection.clone,'undefined');assert.equal(collection.messages[0].content,'kept');
+    assert.equal(store.getMessages('c').messages[0].content,'[Deleted] kept');
+    collection=new NativeChannelMessages([{id:'2',content:'next'}]);b.dispatch.dispatch({type:'MESSAGE_CREATE',channelId:'c'});
+    const view=store.getMessages('c');assert.equal(view.toArray().length,2);assert.equal(collection.toArray().length,1);
+    assert.equal(view.ready,true);assert.equal(view.hasMoreBefore,true);assert.equal(view.jumpType,'ANIMATED');assert.equal(store.getMessages('c'),view);
+});
+test('NoDelete independently renders a native red gutter and deleted notice without AutoMod dispatcher traffic',async()=>{
+    const b=deletionHarness(),{RN}=reactHarness(b);RN.processColor=color=>color;
+    b.load({createAutomodBlockedMessageEmbed:({errorMessage,colors})=>Object.freeze({type:1,messageSendError:errorMessage,bodyTextColor:colors.automodBlockedBodyTextColor})},null,8455);
+    class Rows {generate(row){return row.result;}}
+    b.load({default:Rows},null,8222);const rows=new Rows();
+    const message=Object.freeze({id:'1',channelId:'c',authorId:'u',content:[],embeds:Object.freeze([{type:'attachment'}])});
+    const original=Object.freeze({message});const row={rowType:1,message:{id:'1',channel_id:'c'},result:original};
+    assert.equal(rows.generate(row).message.embeds.length,1);
+    b.api.setSetting('pastelize',false);b.api.setSetting('noDelete',true);b.messages.set('c:1',{id:'1',content:'original'});
+    b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
+    for(let i=0;i<3;i++) {
+        const rendered=rows.generate(row);assert.notEqual(rendered,original);assert.equal(rendered.message.embeds.length,2);
+        assert.equal(rendered.message.embeds[1].messageSendError,'This message was deleted');
+        assert.equal(rendered.backgroundHighlight.gutterColor,'#f23f43');assert.equal(rendered.backgroundHighlight.backgroundColor,'#f23f431a');
+        assert.equal(original.message.embeds.length,1);
+    }
+    assert.equal(b.events.some(event=>event.type.includes('AUTOMOD')),false);
+    await b.actions.deleteMessage('c','1');assert.equal(rows.generate(row),original);assert.equal(b.network.length,0);
+});
+test('Hidden Channels replaces obfuscated names in both native formatters, including empty locked sections',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    const names=b.load({default:()=> 'No Access',computeChannelName:()=> 'No Access'},null,4941);
+    const category={id:'empty',type:4,guild_id:'g',name:'PRIVATE STAFF',position:9};b.channels.empty=category;
+    assert.equal(names.computeChannelName(b.channels.hidden),'staff chat [locked]');
+    assert.equal(names.default(b.channels.hidden),'staff chat [locked]');assert.equal(names.computeChannelName(category),'PRIVATE STAFF [locked]');
+    assert.equal(b.store.getChannels('g')[4].some(entry=>entry.channel.id==='empty'),true);
+    assert.equal(b.permission.can(b.viewPermission,category),false);
+    b.permission.can=(bit,channel)=>bit===b.viewPermission && b.allowed.has(channel.id);
+    let facade;b.context.__d((g,r,i,a,m)=>{facade=i(4427);m.exports={};},7802,[]);
+    b.factories.get(7802)(b.context,()=>b.permission,()=>b.permission,()=>b.permission,{exports:{}},{},[]);
+    assert.equal(facade.can(b.viewPermission,category),true);assert.equal(facade.can('CONNECT',category),false);
+    b.api.setSetting('hiddenChannels',false);assert.equal(names.computeChannelName(category),'No Access');assert.equal(facade.can(b.viewPermission,category),false);
+});
+test('Pastelize respects source role colors and unknown members, and colors webhook names and nested reply mentions',()=>{
+    const b=boot(allFeatures),{RN}=reactHarness(b);RN.processColor=color=>color;
+    const seeds=[];b.load(seed=>{seeds.push(seed);return seed.length*23;},null,1240);
+    b.load({default:{getMember:(guild,id)=>id==='missing'?null:{id}}},null,2105);
+    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,8222);const rows=new Rows();
+    const message={authorId:'author',guildId:'g',username:'Name',roleColor:null,content:[{type:'strong',content:[{type:'mention',userId:'member'},{type:'mention',userId:'missing'}]}]};
+    const row={rowType:1,message:{colorString:'#123456'},result:{message}};
+    let result=rows.generate(row);assert.equal(result.message.roleColor,null);assert.equal(result.message.shouldShowRoleOnName,true);
+    assert.match(result.message.content[0].content[0].colorString,/^#/);assert.equal(result.message.content[0].content[1].colorString,undefined);
+    const unknown={...row,result:{message:{...message,authorId:'missing'}}};assert.equal(rows.generate(unknown).message,unknown.result.message);
+    const webhook={...row,message:{webhookId:'hook'},result:{message:{...message,referencedMessage:{message:{authorId:'reply',content:[],guildId:'g'}}}}};
+    seeds.length=0;result=rows.generate(webhook);assert.equal(seeds.includes('Name'),true);assert.equal(seeds.includes('reply'),true);
+    assert.notEqual(result.message.referencedMessage.message.roleColor,undefined);
+    b.api.setSetting('pastelWebhookName',false);seeds.length=0;rows.generate(webhook);assert.equal(seeds.includes('hook'),true);
+    b.api.setSetting('pastelAll',true);assert.notEqual(rows.generate(row).message.roleColor,null);
+    assert.equal(message.content[0].content[0].colorString,undefined);
+});
+function platformFixture() {
+    const b=boot({platformIndicators:true}),{React}=reactHarness(b);
+    function DisplayName(props){return React.createElement('Name',{children:props.user.id});}
+    const profile=b.load({DisplayName,default:()=>React.createElement('Profile',{children:React.createElement(DisplayName,{user:{id:'self'}})})},null,11448);
+    const tree=profile.default({}),name=tree.props.children.type(tree.props.children.props);
+    return {...b,React,badges:name.props.children[1]};
+}
+test('PlatformIndicators demand-loads native icon components, uses own sessions and cleans up both subscriptions',()=>{
+    const b=platformFixture(),listeners=new Set(),removals=[];let sessions={one:{clientInfo:{client:'mobile'},status:'idle'},two:{clientInfo:{client:'web'},status:'dnd'},unknown:{clientInfo:{client:'unknown'},status:'online'}};
+    const presence={getClientStatus:()=>({desktop:'online'}),addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>{removals.push('presence');listeners.delete(fn);}};
+    const store={getSessions:()=>sessions,addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>{removals.push('sessions');listeners.delete(fn);}};
+    b.load({default:presence},null,4828);b.load({default:{getCurrentUser:()=>({id:'self'})}},null,1372);
+    const imported=[];b.context.__r=id=>{imported.push(id);return {4806:{default:store},7235:{MobilePhoneIcon:'Phone'},9200:{GlobeEarthIcon:'Globe'},9380:{GameControllerIcon:'Console'}}[id];};
+    let cleanup;b.React.useEffect=fn=>cleanup=fn();
+    let tree=b.badges.type(b.badges.props);assert.deepEqual(Array.from(tree.props.children,c=>c.props.children.type),['Phone','Globe']);
+    assert.equal(imported.includes(9193),false);assert.equal(listeners.size,1);cleanup();assert.deepEqual(removals,['presence','sessions']);
+    sessions={one:{clientInfo:{client:'embedded'},status:'online'}};tree=b.badges.type(b.badges.props);
+    assert.equal(tree.props.children[0].props.children.type,'Console');assert.equal(tree.props.children[0].props.children.props.style.width,16);cleanup();
+    b.api.setSetting('platformIndicators',false);assert.equal(b.badges.type(b.badges.props),null);cleanup();
+});
+function openReviewAuth(b) {
+    b.api.setSetting('reviewDB',true);const states=[0,true,[],"",false,"",0];let index=0;
+    b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,()=>{}];};b.React.useEffect=()=>{};
+    function render(){index=0;return b.panel.type(b.panel.props);}
+    render().props.children[1].props.children.at(-1).props.onPress();
+    return {props:b.getPushed().modal.props,render};
+}
+test('ReviewDB uses the accepted original clientMod and displays service failures instead of hiding them',async()=>{
+    const b=reviewHarness(),{props,render}=openReviewAuth(b);let redirect;
+    b.context.fetch=async url=>{redirect=new URL(url);return {ok:true,status:200,json:async()=>({success:false,message:'Invalid or expired code',token:''})};};
+    await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=expired&clientMod=venus'});
+    assert.equal(redirect.searchParams.get('clientMod'),'vendetta');assert.equal(redirect.searchParams.get('returnType'),'json');
+    assert.equal(b.alerts.at(-1)[1],'Invalid or expired code');assert.equal(b.popped.length,0);
+    assert.equal(render().props.children[1].props.children.at(-1).props.label,'Authenticate with ReviewDB');
+    b.context.fetch=async()=>({ok:true,json:async()=>({success:true,token:'review-token'})});
+    await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=valid'});
+    assert.equal(b.popped.length,1);assert.equal(render().props.children[1].props.children.at(-1).type,b.RN.View);
+});
+test('ReviewDB ignores late OAuth success after cancellation, disable, logout or account switching',async()=>{
+    for(const action of ['cancel','disable','logout','account']) {
+        const b=reviewHarness(),{props,render}=openReviewAuth(b);let resolve;let requests=0;
+        b.context.fetch=()=>{requests++;return new Promise(done=>resolve=done);};
+        const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=once'});
+        await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=duplicate'});assert.equal(requests,1);
+        if(action==='cancel')props.dismissOAuthModal();
+        if(action==='disable')b.api.setSetting('reviewDB',false);
+        if(action==='logout')b.load({default:{dispatch(){}}},null,573).default.dispatch({type:'LOGOUT'});
+        if(action==='account')b.account.id='333333333333333333';
+        resolve({ok:true,json:async()=>({success:true,token:'must-not-survive'})});await pending;
+        if(action==='disable')b.api.setSetting('reviewDB',true);
+        assert.equal(render().props.children[1].props.children.at(-1).props.label,'Authenticate with ReviewDB');assert.equal(b.alerts.length,0);
+    }
+});
+test('ReviewDB OAuth exchanges are bounded and reject malformed or untrusted redirects without requests',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);
+    for(const location of ['https://evil.example/api/reviewdb/auth?code=x','https://manti.vendicated.dev/other?code=x','https://manti.vendicated.dev/api/reviewdb/auth','not a URL'])await props.callback({location});
+    assert.equal(b.requests.length,0);assert.equal(b.alerts.length,4);
+    let timeout,cleared=false;b.context.AbortController=AbortController;b.context.setTimeout=(fn,ms)=>{assert.equal(ms,15000);timeout=fn;return 42;};b.context.clearTimeout=id=>{assert.equal(id,42);cleared=true;};
+    b.context.fetch=(url,{signal})=>new Promise((resolve,reject)=>signal.addEventListener('abort',()=>reject(new Error('Authorization timed out'))));
+    const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});timeout();await pending;
+    assert.equal(cleared,true);assert.equal(b.alerts.at(-1)[1],'Authorization timed out');
+});
+test('NoDelete reorders restored native records exactly without sharing the stock array',()=>{
+    const b=deletionHarness();
+    class UnsortedNative {
+        constructor(array){this._array=array;this.ready=true;this.hasMoreAfter=false;}
+        toArray(){return this._array.slice();}
+        merge(records){const next=Object.assign(Object.create(UnsortedNative.prototype),this);next._array=this._array.filter(m=>!records.some(r=>r.id===m.id)).concat(records);return next;}
+        mutate(callback,clone){assert.equal(clone,true);const next=Object.assign(Object.create(UnsortedNative.prototype),this);next._array=this._array.slice();callback(next);return next;}
+    }
+    let original=new UnsortedNative([{id:'999999999999999999',content:'old'}]);
+    const store=b.load({default:{getMessage:(channel,id)=>original.toArray().find(m=>m.id===id),getMessages:()=>original}},null,5008).default;
+    b.api.setSetting('noDelete',true);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'999999999999999999'});
+    original=new UnsortedNative([{id:'1000000000000000000',content:'new'}]);b.dispatch.dispatch({type:'CACHE_LOADED'});
+    const view=store.getMessages('c');assert.deepEqual(Array.from(view.toArray(),m=>m.id),['999999999999999999','1000000000000000000']);
+    assert.equal(original.toArray().length,1);assert.notEqual(view._array,original._array);assert.equal(view.hasMoreAfter,false);
+});
+test('Hidden Channels information uses only cached topics, parent and snowflake/pin timestamps',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    const id=String((BigInt(Date.UTC(2020,0,1)-1420070400000)<<22n)+1n);
+    b.channels.details={...b.channels.hidden,id,lastMessageId:id,lastPinTimestamp:'2020-01-02T00:00:00.000Z'};
+    b.actions.fetchMessages({channelId:'details'});assert.equal(b.fetched.length,0);
+    const text=b.alerts.at(-1)[1];assert.match(text,/Category: private/);assert.match(text,/Topic: Staff only/);assert.match(text,/Created: .*2020/);assert.match(text,/Last message: .*2020/);assert.match(text,/Last pin: .*2020/);assert.match(text,/Metadata only/);
 });

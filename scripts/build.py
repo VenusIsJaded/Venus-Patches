@@ -199,7 +199,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: native JumpToTop, mobile hidden metadata, saved NoDelete, Pastelize, profile PlatformIndicators, opt-in ReviewDB and streaming WAV/AIFF voice conversion. Device validation pending.",
+        "description": "Discord 347.12: fix Pastelize hash binding, ReviewDB OAuth protocol, hidden names/categories, native profile platform icons and NoDelete retention/red notices. Android runtime validation pending.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",
