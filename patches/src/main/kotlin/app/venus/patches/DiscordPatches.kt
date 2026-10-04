@@ -73,7 +73,7 @@ private val runtimeAssets = rawResourcePatch {
         // so RN cannot mark a separate bootstrap bundle ready or flush native calls early.
         val injected = HbcPrelude.inject(get("assets/index.android.bundle"), selected)
         get("assets/venus/injection.json", false).writeText(
-            "{\"revision\":\"1.2.0\",\"prefixSize\":${injected.prefixSize}," +
+            "{\"revision\":\"1.2.1\",\"prefixSize\":${injected.prefixSize}," +
                 "\"originalCodeSize\":${injected.originalCodeSize},\"codeOffset\":${injected.codeOffset}}"
         )
     }
@@ -224,7 +224,7 @@ val noTyping = bundledPlugin("noTyping", "No typing", "Hides outgoing typing ind
 val quickDelete = bundledPlugin("quickDelete", "QuickDelete", "Opt-in removal of message and embed confirmations, matched using Discord's localized strings.")
 
 @Suppress("unused")
-val noDelete = bundledPlugin("noDelete", "NoDelete", "Retains up to 512 deleted message snapshots through chat updates, with opt-in account-scoped local saving.")
+val noDelete = bundledPlugin("noDelete", "NoDelete", "Retains up to 512 deleted snapshots with a native red gutter and deleted notice, plus opt-in account-scoped local saving.")
 
 @Suppress("unused")
 val jumpToTop = bundledPlugin("jumpToTop", "JumpToTop", "Adds a jump-to-start control to the native chat without replacing Jump to Present.")
@@ -236,7 +236,7 @@ val hiddenChannels = bundledPlugin("hiddenChannels", "Hidden Channels", "Opt-in 
 val pastelize = bundledPlugin("pastelize", "Pastelize", "Stable pastel chat names and mentions, preserving role colors by default. Optional webhook/name and content controls.")
 
 @Suppress("unused")
-val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators", "Live desktop, mobile and web presence labels on user profiles, using Discord's native PresenceStore.")
+val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators", "Status-colored desktop, phone, web and console icons beside profile names, using native presence and own sessions.")
 
 @Suppress("unused")
 val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Opt-in profile reviews with explicit-load reading, native OAuth, posting, deletion and reporting. Uses manti.vendicated.dev.")

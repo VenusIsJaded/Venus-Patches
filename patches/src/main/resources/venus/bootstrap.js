@@ -14,13 +14,13 @@
     if (features.freeNitro) selectModules([1372, 2041, 5708, 5751, 4446, 14280, 7611, 7730]);
     if (features.noTyping) selectModules([12272]);
     if (features.quickDelete) selectModules([5141, 1115]);
-    if (features.noDelete) selectModules([573, 5008, 5010, 1372, 7730]);
+    if (features.noDelete) selectModules([573, 5008, 5010, 1372, 7730, 8222, 8455]);
     if (features.jumpToTop) selectModules([12549, 12550, 12551, 9686, 10518, 11207, 7730, 2041]);
     if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4941, 7730]);
-    if (features.pastelize) selectModules([8222, 1240]);
-    if (features.platformIndicators) selectModules([4828, 573, 11448]);
+    if (features.pastelize) selectModules([8222, 1240, 2105]);
+    if (features.platformIndicators) selectModules([4828, 4806, 1372, 11448, 9193, 7235, 9200, 9380]);
     if (features.reviewDB) selectModules([13382, 4645, 9358, 5854, 1372, 573, 4505]);
-    const revision = "1.2.0";
+    const revision = "1.2.1";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -77,7 +77,7 @@
         if (!owns(settings, key) || !features[featureFor(key)]) return false;
         if (settings[key] === !!value && status.storage !== "loading" && status.storage !== "waiting") return true;
         value = !!value;
-        if (key === "reviewDB" && !value) { reviewToken = ""; reviewAccount = null; reviewCache.clear(); }
+        if (key === "reviewDB" && !value) { reviewAuthAttempt++; reviewToken = ""; reviewAccount = null; reviewCache.clear(); }
         if (key === "voice" && !value) activeJobs.forEach(job => {
             job.cancelled = true;
             nativeVoice("cancel", job.id).catch(() => {});
@@ -419,7 +419,7 @@
         plugin("pastelAll", "Pastelize all names", "Override role name colors with pastel colors.");
         plugin("pastelWebhookName", "Pastelize webhooks by name", "Use the display name instead of the webhook ID.");
         plugin("pastelContent", "Pastelize message content", "Color rendered text as well as the author name.");
-        plugin("platformIndicators", "PlatformIndicators", "Show desktop, mobile and web presence on profiles. Offline or unavailable presence stays hidden.");
+        plugin("platformIndicators", "PlatformIndicators", "Show status-colored desktop, phone, web and console icons beside profile names. Uses sessions for your own profile; offline or unavailable clients stay hidden.");
         plugin("reviewDB", "ReviewDB", "Read, post, delete and report reviews from profiles. Requests go to manti.vendicated.dev only when you open reviews or authenticate.");
         plugin("copyBios", "CopyBios", "Select and copy text from profile bios.");
         plugin("dashless", "Dashless", "Display spaces instead of dashes in text channel names.");
@@ -479,8 +479,12 @@
     function channelLabel(orig, self, args) {
         const result = orig.apply(self, args);
         const channel = args[0];
-        const label = enabled("dashless") && channel && [0, 5, 15, 16].includes(channel.type) && typeof result === "string" ? result.replace(/-/g, " ") : result;
-        return typeof label === "string" && hiddenChannel(channel) ? label + " [locked]" : label;
+        // Both useChannelName and computeChannelName redact isObfuscated records.
+        // Use only the name already present in the guild metadata, including categories.
+        const locked = hiddenMetadata(channel);
+        const name = locked && typeof channel.name === "string" && channel.name ? channel.name : result;
+        const label = enabled("dashless") && channel && [0, 5, 15, 16].includes(channel.type) && typeof name === "string" ? name.replace(/-/g, " ") : name;
+        return typeof label === "string" && locked ? label.replace(/ \[locked\]$/, "") + " [locked]" : label;
     }
     const videoPattern = /\.(mp4|webm|mov|avi|mkv|flv|wmv|m4v|gifv)(?:[?#]|$)/i;
     const video = uri => typeof uri === "string" && videoPattern.test(uri);
@@ -733,10 +737,21 @@
         const result = orig.apply(self,args), channelId = args[0];
         if (!enabled("noDelete") || !result) return result;
         const records = Array.from(deleted.values()).filter(entry => entry.channelId === channelId).map(entry => entry.message);
-        if (!records.length || typeof result.clone !== "function" || typeof result.merge !== "function") return result;
+        if (!records.length || typeof result.merge !== "function") return result;
         const cached = deletedViews.get(channelId);
         if (cached && cached.orig === result && cached.revision === deletedRevision) return cached.value;
-        const value = result.clone().merge(records);
+        // Discord's ChannelMessages has immutable merge()/mutate(), NOT clone().
+        // clone() exists only on its internal before/after caches. Never mutate the store.
+        let value = typeof result.clone === "function" ? result.clone().merge(records) : result.merge(records);
+        // Native merge appends cache-missing records without sorting. Re-sort only
+        // our private view's array, via native immutable mutate, never the live store.
+        if (typeof value.mutate === "function" && Array.isArray(value._array)) value = value.mutate(copy => {
+            copy._array.sort((a,b) => {
+                const left = String(a.id), right = String(b.id);
+                if (!/^\d+$/.test(left) || !/^\d+$/.test(right)) return 0;
+                return left.length - right.length || (left === right ? 0 : left < right ? -1 : 1);
+            });
+        },true);
         if (deletedViews.size >= 16) deletedViews.delete(deletedViews.keys().next().value);
         deletedViews.set(channelId,{orig:result,revision:deletedRevision,value});
         return value;
@@ -755,14 +770,15 @@
         try { raw = rawDeleted(message,event); } catch (_) { raw = null; }
         deleted.set(key,{type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id,message:markDeleted(message),raw});
         invalidateDeleted(); persistDeleted();
-        // A real MESSAGE_UPDATE notifies subscribers. No temporary AutoMod failure state.
-        orig.call(self,{type:"MESSAGE_UPDATE",message:{id:event.id,channel_id:event.channelId,content:message.content || ""}});
+        // Update the underlying collection too: native row diffing compares record identity.
+        // Sending unchanged content can leave the row cached with no deleted presentation.
+        orig.call(self,{type:"MESSAGE_UPDATE",message:{id:event.id,channel_id:event.channelId,content:markDeleted(message).content}});
         return true;
     }
     function dispatchEvent(orig, self, args) {
         const event = args[0];
         if (!event) return orig.apply(self, args);
-        if (event.type === "LOGOUT") { clearDeleted(false); archiveRestored = false; reviewToken="";reviewAccount=null;reviewCache.clear(); }
+        if (event.type === "LOGOUT") { clearDeleted(false); archiveRestored = false; reviewAuthAttempt++;reviewToken="";reviewAccount=null;reviewCache.clear(); }
         if (["CONNECTION_OPEN", "CACHE_LOADED"].includes(event.type)) Promise.resolve().then(restoreDeleted);
         if (deleted.size && event.type !== "MESSAGE_DELETE") deletedViews.clear();
         if (event.type === "CHANNEL_DELETE") {
@@ -823,17 +839,21 @@
             if (typeof real.can !== "function") return result;
             const facade = Object.create(real);
             facade.can = function (bit, channel) {
-                if (bit === viewPermission && hiddenChannel(channel)) return true;
+                if (bit === viewPermission && hiddenMetadata(channel)) return true;
                 return real.can.apply(real,arguments);
             };
             return result.default ? cloneWith(result,"default",facade) : facade;
         };
     }
-    function hiddenChannel(value) {
+    function hiddenMetadata(value) {
         if (!enabled("hiddenChannels")) return false;
         const channel = typeof value === "string" ? channelStore && channelStore.getChannel(value) : value;
-        return !!(enabled("hiddenChannels") && channel && channel.guild_id && ![1,3,4].includes(channel.type) &&
+        return !!(channel && channel.guild_id && ![1,3].includes(channel.type) &&
             permissions && viewPermission != null && typeof permissions.can === "function" && !permissions.can(viewPermission, channel));
+    }
+    function hiddenChannel(value) {
+        const channel = typeof value === "string" ? channelStore && channelStore.getChannel(value) : value;
+        return !!(channel && channel.type !== 4 && hiddenMetadata(channel));
     }
     function hiddenDirectory(orig, self, args) {
         const result = orig.apply(self, args), guild = args[0];
@@ -841,7 +861,7 @@
             typeof channelStore.getMutableGuildChannelsForGuild !== "function") return result;
         const source = channelStore.getMutableGuildChannelsForGuild(guild);
         if (!source) return result;
-        const extra = Object.values(source).filter(channel => hiddenChannel(channel));
+        const extra = Object.values(source).filter(channel => hiddenMetadata(channel));
         // Recheck permissions and metadata on each directory lookup; retain stable
         // array identity for unchanged inputs and bound the cache to 16 guilds.
         const signature = extra.map(c => [c.id,c.position,c.type,c.parent_id,c.name].join(":")).join("|");
@@ -851,8 +871,9 @@
             references.length === cached.references.length && references.every((c,i) => c === cached.references[i])) return cached.value;
         let next = result;
         function append(key, channels) {
-            if (!Array.isArray(result[key])) return;
-            const ids = new Set(result[key].map(entry => entry.channel && entry.channel.id));
+            if (!Array.isArray(next[key])) return;
+            const existing = next[key];
+            const ids = new Set(existing.map(entry => entry.channel && entry.channel.id));
             const added = [];
             channels.forEach(channel => {
                 if (ids.has(channel.id)) return;
@@ -861,10 +882,10 @@
             });
             if (!added.length) return;
             if (next === result) next = Object.assign({}, result);
-            next[key] = result[key].concat(added).sort((a,b) => a.comparator - b.comparator);
+            next[key] = existing.concat(added).sort((a,b) => a.comparator - b.comparator);
         }
-        for (const type of [0,2,5,10,11,12,13,15,16]) append(type, extra.filter(c => c.type === type));
-        append("SELECTABLE", extra.filter(c => ![2,13].includes(c.type)));
+        for (const type of [0,2,4,5,10,11,12,13,15,16]) append(type, extra.filter(c => c.type === type));
+        append("SELECTABLE", extra.filter(c => ![2,4,13].includes(c.type)));
         append("VOCAL", extra.filter(c => [2,13].includes(c.type)));
         append(4, extra.map(c => source[c.parent_id]).filter(c => c && c.type === 4));
         if (hiddenViews.size >= 16 && !hiddenViews.has(guild)) hiddenViews.delete(hiddenViews.keys().next().value);
@@ -879,8 +900,22 @@
         return Promise.resolve();
     }
     function showHidden(channel) {
-        if (RN && RN.Alert) RN.Alert.alert("This channel is hidden", "#" + channel.name +
-            "\n" + (channel.topic || "No topic.") + "\nYou do not have permission to read messages or join voice here.");
+        if (!channel || !RN || !RN.Alert) return;
+        function snowflakeDate(id) {
+            if (typeof id !== "string" || !/^\d{17,20}$/.test(id)) return "Unavailable";
+            const date = new Date(Number(BigInt(id) >> BigInt(22)) + 1420070400000);
+            return Number.isFinite(date.getTime()) ? date.toLocaleString() : "Unavailable";
+        }
+        const parent = channel.parent_id && channelStore && channelStore.getChannel(channel.parent_id);
+        const pin = channel.lastPinTimestamp || channel.last_pin_timestamp;
+        const pinDate = pin && new Date(pin);
+        RN.Alert.alert("This channel is hidden", "#" + channel.name +
+            (parent && parent.name ? "\nCategory: " + parent.name : "") +
+            "\nTopic: " + (channel.topic || "No topic.") +
+            "\nCreated: " + snowflakeDate(channel.id) +
+            "\nLast message: " + snowflakeDate(channel.lastMessageId || channel.last_message_id) +
+            "\nLast pin: " + (pinDate && Number.isFinite(pinDate.getTime()) ? pinDate.toLocaleString() : "No pins.") +
+            "\nMetadata only. You do not have permission to read messages or join voice here.");
     }
     function hiddenNavigation(orig, self, args) {
         const route = args[0];
@@ -934,8 +969,9 @@
         const type = sheetComponent(tree.type, channel, props.onClose);
         return type === tree.type ? tree : el(type, tree.props);
     }
-    let pastelHash, presenceStore, displayNameType, profileInfoType, nativeRows, nativeModals, oauthModal, themeContext;
-    let reviewToken = "", reviewAccount = null;
+    let pastelHash, guildMembers, presenceStore, sessionsStore, deletedEmbed, displayNameType, profileInfoType, nativeRows, nativeModals, oauthModal, themeContext;
+    const platformIcons = {}, platformIconModules = {desktop:[9193,"ScreenIcon"],mobile:[7235,"MobilePhoneIcon"],web:[9200,"GlobeEarthIcon"],embedded:[9380,"GameControllerIcon"]};
+    let reviewToken = "", reviewAccount = null, reviewAuthAttempt = 0;
     const reviewCache = new Map(), reviewWrappers = new WeakMap(), platformWrappers = new WeakMap();
     const REVIEW_API = "https://manti.vendicated.dev/api/reviewdb";
     function pastelColor(seed, saturation, lightness) {
@@ -948,18 +984,19 @@
         const hex = "#" + [component(0),component(8),component(4)].map(value => value.toString(16).padStart(2,"0")).join("");
         return {hex, value:RN.processColor(hex)};
     }
-    function pastelMentions(content) {
+    function pastelMentions(content, guildId) {
         if (!Array.isArray(content)) return content;
         let changed = false;
         const next = content.map(node => {
             if (!node || typeof node !== "object") return node;
             let result = node;
-            if (node.type === "mention" && node.userId && (!node.colorString || settings.pastelAll)) {
+            if (node.type === "mention" && node.userId && (!node.colorString || settings.pastelAll) &&
+                (!guildId || guildMembers && guildMembers.getMember(guildId,node.userId))) {
                 const color = pastelColor(node.userId,0.85,0.75);
                 if (color) result = Object.assign({},node,{roleColor:color.value,color:color.value,colorString:color.hex});
             }
             if (Array.isArray(node.content)) {
-                const children = pastelMentions(node.content);
+                const children = pastelMentions(node.content,guildId);
                 if (children !== node.content) result = Object.assign({},result,{content:children});
             }
             if (result !== node) changed = true;
@@ -969,49 +1006,88 @@
     }
     function pastelMessage(message, source) {
         if (!message || !message.authorId) return message;
-        let next = message, seed;
+        if (message.guildId && (!guildMembers || !guildMembers.getMember(message.guildId,message.authorId)) && !(source && source.webhookId)) return message;
+        let next = Object.assign({},message,{shouldShowRoleOnName:true}), seed;
         if (source && source.webhookId) seed = settings.pastelWebhookName ? message.username : source.webhookId;
-        else if (!message.roleColor || settings.pastelAll) seed = message.authorId;
+        else if (!(source && source.colorString != null ? source.colorString : message.roleColor) || settings.pastelAll) seed = message.authorId;
         const color = seed && pastelColor(seed,0.75,0.6);
-        if (color) next = Object.assign({},message,{roleColor:color.value,usernameColor:color.value,colorString:color.hex,shouldShowRoleOnName:true});
-        const content = pastelMentions(message.content);
+        if (color) next = Object.assign({},message,{roleColor:color.value,usernameColor:color.value,colorString:color.value,shouldShowRoleOnName:true});
+        const content = pastelMentions(message.content,message.guildId);
         if (content !== message.content) next = Object.assign({},next,{content});
         if (color && settings.pastelContent && Array.isArray(next.content)) next = Object.assign({},next,{content:[{
             type:"link",target:"usernameOnClick",content:next.content,context:{username:1,medium:true,
                 usernameOnClick:{action:"0",userId:"0",messageChannelId:"0",linkColor:pastelColor(seed,0.85,0.75).value}}}]});
         return next;
     }
-    function pastelRow(orig, self, args) {
+    function messageRow(orig, self, args) {
         const result = orig.apply(self,args), row = args[0];
-        if (!enabled("pastelize") || !result || !row || row.rowType !== 1 || !result.message) return result;
-        let message = pastelMessage(result.message,row.message);
-        if (message.referencedMessage && message.referencedMessage.message) message = Object.assign({},message,{referencedMessage:
-            Object.assign({},message.referencedMessage,{message:pastelMessage(message.referencedMessage.message,null)})});
-        return message === result.message ? result : Object.assign({},result,{message});
+        if (!result || !row || row.rowType !== 1 || !result.message) return result;
+        let message = result.message;
+        if (enabled("pastelize")) {
+            message = pastelMessage(message,row.message);
+            if (message.referencedMessage && message.referencedMessage.message) message = Object.assign({},message,{referencedMessage:
+                Object.assign({},message.referencedMessage,{message:pastelMessage(message.referencedMessage.message,null)})});
+        }
+        let next = message === result.message ? result : Object.assign({},result,{message});
+        const source = row.message || message;
+        const channelId = source.channel_id || source.channelId || message.channelId;
+        const id = source.id || message.id;
+        if (enabled("noDelete") && deleted.has(deletedKey(channelId,id)) && RN && typeof RN.processColor === "function") {
+            // Native row/notice schema from 8227/8455, without injecting AutoMod actions
+            // or poisoning the AutoMod store. Only retained local rows get this visual.
+            const red = RN.processColor("#f23f43");
+            const renderer = deletedEmbed || inspectedExport(8455,"createAutomodBlockedMessageEmbed");
+            const notice = typeof renderer === "function" ? renderer({errorMessage:"This message was deleted",colors:{automodBlockedBodyTextColor:red}}) : null;
+            message = Object.assign({},message,{embeds:notice ? (message.embeds || []).concat([notice]) : message.embeds});
+            next = Object.assign({},next,{message,backgroundHighlight:{backgroundColor:RN.processColor("#f23f431a"),gutterColor:red}});
+        }
+        return next;
+    }
+    function inspectedExport(id, key) {
+        // Demand-load only a verified bundled helper at the UI action/render boundary.
+        // No module scans, remote scripts, or eager initialization of unrelated screens.
+        if (typeof global.__r !== "function") return null;
+        try { const exports = global.__r(id); return exports && exports[key]; } catch (_) { return null; }
     }
     function PlatformBadges(props) {
         useSettings("platformIndicators");
         const [,update] = React.useState(0);
+        // SessionsStore is the upstream source for the current user's own clients.
+        if (!sessionsStore && enabled("platformIndicators")) sessionsStore = inspectedExport(4806,"default");
         React.useEffect(() => {
             const change = () => update(n => n+1);
-            if (!presenceStore || typeof presenceStore.addChangeListener !== "function") return;
-            presenceStore.addChangeListener(change);
-            return () => presenceStore.removeChangeListener(change);
-        },[]);
+            const stores = [presenceStore,sessionsStore].filter(store => store && typeof store.addChangeListener === "function" && typeof store.removeChangeListener === "function");
+            stores.forEach(store => store.addChangeListener(change));
+            return () => stores.forEach(store => store.removeChangeListener(change));
+        },[presenceStore,sessionsStore]);
         if (!enabled("platformIndicators") || !presenceStore || !RN) return null;
-        const clients = presenceStore.getClientStatus(props.userId);
+        let clients = presenceStore.getClientStatus(props.userId);
+        const current = userStore && userStore.getCurrentUser();
+        if (current && current.id === props.userId && sessionsStore && typeof sessionsStore.getSessions === "function") {
+            clients = {};
+            Object.values(sessionsStore.getSessions() || {}).forEach(session => {
+                const client = session.clientInfo && session.clientInfo.client;
+                if (client && client !== "unknown") clients[client] = session.status;
+            });
+        }
         if (!clients) return null;
         const colors = {online:"#23a55a",idle:"#f0b232",dnd:"#f23f43"};
         const labels = {desktop:"Desktop",mobile:"Mobile",web:"Web",embedded:"Console"};
-        return el(RN.View,{key:"venus-platforms",style:{flexDirection:"row",gap:6,alignItems:"center"}},
-            Object.keys(labels).filter(key => colors[clients[key]]).map(key => el(RN.Text,{key,
-                accessibilityLabel:labels[key]+": "+clients[key],style:{fontSize:11,color:colors[clients[key]],fontWeight:"600"}},labels[key])));
+        const icons = Object.keys(labels).filter(key => colors[clients[key]]).map(key => {
+            const spec = platformIconModules[key];
+            const icon = platformIcons[key] || inspectedExport(spec[0],spec[1]);
+            if (!icon) return null;
+            platformIcons[key] = icon;
+            return el(RN.View,{key,accessible:true,accessibilityRole:"image",accessibilityLabel:labels[key]+": "+clients[key]},
+                el(icon,{color:colors[clients[key]],style:{width:16,height:16}}));
+        }).filter(Boolean);
+        return icons.length ? el(RN.View,{key:"venus-platforms",style:{flexDirection:"row",gap:6,alignItems:"center"}},icons) : null;
     }
     function platformName(orig, self, args) {
         if (React) useSettings("platformIndicators");
         const tree = orig.apply(self,args), user = args[0] && args[0].user;
         if (!enabled("platformIndicators") || !React || !RN || !tree || !user) return tree;
-        return el(RN.View,{style:{gap:4}},tree,el(PlatformBadges,{userId:user.id}));
+        return el(RN.View,{style:{flexDirection:"row",flexWrap:"wrap",gap:6,alignItems:"center"}},tree,el(PlatformBadges,{userId:user.id}));
     }
     function wrapProfileTree(tree, target, operation, cache) {
         if (!tree || !target || !React) return tree;
@@ -1056,21 +1132,32 @@
         const modal = oauthModal || (typeof global.__r === "function" && global.__r(9358).default);
         if (!modal) {RN.Alert.alert("ReviewDB","The native OAuth screen is not available yet. Try again after reopening this profile.");return;}
         const key = "venus-reviewdb-auth";
+        const current = userStore && userStore.getCurrentUser();
+        if (!current) {RN.Alert.alert("ReviewDB","Discord account unavailable");return;}
+        const accountId = current.id, attempt = ++reviewAuthAttempt;
+        let exchanging = false;
+        function live() { const user = userStore && userStore.getCurrentUser(); return enabled("reviewDB") && attempt === reviewAuthAttempt && user && user.id === accountId; }
         nativeModals.pushModal({key,modal:{key,modal,animation:"slide-up",shouldPersistUnderModals:false,closable:true,
             props:{clientId:"915703782174752809",redirectUri:REVIEW_API+"/auth",scopes:["identify"],responseType:"code",permissions:BigInt(0),cancelCompletesFlow:false,
-                dismissOAuthModal:()=>nativeModals.popModal(key),callback:async result => {
+                dismissOAuthModal:()=>{if (attempt === reviewAuthAttempt) reviewAuthAttempt++;nativeModals.popModal(key);},callback:async result => {
+                    if (!live() || exchanging) return;
+                    exchanging = true;
+                    const controller = typeof global.AbortController === "function" ? new global.AbortController() : null;
+                    const timer = controller && global.setTimeout && global.setTimeout(()=>controller.abort(),15000);
                     try {
-                        const url = new global.URL(result.location);
+                        const url = new global.URL(result && result.location);
                         if (url.origin !== "https://manti.vendicated.dev" || url.pathname !== "/api/reviewdb/auth" || !url.searchParams.get("code")) throw new Error("Invalid authorization redirect");
-                        url.searchParams.set("returnType","json");url.searchParams.set("clientMod","venus");
-                        const response = await global.fetch(url.toString(),{credentials:"omit",headers:{accept:"application/json"}});
+                        // The live service rejects unknown clientMod values (including "venus").
+                        // Preserve the original Vendetta ReviewDB client's supported protocol value.
+                        url.searchParams.set("returnType","json");url.searchParams.set("clientMod","vendetta");
+                        const response = await global.fetch(url.toString(),{credentials:"omit",headers:{accept:"application/json"},...(controller ? {signal:controller.signal} : {})});
                         const auth = await response.json();
-                        if (!response.ok || !auth.success || typeof auth.token !== "string" || !enabled("reviewDB")) throw new Error("ReviewDB authorization failed");
-                        const current = userStore && userStore.getCurrentUser();
-                        if (!current) throw new Error("Discord account unavailable");
-                        reviewToken = auth.token; reviewAccount = current.id;
+                        if (!live()) return;
+                        if (!response.ok || !auth || !auth.success || typeof auth.token !== "string" || !auth.token) throw new Error(auth && auth.message || "ReviewDB authorization failed (HTTP " + response.status + ")");
+                        reviewToken = auth.token; reviewAccount = accountId; reviewAuthAttempt++;
                         nativeModals.popModal(key);notify("reviewDB");
-                    } catch (error) {RN.Alert.alert("ReviewDB authentication",String(error.message || error));}
+                    } catch (error) {if (live()) RN.Alert.alert("ReviewDB authentication",String(error.message || error));}
+                    finally {exchanging = false;if (timer && global.clearTimeout) global.clearTimeout(timer);}
                 }}}});
     }
     function reviewsFor(userId, refresh) {
@@ -1177,9 +1264,16 @@
         return hookExport(exports, "default", operation);
     }
     function activatePlugins(id, exports) {
-        if (features.pastelize && id === 1240) pastelHash = exports.default;
-        if (features.pastelize && id === 8222 && exports.default && exports.default.prototype) hookExport(exports.default.prototype,"generate",pastelRow);
+        // MurmurHashV3 is CommonJS (module.exports=function), not an ES default export.
+        if (features.pastelize && id === 1240) pastelHash = typeof exports === "function" ? exports : exports.default;
+        if (features.pastelize && id === 2105) guildMembers = exports.default;
+        if ((features.pastelize || features.noDelete) && id === 8222 && exports.default && exports.default.prototype) hookExport(exports.default.prototype,"generate",messageRow);
+        if (features.noDelete && id === 8455) deletedEmbed = exports.createAutomodBlockedMessageEmbed;
         if (features.platformIndicators && id === 4828) presenceStore = exports.default;
+        if (features.platformIndicators && id === 4806) sessionsStore = exports.default;
+        if (features.platformIndicators) Object.keys(platformIconModules).forEach(key => {
+            const spec = platformIconModules[key];if (id === spec[0]) platformIcons[key] = exports[spec[1]];
+        });
         if (features.platformIndicators && id === 11448) {
             displayNameType=exports.DisplayName;
             exports=hookExport(exports,"DisplayName",platformName);
@@ -1198,7 +1292,10 @@
         if (id === 11754) return hookExport(exports, "createList", settingsSections);
         if (id === 14993) SettingsList = exports.SettingsList;
         if (features.copyBios && id === 11503) return hookComponent(exports, copyBio);
-        if ((features.dashless || features.hiddenChannels) && id === 4941) return hookExport(exports, "default", channelLabel);
+        if ((features.dashless || features.hiddenChannels) && id === 4941) {
+            exports = hookExport(exports,"computeChannelName",channelLabel);
+            return hookExport(exports, "default", channelLabel);
+        }
         if (features.favouriteAnything && id === 13288) return hookComponent(exports, favouriteButton);
         if (features.favouriteAnything && id === 10661) return hookExport(exports, "addFavoriteGIF", favouriteAdd);
         if (features.favouriteAnything && id === 10664) return hookExport(exports, "useFavoriteGIFsMobile", favouriteList);
@@ -1208,7 +1305,7 @@
         if (features.quickDelete && id === 1115) locale = exports;
         if (features.quickDelete && id === 5141) return replaceValue(exports, "default", hookExport(exports.default, "show", quickConfirm));
         if (features.noDelete && id === 5010) {messageRecords = exports; restoreDeleted();}
-        if ((features.noDelete || features.reviewDB) && id === 1372) {userStore = exports.default; restoreDeleted();}
+        if ((features.noDelete || features.reviewDB || features.platformIndicators) && id === 1372) {userStore = exports.default; restoreDeleted();}
         if (features.noDelete && id === 5008) {
             msgStore = exports.default;
             exports = replaceValue(exports,"default",hookExport(hookExport(msgStore,"getMessage",retainedMessage),"getMessages",retainedMessages));
