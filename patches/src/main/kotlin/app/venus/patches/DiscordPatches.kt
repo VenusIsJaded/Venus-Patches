@@ -20,17 +20,25 @@ private val discord = Compatibility(
         version = "347.12 - Stable",
         versionCode = 347012,
         minSdk = 26,
-        description = "Experimental: patch-application verified; Android runtime testing required."
+        description = "Pinned Discord 347.12 bundle; Android device validation still required."
     ))
 )
 
 // Reset per run: Manager can reuse a loaded bundle for multiple selections.
 private var pickerSelected = false
 private var voiceSelected = false
+private var copyBiosSelected = false
+private var dashlessSelected = false
+private var favouriteAnythingSelected = false
+private var freeNitroSelected = false
 private val runtimeAssets = rawResourcePatch {
     execute {
         pickerSelected = false
         voiceSelected = false
+        copyBiosSelected = false
+        dashlessSelected = false
+        favouriteAnythingSelected = false
+        freeNitroSelected = false
         // Module IDs are inspected against this exact embedded Hermes bundle, not guessed.
         val hash = MessageDigest.getInstance("SHA-256")
         get("assets/index.android.bundle").inputStream().use { stream ->
@@ -53,14 +61,15 @@ private val runtimeAssets = rawResourcePatch {
         asset.parentFile.mkdirs()
         val selected = bootstrap.replace(
             "/*__FEATURES__*/",
-            "{picker:$pickerSelected,voice:$voiceSelected}"
+            "{picker:$pickerSelected,voice:$voiceSelected,copyBios:$copyBiosSelected," +
+                "dashless:$dashlessSelected,favouriteAnything:$favouriteAnythingSelected,freeNitro:$freeNitroSelected}"
         )
         asset.writeText(selected)
         // One main bundle load: the prelude runs inside the existing HBC98 global entry,
         // so RN cannot mark a separate bootstrap bundle ready or flush native calls early.
         val injected = HbcPrelude.inject(get("assets/index.android.bundle"), selected)
         get("assets/venus/injection.json", false).writeText(
-            "{\"revision\":\"1.0.0-dev.3\",\"prefixSize\":${injected.prefixSize}," +
+            "{\"revision\":\"1.0.0\",\"prefixSize\":${injected.prefixSize}," +
                 "\"originalCodeSize\":${injected.originalCodeSize},\"codeOffset\":${injected.codeOffset}}"
         )
     }
@@ -76,7 +85,7 @@ private object BundleLoader : Fingerprint(
 @Suppress("unused")
 val venusSettings = bytecodePatch(
     name = "Venus settings",
-    description = "Adds an offline in-app Venus menu with persistent switches and hook diagnostics."
+    description = "Adds a native Venus section in Discord settings with General, Plugins and persistent controls."
 ) {
     compatibleWith(discord)
     dependsOn(runtimeAssets)
@@ -115,6 +124,46 @@ val fileSizeOnPicker = rawResourcePatch(
     compatibleWith(discord)
     dependsOn(venusSettings)
     execute { pickerSelected = true }
+}
+
+@Suppress("unused")
+val copyBios = rawResourcePatch(
+    name = "CopyBios",
+    description = "Makes profile bio text selectable without changing links or the original React elements."
+) {
+    compatibleWith(discord)
+    dependsOn(venusSettings)
+    execute { copyBiosSelected = true }
+}
+
+@Suppress("unused")
+val dashless = rawResourcePatch(
+    name = "Dashless",
+    description = "Displays spaces instead of dashes in text channel names without changing stored names."
+) {
+    compatibleWith(discord)
+    dependsOn(venusSettings)
+    execute { dashlessSelected = true }
+}
+
+@Suppress("unused")
+val favouriteAnything = rawResourcePatch(
+    name = "FavouriteAnything",
+    description = "Adds image and video favourites in the media viewer with cached video previews."
+) {
+    compatibleWith(discord)
+    dependsOn(venusSettings)
+    execute { favouriteAnythingSelected = true }
+}
+
+@Suppress("unused")
+val freeNitro = rawResourcePatch(
+    name = "FreeNitro",
+    description = "Shares unavailable custom emojis and stickers as Discord CDN links, with separate switches. Does not grant Nitro."
+) {
+    compatibleWith(discord)
+    dependsOn(venusSettings)
+    execute { freeNitroSelected = true }
 }
 
 @Suppress("unused")

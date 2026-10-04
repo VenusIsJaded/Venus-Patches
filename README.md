@@ -1,10 +1,10 @@
 # Venus Patches
 
-Independent Discord attachment tools for use with **Morphe**. Small, bundled patches—not a full Discord client mod or a remote plugin loader.
+Independent Discord tools for use with **Morphe**. Small, bundled patches—not a full Discord client mod or a remote plugin loader.
 
 [Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-> **Experimental release.** Compilation, automated logic tests and patch placement are checked separately from Android runtime behavior. Device launch, hardware codec compatibility and sending/playing messages on Discord still require real-device testing. Do not mistake a successful patch build for an end-to-end device test.
+> **Release channel: 1.0.0 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
 
 ## What you get
 
@@ -12,9 +12,13 @@ Independent Discord attachment tools for use with **Morphe**. Small, bundled pat
 | --- | --- | --- |
 | **File size on picker** | Adds readable local file sizes to media-picker thumbnails. | On |
 | **Custom voice messages** | Converts supported local audio to Ogg/Opus, derives its actual duration and waveform, and prepares a native voice-message payload. | Off—enable explicitly |
-| **Venus settings** | Adds an in-app menu with persistent switches and hook diagnostics. Required by both features. | Always available |
+| **CopyBios** | Makes profile bio text selectable, preserving clickable links. | On |
+| **Dashless** | Displays spaces instead of dashes in text channel names. | On |
+| **FavouriteAnything** | Favourites images and videos through the media viewer. | On |
+| **FreeNitro** | Shares unavailable custom emojis and stickers as CDN links. | Emoji and sticker switches independently on |
+| **Venus settings** | Native Discord settings section with General, Plugins and persistent controls. | Always available |
 
-Tap the small **Venus** button above Discord's bottom navigation to open the menu. This is a dedicated floating menu, not a replacement for Discord's account settings. Switches apply without reinstalling; reopen the picker after changing its switch. Only features selected while patching are offered.
+**Open Discord Settings → Venus → General or Plugins.** The Venus section appears after the Account section using Discord's native settings rows, page navigation and themes. There is no floating button, root overlay or authors list. Switches apply without reinstalling; reopen an already-visible picker or media viewer after toggling its feature. Only patches selected in Morphe are offered.
 
 ## Install
 
@@ -24,18 +28,25 @@ Tap the small **Venus** button above Discord's bottom navigation to open the men
    https://github.com/VenusIsJaded/Venus-Patches
    ```
 3. Select the original **Discord 347.12 - Stable**, version code **347012**, in **APKM** format. Use the unmodified APKM, not an already-patched client.
-4. Select the features you want; keep **Venus settings** enabled. Let Morphe merge the splits, patch and sign the APK.
-5. Install the result and open the Venus menu. Turn **Send audio as voice messages** on when needed.
+4. Select the features you want; keep **Venus settings** enabled. All requested plugins are bundled locally; no remote plugin installation is needed. Let Morphe merge the splits, patch and sign the APK.
+5. Install the result and open **Discord Settings → Venus**. Turn **Send audio as voice messages** on when needed.
 
-The `main` branch's `patches-bundle.json` points to the experimental release. It can be imported as a normal repository source even though GitHub labels the release a prerelease. There is no separate `dev` update channel yet.
+The `main` branch's `patches-bundle.json` points to **v1.0.0**, published without the prerelease flag.
 
-**Local import:** download `patches-1.0.0-dev.1.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself.
-
-**Eval-scope capture revision (2026-10-04):** new `v1.0.0-dev.3` prerelease with `patches-1.0.0-dev.3.mpp` (bundle revision **1.0.0-dev.3**). Fixes the instant-crash on Discord boot. Refresh/redownload the source before patching the **original APKM**; do not reuse a cached bundle or the crashing APK. Local sources must be reimported. Keep your existing Morphe signing key to install as an update without clearing app data. The Venus menu also shows `1.0.0-dev.3 / eval-scope`.
-
-**Single-load startup revision (2026-10-03):** the existing `1.0.0-dev.1` prerelease asset is replaced with bundle revision **1.0.0-dev.2**. The download filename stays `patches-1.0.0-dev.1.mpp`, but Morphe must show **1.0.0-dev.2** after updating. Refresh/redownload the source before patching the **original APKM**; do not reuse a cached bundle or the crashing APK. Local sources must be reimported. Keep your existing Morphe signing key to install as an update without clearing app data. The Venus menu also shows `1.0.0-dev.2 / single-load`.
+**Local import:** download `patches-1.0.0.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
 
 **Signing:** a patched APK has a different signing certificate from official Discord. Android may require uninstalling official Discord first; understand the loss of local app data before doing so. Future patched updates must use the same signing key. Never share your signing key.
+
+## Bundled plugins
+
+- **CopyBios:** select profile bio text to copy it. Existing links and press handlers stay intact.
+- **Dashless:** display-only text-channel name formatting. Does not rename channels, change messages or rewrite all React Native Views.
+- **FavouriteAnything:** adds favourite support for images and videos in the media viewer and provides cached Discord-hosted video thumbnails. Favourites continue to use Discord's existing storage. External video hosts may not provide image thumbnails; signed CDN URLs can still expire under Discord's normal rules.
+- **FreeNitro:** combines the requested Freemoji and FreeStickers behaviors. **Plugins → FreeNitro** contains independent **Free emojis** and **Free stickers** switches, plus compact links and an always-use-links option.
+
+FreeNitro shares **links**, not genuine paid/native emoji or sticker entitlements. Existing usable items stay native unless forced. Channel permissions, Discord's message-length limits and other server restrictions still apply. Code spans, escaped emoji tokens, unknown items and unrelated invalid-emoji diagnostics are retained.
+
+PNG, APNG and GIF stickers use Discord's CDN only. **APNG previews may be static; Lottie stickers are not converted.** There is no Ezgif upload or downloaded converter. Mixed supported sticker sends preserve existing text, native stickers and reply options in one send. Unsupported/unknown items fall back to Discord's original behavior without being silently dropped.
 
 ## Voice messages: closer to native, without pretending
 
@@ -74,7 +85,7 @@ Send **one audio attachment with no accompanying text, stickers, poll or extra a
 - Abandoned converted outputs are pruned during subsequent conversions: at most 32 outputs retained, with six-hour expiry. Original source files are never deleted.
 
 **Runtime**
-- Only **nine inspected Metro factories** are wrapped: eight feature modules and the exact RN environment initializer. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers or extra network requests.
+- At most **23 inspected Metro factories** are wrapped when all patches are selected, including the exact RN environment initializer. Unselected plugin modules are not wrapped. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers, startup network requests or root component wrapper.
 - The feature code is included in the patched APK. No Vendetta/Revenge runtime, downloaded JavaScript, analytics or account-token handling.
 - Switches are stored in `venus-patches.json` in Discord's private documents directory. Failed persistence is reported in the menu; switches still work for the session.
 
@@ -92,7 +103,11 @@ The patches refuse a different embedded JavaScript bundle, even if its displayed
 | Environment readiness | `setUpDefaltReactNativeEnvironment`, Metro module `120`; activate feature hooks only after successful outermost initialization |
 | Native voice bridge | `FileModule.getSize(String, Promise)`—private `venus-voice-v1:` requests dispatch to the extension; normal sizes fall through |
 | React / React Native | Metro modules `19` / `17` |
-| Menu registration | `AppRegistry`, module `245`; only the `Discord` root is wrapped |
+| Native settings registry | `SETTING_RENDERER_CONFIG`, module `14892`; adds stable route/toggle definitions |
+| Native settings section/pages | `createList`, module `11754`; `SettingsList`, module `14993` |
+| CopyBios / Dashless | `BioText`, module `11503`; `useChannelName`, module `4941` |
+| FavouriteAnything | Media-viewer favourite button `13288`, actions `10661`, mobile favourites `10664` |
+| FreeNitro | Stores `1372`, `2041`, `5708`, `5751`; capabilities `4446`; sticker rules `7611`; default message-action singleton `7730` |
 | Picker tiles | `Pressable`, module `414`, with `localImageSource` children |
 | Local files | `NativeFileModule`, module `1151` |
 | Audio preparation | `CloudUpload.reactNativeCompressAndExtractData`, module `5375` |
@@ -113,7 +128,7 @@ python3 scripts/build.py
 
 Toolchain downloads are pinned and SHA-256 checked. The `.mpp` contains JVM patch classes, Android patch DEX, bundled JavaScript and a native `.mpe` extension. Discord APKs, compile-only bridge stubs and downloaded tool binaries are not distributed in the bundle.
 
-Output: `patches/build/libs/patches-1.0.0-dev.3.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
+Output: `patches/build/libs/patches-1.0.0.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
 
 Runtime regression tests can also be run independently:
 
@@ -129,8 +144,10 @@ The new startup path removes the native private-loader call **entirely**, rather
 
 ### Device acceptance checklist
 
-Before treating a release as stable, check on a real device:
-- Discord launches, the Venus menu opens, switches persist after restarting, and disabled features remain inactive.
+Before treating runtime compatibility as device-verified, check on a real device:
+- Discord launches, Settings → Venus → General/Plugins opens, back navigation and light/dark themes work, switches persist after restarting, and disabled features remain inactive.
+- Bio selection and links, text channel labels, image/video favourites and video previews behave correctly.
+- FreeNitro switches work independently; local/native, external and animated media, replies, mixed stickers, APNG, unsupported Lottie and channel permission failures behave safely.
 - Picker badges work while scrolling, on zero-byte files and on denied content URIs without blocking taps.
 - MP3, AAC/M4A, WAV, FLAC and Ogg/Opus upload as playable native-looking voice messages with plausible duration and waveform.
 - Cancelling conversion, low storage, unsupported formats, mixed messages and normal recorded voice messages behave safely.
@@ -138,6 +155,8 @@ Before treating a release as stable, check on a real device:
 ## Credits and licensing
 
 Inspired by [Martinz64's FileSizeOnPicker](https://martinz64.github.io/vendetta-plugins/FileSizeOnPicker/) ([source](https://github.com/Martinz64/vendetta-plugins), Unlicense) and [shipwr3ckd/siguma's Custom Voice Messages](https://shipwr3ckd.github.io/revengeplugin/customVoiceMessages/) ([source](https://github.com/shipwr3ckd/revengeplugin), CC0). The runtime and native conversion are independent implementations for the inspected Discord build, not unmodified plugin bundles.
+
+The new bundled features are inspired by [CopyBios](https://shipwr3ckd.github.io/revengeplugin/CopyBios/), [Dashless](https://awesomegamergame.github.io/bunny-plugins/dashless/), [FavouriteAnything](https://theunrealzaka.github.io/FavouriteAnything/favouriteanything/), [Freemoji](https://rico040.github.io/bunny-plugins/freemoji/) and [FreeStickers](https://aliernfrog.github.io/vd-plugins/FreeStickers/). Native settings integration follows the registry/list pattern used by [Revenge](https://github.com/revenge-mod/revenge). Source attribution is retained here, not displayed as author rows in the app.
 
 Built against the [official Morphe patcher and template](https://github.com/MorpheApp/morphe-patches-template). See Morphe's [patch sources guide](https://github.com/MorpheApp/morphe-manager/blob/main/docs/patch-sources.md) and [development documentation](https://github.com/MorpheApp/morphe-patcher/tree/main/docs).
 

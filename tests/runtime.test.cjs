@@ -330,13 +330,13 @@ test('picker wrapper supports memo and does not mutate frozen React props', () =
     assert.equal(patched.children.props.pointerEvents,'box-none');
     b.api.setSetting('picker',false); assert.equal(component.type(props),props);
 });
-test('root menu wraps Discord only and preserves provider arguments', () => {
+test('Discord root registration stays stock: no floating menu or root wrapper', () => {
     const b=boot(); const registrations=[];
     const registry=b.load({registerComponent(...args){registrations.push(args);return 1;}});
     const provider=arg => {assert.equal(arg,'extra');return function App(){};};
     registry.registerComponent('Discord',provider,true);
-    assert.equal(typeof registrations[0][1]('extra'),'function'); assert.equal(b.api.status.menu,true);
-    registry.registerComponent('LogBox',provider); assert.equal(registrations[1][1],provider);
+    assert.equal(registrations[0][1],provider); assert.equal(b.api.status.menu,false);
+    assert.doesNotMatch(raw,/function Menu\(|VenusRoot|RN\.Modal|registerRoot/);
 });
 
 test('unrelated module definitions are passed through without factory wrapping', () => {
@@ -422,10 +422,10 @@ test('RN environment initialization finishes before any feature hook reads nativ
     const bridge=native({getConstants(){ assert.equal(initialized,true); reads++; return {DocumentsDirPath:'/data/files'}; }});
     const nativeExport={};
     Object.defineProperty(nativeExport,'default',{get(){ assert.equal(initialized,true); return bridge; }});
-    const registry={registerComponent(){return 'registered';}};
+    const registry={SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}};
     const setup=b.load({default(){
         b.load(nativeExport,null,1151);
-        assert.equal(b.load(registry,null,245),registry);
+        assert.equal(b.load(registry,null,14892),registry);
         assert.equal(b.api.status.menu,false);
         assert.equal(reads,0);
         initialized=true;
@@ -433,15 +433,14 @@ test('RN environment initialization finishes before any feature hook reads nativ
     }},null,120);
     assert.equal(setup.default(),42);
     assert.equal(reads,1);
-    registry.registerComponent('Discord',()=>function(){});
     assert.equal(b.api.status.menu,true);
-    assert.equal(registry.registerComponent('Other',()=>function(){}),'registered');
+    assert.equal(registry.SETTING_RENDERER_CONFIG.VENUS_GENERAL.type,'route');
     await flush();
 });
 test('failed or reentrant environment setup never activates hooks prematurely', () => {
     const b=boot({picker:true,voice:true},false);
-    const registry={registerComponent(){}};
-    b.load(registry,null,245);
+    const registry={SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}};
+    b.load(registry,null,14892);
     const failed=b.load({default(){throw Error('original RN setup failure');}},null,120);
     assert.throws(()=>failed.default(),/original RN setup failure/);
     assert.equal(b.api.status.menu,false);
@@ -453,7 +452,6 @@ test('failed or reentrant environment setup never activates hooks prematurely', 
         }
     }},null,120);
     setup.default();
-    registry.registerComponent('Discord',()=>function(){});
     assert.equal(b.api.status.menu,true);
 });
 test('mutable export wrappers preserve object identity and have no receiver TDZ', () => {
@@ -470,4 +468,237 @@ test('conversion disabled has no codec bridge calls for audio uploads', async ()
         reactNativeCompressAndExtractData(){return Promise.resolve(this);}}
     b.load({CloudUpload}); const upload=new CloudUpload();
     await upload.reactNativeCompressAndExtractData();assert.equal(calls,0);
+});
+
+const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true};
+function reactHarness(b) {
+    const React = {
+        createElement(type, props, ...children) { return {type, props:{...props, ...(children.length ? {children:children.length === 1 ? children[0] : children} : {})}}; },
+        cloneElement(node, props) {return {...node, props:{...node.props,...props}};},
+        useState:() => [0, () => {}], useEffect() {},
+    };
+    const RN = {View:'View', Text:'Text', Modal:'Modal'};
+    b.load(React, null, 19); b.load(RN, null, 17);
+    return {React,RN};
+}
+function settingsHarness(features = allFeatures) {
+    const b = boot(features); const {React}=reactHarness(b);
+    function SettingsList() {}
+    b.load({SettingsList},null,14993);
+    const original=Object.freeze({ACCOUNT:Object.freeze({type:'route',IconComponent:function Icon(){}})});
+    const exports=b.load({SETTING_RENDERER_CONFIG:original},null,14892);
+    const builder=b.load({createList(config,extra){ assert.equal(this,builder); return {...config,type:'list',extra};}},null,11754);
+    return {...b,React,SettingsList,original,registry:exports.SETTING_RENDERER_CONFIG,builder};
+}
+function nitroHarness() {
+    const b=boot(allFeatures);
+    const user={id:'me',premiumType:null};
+    const channel={id:'channel',guild_id:'home'};
+    const emojis={ '1':{id:'1',guildId:'home'}, '2':{id:'2',guildId:'other'}, '3':{id:'3',guildId:'home',animated:true}, '4':{id:'4',guildId:'other',available:false} };
+    const stickers={ '10':{id:'10',guild_id:'home',format_type:1,name:'local',available:true},
+        '20':{id:'20',guild_id:'other',format_type:1,name:'external',available:true},
+        '30':{id:'30',guild_id:'other',format_type:4,name:'animated',available:true},
+        '40':{id:'40',guild_id:'other',format_type:3,name:'lottie',available:true},
+        '50':{id:'50',guild_id:'other',format_type:2,name:'apng',available:true},
+        '60':{id:'60',guild_id:'other',format_type:1,name:'disabled',available:false} };
+    b.load({default:{getCurrentUser:() => user}},null,1372);
+    b.load({default:{getChannel:id => id === 'channel' ? channel : undefined}},null,2041);
+    b.load({default:{getCustomEmojiById:id => emojis[id]}},null,5708);
+    b.load({default:{getStickerById:id => stickers[id]}},null,5751);
+    const premium=b.load({canUseEmojisEverywhere:user => user.premiumType===2,
+        canUseAnimatedEmojis:user => user.premiumType===2,
+        canUseCustomStickersEverywhere:user => user.premiumType===2},null,4446);
+    const rules=b.load({StickerSendability:{SENDABLE:0,SENDABLE_WITH_PREMIUM:1,NONSENDABLE:2},
+        getStickerSendability:sticker => !sticker || sticker.available === false ? 2 : sticker.guild_id==='home' || user.premiumType===2 ? 0 : 1,
+        isSendableSticker:sticker => !!sticker && (sticker.guild_id==='home' || user.premiumType===2)},null,7611);
+    const sent=[];
+    const actions=b.load({default:{sendMessage(...args){assert.equal(this,actions);sent.push(args);return 'sent';},
+        _sendMessage(...args){assert.equal(this,actions);sent.push(args);return 'upload';},
+        sendStickers(...args){assert.equal(this,actions);sent.push(args);return 'stickers';}}},null,7730).default;
+    return {...b,user,channel,emojis,stickers,premium,rules,actions,sent};
+}
+test('native registry adds authorless General, Plugins and FreeNitro routes without changing stock config', () => {
+    const b=settingsHarness();
+    assert.equal(b.original.VENUS_GENERAL,undefined);
+    assert.equal(b.registry.ACCOUNT,b.original.ACCOUNT);
+    for (const key of ['VENUS_GENERAL','VENUS_PLUGINS','VENUS_FREENITRO']) {
+        assert.equal(b.registry[key].type,'route'); assert.equal(b.registry[key].screen.route,key);
+        const screen=b.registry[key].screen.getComponent();assert.equal(screen,b.registry[key].screen.getComponent());
+        assert.equal(screen().type,b.SettingsList);
+    }
+    assert.equal(b.registry.VENUS_EMOJIS.parent,'VENUS_FREENITRO');
+    assert.equal(b.registry.VENUS_STICKERS.parent,'VENUS_FREENITRO');
+    for (const value of Object.values(b.registry)) assert.equal(value.authors,undefined);
+    assert.equal(b.api.status.menu,true);
+});
+test('Venus section inserts once after Account with immutable list input and stock lists untouched', () => {
+    const b=settingsHarness();
+    const first=Object.freeze({label:'account',settings:Object.freeze(['ACCOUNT'])});
+    const input=Object.freeze({sections:Object.freeze([first,{label:'app',settings:['APPEARANCE']}])});
+    const result=b.builder.createList(input,'extra');
+    assert.equal(input.sections.length,2);assert.equal(result.sections.length,3);assert.equal(result.extra,'extra');
+    assert.equal(result.sections[0],first);assert.equal(result.sections[1].label,'Venus');
+    assert.deepEqual(Array.from(result.sections[1].settings),['VENUS_GENERAL','VENUS_PLUGINS']);
+    const again=b.builder.createList(result);assert.equal(again.sections,result.sections);
+    const other={sections:[{settings:['CHAT']}]};assert.equal(b.builder.createList(other).sections,other.sections);
+});
+test('native toggle closures bind each key independently and respect patch selection', () => {
+    const b=settingsHarness();
+    b.registry.VENUS_COPYBIOS.onValueChange(false); assert.equal(b.api.settings.copyBios,false);
+    assert.equal(b.api.settings.dashless,true);
+    b.registry.VENUS_EMOJIS.onValueChange(false); assert.equal(b.api.settings.emojis,false);
+    assert.equal(b.registry.VENUS_STICKERS.useValue(),true);
+    const selected=settingsHarness({picker:false,voice:false,freeNitro:false});
+    assert.equal(selected.registry.VENUS_EMOJIS,undefined);assert.equal(selected.registry.VENUS_COPYBIOS,undefined);
+    assert.equal(selected.api.setSetting('emojis',true),false);
+});
+test('new plugin preferences persist and late restores cannot overwrite edits', async () => {
+    const b=boot(allFeatures);let complete;const writes=[];
+    b.load(native({fileExists:async()=>true,readFile:()=>new Promise(resolve=>complete=resolve),writeFile:async(...args)=>writes.push(args)}));
+    await flush();b.api.setSetting('stickers',false);
+    complete('{"emojis":false,"stickers":true,"copyBios":false,"hyperlinks":false,"forceLinks":true}');await flush();
+    assert.equal(b.api.settings.stickers,false);assert.equal(b.api.settings.emojis,false);
+    assert.equal(b.api.settings.copyBios,false);assert.equal(b.api.settings.hyperlinks,false);assert.equal(b.api.settings.forceLinks,true);
+    assert.equal(JSON.parse(writes.at(-1)[2]).stickers,false);
+});
+test('unselected plugin factories remain completely unwrapped', () => {
+    const b=boot({picker:false,voice:false});const factory=()=>{};
+    for (const id of [245,414,1271,5375,5377,11503,4941,12662,13288,10661,10664,1372,2041,5708,5751,4446,7611,7730]) {
+        b.context.__d(factory,id,[]);assert.equal(b.factories.get(id),factory);
+    }
+});
+test('CopyBios clones frozen text nodes while preserving links, handlers and non-text children', () => {
+    const b=boot(allFeatures);const {React,RN}=reactHarness(b);const onPress=()=>{};
+    const text=Object.freeze(React.createElement(RN.Text,Object.freeze({children:'bio',onPress})));
+    const icon=React.createElement('Image',{uri:'x'});
+    const tree=Object.freeze(React.createElement(RN.View,{children:Object.freeze([text,icon])}));
+    const bio=b.load({default:()=>tree},null,11503);
+    const result=bio.default({});assert.notEqual(result,tree);
+    assert.equal(text.props.selectable,undefined);assert.equal(result.props.children[0].props.selectable,true);
+    assert.equal(result.props.children[0].props.onPress,onPress);assert.equal(result.props.children[1],icon);
+    b.api.setSetting('copyBios',false);assert.equal(bio.default({}),tree);
+});
+test('Dashless changes only display labels and leaves messages, channel models and DM names untouched', () => {
+    const b=boot(allFeatures);const label=b.load({default:channel=>channel.name},null,4941);
+    const channel=Object.freeze({type:0,name:'hello-world'});
+    assert.equal(label.default(channel),'hello world');assert.equal(channel.name,'hello-world');
+    assert.equal(label.default({type:1,name:'user-name'}),'user-name');
+    assert.equal(label.default({type:2,name:'voice-room'}),'voice-room');
+    b.api.setSetting('dashless',false);assert.equal(label.default(channel),'hello-world');
+});
+test('FavouriteAnything preserves memo metadata and original source objects', () => {
+    const b=boot(allFeatures);const memo=Object.freeze({$$typeof:Symbol.for('react.memo'),type:props=>props,compare:()=>true});
+    const exports=b.load({default:memo},null,13288);
+    assert.equal(exports.default.compare,memo.compare);
+    const source=Object.freeze({uri:'https://cdn.discordapp.com/image.png',width:10,height:20});
+    const props=Object.freeze({source,extra:'keep'});const result=exports.default.type(props);
+    assert.equal(result.source.isGIFV,true);assert.equal(source.isGIFV,undefined);assert.equal(result.extra,'keep');
+    b.api.setSetting('favouriteAnything',false);assert.equal(exports.default.type(props),props);
+});
+test('favourite media format correction uses copies and handles signed URLs case-insensitively', () => {
+    const b=boot(allFeatures);const action=b.load({addFavoriteGIF:value=>value},null,10661);
+    const item=Object.freeze({url:'https://cdn.discordapp.com/movie.MP4?ex=1',format:1});
+    assert.equal(action.addFavoriteGIF(item).format,2);assert.equal(item.format,1);
+    const image=Object.freeze({url:'https://example.com/photo.png',format:2});
+    assert.equal(action.addFavoriteGIF(image).format,1);
+    const gif={url:'https://example.com/animated.gif',format:1};assert.equal(action.addFavoriteGIF(gif),gif);
+});
+test('video favourite previews cache weakly, preserve signed queries and update category preview without data mutation', () => {
+    const b=boot(allFeatures);
+    const item=Object.freeze({url:'https://cdn.discordapp.com/a.MP4?ex=1&hm=signature',src:'https://cdn.discordapp.com/a.MP4?ex=1&hm=signature&format=webp#keep'});
+    const favorites=Object.freeze([item]);const result=Object.freeze({favorites,favoritesCategory:{src:item.src},extra:'keep'});
+    const utils=b.load({useFavoriteGIFsMobile:()=>result},null,10664);
+    const a=utils.useFavoriteGIFsMobile(),c=utils.useFavoriteGIFsMobile();assert.equal(a.favorites,c.favorites);
+    assert.match(a.favorites[0].src,/media\.discordapp\.net\/a.MP4\?ex=1&hm=signature&format=jpeg#keep$/);
+    assert.equal(a.favoritesCategory.src,a.favorites[0].src);assert.equal(result.favorites[0],item);assert.equal(a.extra,'keep');
+    const evil={url:'https://evil.test/a.mp4',src:'https://cdn.discordapp.com.evil.test/a.mp4'};
+    const external=b.load({useFavoriteGIFsMobile:()=>({favorites:[evil]})},null,10664).useFavoriteGIFsMobile();assert.equal(external.favorites[0],evil);
+});
+test('FreeNitro only overrides emoji eligibility for the current user and each switch is independent', () => {
+    const b=nitroHarness();assert.equal(b.premium.canUseEmojisEverywhere(b.user),true);
+    assert.equal(b.premium.canUseEmojisEverywhere({id:'other',premiumType:null}),false);
+    b.api.setSetting('emojis',false);assert.equal(b.premium.canUseAnimatedEmojis(b.user),false);
+    assert.equal(b.rules.getStickerSendability(b.stickers['20']),0);
+    b.api.setSetting('stickers',false);assert.equal(b.rules.getStickerSendability(b.stickers['20']),1);
+});
+test('emoji sharing preserves native emojis, content whitespace, arguments and unrelated invalid diagnostics', () => {
+    const b=nitroHarness();const message=Object.freeze({content:'  <:local:1> <:external:2> <a:animated:3> <:unknown:999>  ',invalidEmojis:Object.freeze([{id:'2'},{id:'999'}]),extra:'keep'});
+    assert.equal(b.actions.sendMessage('channel',message,true,{reply:'id'}),'sent');
+    const args=b.sent[0];assert.equal(args[2],true);assert.deepEqual(args[3],{reply:'id'});
+    assert.match(args[1].content,/^  <:local:1> \[external\]\(https:\/\/cdn.discordapp.com\/emojis\/2.webp/);
+    assert.match(args[1].content,/3.gif/);assert.match(args[1].content,/<:unknown:999>  $/);
+    assert.equal(args[1].invalidEmojis.length,1);assert.equal(args[1].invalidEmojis[0].id,'999');
+    assert.equal(message.invalidEmojis.length,2);assert.equal(args[1].extra,'keep');
+});
+test('emoji sharing ignores code blocks, inline code, escaped tokens, unknown and unavailable emojis', () => {
+    const b=nitroHarness();
+    const message={content:'```<:x:2>``` `<:x:2>` \\<:x:2> [link](https://x/<:x:2>) <:disabled:4> <:unknown:999>'};
+    b.actions.sendMessage('channel',message);assert.equal(b.sent[0][1],message);
+    b.actions.sendMessage('missing',{content:'<:x:2>'});assert.equal(b.sent[1][1].content,'<:x:2>');
+});
+test('emoji links honor live Nitro changes, forcing and plain-link options without rewriting originals', () => {
+    const b=nitroHarness();const message={content:'<:x:2>'};
+    b.user.premiumType=2;b.actions.sendMessage('channel',message);assert.equal(b.sent.at(-1)[1],message);
+    b.api.setSetting('forceLinks',true);b.api.setSetting('hyperlinks',false);
+    b.actions.sendMessage('channel',message);assert.match(b.sent.at(-1)[1].content,/^https:\/\/cdn.discordapp.com\/emojis\/2.webp/);
+    b.api.setSetting('emojis',false);b.actions.sendMessage('channel',message);assert.equal(b.sent.at(-1)[1],message);
+});
+test('oversized emoji link expansion falls back without losing the original draft or diagnostics', () => {
+    const b=nitroHarness();const message={content:'x'.repeat(1980)+' <:x:2>',invalidEmojis:[{id:'2'}]};
+    b.actions.sendMessage('channel',message);assert.equal(b.sent[0][1],message);
+});
+test('sticker links preserve mixed native stickers, replies, message content and options in one original send', () => {
+    const b=nitroHarness();const ids=Object.freeze(['10','20','30']);const message=Object.freeze({content:'hello',invalidEmojis:[],extra:'keep'});const options=Object.freeze({reply:'message'});
+    assert.equal(b.actions.sendStickers('channel',ids,message,options,true),'stickers');
+    assert.equal(b.sent.length,1);const args=b.sent[0];assert.deepEqual(Array.from(args[1]),['10']);
+    assert.match(args[2].content,/^hello\n\[external\]/);assert.match(args[2].content,/30.gif/);
+    assert.equal(args[2].extra,'keep');assert.equal(args[3],options);assert.equal(args[4],true);assert.equal(ids.length,3);assert.equal(message.content,'hello');
+});
+test('APNG uses only Discord CDN and unsupported, unknown or unavailable stickers are never silently dropped', () => {
+    const b=nitroHarness();b.actions.sendStickers('channel',['50'],'hello');assert.match(b.sent[0][2].content,/50.png/);
+    for (const id of ['40','60','999']) {
+        const ids=[id,'20'];const msg={content:'keep'};b.actions.sendStickers('channel',ids,msg);
+        assert.equal(b.sent.at(-1)[1],ids);assert.equal(b.sent.at(-1)[2],msg);
+    }
+    assert.doesNotMatch(raw,/ezgif\.com|fetch\(|setTimeout\(|setInterval\(/);
+});
+test('sticker sendability preserves unavailable, permission-blocked and unsupported states', () => {
+    const b=nitroHarness();assert.equal(b.rules.getStickerSendability(b.stickers['60']),2);
+    assert.equal(b.rules.getStickerSendability(b.stickers['40']),1);
+    assert.equal(b.rules.isSendableSticker(b.stickers['20']),true);
+    assert.equal(b.rules.isSendableSticker(b.stickers['60']),false);
+    b.api.setSetting('stickers',false);assert.equal(b.rules.isSendableSticker(b.stickers['20']),false);
+});
+test('sticker sends retain native behavior after live Nitro changes and when disabled', () => {
+    const b=nitroHarness();const ids=['20'];const message={content:'keep'};
+    b.user.premiumType=2;b.actions.sendStickers('channel',ids,message);assert.equal(b.sent[0][1],ids);assert.equal(b.sent[0][2],message);
+    b.user.premiumType=null;b.api.setSetting('stickers',false);b.actions.sendStickers('channel',ids,message);assert.equal(b.sent[1][1],ids);
+});
+
+test('explicit default-valued changes win against late preference restore', async () => {
+    const b=boot(allFeatures);let complete;
+    b.load(native({fileExists:async()=>true,readFile:()=>new Promise(resolve=>complete=resolve)}));
+    await flush();b.api.setSetting('emojis',true);complete('{"emojis":false}');await flush();
+    assert.equal(b.api.settings.emojis,true);
+});
+test('shared native attachment send boundary converts emoji captions without changing upload options', () => {
+    const b=nitroHarness();const message=Object.freeze({content:'caption <:external:2>',attachments:[{id:'0'}]});const options={uploads:['unchanged'],reply:'id'};
+    assert.equal(b.actions._sendMessage('channel',message,options),'upload');
+    assert.match(b.sent[0][1].content,/emojis\/2.webp/);assert.equal(b.sent[0][1].attachments,message.attachments);assert.equal(b.sent[0][2],options);
+});
+test('native opaque-provider video favourites retain their original format', () => {
+    const b=boot(allFeatures);const action=b.load({addFavoriteGIF:value=>value},null,10661);
+    const item=Object.freeze({url:'https://tenor.com/view/provider-id',gifSrc:'https://media.tenor.com/opaque',format:2});
+    assert.equal(action.addFavoriteGIF(item),item);
+});
+test('nested bio markup makes the outer Discord Text selectable without changing children or link presses', () => {
+    const b=boot(allFeatures);const {React}=reactHarness(b);const link=React.createElement('Link',{children:'click',onPress:()=>{}});
+    const tree=React.createElement('DiscordText',{children:[link]});
+    const bio=b.load({default:()=>tree},null,11503);const result=bio.default({});
+    assert.equal(result.props.selectable,true);assert.equal(result.props.children[0].props.onPress,link.props.onPress);assert.equal(tree.props.selectable,undefined);
+});
+test('double-backtick inline code and empty sticker sends remain unchanged', () => {
+    const b=nitroHarness();const message={content:'``<:x:2>``'};
+    b.actions.sendMessage('channel',message);assert.equal(b.sent[0][1],message);
+    const ids=[];b.actions.sendStickers('channel',ids,'hello');assert.equal(b.sent[1][1],ids);assert.equal(b.sent[1][2],'hello');
 });

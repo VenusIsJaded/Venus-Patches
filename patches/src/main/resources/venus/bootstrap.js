@@ -3,14 +3,21 @@
     "use strict";
     if (global.__venusPatches) return;
     const features = /*__FEATURES__*/;
-    // Inspected Metro IDs for the SHA-256-pinned 347.12 bundle. Only these eight factories are wrapped.
-    const targetModules = new Set([17, 19, 245, 414, 1151, 1271, 5375, 5377]);
-    const revision = "1.0.0-dev.3 / eval-scope";
+    // Inspected Metro IDs for the SHA-256-pinned 347.12 bundle; never scan or eagerly require modules.
+    const targetModules = new Set([17, 19, 1151, 11754, 14892, 14993]);
+    function selectModules(ids) { ids.forEach(id => targetModules.add(id)); }
+    if (features.picker) selectModules([414]);
+    if (features.voice) selectModules([1271, 5375, 5377]);
+    if (features.copyBios) selectModules([11503]);
+    if (features.dashless) selectModules([4941]);
+    if (features.favouriteAnything) selectModules([13288, 10661, 10664]);
+    if (features.freeNitro) selectModules([1372, 2041, 5708, 5751, 4446, 7611, 7730]);
+    const revision = "1.0.0";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
     const deferredModules = new Map();
-    const settings = { picker: true, voice: false };
+    const settings = { picker: true, voice: false, copyBios: true, dashless: true, favouriteAnything: true, emojis: true, stickers: true, hyperlinks: true, forceLinks: false };
     const status = { picker: false, attachment: false, request: false, menu: false, conversion: false, audioError: "", storage: "waiting" };
     const listeners = new Set();
     const dirty = new Set();
@@ -32,7 +39,7 @@
         return descriptor && "value" in descriptor ? descriptor.value : undefined;
     };
     const owns = (obj, key) => obj != null && Object.prototype.hasOwnProperty.call(obj, key);
-    const enabled = key => features[key] && settings[key];
+    const enabled = key => features[featureFor(key)] && settings[key];
 
     function save() {
         if (!files || status.storage === "loading") return;
@@ -44,7 +51,8 @@
         });
     }
     function setSetting(key, value) {
-        if ((key !== "picker" && key !== "voice") || !features[key]) return false;
+        if (!owns(settings, key) || !features[featureFor(key)]) return false;
+        if (settings[key] === !!value && status.storage !== "loading" && status.storage !== "waiting") return true;
         value = !!value;
         if (key === "voice" && !value) activeJobs.forEach(job => {
             job.cancelled = true;
@@ -75,7 +83,7 @@
         ).then(text => {
             if (text) {
                 const loaded = JSON.parse(text);
-                for (const key of ["picker", "voice"])
+                for (const key of Object.keys(settings))
                     if (!dirty.has(key) && typeof loaded[key] === "boolean") settings[key] = loaded[key];
             }
             status.storage = "ready";
@@ -318,56 +326,292 @@
         return original.apply(receiver, nextArgs);
     }
 
-    function Menu() {
-        useSettings();
-        const [open, setOpen] = React.useState(false);
-        const h = React.createElement;
-        const label = (text, style) => h(RN.Text, { style: Object.assign({ color: "#f2f3f5", fontSize: 15 }, style) }, text);
-        const toggle = (key, title, hint) => features[key] ? h(RN.View, { key, style: { marginVertical: 12 } },
-            h(RN.View, { style: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" } },
-                label(title, { flex: 1 }), h(RN.Switch, { value: settings[key],
-                    accessibilityLabel: title, onValueChange: value => setSetting(key, value) })),
-            label(hint, { color: "#b5bac1", fontSize: 12, marginTop: 4 })) : null;
-        return h(React.Fragment, null,
-            h(RN.View, { pointerEvents: "box-none", style: {
-                position: "absolute", right: 12, bottom: 90, zIndex: 10000
-            } }, h(RN.Pressable, { accessibilityRole: "button", accessibilityLabel: "Open Venus patch settings",
-                onPress: () => setOpen(true),
-                style: { backgroundColor: "#5865f2", padding: 10, borderRadius: 20, elevation: 6 }
-            }, label("Venus", { fontWeight: "700", fontSize: 12 }))),
-            h(RN.Modal, { visible: open, transparent: true, animationType: "fade", onRequestClose: () => setOpen(false) },
-                h(RN.View, { style: { flex: 1, backgroundColor: "#0009", justifyContent: "center", padding: 20 } },
-                    h(RN.ScrollView, { style: { flexGrow: 0, maxHeight: "85%", backgroundColor: "#232428", borderRadius: 16 },
-                        contentContainerStyle: { padding: 20 } },
-                        label("Venus Patches", { fontSize: 24, fontWeight: "700" }),
-                        label("Discord attachment tools - " + revision, { color: "#b5bac1", marginTop: 4 }),
-                        toggle("picker", "File sizes in picker", "Local metadata only; at most four reads at once."),
-                        toggle("voice", "Send audio as voice messages", "Real Ogg/Opus, duration and waveform. Android 10+, one audio file without text."),
-                        features.voice ? label("Uses one background codec worker. Unsupported audio stays an ordinary attachment; original files are never changed.",
-                            { fontSize: 12, color: "#b5bac1", marginTop: 6 }) : null,
-                        label("Diagnostics (hooks load as needed)", { marginTop: 20, fontWeight: "700" }),
-                        label((features.picker ? "Picker: " + (status.picker ? "hooked" : "not loaded yet") + "\n" : "") +
-                            (features.voice ? "Attachment: " + (status.attachment ? "hooked" : "not loaded yet") +
-                                "\nConversion: " + (status.conversion ? "hooked" : "not loaded yet") + "\nRequest: " + (status.request ? "hooked" : "not loaded yet") + "\n" : "") +
-                            "Preferences: " + status.storage + (status.audioError ? "\nLast audio error: " + status.audioError : ""), { color: "#b5bac1", fontSize: 12, marginVertical: 8 }),
-                        h(RN.Pressable, { onPress: () => setOpen(false), accessibilityRole: "button",
-                            style: { backgroundColor: "#5865f2", padding: 12, borderRadius: 8, marginTop: 12 }
-                        }, label("Done", { textAlign: "center", fontWeight: "700" }))))));
-    }
-    function registerRoot(original, receiver, args) {
-        const next = Array.from(args);
-        const provider = next[1];
-        if (typeof provider !== "function" || args[0] !== "Discord") return original.apply(receiver, args);
-        next[1] = function () {
-            const Component = provider.apply(this, arguments);
-            return function VenusRoot(props) {
-                if (!React || !RN) return React ? React.createElement(Component, props) : Component(props);
-                return React.createElement(RN.View, { style: { flex: 1 } },
-                    React.createElement(Component, props), React.createElement(Menu));
-            };
+    // Native setting nodes use Discord's own themed rows, navigation and back stack.
+    let SettingsList;
+    const featureFor = key => key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key;
+    function section(label, keys) { return { label, settings: keys }; }
+    function settingsPage(sections) {
+        const node = { type: "list", sections };
+        return function VenusSettingsPage() {
+            return React && SettingsList ? React.createElement(SettingsList, { node }) : null;
         };
+    }
+    function settingNode(key, title, description, parent) {
+        return { type: "toggle", parent, useTitle: () => title, useDescription: () => description,
+            useValue: function () { useSettings(); return settings[key]; },
+            onValueChange: value => setSetting(key, value) };
+    }
+    function nativeRegistry(registry) {
+        if (!registry || !registry.ACCOUNT || registry.VENUS_GENERAL) return registry;
+        const next = Object.assign({}, registry);
+        const icon = registry.ACCOUNT.IconComponent;
+        function route(key, title, sections, parent) {
+            const page = settingsPage(sections);
+            next[key] = { type: "route", parent, useTitle: () => title, IconComponent: icon,
+                screen: { route: key, getComponent: () => page } };
+        }
+        const general = [];
+        if (features.picker) { general.push("VENUS_PICKER"); next.VENUS_PICKER = settingNode("picker", "File sizes in picker", "Show local file sizes on picker thumbnails.", "VENUS_GENERAL"); }
+        if (features.voice) { general.push("VENUS_VOICE"); next.VENUS_VOICE = settingNode("voice", "Send audio as voice messages", "Convert one audio attachment to Ogg/Opus. Android 10+; no accompanying text.", "VENUS_GENERAL"); }
+        next.VENUS_VERSION = { type: "static", parent: "VENUS_GENERAL", useTitle: () => "Venus " + revision,
+            useDescription: function () { useSettings(); return "Preferences: " + status.storage + (status.audioError ? "\n" + status.audioError : ""); } };
+        route("VENUS_GENERAL", "General", [section("Attachment tools", general), section("About", ["VENUS_VERSION"])]);
+        const plugins = [];
+        function plugin(key, title, hint) {
+            if (!features[key]) return;
+            const id = "VENUS_" + key.toUpperCase(); plugins.push(id);
+            next[id] = settingNode(key, title, hint, "VENUS_PLUGINS");
+        }
+        plugin("copyBios", "CopyBios", "Select and copy text from profile bios.");
+        plugin("dashless", "Dashless", "Display spaces instead of dashes in text channel names.");
+        plugin("favouriteAnything", "FavouriteAnything", "Favourite images and videos from the media viewer.");
+        if (features.freeNitro) {
+            plugins.push("VENUS_FREENITRO");
+            route("VENUS_FREENITRO", "FreeNitro", [section("Sharing", ["VENUS_EMOJIS", "VENUS_STICKERS"]),
+                section("Options", ["VENUS_HYPERLINKS", "VENUS_FORCELINKS"])], "VENUS_PLUGINS");
+            next.VENUS_EMOJIS = settingNode("emojis", "Free emojis", "Share unavailable custom emojis as image links, not native emojis.", "VENUS_FREENITRO");
+            next.VENUS_STICKERS = settingNode("stickers", "Free stickers", "Share external PNG/APNG/GIF stickers as links. APNG previews may be static; Lottie is not converted.", "VENUS_FREENITRO");
+            next.VENUS_HYPERLINKS = settingNode("hyperlinks", "Compact links", "Use the emoji or sticker name as link text.", "VENUS_FREENITRO");
+            next.VENUS_FORCELINKS = settingNode("forceLinks", "Always use links", "Use links even when the item can be sent natively.", "VENUS_FREENITRO");
+        }
+        route("VENUS_PLUGINS", "Plugins", [section("Installed", plugins)]);
         status.menu = true;
+        return next;
+    }
+    function settingsSections(original, receiver, args) {
+        const config = args[0];
+        if (!status.menu || !config || !Array.isArray(config.sections)) return original.apply(receiver, args);
+        const index = config.sections.findIndex(s => s && Array.isArray(s.settings) && s.settings.includes("ACCOUNT"));
+        if (index < 0 || config.sections.some(s => s && s.label === "Venus")) return original.apply(receiver, args);
+        const sections = config.sections.slice();
+        sections.splice(index + 1, 0, section("Venus", ["VENUS_GENERAL", "VENUS_PLUGINS"]));
+        const next = Array.from(args); next[0] = Object.assign({}, config, { sections });
         return original.apply(receiver, next);
+    }
+
+    function cloneTree(node, change, depth) {
+        if (!node || typeof node !== "object" || depth > 24) return node;
+        if (Array.isArray(node)) {
+            const children = node.map(child => cloneTree(child, change, depth + 1));
+            return children.some((child, i) => child !== node[i]) ? children : node;
+        }
+        if (!node.props) return node;
+        const children = cloneTree(node.props.children, change, depth + 1);
+        let props = children !== node.props.children ? Object.assign({}, node.props, { children }) : node.props;
+        props = change(node, props);
+        return props === node.props ? node : React.cloneElement(node, props);
+    }
+    function copyBio(original, receiver, args) {
+        const result = original.apply(receiver, args);
+        if (!enabled("copyBios") || !React || !RN) return result;
+        return cloneTree(result, function (node, props) {
+            // Preserve clickable links and handlers, never mutate React's frozen elements.
+            if (node !== result && node.type !== RN.Text && typeof props.children !== "string") return props;
+            return props.selectable === true ? props : Object.assign({}, props, { selectable: true });
+        }, 0);
+    }
+    function channelLabel(original, receiver, args) {
+        const result = original.apply(receiver, args);
+        const channel = args[0];
+        return enabled("dashless") && channel && [0, 5, 15, 16].includes(channel.type) && typeof result === "string" ? result.replace(/-/g, " ") : result;
+    }
+    const videoPattern = /\.(mp4|webm|mov|avi|mkv|flv|wmv|m4v|gifv)(?:[?#]|$)/i;
+    const video = uri => typeof uri === "string" && videoPattern.test(uri);
+    function thumbnail(uri) {
+        if (typeof uri !== "string" || !/^https:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net|images-ext-\d+\.discordapp\.net)\//i.test(uri)) return uri;
+        let result = uri.replace(/^https:\/\/cdn\.discordapp\.com\//i, "https://media.discordapp.net/");
+        const hash = result.indexOf("#"), suffix = hash < 0 ? "" : result.slice(hash);
+        if (hash >= 0) result = result.slice(0, hash);
+        result = /[?&]format=/.test(result) ? result.replace(/([?&])format=[^&]*/g, "$1format=jpeg") : result + (result.includes("?") ? "&" : "?") + "format=jpeg";
+        return result + suffix;
+    }
+    function favouriteButton(original, receiver, args) {
+        const props = args[0], source = props && props.source;
+        if (!enabled("favouriteAnything") || !source || source.isGIFV || typeof source.uri !== "string" || !/^https?:\/\//i.test(source.uri)) return original.apply(receiver, args);
+        const next = Array.from(args);
+        next[0] = Object.assign({}, props, { source: Object.assign({}, source, { isGIFV: true,
+            embedURI: source.embedURI || source.sourceURI || source.uri, videoURI: source.videoURI || source.uri,
+            embedProviderName: source.embedProviderName || "" }) });
+        return original.apply(receiver, next);
+    }
+    function favouriteAdd(original, receiver, args) {
+        const item = args[0];
+        if (!enabled("favouriteAnything") || !item || typeof item !== "object") return original.apply(receiver, args);
+        const isVideo = video(item.url) || video(item.gifSrc);
+        const isImage = typeof item.url === "string" && /\.(png|jpe?g|gif|webp|avif|heic|heif)(?:[?#]|$)/i.test(item.url);
+        // Preserve native formats for opaque provider URLs instead of misclassifying videos as images.
+        if (!isVideo && !isImage) return original.apply(receiver, args);
+        const format = isVideo ? 2 : 1;
+        if (item.format === format) return original.apply(receiver, args);
+        const next = Array.from(args); next[0] = Object.assign({}, item, { format });
+        return original.apply(receiver, next);
+    }
+    const favouriteViews = new WeakMap();
+    function favouriteList(original, receiver, args) {
+        const result = original.apply(receiver, args);
+        if (!enabled("favouriteAnything") || !result || !Array.isArray(result.favorites)) return result;
+        let favorites = favouriteViews.get(result.favorites);
+        if (!favorites) {
+            let changed = false;
+            favorites = result.favorites.map(item => {
+                if (!item || !video(item.url) && !video(item.gifSrc)) return item;
+                const src = thumbnail(item.src || item.url);
+                if (src === item.src) return item;
+                changed = true; return Object.assign({}, item, { src });
+            });
+            if (!changed) favorites = result.favorites;
+            favouriteViews.set(result.favorites, favorites);
+        }
+        if (favorites === result.favorites) return result;
+        const category = result.favoritesCategory && favorites[0] ? Object.assign({}, result.favoritesCategory, { src: favorites[0].src }) : result.favoritesCategory;
+        return Object.assign({}, result, { favorites, favoritesCategory: category });
+    }
+
+    let userStore, channelStore, emojiStore, stickerStore, stickerRules;
+    const premiumOriginal = {};
+    function currentUser() { return userStore && userStore.getCurrentUser(); }
+    function capability(key, user) { return typeof premiumOriginal[key] === "function" && premiumOriginal[key](user); }
+    function premiumOverride(key, setting) {
+        return function (original, receiver, args) {
+            const user = currentUser();
+            return enabled(setting) && user && args[0] && args[0].id === user.id ? true : original.apply(receiver, args);
+        };
+    }
+    function shareLink(name, uri) {
+        // Escape Markdown without permitting forged mentions or link syntax in sticker names.
+        return settings.hyperlinks && name ? "[" + String(name).replace(/([\\\[\]()*_`<>@])/g, "\\$1").replace(/[\r\n]/g, " ") + "](" + uri + ")" : uri;
+    }
+    function emojiMessage(message, channelId) {
+        if (!enabled("emojis") || !message || typeof message.content !== "string" || !message.content.includes("<") || !emojiStore || !channelStore) return message;
+        const user = currentUser(), channel = channelStore.getChannel(channelId);
+        if (!user || !channel) return message;
+        const everywhere = capability("canUseEmojisEverywhere", user), animated = capability("canUseAnimatedEmojis", user);
+        const converted = new Set();
+        // Do not rewrite code blocks, inline code, escaped tokens or Markdown link targets.
+        const content = message.content.replace(/```[\s\S]*?(?:```|$)|``[^\n]*?(?:``|$)|`[^`\n]*(?:`|$)|\\[\s\S]|\]\([^\n)]*\)|<(a?):([\w]+):(\d+)>/g, function (match, animation, name, id) {
+            if (!id) return match;
+            const emoji = emojiStore.getCustomEmojiById(id);
+            if (!emoji || emoji.available === false || !emoji.guildId) return match;
+            if (!settings.forceLinks && (everywhere || emoji.guildId === channel.guild_id) && (!(animation || emoji.animated) || animated)) return match;
+            converted.add(id);
+            const uri = "https://cdn.discordapp.com/emojis/" + id + (animation || emoji.animated ? ".gif" : ".webp") + "?size=48&quality=lossless";
+            return shareLink(name, uri);
+        });
+        if (!converted.size || content.length > (user.premiumType === 2 ? 4000 : 2000)) return message;
+        const next = Object.assign({}, message, { content });
+        // Keep unrelated invalid emoji diagnostics intact.
+        for (const key of ["invalidEmojis", "validNonShortcutEmojis"]) if (Array.isArray(message[key]))
+            next[key] = message[key].filter(item => !converted.has(typeof item === "string" ? item : item && item.id));
+        return next;
+    }
+    function sendMessage(original, receiver, args) {
+        const message = emojiMessage(args[1], args[0]);
+        if (message === args[1]) return original.apply(receiver, args);
+        const next = Array.from(args); next[1] = message;
+        return original.apply(receiver, next);
+    }
+    function stickerLink(sticker) {
+        if (!sticker || sticker.available === false || !/^\d+$/.test(sticker.id)) return null;
+        if (![1, 2, 4].includes(sticker.format_type)) return null; // No broken Lottie URLs or third-party conversion service.
+        return shareLink(sticker.name, "https://media.discordapp.net/stickers/" + sticker.id + (sticker.format_type === 4 ? ".gif" : ".png") + "?size=160");
+    }
+    function nativeSticker(sticker, channel, user) {
+        return !settings.forceLinks && sticker && sticker.available !== false &&
+            (!sticker.guild_id || sticker.guild_id === channel.guild_id || capability("canUseCustomStickersEverywhere", user));
+    }
+    function sendStickers(original, receiver, args) {
+        if (!enabled("stickers") || !Array.isArray(args[1]) || !stickerStore || !channelStore) return original.apply(receiver, args);
+        const user = currentUser(), channel = channelStore.getChannel(args[0]);
+        if (!user || !channel) return original.apply(receiver, args);
+        const keep = [], links = [];
+        for (const id of args[1]) {
+            const sticker = stickerStore.getStickerById(id);
+            if (!sticker) return original.apply(receiver, args);
+            if (nativeSticker(sticker, channel, user)) { keep.push(id); continue; }
+            const link = stickerLink(sticker);
+            // Fail closed as a whole: never drop an unknown/unsupported sticker from a mixed send.
+            if (!link) return original.apply(receiver, args);
+            links.push(link);
+        }
+        if (!links.length) return original.apply(receiver, args);
+        const message = args[2], content = typeof message === "string" ? message : message && message.content || "";
+        const combined = (content ? content + "\n" : "") + links.join("\n");
+        if (combined.length > (user.premiumType === 2 ? 4000 : 2000)) return original.apply(receiver, args);
+        const next = Array.from(args); next[1] = keep;
+        next[2] = emojiMessage(Object.assign({}, typeof message === "object" ? message : null, { content: combined }), args[0]);
+        // Original sendStickers preserves replies, TTS, nonce, permissions and native stickers in one message.
+        return original.apply(receiver, next);
+    }
+    function sendability(original, receiver, args) {
+        const result = original.apply(receiver, args), sticker = args[0];
+        return enabled("stickers") && stickerRules && result === stickerRules.StickerSendability.SENDABLE_WITH_PREMIUM && stickerLink(sticker) ? stickerRules.StickerSendability.SENDABLE : result;
+    }
+    function sendableSticker(original, receiver, args) {
+        const result = original.apply(receiver, args);
+        if (result || !enabled("stickers") || !stickerRules) return result;
+        const code = stickerRules.getStickerSendability.apply(stickerRules, args);
+        return code === stickerRules.StickerSendability.SENDABLE;
+    }
+    function hookExport(exports, key, operation) {
+        const original = exports && exports[key];
+        if (typeof original !== "function") return exports;
+        const replacement = function () { return operation(original, this, arguments); };
+        const descriptor = Object.getOwnPropertyDescriptor(exports, key);
+        if (descriptor && descriptor.configurable) Object.defineProperty(exports, key, { value: replacement, writable: true, configurable: true, enumerable: descriptor.enumerable });
+        else if (descriptor && descriptor.writable) exports[key] = replacement;
+        else return Object.assign({}, exports, { [key]: replacement });
+        return exports;
+    }
+    function hookComponent(exports, operation) {
+        const component = exports.default;
+        if (component && typeof component === "object" && typeof component.type === "function") {
+            const original = component.type;
+            const replacement = function () { return operation(original, this, arguments); };
+            return Object.assign({}, exports, { default: Object.assign({}, component, { type: replacement }) });
+        }
+        return hookExport(exports, "default", operation);
+    }
+    function activatePlugins(id, exports) {
+        if (id === 14892) exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG);
+        if (id === 11754) return hookExport(exports, "createList", settingsSections);
+        if (id === 14993) SettingsList = exports.SettingsList;
+        if (features.copyBios && id === 11503) return hookComponent(exports, copyBio);
+        if (features.dashless && id === 4941) return hookExport(exports, "default", channelLabel);
+        if (features.favouriteAnything && id === 13288) return hookComponent(exports, favouriteButton);
+        if (features.favouriteAnything && id === 10661) return hookExport(exports, "addFavoriteGIF", favouriteAdd);
+        if (features.favouriteAnything && id === 10664) return hookExport(exports, "useFavoriteGIFsMobile", favouriteList);
+        if (!features.freeNitro) return exports;
+        if (id === 1372) userStore = exports.default;
+        if (id === 2041) channelStore = exports.default;
+        if (id === 5708) emojiStore = exports.default;
+        if (id === 5751) stickerStore = exports.default;
+        if (id === 4446) {
+            function patchCapability(key, setting) {
+                premiumOriginal[key] = typeof exports[key] === "function" ? exports[key].bind(exports) : undefined;
+                exports = hookExport(exports, key, premiumOverride(key, setting));
+            }
+            patchCapability("canUseEmojisEverywhere", "emojis");
+            patchCapability("canUseAnimatedEmojis", "emojis");
+            // Keep sticker eligibility stock: only the inspected premium-only sendability result is relaxed.
+            premiumOriginal.canUseCustomStickersEverywhere = typeof exports.canUseCustomStickersEverywhere === "function" ? exports.canUseCustomStickersEverywhere.bind(exports) : undefined;
+        }
+        if (id === 7611) {
+            stickerRules = exports;
+            exports = hookExport(exports, "getStickerSendability", sendability);
+            exports = hookExport(exports, "isSendableSticker", sendableSticker);
+            stickerRules = exports;
+        }
+        if (id === 7730) {
+            // 347.12 exports a default action singleton, not named send functions.
+            // _sendMessage is also the shared boundary used by attachment sends.
+            let actions = exports.default;
+            if (!actions) return exports;
+            actions = hookExport(actions, "sendMessage", sendMessage);
+            actions = hookExport(actions, "_sendMessage", sendMessage);
+            actions = hookExport(actions, "sendStickers", sendStickers);
+            exports.default = actions;
+        }
+        return exports;
     }
 
     function instrument(exports, depth) {
@@ -392,14 +636,14 @@
             return function () { return operation(original, this === proxy ? exports : this, arguments); };
         }
         // Only read explicitly identified export keys, never enumerate or invoke unrelated getters.
-        for (const key of ["registerComponent", "getAttachmentPayload", "post"]) {
+        for (const key of ["getAttachmentPayload", "post"]) {
             if (!owns(exports, key)) continue;
             if (key === "getAttachmentPayload" && !features.voice) continue;
             if (key === "post" && (!features.voice || !owns(exports, "get") || !owns(exports, "put"))) continue;
             let original;
             try { original = exports[key]; } catch (_) { continue; }
             if (typeof original !== "function") continue;
-            const operation = key === "registerComponent" ? registerRoot : key === "post" ? postRequest : attachmentPayload;
+            const operation = key === "post" ? postRequest : attachmentPayload;
             const replacement = replacementFor(operation, original);
             replacements.set(key, replacement);
             if (key === "post") status.request = true;
@@ -446,7 +690,8 @@
                     typeof nativeFiles.readFile === "function" && typeof nativeFiles.writeFile === "function")
                     initFiles(nativeFiles);
             }
-            module.exports = instrument(module.exports, 0);
+            module.exports = activatePlugins(id, module.exports);
+            if ([17, 19, 414, 1151, 1271, 5375, 5377].includes(id)) module.exports = instrument(module.exports, 0);
         } catch (error) {
             status.audioError = "Hook unavailable: " + String(error);
             if (global.console && typeof global.console.warn === "function")
