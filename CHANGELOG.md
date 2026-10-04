@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.3 — traced OAuth lifecycle, shared profile/server reviews and native channel names
+
+- Disassembled the supplied unmodified Discord 347.12 HBC98, verified its pinned hash, and traced native OAuth completion down to nested success generator #124513. Native dismissal occurs without awaiting the ReviewDB token exchange; preserve validated exchanges instead of misclassifying completion as cancellation.
+- Move enable/authentication/status/logout into Settings → Venus → Plugins → ReviewDB, using native switch/row/group components. No auth/logout actions on user or server reviews. Preserve account-scoped session-only credentials, cancellation/account guards, service failures/retry and request/JSON timeout.
+- Hook the shared About Me card (module 11502) for normal/bot/compact/tabbed profile callers, not PrimaryInfo. Add guild-ID server reviews through GuildActionSheetProgress (module 14273), including when native progress returns null; retain onboarding. Use unclamped selectable comments and independent target keys.
+- Hidden Channels: include full/basic-only channel/category metadata; capture READY, supplemental and update names before native reducers; scope initial names to the incoming account; repair list-local ChannelStore dereferences; preserve native formatter escaping and category casing. Do not mutate real permission results, model flags or singleton state. Basic-only fetch/navigation stays metadata-only.
+- Unsent/server-redacted names remain explicitly unavailable. No attempt to guess names or fetch restricted content. No native APK patching with Morphe Patcher was performed for this release.
+- Expanded readable/compact runtime regressions, including the actual callback/dismiss sequence, reopened profiles/server sheets, settings-only auth, guild requests/mutations, account changes, startup metadata, basic-only navigation, native store receivers and formatting. Separate Hermes eval, JVM PCM and HBC structural validation do not replace Android/live service acceptance.
+
+Repatch the original APKM with `patches-1.2.3.mpp`. ReviewDB sign-in survives profile/sheet reopening but deliberately does not persist across restarting Discord.
+
 ## 1.2.2 — authentication and original-style UI repairs
 
 - ReviewDB: native string/object callback support, strict fixed-domain callback rebuilding without URL polyfill dependencies, native helper demand-loading, fresh consent, and a fetch/JSON-body deadline even without AbortController. Keep supported `vendetta` protocol, session-only tokens and cancellation/account guards.

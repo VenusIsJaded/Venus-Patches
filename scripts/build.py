@@ -199,7 +199,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: harden ReviewDB native OAuth and restore reviewer cards; resolve received hidden names with native locks; expand platform icons to DM/friend/voice rows; retain deleted content without text labels. Device/OAuth validation pending.",
+        "description": "Discord 347.12: fix native ReviewDB callback/dismiss race; move sign-in to plugin settings; show user and server reviews in native card/sheet surfaces; recover received full/basic/gateway channel and category names. Device/live OAuth validation pending.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

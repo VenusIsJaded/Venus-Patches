@@ -73,7 +73,7 @@ private val runtimeAssets = rawResourcePatch {
         // so RN cannot mark a separate bootstrap bundle ready or flush native calls early.
         val injected = HbcPrelude.inject(get("assets/index.android.bundle"), selected)
         get("assets/venus/injection.json", false).writeText(
-            "{\"revision\":\"1.2.2\",\"prefixSize\":${injected.prefixSize}," +
+            "{\"revision\":\"1.2.3\",\"prefixSize\":${injected.prefixSize}," +
                 "\"originalCodeSize\":${injected.originalCodeSize},\"codeOffset\":${injected.codeOffset}}"
         )
     }
@@ -230,7 +230,7 @@ val noDelete = bundledPlugin("noDelete", "NoDelete", "Retains up to 512 deleted 
 val jumpToTop = bundledPlugin("jumpToTop", "JumpToTop", "Adds a jump-to-start control to the native chat without replacing Jump to Present.")
 
 @Suppress("unused")
-val hiddenChannels = bundledPlugin("hiddenChannels", "Hidden Channels", "Opt-in display of already-received locked channel metadata. Does not grant message or voice access.")
+val hiddenChannels = bundledPlugin("hiddenChannels", "Hidden Channels", "Opt-in names from received full/basic/gateway channel and category metadata. Never grants message or voice access; unsent names cannot be recovered.")
 
 @Suppress("unused")
 val pastelize = bundledPlugin("pastelize", "Pastelize", "Stable pastel chat names and mentions, preserving role colors by default. Optional webhook/name and content controls.")
@@ -239,4 +239,4 @@ val pastelize = bundledPlugin("pastelize", "Pastelize", "Stable pastel chat name
 val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators", "Status-colored monitor, phone, web and console icons on profiles, DM headers/lists, friend and voice-member rows.")
 
 @Suppress("unused")
-val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Opt-in profile reviews with explicit-load reading, native OAuth, posting, deletion and reporting. Uses manti.vendicated.dev.")
+val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Opt-in user and server reviews with settings-only native OAuth, explicit-load reading, posting, deletion and reporting. Uses manti.vendicated.dev.")
