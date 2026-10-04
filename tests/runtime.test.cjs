@@ -1145,9 +1145,15 @@ function reviewHarness() {
     b.load({TableRow:'NativeRow'},null,5854);
     let pushed;const popped=[];b.load({pushModal:value=>pushed=value,popModal:key=>popped.push(key)},null,4645);b.load({default:'OAuthModal'},null,9358);
     function PrimaryInfo(){return React.createElement('Info',null);}
-    const profile=b.load({PrimaryInfo,default:()=>React.createElement('Profile',{children:React.createElement(PrimaryInfo,{user:{id:'222222222222222222'}})})},null,13382);
-    const tree=profile.default({}),info=tree.props.children.type(tree.props.children.props);const panel=info.props.children[1];
-    return {...b,React,RN,requests,panel,popped,alerts,account,getPushed:()=>pushed};
+    const heading=React.createElement(PrimaryInfo,{user:{id:'222222222222222222'}}),aboutOriginal=React.createElement('About',{children:'About me'});
+    const original=React.createElement('Profile',{children:[heading,aboutOriginal]});
+    const about=b.load({default:()=>aboutOriginal},null,11502).default;
+    const profile={default:props=>{const result=about({userId:props.user && props.user.id});return result===aboutOriginal?original:React.cloneElement(original,{children:[heading,result]});}};
+    const getPanel=tree=>tree.props.children[1].props.children[1];
+    b.api.setSetting('reviewDB',true);const panel=getPanel(profile.default({user:{id:'222222222222222222'}}));b.api.setSetting('reviewDB',false);
+    const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14892).SETTING_RENDERER_CONFIG;
+    const Settings=registry.VENUS_REVIEWDB.screen.getComponent();
+    return {...b,React,RN,requests,panel,popped,alerts,account,profile,original,about,aboutOriginal,getPanel,registry,Settings,getPushed:()=>pushed};
 }
 test('ReviewDB has no startup requests and expands a native opt-in profile panel only after enabling',()=>{
     const b=reviewHarness();assert.equal(b.requests.length,0);assert.equal(b.panel.type(b.panel.props),null);
@@ -1160,12 +1166,12 @@ test('ReviewDB explicit expansion fetches only its API; OAuth rejects untrusted 
     let panel=b.panel.type(b.panel.props);effects.forEach(fn=>fn());await flush();assert.equal(b.requests.length,1);assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/users/222222222222222222/reviews');
     assert.equal(b.requests[0][1].credentials,'omit');assert.equal(b.requests[0][1].headers.Authorization,undefined);
     index=0;effects.length=0;panel=b.panel.type(b.panel.props);
-    const details=panel.props.children[1].props.children;const auth=details.at(-1);auth.props.onPress();
+    const auth=walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB')[0];auth.props.onPress();
     const modal=b.getPushed();assert.equal(modal.modal.props.clientId,'915703782174752809');
     await modal.modal.props.callback({location:'https://evil.example/auth?code=x'});assert.equal(b.requests.length,1);
     await modal.modal.props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});assert.equal(b.requests.length,2);assert.equal(b.popped.length,1);
     const redirect=new URL(b.requests.at(-1)[0]);assert.equal(redirect.searchParams.get('clientMod'),'vendetta');assert.equal(redirect.searchParams.get('returnType'),'json');
-    index=0;panel=b.panel.type(b.panel.props);assert.equal(panel.props.children[1].props.children.at(-1).type,b.RN.View);
+    index=0;panel=b.panel.type(b.panel.props);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
     b.api.setSetting('reviewDB',false);assert.equal(b.api.settings.reviewToken,undefined);
 });
 
@@ -1212,7 +1218,7 @@ test('NoDelete independently renders a native red gutter without altering conten
 });
 test('Hidden Channels replaces obfuscated names in both native formatters, including empty locked sections',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
-    const names=b.load({default:()=> 'No Access',computeChannelName:()=> 'No Access'},null,4941);
+    const names=b.load({default:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name,computeChannelName:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name},null,4941);
     const category={id:'empty',type:4,guild_id:'g',name:'PRIVATE STAFF',position:9};b.channels.empty=category;
     assert.equal(names.computeChannelName(b.channels.hidden),'staff chat');
     assert.equal(names.default(b.channels.hidden),'staff chat');assert.equal(names.computeChannelName(category),'PRIVATE STAFF');
@@ -1222,7 +1228,7 @@ test('Hidden Channels replaces obfuscated names in both native formatters, inclu
     let facade;b.context.__d((g,r,i,a,m)=>{facade=i(4427);m.exports={};},7802,[]);
     b.factories.get(7802)(b.context,()=>b.permission,()=>b.permission,()=>b.permission,{exports:{}},{},[]);
     assert.equal(facade.can(b.viewPermission,category),true);assert.equal(facade.can('CONNECT',category),false);
-    b.api.setSetting('hiddenChannels',false);assert.equal(names.computeChannelName(category),'No Access');assert.equal(facade.can(b.viewPermission,category),false);
+    category.isObfuscated=()=>true;b.api.setSetting('hiddenChannels',false);assert.equal(names.computeChannelName(category),'No Access');assert.equal(facade.can(b.viewPermission,category),false);
 });
 test('Pastelize respects source role colors and unknown members, and colors webhook names and nested reply mentions',()=>{
     const b=boot(allFeatures),{RN}=reactHarness(b);RN.processColor=color=>color;
@@ -1265,7 +1271,7 @@ function openReviewAuth(b) {
     b.api.setSetting('reviewDB',true);const states=[0,true,[],"",false,"",0];let index=0;
     b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,()=>{}];};b.React.useEffect=()=>{};
     function render(){index=0;return b.panel.type(b.panel.props);}
-    render().props.children[1].props.children.at(-1).props.onPress();
+    walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB')[0].props.onPress();
     return {props:b.getPushed().modal.props,render};
 }
 test('ReviewDB uses the accepted original clientMod and displays service failures instead of hiding them',async()=>{
@@ -1274,10 +1280,10 @@ test('ReviewDB uses the accepted original clientMod and displays service failure
     await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=expired&clientMod=venus'});
     assert.equal(redirect.searchParams.get('clientMod'),'vendetta');assert.equal(redirect.searchParams.get('returnType'),'json');
     assert.equal(b.alerts.at(-1)[1],'Invalid or expired code');assert.equal(b.popped.length,0);
-    assert.equal(render().props.children[1].props.children.at(-1).props.label,'Authenticate with ReviewDB');
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
     b.context.fetch=async()=>({ok:true,json:async()=>({success:true,token:'review-token'})});
     await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=valid'});
-    assert.equal(b.popped.length,1);assert.equal(render().props.children[1].props.children.at(-1).type,b.RN.View);
+    assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
 });
 test('ReviewDB ignores late OAuth success after cancellation, disable, logout or account switching',async()=>{
     for(const action of ['cancel','disable','logout','account']) {
@@ -1285,13 +1291,13 @@ test('ReviewDB ignores late OAuth success after cancellation, disable, logout or
         b.context.fetch=()=>{requests++;return new Promise(done=>resolve=done);};
         const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=once'});
         await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=duplicate'});await flush();assert.equal(requests,1);
-        if(action==='cancel')props.dismissOAuthModal();
+        if(action==='cancel')await props.callback({canceled:true});
         if(action==='disable')b.api.setSetting('reviewDB',false);
         if(action==='logout')b.load({default:{dispatch(){}}},null,573).default.dispatch({type:'LOGOUT'});
         if(action==='account')b.account.id='333333333333333333';
         resolve({ok:true,json:async()=>({success:true,token:'must-not-survive'})});await pending;
         if(action==='disable')b.api.setSetting('reviewDB',true);
-        assert.equal(render().props.children[1].props.children.at(-1).props.label,'Authenticate with ReviewDB');assert.equal(b.alerts.length,0);
+        assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);assert.equal(b.alerts.length,0);
     }
 });
 test('ReviewDB OAuth exchanges are bounded and reject malformed or untrusted redirects without requests',async()=>{
@@ -1352,7 +1358,7 @@ test('Hidden Channels resolves real basic record names and immutable numeric sec
     b.channels.hidden={...b.channels.hidden,name:'__hidden__'};b.channels.cat={...b.channels.cat,name:'__hidden__'};
     const basic={hidden:{...b.channels.hidden,name:'staff-chat'},cat:{...b.channels.cat,name:'PRIVATE STAFF'}};
     b.load({default:{getChannel:id=>b.channels[id],getBasicChannel:id=>basic[id],getMutableGuildChannelsForGuild:()=>b.channels,getMutableBasicGuildChannelsForGuild:()=>basic}},null,2041);
-    const names=b.load({default:()=> 'No Access',computeChannelName:()=> 'No Access'},null,4941);
+    const names=b.load({default:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name,computeChannelName:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name},null,4941);
     assert.equal(names.default(b.channels.hidden),'staff chat');assert.equal(names.computeChannelName(b.channels.cat),'PRIVATE STAFF');
     const original=Object.freeze({0:Object.freeze([{channel:b.channels.hidden,comparator:3}]),4:Object.freeze([{channel:b.channels.cat,comparator:2}])});
     const store=b.load({default:{getChannels:()=>original}},null,2096).default;const list=store.getChannels('g');
@@ -1415,7 +1421,7 @@ test('ReviewDB handles the native string callback without URL globals and rebuil
     const b=reviewHarness(),{props,render}=openReviewAuth(b);delete b.context.URL;delete b.context.URLSearchParams;
     assert.equal(props.prompt,'consent');assert.deepEqual(Array.from(props.scopes),['identify']);
     await props.callback('https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb%3D&clientMod=evil&token=forbidden&returnType=html');
-    assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb%3D&returnType=json&clientMod=vendetta');assert.equal(render().props.children[1].props.children.at(-1).type,b.RN.View);
+    assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb%3D&returnType=json&clientMod=vendetta');assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
     assert.equal(b.requests[0][1].headers.Authorization,undefined);assert.equal(b.requests[0][1].credentials,'omit');
 });
 test('ReviewDB refuses ambiguous, encoded-host, credential, fragment and denied redirects',async()=>{
@@ -1441,4 +1447,154 @@ test('ReviewDB cards reproduce grouped reviewer avatars, badges, dates and selec
     assert.equal(rendered.type,'NativeGroup');const row=rendered.props.children[0];assert.equal(row.type,'NativeRow');assert.equal(row.props.icon.props.style.width,36);assert.equal(row.props.subLabel.props.selectable,true);assert.equal(row.props.subLabel.props.children,'Be respectful');
     assert.equal(walkElements(row.props.label,n=>n.type==='Image')[0].props.accessibilityLabel,'Donor');assert.equal(card.props.actions,null);
     review.type=0;review.timestamp=1700000000;const dated=card.type(card.props);assert.equal(walkElements(dated,n=>n.type===b.RN.Text && n.props.style.fontSize===12).length,1);
+});
+
+
+// HBC98 #124513: Call2(callback, result) at 0xf7, no Promise yield for that
+// return; dismissOAuthModal at 0x1ac. The old tests awaited callback first and
+// therefore could not reproduce the reported native close-before-auth race.
+test('ReviewDB native callback-then-dismiss retains the exchange and sign-in across reopened profiles and guild sheets',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);let resolve;
+    b.context.fetch=()=>new Promise(done=>resolve=done);
+    const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=native-code'});
+    props.dismissOAuthModal();props.dismissOAuthModal();
+    assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticating with ReviewDB…').length,1);
+    await flush();resolve({ok:true,json:async()=>({success:true,token:'review-session-token'})});await pending;
+    assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
+    for(let repeat=0;repeat<3;repeat++) {
+        const profile=b.profile.default({user:{id:'222222222222222222'}}),panel=b.getPanel(profile);
+        const states=[0,true,[],'',false,'',0];let index=0;b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];
+        const rendered=panel.type(panel.props);assert.equal(walkElements(rendered,n=>n.type==='TextInput')[0].props.editable,true);
+        assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
+        assert.equal(b.original.props.children.length,2);assert.equal(profile.props.children[0],b.original.props.children[0]);
+        assert.equal(profile.props.children[1].props.children[0],b.original.props.children[1]);
+    }
+    const guild=b.load({default:()=>null},null,14273).default({guild:{id:'333333333333333333'}});
+    const panel=guild.props.children[1];assert.equal(panel.props.userId,'333333333333333333');assert.equal(panel.props.server,true);
+    let index=0;const states=[0,true,[],'',false,'',0];b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];
+    const rendered=panel.type(panel.props);assert.equal(walkElements(rendered,n=>n.type==='TextInput')[0].props.editable,true);
+    assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
+});
+test('ReviewDB real cancellation before redirect ignores late callback with no exchange or false success',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);props.dismissOAuthModal();
+    await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=too-late'});
+    assert.equal(b.requests.length,0);assert.equal(b.popped.length,1);assert.equal(b.alerts.length,0);
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
+});
+test('ReviewDB failed exchange remains visible in plugin settings after native dismissal and permits retry',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);let resolve;
+    b.context.fetch=()=>new Promise(done=>resolve=done);
+    const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=bad'});props.dismissOAuthModal();await flush();
+    resolve({ok:true,json:async()=>({success:false,message:'Expired code'})});await pending;
+    const row=walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB')[0];assert.equal(row.props.subLabel,'Expired code');assert.equal(row.props.disabled,false);
+    row.props.onPress();assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticating with ReviewDB…').length,1);
+    const next=b.getPushed().modal.props;assert.notEqual(next,props);
+    // A stale callback cannot dismiss the newly opened native modal.
+    props.dismissOAuthModal();assert.equal(b.popped.length,1);next.dismissOAuthModal();assert.equal(b.popped.length,2);
+});
+test('ReviewDB settings use the inspected native switch and group with no nested settings-list scroller',()=>{
+    const b=reviewHarness();b.load({TableSwitchRow:'NativeSwitch'},null,7477);b.load({TableRowGroup:'NativeGroup'},null,5936);
+    assert.equal(b.registry.VENUS_REVIEWDB.type,'route');assert.equal(b.registry.VENUS_REVIEWDB.parent,'VENUS_PLUGINS');
+    let tree=b.Settings();assert.equal(tree.type,'ScrollView');assert.equal(walkElements(tree,n=>n.type==='NativeGroup').length,2);
+    const toggle=walkElements(tree,n=>n.type==='NativeSwitch')[0];assert.equal(toggle.props.value,false);toggle.props.onValueChange(true);
+    tree=b.Settings();assert.equal(walkElements(tree,n=>n.props.label==='Authenticate with ReviewDB')[0].props.disabled,false);
+    assert.equal(walkElements(tree,n=>typeof n.type==='function').length,0);
+});
+test('ReviewDB server lists and mutations use the guild ID and preserve native guild progress',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=valid'});
+    const progress=b.React.createElement('Progress',{onPress:()=>{},children:'Native onboarding'});
+    const component=b.load({default:()=>progress},null,14273).default;
+    const tree=component({guild:{id:'333333333333333333'}});assert.equal(tree.props.children[0],progress);
+    const panel=tree.props.children[1],states=[0,true,[],'',false,'server review',0],effects=[];let index=0;
+    b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,value=>states[i]=typeof value==='function'?value(states[i]):value];};
+    b.React.useEffect=fn=>effects.push(fn);
+    let rendered=panel.type(panel.props);effects.forEach(fn=>fn());await flush();
+    assert.equal(b.requests.at(-1)[0],'https://manti.vendicated.dev/api/reviewdb/users/333333333333333333/reviews');
+    index=0;effects.length=0;rendered=panel.type(panel.props);walkElements(rendered,n=>n.props.label==='Post / update review')[0].props.onPress();await flush();
+    const [url,options]=b.requests.at(-1);assert.equal(url,'https://manti.vendicated.dev/api/reviewdb/users/333333333333333333/reviews');assert.equal(options.method,'PUT');
+    assert.deepEqual(JSON.parse(options.body),{comment:'server review',token:'review-only-token'});
+    assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
+    assert.equal(component({guild:{id:'bad-id'}}),progress);b.api.setSetting('reviewDB',false);assert.equal(component({guild:{id:'333333333333333333'}}),progress);
+});
+test('ReviewDB profile cards remain inside native About Me stack and target changes get independent React keys',()=>{
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);
+    const first=b.profile.default({user:{id:'222222222222222222'}}),second=b.profile.default({user:{id:'444444444444444444'}});
+    assert.equal(first.type,'Profile');assert.equal(b.getPanel(first).props.userId,'222222222222222222');
+    assert.equal(b.getPanel(second).props.userId,'444444444444444444');assert.notEqual(b.getPanel(first).props.key,b.getPanel(second).props.key);
+    assert.equal(b.original.props.children.length,2);assert.equal(first.props.children[0],b.original.props.children[0]);
+    assert.equal(first.props.children[1].props.children[0],b.aboutOriginal);
+    assert.equal(b.about({userId:'222222222222222222',pendingBio:'Editing preview'}),b.aboutOriginal);
+    b.api.setSetting('reviewDB',false);assert.equal(b.profile.default({user:{id:'222222222222222222'}}),b.original);
+});
+test('ReviewDB account subscription invalidates pending sign-in and cleans up without keeping credentials',async()=>{
+    const b=reviewHarness(),listeners=new Set(),effects=[];b.load({default:{getCurrentUser:()=>b.account,addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>listeners.delete(fn)}},null,1372);
+    b.React.useEffect=fn=>effects.push(fn);b.Settings();const cleanups=effects.map(fn=>fn()).filter(fn=>typeof fn==='function');assert.equal(listeners.size,1);
+    const {props}=openReviewAuth(b);let resolve;b.context.fetch=()=>new Promise(done=>resolve=done);
+    const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=one'});await flush();
+    b.account.id='999999999999999999';listeners.forEach(fn=>fn());assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
+    resolve({ok:true,json:async()=>({success:true,token:'must-not-leak'})});await pending;assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,0);
+    cleanups.forEach(fn=>fn());assert.equal(listeners.size,0);
+});
+test('ReviewDB authentication and logout never serialize OAuth codes, ReviewDB credentials or Discord tokens',async()=>{
+    const b=reviewHarness(),writes=[];b.load({default:native({writeFile:async(...args)=>writes.push(args)})});await flush();
+    const {props}=openReviewAuth(b);await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=private-code'});
+    b.api.setSetting('dashless',false);await flush();
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
+    walkElements(b.Settings(),n=>n.props.label==='Log out of ReviewDB')[0].props.onPress();
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
+    assert.doesNotMatch(JSON.stringify(writes),/review-only-token|private-code|authToken|reviewToken/);
+});
+test('Hidden Channels captures initial READY and supplemental names before native records are redacted',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};b.channels.cat={...b.channels.cat,name:'__hidden__'};
+    const dispatch=b.load({default:{dispatch(){}}},null,573).default;
+    dispatch.dispatch({type:'CONNECTION_OPEN',guilds:[{id:'g',channels:[{id:'hidden',name:'staff-chat'},{id:'cat',name:'PRIVATE STAFF'}]}]});
+    assert.equal(b.label(b.channels.hidden),'staff chat');assert.equal(b.label(b.channels.cat),'PRIVATE STAFF');
+    dispatch.dispatch({type:'CONNECTION_OPEN_SUPPLEMENTAL',guilds:[{id:'g',channels:[{id:'hidden',name:'renamed-staff'}]}]});assert.equal(b.label(b.channels.hidden),'renamed staff');
+    dispatch.dispatch({type:'CHANNEL_UPDATES',channels:[{id:'hidden',guild_id:'g',name:'latest-name'}]});assert.equal(b.label(b.channels.hidden),'latest name');
+    dispatch.dispatch({type:'GUILD_DELETE',guild:{id:'g'}});assert.match(b.label(b.channels.hidden),/name unavailable/);assert.equal(b.fetched.length,0);
+});
+test('Hidden Channels includes basic-only native metadata and blocks its message and navigation paths',async()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    const extra={id:'basic-only',guild_id:'g',type:0,name:'private-basic',parent_id:'basic-cat',position:7};
+    const parent={id:'basic-cat',guild_id:'g',type:4,name:'BASIC CATEGORY',position:6};const basic={'basic-only':extra,'basic-cat':parent};
+    b.load({default:{getChannel:id=>b.channels[id],getBasicChannel:id=>basic[id],getMutableGuildChannelsForGuild:()=>b.channels,getMutableBasicGuildChannelsForGuild:()=>basic}},null,2041);
+    const list=b.store.getChannels('g');assert.equal(list.SELECTABLE.find(entry=>entry.channel.id===extra.id).channel.name,'private-basic');assert.equal(list[4].find(entry=>entry.channel.id===parent.id).channel.name,'BASIC CATEGORY');
+    assert.equal(b.store.getChannels('g'),list);await b.actions.fetchMessages({channelId:extra.id});assert.equal(b.fetched.length,0);assert.match(b.alerts.at(-1)[1],/BASIC CATEGORY/);
+    const calls=[];const routes=b.load({transitionTo:r=>calls.push(r),transitionToGuild:(g,c)=>calls.push(c)},null,1101);
+    routes.transitionTo('/channels/g/basic-only');routes.transitionToGuild('g','basic-only');assert.equal(calls.length,0);assert.equal(b.permission.can(b.viewPermission,extra),false);
+});
+test('Hidden Channels renderer-scoped ChannelStore facade preserves real singleton receivers and model flags',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__',flags:32768};
+    const basic={...b.channels.hidden,name:'native-staff'};
+    class NativeStore {
+        #value='live-store';getChannel(id){assert.equal(this.#value,'live-store');return b.channels[id];}
+        getBasicChannel(){assert.equal(this.#value,'live-store');return basic;}
+        subscribe(){return this.#value;}
+    }
+    const real=new NativeStore();b.load({default:real},null,2041);const original=b.channels.hidden;
+    let imported;b.context.__d((g,r,i,a,m)=>{imported=i(2041).default;m.exports={};},7802,[]);
+    b.factories.get(7802)(b.context,()=>({default:real}),()=>({default:real}),()=>({default:real}),{exports:{}},{},[]);
+    assert.equal(imported.getChannel('hidden').name,'native-staff');assert.equal(imported.getChannel('hidden').flags,32768);assert.equal(imported.subscribe(),'live-store');assert.equal(real.getChannel('hidden'),original);assert.equal(original.name,'__hidden__');
+    b.api.setSetting('hiddenChannels',false);assert.equal(imported.getChannel('hidden'),original);
+});
+test('Hidden Channels respects native formatter escaping and uppercase categories without changing obfuscation flags',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.api.setSetting('dashless',false);
+    const channel=Object.freeze({...b.channels.hidden,name:'staff-\\"chat',flags:32768,isObfuscated:()=>true});
+    const category=Object.freeze({...b.channels.cat,name:'private staff',flags:32768,isObfuscated:()=>true});
+    function nativeFormatter(c,quoted){if(c.isObfuscated())return '__hidden__';const name=c.type===4?c.name.toUpperCase():c.name;return quoted?JSON.stringify(name):name;}
+    const names=b.load({default:nativeFormatter,computeChannelName:nativeFormatter},null,4941);
+    assert.equal(names.computeChannelName(channel,true),JSON.stringify(channel.name));assert.equal(names.default(category),'PRIVATE STAFF');
+    assert.equal(channel.isObfuscated(),true);assert.equal(channel.flags,32768);assert.equal(category.isObfuscated(),true);
+    b.api.setSetting('hiddenChannels',false);assert.equal(names.default(category),'__hidden__');
+});
+
+test('Hidden Channels READY cache belongs to the incoming account before UserStore reducer runs',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};
+    let account=null;b.load({default:{getCurrentUser:()=>account}},null,1372);
+    const dispatch=b.load({default:{dispatch(event){if(event.type==='CONNECTION_OPEN')account=event.user;}}},null,573).default;
+    dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'111111111111111111'},guilds:[{id:'g',channels:[{id:'hidden',name:'first-staff'}]}]});
+    assert.equal(b.label(b.channels.hidden),'first staff');
+    dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'222222222222222222'},guilds:[{id:'g',channels:[{id:'hidden',name:'second-staff'}]}]});
+    assert.equal(b.label(b.channels.hidden),'second staff');
+    account={id:'333333333333333333'};assert.match(b.label(b.channels.hidden),/name unavailable/);
 });
