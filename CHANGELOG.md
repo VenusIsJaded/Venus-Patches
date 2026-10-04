@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.2 — authentication and original-style UI repairs
+
+- ReviewDB: native string/object callback support, strict fixed-domain callback rebuilding without URL polyfill dependencies, native helper demand-loading, fresh consent, and a fetch/JSON-body deadline even without AbortController. Keep supported `vendetta` protocol, session-only tokens and cancellation/account guards.
+- ReviewDB UI: native grouped cards, 36-pixel reviewer avatars, badges, dates, selectable comments, empty-list feedback and a themed composer. System notices cannot be reported/deleted; late mutation results cannot update a logged-out account.
+- Hidden Channels: real received basic/full/cached names on both channels and categories, immutable directory views and no textual `[locked]` suffix. Native locks on ChannelInfo. Server-only `__hidden__` names are explicitly unavailable, never guessed or fetched. Name caches clear on logout, account switch, deletion and disabling.
+- PlatformIndicators: add single-user DM headers/lists, friend/user rows and voice-member rows. Use an independent outlined monitor silhouette; preserve the native phone icon, live subscriptions and own-session source. Full upstream guild-member-list parity is not claimed.
+- NoDelete: preserve original message text and native record descriptors; remove both `[Deleted]` injection and the deleted-notice embed. Retained rows have red-only background/gutter, including archive restoration and attachment-only messages.
+- 122 readable runtime tests pass; one optional Hermes eval test is skipped without an interpreter. The same suite is run against compact release JavaScript. JVM PCM tests cover 59 checks.
+
+The supplied 347.12 asset matches the pinned hash. Successful account OAuth, final Android layouts and hardware/runtime behavior remain device-unverified. Repatch the original APKM with `patches-1.2.2.mpp`.
+
 ## 1.2.1 — five plugin repairs
 
 - Fixed Pastelize's CommonJS MurmurHashV3 binding, native name colors, source-role preservation and guild-member guards.

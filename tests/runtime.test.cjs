@@ -792,7 +792,7 @@ test('NoDelete retains only cached messages, marks once and dismisses locally wi
     b.messages.set('c:1',{content:'hello'});assert.equal(b.dispatch.dispatch(event),'dispatched');assert.equal(b.messages.size,0);
     b.api.setSetting('noDelete',true);b.messages.set('c:1',{content:'hello'});
     b.dispatch.dispatch(event);assert.equal(b.messages.get('c:1').content,'hello');
-    assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'[Deleted] hello');
+    assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'hello');
     const n=b.events.length;b.dispatch.dispatch(event);assert.equal(b.events.length,n);
     await b.actions.deleteMessage('c','1');assert.equal(b.messages.size,0);assert.equal(b.network.length,0);
     assert.equal(b.actions.deleteMessage('c','2'),'remote');assert.equal(b.network.length,1);
@@ -871,7 +871,7 @@ test('Hidden Channels adds cached metadata immutably, deduplicates categories an
     const b=hiddenHarness();assert.equal(b.store.getChannels('g'),b.result);b.api.setSetting('hiddenChannels',true);
     const result=b.store.getChannels('g');assert.equal(result.SELECTABLE.length,3);assert.equal(result.VOCAL.length,1);assert.equal(result[4].length,1);
     assert.equal(b.result.SELECTABLE.length,1);assert.equal(b.store.getChannels('g'),result);
-    assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),false);assert.equal(b.label(b.channels.hidden),'staff chat [locked]');
+    assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),false);assert.equal(b.label(b.channels.hidden),'staff chat');
     b.allowed.add('hidden');const next=b.store.getChannels('g');assert.notEqual(next,result);assert.equal(b.label(b.channels.hidden),'staff chat');
     b.api.setSetting('hiddenChannels',false);assert.equal(b.store.getChannels('g'),b.result);
 });
@@ -1069,11 +1069,11 @@ test('NoDelete snapshots survive incoming messages, cache replacement, reconnect
     const b=deletionHarness();let collection=new MessageCollection([{id:'1',content:'original',author:{id:'u'}}]);
     const store=b.load({default:{getMessage:(c,id)=>collection.toArray().find(m=>m.id===id),getMessages:()=>collection}},null,5008).default;
     b.api.setSetting('noDelete',true);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
-    assert.equal(store.getMessage('c','1').content,'[Deleted] original');
+    assert.equal(store.getMessage('c','1').content,'original');
     collection=new MessageCollection([{id:'2',content:'new'}]);b.dispatch.dispatch({type:'MESSAGE_CREATE',channelId:'c',message:{id:'2'}});
     const retained=store.getMessages('c');assert.equal(retained.toArray().length,2);assert.equal(collection.toArray().length,1);
     assert.equal(retained.ready,true);assert.equal(retained.hasMoreBefore,true);assert.equal(store.getMessages('c'),retained);
-    for(const type of ['CONNECTION_OPEN','CACHE_LOADED','MESSAGE_TRUNCATE']){b.dispatch.dispatch({type});assert.equal(store.getMessage('c','1').content,'[Deleted] original');}
+    for(const type of ['CONNECTION_OPEN','CACHE_LOADED','MESSAGE_TRUNCATE']){b.dispatch.dispatch({type});assert.equal(store.getMessage('c','1').content,'original');}
     b.api.setSetting('noDelete',false);assert.equal(store.getMessages('c'),collection);assert.equal(store.getMessage('c','1'),undefined);
 });
 async function archiveHarness(saved,account='owner') {
@@ -1085,10 +1085,10 @@ async function archiveHarness(saved,account='owner') {
     await flush();await flush();b.api.setSetting('noDelete',true);b.api.setSetting('noDeleteSave',true);await flush();await flush();
     return {...b,store,writes,getDisk:()=>disk};
 }
-test('NoDelete archive is opt-in, account-scoped, restores markers and can be erased',async()=>{
+test('NoDelete archive is opt-in, account-scoped, restores original content and can be erased',async()=>{
     const raw={id:'1',channel_id:'c',author:{id:'u'},content:'saved'};
     const saved=JSON.stringify({version:1,accountId:'owner',messages:[{id:'1',channelId:'c',message:raw}]});
-    const b=await archiveHarness(saved);assert.equal(b.store.getMessage('c','1').content,'[Deleted] saved');
+    const b=await archiveHarness(saved);assert.equal(b.store.getMessage('c','1').content,'saved');
     assert.equal(JSON.parse(b.getDisk()).messages[0].message.content,'saved');
     b.api.setSetting('noDeleteSave',false);await flush();await flush();assert.equal(JSON.parse(b.getDisk()).messages.length,0);
     const other=await archiveHarness(saved,'different');assert.equal(other.store.getMessage('c','1'),undefined);
@@ -1132,7 +1132,7 @@ test('PlatformIndicators uses real client status, hides unknown/offline clients 
     const profile=Object.freeze(React.createElement('View',{children:React.createElement(DisplayName,{user:{id:'u'}})}));
     const exports=b.load({DisplayName,default:()=>profile},null,11448);
     const tree=exports.default({});assert.notEqual(tree,profile);const named=tree.props.children.type(tree.props.children.props);
-    const badges=named.props.children[1];const rendered=badges.type(badges.props);assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children.type),['ScreenIcon','MobilePhoneIcon']);
+    const badges=named.props.children[1];const rendered=badges.type(badges.props);assert.deepEqual(Array.from(rendered.props.children,c=>typeof c.props.children.type==='function'?c.props.children.type.name:c.props.children.type),['DesktopIndicator','MobilePhoneIcon']);
     assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children.props.color),['#23a55a','#f0b232']);
     assert.deepEqual(Array.from(rendered.props.children,c=>c.props.accessibilityLabel),['Desktop: online','Mobile: idle']);
     b.api.setSetting('platformIndicators',false);assert.equal(badges.type(badges.props),null);
@@ -1180,18 +1180,18 @@ class NativeChannelMessages {
     }
     toArray(){return this.messages;}
 }
-test('NoDelete supports actual immutable ChannelMessages without clone and changes the update payload',()=>{
+test('NoDelete supports immutable ChannelMessages and refreshes identity without changing content',()=>{
     const b=deletionHarness();let collection=new NativeChannelMessages([{id:'1',channel_id:'c',content:'kept',author:{id:'u'}}]);
     const store=b.load({default:{getMessage:(c,id)=>collection.toArray().find(message=>message.id===id),getMessages:()=>collection}},null,5008).default;
     b.api.setSetting('noDelete',true);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
-    assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'[Deleted] kept');
+    assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'kept');
     assert.equal(typeof collection.clone,'undefined');assert.equal(collection.messages[0].content,'kept');
-    assert.equal(store.getMessages('c').messages[0].content,'[Deleted] kept');
+    assert.equal(store.getMessages('c').messages[0].content,'kept');
     collection=new NativeChannelMessages([{id:'2',content:'next'}]);b.dispatch.dispatch({type:'MESSAGE_CREATE',channelId:'c'});
     const view=store.getMessages('c');assert.equal(view.toArray().length,2);assert.equal(collection.toArray().length,1);
     assert.equal(view.ready,true);assert.equal(view.hasMoreBefore,true);assert.equal(view.jumpType,'ANIMATED');assert.equal(store.getMessages('c'),view);
 });
-test('NoDelete independently renders a native red gutter and deleted notice without AutoMod dispatcher traffic',async()=>{
+test('NoDelete independently renders a native red gutter without altering content or adding a notice',async()=>{
     const b=deletionHarness(),{RN}=reactHarness(b);RN.processColor=color=>color;
     b.load({createAutomodBlockedMessageEmbed:({errorMessage,colors})=>Object.freeze({type:1,messageSendError:errorMessage,bodyTextColor:colors.automodBlockedBodyTextColor})},null,8455);
     class Rows {generate(row){return row.result;}}
@@ -1202,8 +1202,8 @@ test('NoDelete independently renders a native red gutter and deleted notice with
     b.api.setSetting('pastelize',false);b.api.setSetting('noDelete',true);b.messages.set('c:1',{id:'1',content:'original'});
     b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
     for(let i=0;i<3;i++) {
-        const rendered=rows.generate(row);assert.notEqual(rendered,original);assert.equal(rendered.message.embeds.length,2);
-        assert.equal(rendered.message.embeds[1].messageSendError,'This message was deleted');
+        const rendered=rows.generate(row);assert.notEqual(rendered,original);assert.equal(rendered.message.embeds.length,1);
+        assert.equal(rendered.message,original.message);assert.equal(rendered.message.content,original.message.content);
         assert.equal(rendered.backgroundHighlight.gutterColor,'#f23f43');assert.equal(rendered.backgroundHighlight.backgroundColor,'#f23f431a');
         assert.equal(original.message.embeds.length,1);
     }
@@ -1214,8 +1214,8 @@ test('Hidden Channels replaces obfuscated names in both native formatters, inclu
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
     const names=b.load({default:()=> 'No Access',computeChannelName:()=> 'No Access'},null,4941);
     const category={id:'empty',type:4,guild_id:'g',name:'PRIVATE STAFF',position:9};b.channels.empty=category;
-    assert.equal(names.computeChannelName(b.channels.hidden),'staff chat [locked]');
-    assert.equal(names.default(b.channels.hidden),'staff chat [locked]');assert.equal(names.computeChannelName(category),'PRIVATE STAFF [locked]');
+    assert.equal(names.computeChannelName(b.channels.hidden),'staff chat');
+    assert.equal(names.default(b.channels.hidden),'staff chat');assert.equal(names.computeChannelName(category),'PRIVATE STAFF');
     assert.equal(b.store.getChannels('g')[4].some(entry=>entry.channel.id==='empty'),true);
     assert.equal(b.permission.can(b.viewPermission,category),false);
     b.permission.can=(bit,channel)=>bit===b.viewPermission && b.allowed.has(channel.id);
@@ -1284,7 +1284,7 @@ test('ReviewDB ignores late OAuth success after cancellation, disable, logout or
         const b=reviewHarness(),{props,render}=openReviewAuth(b);let resolve;let requests=0;
         b.context.fetch=()=>{requests++;return new Promise(done=>resolve=done);};
         const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=once'});
-        await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=duplicate'});assert.equal(requests,1);
+        await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=duplicate'});await flush();assert.equal(requests,1);
         if(action==='cancel')props.dismissOAuthModal();
         if(action==='disable')b.api.setSetting('reviewDB',false);
         if(action==='logout')b.load({default:{dispatch(){}}},null,573).default.dispatch({type:'LOGOUT'});
@@ -1324,4 +1324,121 @@ test('Hidden Channels information uses only cached topics, parent and snowflake/
     b.channels.details={...b.channels.hidden,id,lastMessageId:id,lastPinTimestamp:'2020-01-02T00:00:00.000Z'};
     b.actions.fetchMessages({channelId:'details'});assert.equal(b.fetched.length,0);
     const text=b.alerts.at(-1)[1];assert.match(text,/Category: private/);assert.match(text,/Topic: Staff only/);assert.match(text,/Created: .*2020/);assert.match(text,/Last message: .*2020/);assert.match(text,/Last pin: .*2020/);assert.match(text,/Metadata only/);
+});
+
+
+// Fidelity repairs use the actual host export/prop schemas traced from HBC98.
+function walkElements(node, predicate, found=[]) {
+    if(Array.isArray(node)){node.forEach(child=>walkElements(child,predicate,found));return found;}
+    if(!node || typeof node!=='object' || !node.props)return found;
+    if(predicate(node))found.push(node);
+    walkElements(node.props.children,predicate,found);
+    if(node.props.label && typeof node.props.label==='object')walkElements(node.props.label,predicate,found);
+    return found;
+}
+test('NoDelete preserves literal deletion-like text, attachment-only content, links and record identity',()=>{
+    for(const content of ['', '[Deleted] is user-written text', '<@123> https://discord.com']) {
+        const b=deletionHarness();b.api.setSetting('noDelete',true);
+        const message=Object.freeze({id:'x',channel_id:'c',content,attachments:Object.freeze([{id:'a'}])});
+        b.messages.set('c:x',message);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'x'});
+        const store=b.load({default:{getMessage:()=>message}},null,5008).default;
+        const kept=store.getMessage('c','x');assert.notEqual(kept,message);assert.equal(kept.content,content);assert.equal(kept.attachments,message.attachments);
+        assert.equal(b.events.at(-1).message.content,content);
+        b.api.setSetting('noDelete',false);b.api.setSetting('noDelete',true);
+    }
+});
+test('Hidden Channels resolves real basic record names and immutable numeric section entries without textual lock suffixes',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    b.channels.hidden={...b.channels.hidden,name:'__hidden__'};b.channels.cat={...b.channels.cat,name:'__hidden__'};
+    const basic={hidden:{...b.channels.hidden,name:'staff-chat'},cat:{...b.channels.cat,name:'PRIVATE STAFF'}};
+    b.load({default:{getChannel:id=>b.channels[id],getBasicChannel:id=>basic[id],getMutableGuildChannelsForGuild:()=>b.channels,getMutableBasicGuildChannelsForGuild:()=>basic}},null,2041);
+    const names=b.load({default:()=> 'No Access',computeChannelName:()=> 'No Access'},null,4941);
+    assert.equal(names.default(b.channels.hidden),'staff chat');assert.equal(names.computeChannelName(b.channels.cat),'PRIVATE STAFF');
+    const original=Object.freeze({0:Object.freeze([{channel:b.channels.hidden,comparator:3}]),4:Object.freeze([{channel:b.channels.cat,comparator:2}])});
+    const store=b.load({default:{getChannels:()=>original}},null,2096).default;const list=store.getChannels('g');
+    assert.equal(list[0][0].channel.name,'staff-chat');assert.equal(list[4][0].channel.name,'PRIVATE STAFF');assert.equal(original[0][0].channel.name,'__hidden__');
+    assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),false);assert.equal(b.fetched.length,0);
+    basic.hidden={...basic.hidden,name:'renamed-staff'};
+    assert.equal(names.default(b.channels.hidden),'renamed staff');assert.equal(store.getChannels('g')[0][0].channel.name,'renamed-staff');
+});
+test('Hidden Channels never presents a server redaction as a real name or fetches unknown names',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};b.channels.cat={...b.channels.cat,name:'__hidden__'};
+    assert.equal(b.label(b.channels.hidden),'Hidden channel (name unavailable)');assert.equal(b.label(b.channels.cat),'Hidden category (name unavailable)');
+    b.actions.fetchMessages({channelId:'hidden'});assert.equal(b.fetched.length,0);assert.doesNotMatch(b.alerts[0][1],/__hidden__|\[locked\]/);
+});
+test('Hidden Channels cached gateway names clear on logout, account switch, channel removal and disabling',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};
+    let account='first';b.load({default:{getCurrentUser:()=>({id:account})}},null,1372);
+    const dispatch=b.load({default:{dispatch(){}}},null,573).default;
+    function remember(){dispatch.dispatch({type:'CHANNEL_UPDATE',channel:{...b.channels.hidden,name:'received-name'}});assert.equal(b.label(b.channels.hidden),'received name');}
+    remember();dispatch.dispatch({type:'LOGOUT'});assert.match(b.label(b.channels.hidden),/name unavailable/);
+    remember();account='second';assert.match(b.label(b.channels.hidden),/name unavailable/);
+    remember();dispatch.dispatch({type:'CHANNEL_DELETE',channel:{id:'hidden'}});assert.match(b.label(b.channels.hidden),/name unavailable/);
+    remember();b.api.setSetting('hiddenChannels',false);b.api.setSetting('hiddenChannels',true);assert.match(b.label(b.channels.hidden),/name unavailable/);
+});
+test('Hidden Channels uses a native lock icon and preserves frozen ChannelInfo and stock disabled output',()=>{
+    const b=hiddenHarness(),{React}=reactHarness(b);b.api.setSetting('hiddenChannels',true);
+    b.load({LockIcon:'NativeLock'},null,5345);const original=Object.freeze(React.createElement('ChannelInfo',{children:'staff'}));
+    const info=b.load({default:()=>original},null,16569).default;
+    const tree=info({channel:b.channels.hidden});assert.equal(tree.props.children[0].type,'NativeLock');assert.equal(tree.props.children[1],original);assert.match(tree.props.accessibilityLabel,/locked/);
+    b.api.setSetting('hiddenChannels',false);assert.equal(info({channel:b.channels.hidden}),original);
+});
+test('PlatformIndicators desktop is an outlined monitor with stem and foot while mobile stays native',()=>{
+    const b=platformFixture();b.load({default:{getClientStatus:()=>({desktop:'online',mobile:'idle'})}},null,4828);b.load({MobilePhoneIcon:'Phone'},null,7235);
+    const icons=b.badges.type({userId:'other'}).props.children;const desktop=icons[0].props.children;const monitor=desktop.type(desktop.props);
+    assert.equal(monitor.props.children.length,3);assert.equal(monitor.props.children[0].props.style.borderColor,'#23a55a');assert.equal(monitor.props.children[1].props.style.backgroundColor,'#23a55a');assert.equal(monitor.props.children[2].props.style.width,8);
+    assert.equal(icons[1].props.children.type,'Phone');assert.equal(icons[1].props.children.props.color,'#f0b232');
+});
+test('PlatformIndicators covers memoized DM headers, DM content, friend labels and voice member titles without mutating props',()=>{
+    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4828);
+    const channel={id:'dm',type:1,recipients:['recipient']};b.load({default:{getChannel:()=>channel}},null,2041);
+    const onPress=()=>{},name=Object.freeze(React.createElement(RN.Text,{variant:'redesign/channel-title/semibold',children:'User'}));
+    for(const module of [13603,16377,9970]) {
+        const original=Object.freeze(React.createElement(RN.View,{onPress,children:Object.freeze([name,React.createElement('Subtitle',{children:'Activity'})])}));
+        const component=Object.freeze({$$typeof:Symbol.for('react.memo'),type:()=>original,compare:()=>false});
+        const exports=b.load({default:component},null,module);const props=module===13603?{channelId:'dm'}:module===16377?{channel}:{user:{id:'recipient'}};
+        const tree=exports.default.type(props),badges=walkElements(tree,n=>n.type && n.type.name==='PlatformBadges');
+        assert.equal(badges.length,1);assert.equal(badges[0].props.userId,'recipient');assert.equal(original.props.children[0],name);assert.equal(tree.props.onPress,onPress);assert.equal(exports.default.compare,component.compare);
+        assert.equal(walkElements(tree,n=>n.type===RN.Text && walkElements(n,x=>x.type===RN.View).length).length,0);
+        b.api.setSetting('platformIndicators',false);assert.equal(exports.default.type(props),original);b.api.setSetting('platformIndicators',true);
+    }
+    const original=Object.freeze(React.createElement('NativeRow',{label:name,onPress,subLabel:'Playing'}));
+    const row=b.load({default:()=>original},null,11159).default;const tree=row({user:{id:'friend'}});
+    assert.equal(walkElements(tree,n=>n.type && n.type.name==='PlatformBadges')[0].props.userId,'friend');assert.equal(tree.props.subLabel,'Playing');assert.equal(tree.props.onPress,onPress);assert.equal(original.props.label,name);
+});
+test('PlatformIndicators excludes groups and guild channel lists from single-user DM placements',()=>{
+    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);const original=React.createElement(RN.View,{children:React.createElement(RN.Text,{children:'Group'})});
+    const content=b.load({default:()=>original},null,16377).default;
+    for(const channel of [{type:3,recipients:['a','b']},{type:0,recipients:['a']},{type:1,recipients:[]}])assert.equal(content({channel}),original);
+});
+test('ReviewDB handles the native string callback without URL globals and rebuilds only approved query keys',async()=>{
+    const b=reviewHarness(),{props,render}=openReviewAuth(b);delete b.context.URL;delete b.context.URLSearchParams;
+    assert.equal(props.prompt,'consent');assert.deepEqual(Array.from(props.scopes),['identify']);
+    await props.callback('https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb%3D&clientMod=evil&token=forbidden&returnType=html');
+    assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb%3D&returnType=json&clientMod=vendetta');assert.equal(render().props.children[1].props.children.at(-1).type,b.RN.View);
+    assert.equal(b.requests[0][1].headers.Authorization,undefined);assert.equal(b.requests[0][1].credentials,'omit');
+});
+test('ReviewDB refuses ambiguous, encoded-host, credential, fragment and denied redirects',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);
+    for(const location of ['https://manti.vendicated.dev.evil/api/reviewdb/auth?code=x','https://manti.vendicated.dev@evil.example/api/reviewdb/auth?code=x','https://manti.vendicated.dev/api/reviewdb/auth?code=x#fragment','https://manti.vendicated.dev/api/reviewdb/auth?code=x&code=y','https://manti.vendicated.dev/api/reviewdb/auth?code=%','https://manti.vendicated.dev/api/reviewdb/auth?code=%0A','https://manti.vendicated.dev/api/reviewdb/auth?error=access_denied'])await props.callback({location});
+    assert.equal(b.requests.length,0);assert.equal(b.alerts.length,7);assert.equal(b.alerts.at(-1)[1],'Authorization cancelled');
+});
+test('ReviewDB timeout includes response JSON parsing and works without AbortController',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);delete b.context.AbortController;let timeout,clear;
+    b.context.setTimeout=(fn,ms)=>{assert.equal(ms,15000);timeout=fn;return 0;};b.context.clearTimeout=id=>clear=id;
+    b.context.fetch=async()=>({ok:true,json:()=>new Promise(()=>{})});const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});await flush();timeout();await pending;
+    assert.equal(clear,0);assert.equal(b.alerts.at(-1)[1],'Authorization timed out');
+});
+test('ReviewDB surfaces unreadable service responses without storing credentials or leaking callback codes',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);b.context.fetch=async()=>({ok:false,status:502,json:async()=>{throw Error('secret-code');}});
+    await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=secret-code'});assert.match(b.alerts.at(-1)[1],/unreadable response.*502/);assert.doesNotMatch(b.alerts.at(-1)[1],/secret-code/);
+});
+test('ReviewDB cards reproduce grouped reviewer avatars, badges, dates and selectable comments',()=>{
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);b.RN.Image='Image';b.load({TableRowGroup:'NativeGroup'},null,5936);
+    const review={id:0,type:3,timestamp:0,comment:'Be respectful',sender:{username:'Warning',profilePhoto:'https://cdn.discordapp.com/avatars/u/a.webp',badges:[{name:'Donor',icon:'https://cdn.discordapp.com/emojis/1.webp'}]}};
+    const states=[0,true,[review],'',false,'',0];let index=0;b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];b.React.useEffect=()=>{};
+    const tree=b.panel.type(b.panel.props),scroll=walkElements(tree,n=>n.type==='ScrollView')[0],card=scroll.props.children[0],rendered=card.type(card.props);
+    assert.equal(rendered.type,'NativeGroup');const row=rendered.props.children[0];assert.equal(row.type,'NativeRow');assert.equal(row.props.icon.props.style.width,36);assert.equal(row.props.subLabel.props.selectable,true);assert.equal(row.props.subLabel.props.children,'Be respectful');
+    assert.equal(walkElements(row.props.label,n=>n.type==='Image')[0].props.accessibilityLabel,'Donor');assert.equal(card.props.actions,null);
+    review.type=0;review.timestamp=1700000000;const dated=card.type(card.props);assert.equal(walkElements(dated,n=>n.type===b.RN.Text && n.props.style.fontSize===12).length,1);
 });

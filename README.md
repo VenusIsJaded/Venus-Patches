@@ -4,17 +4,16 @@ Independent Discord tools for use with **Morphe**. Small, bundled patches—not 
 
 [Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-> **Release channel: 1.2.1 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
+> **Release channel: 1.2.2 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
 
-## 1.2.1: five plugin fixes
+## 1.2.2: ReviewDB and plugin fidelity repairs
 
-- **Pastelize:** fixes the actual CommonJS hash export (no `.default`), native processed name-color fields and role/member guards. Names, nested mentions, webhooks and replies are covered by regressions.
-- **ReviewDB:** the live service rejects `clientMod=venus` as **Invalid clientMod**. OAuth now uses the original client's supported `vendetta` protocol value, with timeout, service-error reporting and cancellation/account-switch guards. No Discord token is sent to ReviewDB.
-- **Hidden Channels:** hooks both native name formatters so already-received channel/category names replace **No Access**. The metadata-list facade includes locked categories, including empty sections; real permissions and locked-chat navigation remain protected. Missing/redacted metadata cannot be reconstructed.
-- **PlatformIndicators:** native Screen / Phone / Globe / Controller **icons**, tinted by status and placed beside profile names, not visible text labels. Your own profile uses SessionsStore; subscriptions are removed on unmount. This remains a profile-only port.
-- **NoDelete:** fixes immutable `ChannelMessages.merge()` support—the real public collection has no `clone()`—and changes the native update payload so row diffs refresh. Retained rows get a red background/gutter plus **This message was deleted** using the native notice schema, without fake AutoMod dispatcher events.
+- **ReviewDB:** accepts native string and object callbacks, rebuilds the fixed auth endpoint without browser-only URL assumptions, demand-loads the native OAuth helpers and requests fresh consent. Keeps the service-supported `vendetta` protocol, session-only credentials, cancellation/account guards and a deadline covering both fetch and JSON parsing. Cards now use native groups, 36-pixel reviewer avatars, badges, dates and selectable comments, with a themed input and system-review action protection.
+- **Hidden Channels:** resolves real names from received full/basic records and a bounded account-scoped session cache. Channels and categories retain names without the textual `[locked]` suffix; channel information uses a native lock icon. If Discord sends only `__hidden__`, the UI explicitly says **name unavailable**—it cannot reconstruct missing server metadata or fetch hidden messages.
+- **PlatformIndicators:** adds single-user **DM headers and DM lists**, **friend/user rows** and **voice-member rows** to profiles. Uses an independently drawn outlined monitor with a stem/foot instead of the filled Screen icon; the native mobile icon is unchanged. Group/guild channel titles are not misidentified as one user's presence.
+- **NoDelete:** preserves the original message content, including attachment-only messages and user-written `[Deleted]` text. Removed both the injected `[Deleted]` prefix and the deleted-notice embed; retained rows use only the red background/gutter. Copying, replies and saved snapshots are not contaminated with a deletion label.
 
-Repatch the original Discord APKM with **patches-1.2.1.mpp**. The fixes are traced against the supplied bytecode and tested in readable/compact runtimes; physical-device UI and successful account OAuth still need device validation.
+Repatch the original Discord APKM with **patches-1.2.2.mpp**. The supplied asset hash matches the pinned build. Readable and compact runtime regressions cover these repairs; successful account OAuth, final layouts and physical Android behavior still need device validation.
 
 ### Included features
 
@@ -22,8 +21,8 @@ Repatch the original Discord APKM with **patches-1.2.1.mpp**. The fixes are trac
 - **Hidden Channels:** fills native numeric channel buckets and gives only the mobile metadata-list factory a visibility facade. Real permission results, message fetching and navigation stay protected. Reopen/restart the guild view after enabling.
 - **NoDelete:** keeps independent snapshots across new messages, cache replacement, reconnects and truncation, rather than abusing AutoMod errors. Optional **Save deleted messages** retains an account-scoped local archive across restarts. Turning saving off erases it. Limit: 512 entries / 8 MiB archive; oldest entries can be evicted. Logout clears session records. Only already-cached content is retained; media links may expire.
 - **Pastelize:** stable pastel names and mentions, with optional role overrides, webhook-by-name and message-content controls.
-- **PlatformIndicators:** live status-colored native desktop / phone / web / console icons beside **profile** names, with own-session support. This port does not reproduce the upstream DM-header and member-list icons.
-- **ReviewDB:** opt-in profile panel with explicit-load reviews, native OAuth, post/update, delete-own-review and report controls. Requests go to `manti.vendicated.dev`; opening a review list shares that profile ID. ReviewDB credentials are held only for the app session, never stored in preferences. Community reviews are not verified facts. Live OAuth/service interaction still needs device validation.
+- **PlatformIndicators:** live status-colored monitor / native phone / web / console icons on profiles, single-user DM headers/lists, friend/user rows and voice-member rows, with own-session support. Full upstream guild-member-list parity is not claimed.
+- **ReviewDB:** opt-in profile panel with explicit-load reviews, native OAuth, post/update, delete-own-review and report controls. Requests go to `manti.vendicated.dev`; opening a review list shares that profile ID. ReviewDB credentials are held only for the app session, never stored in preferences. Native grouped review cards show reviewer avatars, badges and dates. Community reviews are not verified facts. Live OAuth/service interaction still needs device validation.
 - **Voice formats:** direct streaming PCM WAV/RIFX (8/16/24/32-bit integer, 32/64-bit float, extensible PCM) and AIFF/AIFF-C (`NONE`, `twos`, `sowt`, `fl32`, `fl64`) decoding; Android codecs remain the fallback for compressed formats. More extension/MIME aliases, decoder-availability checks and stricter waveform validation.
 
 Compilation and automated regressions are **not** a physical-device launch, UI, OAuth or hardware-codec test.
@@ -40,7 +39,7 @@ Compilation and automated regressions are **not** a physical-device launch, UI, 
 | **FreeNitro** | Shares unavailable custom emojis and stickers as CDN links. | Emoji and sticker switches independently on |
 | **No typing** | Suppresses outgoing typing indicators only. | On |
 | **QuickDelete** | Independently skips localized message/preview confirmations. | Both off—enable explicitly |
-| **NoDelete** | Retains up to 512 cached deleted messages, marked as deleted, for the session. | Off—enable explicitly |
+| **NoDelete** | Retains up to 512 cached deleted messages with red-only row styling for the session. | Off—enable explicitly |
 | **JumpToTop** | Adds chat and channel/forum action-sheet jump-to-start controls. | On |
 | **Hidden Channels** | Displays already-received locked channel metadata without granting access. | Off—enable explicitly |
 | **Venus settings** | Native Discord settings section with General, Plugins and persistent controls. | Always available |
@@ -58,9 +57,9 @@ Compilation and automated regressions are **not** a physical-device launch, UI, 
 4. Select the features you want; keep **Venus settings** enabled. The requested feature ports are bundled locally; no remote plugin installation is needed. Let Morphe merge the splits, patch and sign the APK.
 5. Install the result and open **Discord Settings → Venus**. Turn **Send audio as voice messages** on when needed.
 
-The remote source uses `main` branch metadata to discover the published **v1.2.1** bundle; refresh the source after upgrading.
+The remote source uses `main` branch metadata to discover the published **v1.2.2** bundle; refresh the source after upgrading.
 
-**Local import:** download `patches-1.2.1.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
+**Local import:** download `patches-1.2.2.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
 
 **Signing:** a patched APK has a different signing certificate from official Discord. Android may require uninstalling official Discord first; understand the loss of local app data before doing so. Future patched updates must use the same signing key. Never share your signing key.
 
@@ -73,7 +72,7 @@ The remote source uses `main` branch metadata to discover the published **v1.2.1
 - **QuickDelete:** separate opt-in message and embed switches. Matches exact Discord-localized confirmation text, never generic “delete” substrings; unknown dialogs keep their confirmation. Message deletion is irreversible.
 - **NoDelete:** only messages already present in Discord's local message store can be retained. Bulk deletions are handled, duplicate gateway events are ignored and retained messages are visibly marked. The 512-entry limit evicts the oldest retained message; disabling removes the retained messages. Dismissing one uses local dispatch, not a second DELETE request. An opt-in account-scoped local archive is available; it does not fetch remote content or download attachments.
 - **JumpToTop:** preserves Jump to Present and adds an entry point when it is absent. Uses the chat's own channel ID, not a possibly stale selected-channel singleton; channel/forum action-sheet rows reuse Discord's row component. Voice-panel dismissal controls are not repurposed.
-- **Hidden Channels:** opt-in, read-only metadata already received by your client. Marks locked names and shows a native information dialog instead of navigating into a locked channel. Real permission results are never overwritten; this cannot read hidden messages or join locked voice channels. Restart/reopen a guild view after changing the switch if its native list is already mounted.
+- **Hidden Channels:** opt-in, read-only metadata already received by your client. Keeps received names, uses a native lock icon on channel information and shows an information dialog instead of navigating into a locked channel. Real permission results are never overwritten; this cannot read hidden messages or join locked voice channels. Restart/reopen a guild view after changing the switch if its native list is already mounted.
 - **FreeNitro:** combines the requested Freemoji and FreeStickers behaviors. **Plugins → FreeNitro** contains independent **FreeMoji / Free emojis** and **Free stickers** switches, plus compact links and an always-use-links option.
 
 FreeNitro shares **links**, not genuine paid/native emoji or sticker entitlements. Existing usable items stay native unless forced. Channel permissions, Discord's message-length limits and other server restrictions still apply. Code spans, escaped emoji tokens, unknown items and unrelated invalid-emoji diagnostics are retained.
@@ -119,13 +118,13 @@ Send **one audio attachment with no accompanying text, stickers, poll or extra a
 **New plugin ports**
 - Disabled/unselected features take the stock path; no downloaded JavaScript or broad React/global-network interception. ReviewDB alone makes explicit third-party service requests.
 - NoDelete retains at most 512 independent snapshots; the optional archive is limited to 8 MiB. Session snapshots survive cache resets and clear on logout.
-- Hidden Channels has a 16-guild cache with stable array identity; native permission and record-reference checks invalidate stale entries. It never probes an inaccessible channel's API.
+- Hidden Channels has a 16-guild list cache and up to 4,096 received names scoped to the current account/session; native permission, name and record-reference checks invalidate stale entries. It never probes an inaccessible channel's API.
 - QuickDelete resolves its two localized labels only at the confirmation boundary, preserving locale changes and stock fallbacks.
 - Media wrappers preserve non-enumerable Metro module markers, React memo/forwardRef tags, symbols and property descriptors. This fixes the invalid component-object wrapping behind the reported media-viewer crash.
 - FreeMoji hooks the actual default capability object and direct emoji catalog checks. Send conversion consults real eligibility, not the picker override, so non-Nitro emoji tokens become links correctly.
 
 **Runtime**
-- At most **58 inspected Metro factories** are wrapped when all patches are selected, including the exact RN environment initializer. Unselected plugin modules are not wrapped. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers, startup network requests or root component wrapper.
+- At most **63 inspected Metro factories** are wrapped when all patches are selected, including the exact RN environment initializer. Unselected plugin modules are not wrapped. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers, startup network requests or root component wrapper.
 - The feature code is included in the patched APK. ReviewDB is the only opt-in service integration. No Vendetta/Revenge runtime, downloaded JavaScript or analytics. ReviewDB uses its own identify-only OAuth credential, not your Discord account token.
 - Switches are stored in `venus-patches.json` in Discord's private documents directory. Writes are serialized with at most one latest waiting snapshot, not an unbounded Promise queue. Failed persistence is reported in the menu; switches still work for the session.
 
@@ -163,7 +162,9 @@ The patches refuse a different embedded JavaScript bundle, even if its displayed
 | No typing / QuickDelete | Default typing actions `12272`; native alerts `5141`, live locale `1115` |
 | NoDelete | Default dispatcher `573`, MessageStore `5008`, local dismiss via message actions `7730` |
 | JumpToTop | Native Jump to Present `12549`, channel/forum sheets `11207` / `10518`, message actions `7730` |
-| Hidden Channels | Constants `1074`, real permissions `4427`, directory `2096`, ChannelStore `2041`, labels `4941`, routing `1101` |
+| Hidden Channels | Constants `1074` / `1085`, real permissions `4427`, directory `2096`, ChannelStore `2041`, labels `4941`, ChannelInfo `16569`, LockIcon `5345`, routing `1101` |
+| PlatformIndicators | Presence `4828`, Sessions `4806`, profile `11448`, friends `11159`, DM header `13603`, DM list `16377`, voice-member row `9970` |
+| ReviewDB | Profile `13382`, native modals `4645`, OAuth `9358`, rows/groups `5854` / `5936`, theme `4505` |
 | Picker tiles | `Pressable`, module `414`, with `localImageSource` children |
 | Local files | `NativeFileModule`, module `1151` |
 | Audio preparation | `CloudUpload.reactNativeCompressAndExtractData`, module `5375` |
@@ -184,7 +185,7 @@ python3 scripts/build.py
 
 Toolchain downloads are pinned and SHA-256 checked. The `.mpp` contains JVM patch classes, Android patch DEX, bundled JavaScript and a native `.mpe` extension. Discord APKs, compile-only bridge stubs and downloaded tool binaries are not distributed in the bundle.
 
-Output: `patches/build/libs/patches-1.2.1.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
+Output: `patches/build/libs/patches-1.2.2.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
 
 Verify a downloaded release before local import: place `SHA256SUMS` next to the `.mpp`, then run `sha256sum -c SHA256SUMS` on Linux (or an equivalent SHA-256 tool). The checksum detects corruption; it is not a publisher signature.
 
@@ -215,7 +216,7 @@ Before treating runtime compatibility as device-verified, check on a real device
 
 | Symptom | What to check |
 | --- | --- |
-| Morphe still shows 1.2.0 | Refresh the remote source or import `patches-1.2.1.mpp` again. Repatch the original APKM. |
+| Morphe still shows an older version | Refresh the remote source or import `patches-1.2.2.mpp` again. Repatch the original APKM. |
 | Unsupported JavaScript bundle | Confirm Discord 347.12 / 347012 and the exact embedded bundle hash above. Do not bypass the guard. |
 | Preferences say session-only/read failed | Inspect Venus → General; use valid stored settings, check available storage and restart. Switches remain usable for the session. |
 | No size badge | Only local `content://` and `file://` URIs are queried. Invalid/denied metadata hides the badge; retry after the 30-second failure expiry or reopen the picker. |
@@ -235,4 +236,4 @@ Built against the [official Morphe patcher and template](https://github.com/Morp
 
 Venus Patches is licensed under [GPL-3.0](LICENSE), with the upstream branding notice retained in [NOTICE](NOTICE). This project is not affiliated with Discord or Morphe. Releases contain patches only, not Discord APKs. Use modified clients at your own risk and review Discord's terms.
 
-Requested ports are independent implementations inspired by [Pastelize](https://vd-plugins.github.io/proxy/cynosphere.github.io/VendettaPlugins/Pastelize/), [PlatformIndicators](https://martinz64.github.io/vendetta-plugins/PlatformIndicators/) and [ReviewDB](https://janisslsm.github.io/vdplugins/ReviewDB). No remote plugin scripts are shipped. PlatformIndicators targets native status icons on profiles; upstream DM/member-list placements are not included.
+Requested ports are independent implementations inspired by [Pastelize](https://vd-plugins.github.io/proxy/cynosphere.github.io/VendettaPlugins/Pastelize/), [PlatformIndicators](https://martinz64.github.io/vendetta-plugins/PlatformIndicators/) and [ReviewDB](https://janisslsm.github.io/vdplugins/ReviewDB). No remote plugin scripts are shipped. PlatformIndicators now covers profiles, single-user DM headers/lists, friend/user rows and voice-member rows. This is an independently implemented port; complete upstream guild-member-list parity is not claimed.
