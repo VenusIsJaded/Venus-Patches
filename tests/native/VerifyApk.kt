@@ -28,7 +28,11 @@ fun main(args: Array<String>) {
         check("/*__FEATURES__*/" !in script) { "Unresolved feature selection placeholder" }
         check("const features = {picker:" in script)
         val metadata = zip.getInputStream(zip.getEntry("assets/venus/injection.json")).bufferedReader().readText()
-        check("1.0.0-dev.3" in metadata && "1.0.0-dev.3 / eval-scope" in script)
+        check("\"revision\":\"1.0.0\"" in metadata && "const revision = \"1.0.0\"" in script)
+        for (feature in listOf("copyBios", "dashless", "favouriteAnything", "freeNitro"))
+            check("$feature:true" in script) { "Missing selected feature: $feature" }
+        check("VenusRoot" !in script && "RN.Modal" !in script && "registerRoot" !in script)
+        check("SETTING_RENDERER_CONFIG" in script && "VENUS_FREENITRO" in script)
         fun number(key: String) = Regex("\"$key\":([0-9]+)").find(metadata)!!.groupValues[1].toInt()
         val hbc = zip.getInputStream(zip.getEntry("assets/index.android.bundle")).readBytes()
         val header = ByteBuffer.wrap(hbc).order(ByteOrder.LITTLE_ENDIAN)

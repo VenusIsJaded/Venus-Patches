@@ -110,7 +110,7 @@ def build():
     # Same JVM classes + classes.dex layout and manifest keys as the official plugin.
     manifest = "\r\n".join([
         "Manifest-Version: 1.0", "Name: Venus Patches",
-        "Description: Discord attachment tools and persistent runtime controls.",
+        "Description: Native Discord settings and bundled Venus plugins.",
         f"Version: {VERSION}", "Patcher-Version: 1.15.0",
         "Source: https://github.com/VenusIsJaded/Venus-Patches",
         "Author: VenusIsJaded", "License: GPL-3.0", "", "",
@@ -129,7 +129,7 @@ def build():
         for path in sorted(dex.glob("classes*.dex")):
             out.write(path, path.name)
     run("java", "-Xmx256m", "-cp", f"{bundle}:{TOOLS / 'morphe.jar'}:{TOOLS / 'gson.jar'}",
-        "util.PatchListGeneratorKt", cwd=ROOT / "patches")
+        "util.PatchListGeneratorKt", bundle, cwd=ROOT / "patches")
     checksum = libs / "SHA256SUMS"
     checksum.write_text(f"{digest(bundle)}  {bundle.name}\n")
     print(f"Bundle: {bundle.relative_to(ROOT)}", flush=True)
@@ -138,7 +138,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Experimental Discord 347.12 patches: picker sizes, native Ogg/Opus voice conversion and persistent controls. Android device tests pending.",
+        "description": "Discord 347.12: native Venus settings, CopyBios, Dashless, FavouriteAnything and FreeNitro with separate emoji/sticker switches. Real-device validation pending.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

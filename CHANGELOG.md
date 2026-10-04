@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0 — native settings and bundled plugins
+
+- Replaced the floating Venus button with a native Discord settings section, without author rows.
+- Added CopyBios, Dashless and FavouriteAnything.
+- Combined FreeEmojis and FreeStickers into FreeNitro with separate on/off switches.
+- Improved startup overhead, plugin performance and safe fallback behavior.
+- Retained existing file-size and custom voice-message features.
+
+Published on the non-prerelease channel. Automated build/logic checks do not replace real-device validation. APNG sticker previews may be static; Lottie conversion is not included.
+
 ## 1.0.0-dev.3 — eval-scope capture revision
 
 New `v1.0.0-dev.3` prerelease with `patches-1.0.0-dev.3.mpp`. Repatch the original APKM and verify Morphe shows **1.0.0-dev.3**.
