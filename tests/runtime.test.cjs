@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const raw = fs.readFileSync('patches/src/main/resources/venus/bootstrap.js', 'utf8');
+const raw = fs.readFileSync(process.env.VENUS_RUNTIME_PATH || 'patches/src/main/resources/venus/bootstrap.js', 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
 // Node's lexical semantics cannot reproduce Hermes native eval's default
@@ -934,4 +934,123 @@ test('prototype channel-store hooks retain store identity and inherited subscrip
     const store=new Store();const patched=b.load({default:store},null,2096).default;
     assert.equal(patched,store);assert.equal(patched.subscribe(),store);assert.equal(patched.getChannels('g'),b.result);
     b.api.setSetting('hiddenChannels',true);assert.equal(patched.getChannels('g').SELECTABLE.length,3);
+});
+
+
+test('invalid native size values are not fabricated zero-byte files', async () => {
+    const b = boot(); let value;
+    b.load(native({getSize:async () => value}));
+    for (const invalid of [null, undefined, false, true, '', ' ', {}, [], 0.5, -1, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+        value = invalid;
+        assert.equal(await b.api.getSize('content://invalid/' + Math.random()), null);
+    }
+    value = '2048'; assert.equal(await b.api.getSize('file://numeric'), 2048);
+    value = 0; assert.equal(await b.api.getSize('file://empty'), 0);
+});
+test('queued size reads survive an unavailable preference directory', {timeout:1000}, async () => {
+    const b = boot();
+    const pending = b.api.getSize('content://before-bridge');
+    b.load(native({getConstants:() => ({}), getSize:async () => 42}));
+    assert.equal(await pending, 42);
+    assert.match(b.api.status.storage, /unavailable/);
+});
+test('restoring picker off resolves queued reads without starting more native work', async () => {
+    const b = boot(); const releases = []; let reads = 0;
+    const requests = Array.from({length:12}, (_, i) => b.api.getSize('content://restore/' + i));
+    b.load(native({fileExists:async () => true, readFile:async () => '{"picker":false}',
+        getSize:() => { reads++; return new Promise(resolve => releases.push(resolve)); }}));
+    await flush();
+    assert.equal(b.api.settings.picker, false);
+    releases.forEach(resolve => resolve(8));
+    const values = await Promise.all(requests);
+    assert.equal(reads, 4);
+    assert.equal(values.filter(value => value === null).length, 8);
+});
+test('size cache evicts cold completed entries rather than recently used tiles', async () => {
+    const b = boot(); const reads = new Map();
+    b.load(native({getSize:async uri => { reads.set(uri, (reads.get(uri) || 0) + 1); return 8; }}));
+    for (let i = 0; i < 256; i++) await b.api.getSize('file://' + i);
+    await b.api.getSize('file://0');
+    await b.api.getSize('file://new');
+    await b.api.getSize('file://0');
+    assert.equal(reads.get('file://0'), 1);
+    await b.api.getSize('file://1');
+    assert.equal(reads.get('file://1'), 2);
+});
+test('preference writes coalesce bursts and serialize only the latest waiting snapshot', async () => {
+    const b = boot(); const writes = [], releases = [];
+    b.load(native({writeFile:(directory, name, text) => {
+        writes.push(JSON.parse(text)); return new Promise(resolve => releases.push(resolve));
+    }}));
+    await flush();
+    b.api.setSetting('voice', true); await flush();
+    for (let i = 0; i < 101; i++) b.api.setSetting('picker', i % 2 === 1);
+    assert.equal(writes.length, 1);
+    releases.shift()(); await flush();
+    assert.equal(writes.length, 2);
+    assert.equal(writes[1].picker, false);
+    assert.equal(writes[1].voice, true);
+    releases.shift()(); await flush();
+    assert.equal(b.api.status.storage, 'saved');
+});
+test('malformed preference shapes are reported rather than treated as settings', async () => {
+    for (const text of ['null', '[]', '42', '"settings"']) {
+        const b = boot();
+        b.load(native({fileExists:async () => true, readFile:async () => text}));
+        await flush(); assert.match(b.api.status.storage, /read failed/);
+        assert.equal(b.api.settings.picker, true);
+    }
+});
+test('picker subscribers ignore unrelated toggles and persistence notifications', async () => {
+    const b = boot(); let updates = 0; const cleanups = [];
+    const React = {
+        createElement:(type, props, ...children) => ({type, props:{...props, children}}),
+        useState:() => [null, () => updates++],
+        useEffect:effect => { const cleanup = effect(); if (cleanup) cleanups.push(cleanup); },
+    };
+    b.load(React); b.load({View(){}, Text(){}, Modal(){}});
+    const picker = b.load({default:function Pressable(props) { return props; }});
+    const props = picker.default({children:{props:{localImageSource:{uri:'file://badge'}}}});
+    const badge = props.children.props.children[1];
+    badge.type(badge.props);
+    b.load(native()); await flush(); // Restore notifies all settings once.
+    const before = updates;
+    b.api.setSetting('voice', true); await flush();
+    assert.equal(updates, before);
+    b.api.setSetting('picker', false);
+    assert.equal(updates, before + 1);
+    cleanups.forEach(cleanup => cleanup());
+    b.api.setSetting('picker', true); await flush();
+    assert.equal(updates, before + 1);
+});
+test('same-turn voice cancellation never submits a prepare after cancel', async () => {
+    const b = boot(); const commands = [];
+    b.api.setSetting('voice', true);
+    b.load(native({getSize:async request => { commands.push(JSON.parse(request.slice('venus-voice-v1:'.length)).action); return 'ok'; }}));
+    class CloudUpload {
+        constructor() { this.item = {uri:'content://audio', mimeType:'audio/mp3'}; }
+        reactNativeCompressAndExtractData() { return Promise.resolve(this); }
+        isCancelled() { return !!this.cancelled; }
+        cancel() { this.cancelled = true; }
+    }
+    b.load({CloudUpload});
+    const upload = new CloudUpload();
+    const pending = upload.reactNativeCompressAndExtractData();
+    upload.cancel();
+    await assert.rejects(pending, /cancelled/);
+    assert.equal(commands.includes('prepare'), false);
+});
+test('invalid voice duration and byte size fall back without mutating the upload', async () => {
+    for (const bad of [{durationSecs:Infinity}, {durationSecs:1201}, {size:1.5}, {size:'100'}]) {
+        const b = boot(); b.api.setSetting('voice', true);
+        const result = {uri:'file://cache/audio.ogg', mimeType:'audio/ogg', durationSecs:1, size:100, waveform:'AAA=', ...bad};
+        b.load(native({getSize:async () => JSON.stringify(result)}));
+        class CloudUpload {
+            constructor() { this.item = {uri:'content://audio', mimeType:'audio/mp3'}; this.calls = 0; }
+            reactNativeCompressAndExtractData() { this.calls++; return Promise.resolve(this); }
+        }
+        b.load({CloudUpload}); const upload = new CloudUpload();
+        await upload.reactNativeCompressAndExtractData();
+        assert.equal(upload.calls, 1); assert.equal(upload.item.uri, 'content://audio');
+    }
 });

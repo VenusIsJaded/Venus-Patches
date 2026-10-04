@@ -9,6 +9,7 @@ from pathlib import Path
 import subprocess
 import urllib.request
 import zipfile
+import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "work" / "tools"
@@ -19,6 +20,9 @@ VERSION = PROPERTIES["version"]
 RELEASE_TAG = PROPERTIES.get("releaseTag", f"v{VERSION}")
 ASSET_NAME = PROPERTIES.get("releaseAsset", f"patches-{VERSION}.mpp")
 DEPENDENCIES = {
+    "terser.tgz": (
+        "https://registry.npmjs.org/terser/-/terser-5.44.0.tgz",
+        "86b954e059e70d536a7918fdf7f2f74292e81e03f30a9ab4bd281484e7c9edfc"),
     "android-platform.zip": (
         "https://dl.google.com/android/repository/platform-35_r02.zip",
         "0988cacad01b38a18a47bac14a0695f246bc76c1b06c0eeb8eb0dc825ab0c8e0"),
@@ -37,9 +41,9 @@ DEPENDENCIES = {
 }
 
 
-def run(*args, cwd=ROOT):
+def run(*args, cwd=ROOT, env=None):
     subprocess.run([str(a) for a in args], cwd=cwd, check=True,
-                   env={**os.environ, "JAVA_OPTS": "-Xmx384m"})
+                   env={**os.environ, "JAVA_OPTS": "-Xmx384m", **(env or {})})
 
 
 def digest(path):
@@ -54,10 +58,18 @@ def tools():
         if not path.exists():
             print(f"Downloading {name}", flush=True)
             temporary = path.with_suffix(".download")
-            urllib.request.urlretrieve(url, temporary)
-            temporary.rename(path)
+            try:
+                urllib.request.urlretrieve(url, temporary)
+                if digest(temporary) != sha:
+                    raise SystemExit(f"Checksum mismatch for downloaded {name}")
+                temporary.replace(path)
+            finally:
+                temporary.unlink(missing_ok=True)
         if digest(path) != sha:
             raise SystemExit(f"Checksum mismatch: {path}; remove it and retry")
+    # Read one known tool file; never extract arbitrary npm archive paths.
+    with tarfile.open(TOOLS / "terser.tgz") as archive:
+        (TOOLS / "terser.js").write_bytes(archive.extractfile("package/dist/bundle.min.js").read())
     # Always extract the pinned compiler, not an arbitrary previously installed version.
     with zipfile.ZipFile(TOOLS / "kotlin24.zip") as compiler:
         for entry in compiler.infolist():
@@ -70,9 +82,35 @@ def tools():
         (TOOLS / "android.jar").write_bytes(platform.read("android-35/android.jar"))
 
 
+def compact_runtime():
+    # Parser/printer only: preserve identifiers and scopes for Hermes native eval.
+    script = r"""
+const fs = require('node:fs'), vm = require('node:vm'), context = {};
+vm.runInNewContext(fs.readFileSync(process.argv[1], 'utf8'), context);
+const source = fs.readFileSync(process.argv[2], 'utf8').replace('/*__FEATURES__*/', '__VENUS_FEATURES__');
+context.Terser.minify(source, {compress:false, mangle:false,
+    format:{comments:false, ascii_only:true}}).then(result => {
+    process.stdout.write(result.code.replace('__VENUS_FEATURES__', '/*__FEATURES__*/'));
+});
+"""
+    source = ROOT / "patches/src/main/resources/venus/bootstrap.js"
+    result = subprocess.run(["node", "-e", script, str(TOOLS / "terser.js"), str(source)],
+                            cwd=ROOT, check=True, capture_output=True, text=True)
+    content = result.stdout
+    if content.count("/*__FEATURES__*/") != 1 or len(content) > 65000:
+        raise SystemExit("Invalid or oversized compact runtime")
+    BUILD.mkdir(parents=True, exist_ok=True)
+    output = BUILD / "bootstrap.js"
+    output.write_text(content)
+    print(f"Prelude characters: {len(source.read_text())} -> {len(content)}", flush=True)
+    return output
+
+
 def build():
     tools()
     run("node", "--test", "tests/runtime.test.cjs")
+    runtime = compact_runtime()
+    run("node", "--test", "tests/runtime.test.cjs", env={"VENUS_RUNTIME_PATH": str(runtime)})
     libs = BUILD / "libs"
     libs.mkdir(parents=True, exist_ok=True)
     # Compile-only bridge ABI stubs are on the classpath, never in the extension DEX.
@@ -86,12 +124,24 @@ def build():
         "-jvm-target", "11", "-Xlambdas=class", "-cp",
         f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
         *voice_sources, "-d", voice_classes)
+    # The Android host obfuscates collection/text/Result/Unit helpers. A JVM compile
+    # alone can succeed with dependencies that will not link inside Discord.
+    with zipfile.ZipFile(voice_classes) as native:
+        for name in native.namelist():
+            if not name.endswith(".class"):
+                continue
+            content = native.read(name)
+            for unsafe in (b"kotlin/text/", b"kotlin/collections/", b"kotlin/Result", b"kotlin/Unit"):
+                if unsafe in content:
+                    raise SystemExit(f"Unsafe host Kotlin helper in {name}: {unsafe.decode()}; use Java APIs")
     pcm_tests = BUILD / "pcm-tests.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-cp", f"{voice_classes}:{TOOLS / 'morphe.jar'}",
         ROOT / "tests/native/PcmToolsTest.kt", "-d", pcm_tests)
     run("java", "-Xmx128m", "-cp", f"{pcm_tests}:{voice_classes}:{TOOLS / 'morphe.jar'}", "PcmToolsTestKt")
     voice_dex = BUILD / "voice-dex"
     voice_dex.mkdir(exist_ok=True)
+    for stale in voice_dex.glob("classes*.dex"):
+        stale.unlink()
     run("java", "-Xmx384m", "-cp", TOOLS / "r8.jar", "com.android.tools.r8.D8",
         "--release", "--min-api", "26", "--lib", TOOLS / "android.jar",
         "--classpath", TOOLS / "morphe.jar", "--classpath", stubs,
@@ -103,6 +153,8 @@ def build():
         *sources, "-d", classes)
     dex = BUILD / "dex"
     dex.mkdir(exist_ok=True)
+    for stale in dex.glob("classes*.dex"):
+        stale.unlink()
     run("java", "-Xmx384m", "-cp", TOOLS / "r8.jar", "com.android.tools.r8.D8",
         "--release", "--min-api", "26", "--classpath", TOOLS / "morphe.jar",
         "--classpath", TOOLS / "gson.jar",
@@ -116,18 +168,27 @@ def build():
         "Author: VenusIsJaded", "License: GPL-3.0", "", "",
     ])
     bundle = libs / ASSET_NAME
+    # Normalize ZIP timestamps, order and modes so identical inputs produce identical bundles.
     with zipfile.ZipFile(bundle, "w", zipfile.ZIP_DEFLATED) as out:
-        out.writestr("META-INF/MANIFEST.MF", manifest)
+        def add(name, content):
+            entry = zipfile.ZipInfo(str(name), date_time=(1980, 1, 1, 0, 0, 0))
+            entry.compress_type = zipfile.ZIP_DEFLATED
+            entry.create_system = 3
+            entry.external_attr = 0o100644 << 16
+            out.writestr(entry, content)
+
+        add("META-INF/MANIFEST.MF", manifest)
         with zipfile.ZipFile(classes) as compiled:
-            for name in compiled.namelist():
+            for name in sorted(compiled.namelist()):
                 if name != "META-INF/MANIFEST.MF":
-                    out.writestr(name, compiled.read(name))
+                    add(name, compiled.read(name))
         for path in sorted((ROOT / "patches/src/main/resources").rglob("*")):
             if path.is_file():
-                out.write(path, path.relative_to(ROOT / "patches/src/main/resources"))
-        out.write(voice_dex / "classes.dex", "extensions/voice.mpe")
+                content = runtime.read_bytes() if path.name == "bootstrap.js" else path.read_bytes()
+                add(path.relative_to(ROOT / "patches/src/main/resources"), content)
+        add("extensions/voice.mpe", (voice_dex / "classes.dex").read_bytes())
         for path in sorted(dex.glob("classes*.dex")):
-            out.write(path, path.name)
+            add(path.name, path.read_bytes())
     run("java", "-Xmx256m", "-cp", f"{bundle}:{TOOLS / 'morphe.jar'}:{TOOLS / 'gson.jar'}",
         "util.PatchListGeneratorKt", bundle, cwd=ROOT / "patches")
     checksum = libs / "SHA256SUMS"
@@ -138,7 +199,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: media/FreeMoji fixes, attachment tools in Plugins, No typing, QuickDelete, NoDelete, JumpToTop and Hidden Channels. Real-device validation pending.",
+        "description": "Discord 347.12: faster mono PCM conversion, scoped picker updates, coalesced preferences, metadata and cancellation fixes, reproducible bundle. Real-device validation pending.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

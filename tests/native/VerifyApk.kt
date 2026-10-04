@@ -26,9 +26,9 @@ fun main(args: Array<String>) {
     ZipFile(apk).use { zip ->
         val script = zip.getInputStream(zip.getEntry("assets/venus/bootstrap.js")).bufferedReader().readText()
         check("/*__FEATURES__*/" !in script) { "Unresolved feature selection placeholder" }
-        check("const features = {picker:" in script)
+        check(Regex("const features\\s*=\\s*\\{picker:").containsMatchIn(script))
         val metadata = zip.getInputStream(zip.getEntry("assets/venus/injection.json")).bufferedReader().readText()
-        check("\"revision\":\"1.1.0\"" in metadata && "const revision = \"1.1.0\"" in script)
+        check("\"revision\":\"1.1.1\"" in metadata && Regex("const revision\\s*=\\s*\"1\\.1\\.1\"").containsMatchIn(script))
         for (feature in listOf("copyBios", "dashless", "favouriteAnything", "freeNitro", "noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels"))
             check("$feature:true" in script) { "Missing selected feature: $feature" }
         check("VenusRoot" !in script && "RN.Modal" !in script && "registerRoot" !in script)

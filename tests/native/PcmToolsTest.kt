@@ -27,7 +27,29 @@ private fun convert(rate: Int, bytes: ByteArray, chunk: Int, channels: Int = 1, 
     out.write(converter.finish())
     return out.toByteArray() to converter
 }
-fun main() {
+private fun benchmark() {
+    // Synthetic JVM microbenchmark, not Android codec/startup/frame-rate evidence.
+    for ((rate, channels) in listOf(48000 to 1, 44100 to 2)) {
+        val pcm = input(rate, 960, channels)
+        val times = LongArray(9)
+        var checksum = 0L
+        for (round in 0 until 14) {
+            val converter = PcmResampler(rate, channels, false)
+            val started = System.nanoTime()
+            repeat(2000) {
+                val out = converter.convert(ByteBuffer.wrap(pcm))
+                checksum += out[0].toLong() + out.size
+            }
+            converter.finish()
+            val elapsed = System.nanoTime() - started
+            if (round >= 5) times[round - 5] = elapsed
+        }
+        java.util.Arrays.sort(times)
+        println("BENCH rate=$rate channels=$channels median_ms=${times[4] / 1000000.0} checksum=$checksum")
+    }
+}
+fun main(args: Array<String>) {
+    if (args.contains("--benchmark")) { benchmark(); return }
     var passed = 0
     val mono = input(48000, 48000)
     val exact = convert(48000, mono, 960)
@@ -59,5 +81,27 @@ fun main() {
     check((bins[0].toInt() and 255) < (bins[1].toInt() and 255)); passed++
     check(runCatching { PcmResampler(48000, 1, false).convert(ByteBuffer.wrap(byteArrayOf(0))) }.isFailure); passed++
     check(runCatching { PcmResampler(1000, 1, false) }.isFailure); passed++
+    val extrema = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
+        .putShort(Short.MIN_VALUE).putShort(Short.MAX_VALUE).putShort(0).putShort(-1).array()
+    val extremeOutput = convert(48000, extrema, 2)
+    check(extremeOutput.first.contentEquals(extrema)); passed++
+    check(extremeOutput.second.finish().isEmpty()); passed++
+    check(PcmResampler(48000, 1, false).finish().isEmpty()); passed++
+    val direct = ByteBuffer.allocateDirect(extrema.size + 4)
+    direct.position(2); direct.put(extrema); direct.limit(2 + extrema.size); direct.position(2)
+    check(PcmResampler(48000, 1, false).convert(direct).contentEquals(extrema)); passed++
+    for (rate in listOf(8000, 44100, 48000, 192000)) {
+        for (channels in listOf(1, 2, 8)) {
+            val bytes = input(rate, 101, channels, true)
+            check(convert(rate, bytes, bytes.size, channels, true).first
+                .contentEquals(convert(rate, bytes, channels * 4, channels, true).first))
+            passed++
+        }
+    }
+    for (invalid in listOf(Float.NaN, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY)) {
+        val bytes = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putFloat(invalid).array()
+        check(runCatching { PcmResampler(48000, 1, true).convert(ByteBuffer.wrap(bytes)) }.isFailure)
+        passed++
+    }
     println("PASS: $passed PCM/waveform checks (real signal, rate conversion, duration, silence, chunk invariance)")
 }

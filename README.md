@@ -4,7 +4,18 @@ Independent Discord tools for use with **Morphe**. Small, bundled patches—not 
 
 [Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-> **Release channel: 1.1.0 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
+> **Release channel: 1.1.1 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
+
+## 1.1.1: performance and reliability update
+
+- **Faster common audio path:** 48 kHz mono PCM16 uses one bulk copy, without interpolation or per-byte stream writes. Other sample rates retain streaming resampling; output limits and waveform measurements remain enforced.
+- **Less UI work:** picker badges and plugin switches subscribe only to their own setting; unrelated changes and preference-write notifications no longer redraw every badge. Immutable tree transforms allocate child arrays only when a child changes.
+- **Less repeated I/O:** completed size entries use least-recently-used eviction, and rapid setting changes retain only the latest waiting save snapshot. Native reads and audio jobs remain bounded.
+- **Bug fixes:** invalid size metadata no longer becomes a fake zero-byte file; pre-bridge size requests drain even without a preferences directory; restoring picker-off resolves queued work; same-turn voice cancellation cannot enqueue a later preparation. Non-finite PCM, invalid voice metadata and malformed preferences fail safely. Codecs created before a configuration/start failure are now released.
+- **Smaller startup prelude:** parser-only compaction removes comments/whitespace without renaming identifiers or rewriting scopes. The bundled script is about **29% shorter**, reducing the character-array construction used by the guarded HBC prelude. Both readable and compact forms run the full JavaScript regression suite. This is not a measured Android startup-time claim.
+- **Safer builds:** downloaded tools are verified before entering the cache, old DEX outputs are removed, and bundle ZIP entries have fixed timestamps/order/modes.
+
+This optimizes **Venus's overhead**, not Discord's closed-source renderer, network stack or all of its bugs. See the [changelog](CHANGELOG.md) for scope and the device checklist below for remaining validation.
 
 ## What you get
 
@@ -36,9 +47,9 @@ Independent Discord tools for use with **Morphe**. Small, bundled patches—not 
 4. Select the features you want; keep **Venus settings** enabled. All requested plugins are bundled locally; no remote plugin installation is needed. Let Morphe merge the splits, patch and sign the APK.
 5. Install the result and open **Discord Settings → Venus**. Turn **Send audio as voice messages** on when needed.
 
-The `main` branch's `patches-bundle.json` points to **v1.1.0**, published without the prerelease flag.
+The remote source uses `main` branch metadata to discover the published **v1.1.1** bundle; refresh the source after upgrading.
 
-**Local import:** download `patches-1.1.0.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
+**Local import:** download `patches-1.1.1.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
 
 **Signing:** a patched APK has a different signing certificate from official Discord. Android may require uninstalling official Discord first; understand the loss of local app data before doing so. Future patched updates must use the same signing key. Never share your signing key.
 
@@ -84,13 +95,13 @@ Send **one audio attachment with no accompanying text, stickers, poll or extra a
 **Picker**
 - Reads local size metadata asynchronously—no full-file reads or remote URL probing.
 - Deduplicates simultaneous requests for the same URI, including zero-byte files.
-- At most **four** metadata reads at once; a **256-entry** cache.
+- At most **four** metadata reads at once; a **256-entry** cache with LRU eviction of completed reads. In-flight reads cannot be evicted.
 - Successful results expire after five minutes; failed reads after 30 seconds. Disabling clears queued work and cached results.
-- Does not mutate React props or intercept touches on the size badge.
+- Does not mutate React props or intercept touches on the size badge. Badge subscribers ignore unrelated settings and persistence notifications.
 
 **Voice**
 - One codec worker with a bounded four-job waiting queue; no decoding on the UI/JS thread.
-- Streaming PCM conversion rather than holding the entire decoded recording in memory or sending base64 audio through React Native.
+- Streaming PCM conversion rather than holding the entire decoded recording in memory or sending base64 audio through React Native. Common 48 kHz mono PCM16 chunks use a bulk-copy path; other layouts use pre-sized output arrays instead of growing byte streams.
 - Per-upload Promise reuse prevents duplicate conversions on retries. Cancelling an upload or turning the switch off cancels pending work.
 - Abandoned converted outputs are pruned during subsequent conversions: at most 32 outputs retained, with six-hour expiry. Original source files are never deleted.
 
@@ -105,7 +116,19 @@ Send **one audio attachment with no accompanying text, stickers, poll or extra a
 **Runtime**
 - At most **36 inspected Metro factories** are wrapped when all patches are selected, including the exact RN environment initializer. Unselected plugin modules are not wrapped. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers, startup network requests or root component wrapper.
 - The feature code is included in the patched APK. No Vendetta/Revenge runtime, downloaded JavaScript, analytics or account-token handling.
-- Switches are stored in `venus-patches.json` in Discord's private documents directory. Failed persistence is reported in the menu; switches still work for the session.
+- Switches are stored in `venus-patches.json` in Discord's private documents directory. Writes are serialized with at most one latest waiting snapshot, not an unbounded Promise queue. Failed persistence is reported in the menu; switches still work for the session.
+
+### Measuring performance responsibly
+
+The included JVM PCM benchmark uses 2,000 chunks of 960 frames, five warm-up rounds and the median of nine measured rounds. In this Linux/Java 21 sandbox, representative before/after runs were about **39 ms → 9.5 ms** for 48 kHz mono PCM16 (roughly **4× faster for that conversion loop**). The 44.1 kHz stereo workload was around **43–45 ms**; it is **not demonstrated to be faster**. Both implementations produced matching workload checksums. Results vary with JIT compilation and load; this is not an Android codec, battery, FPS or startup benchmark.
+
+After building, reproduce the current workload with:
+
+```bash
+java -Xmx128m -cp patches/build/pcm-tests.jar:patches/build/voice-classes.jar:work/tools/morphe.jar PcmToolsTestKt --benchmark
+```
+
+For an Android comparison, use the same device/APKM, patch selection, account, recording and signing key for each version. Measure cold launch separately from warm launch, picker scrolling separately from metadata latency, and conversion duration separately from upload time. Repeat runs without thermal throttling. **No physical-device performance measurements are claimed here.**
 
 ## Compatibility and integration points
 
@@ -150,7 +173,9 @@ python3 scripts/build.py
 
 Toolchain downloads are pinned and SHA-256 checked. The `.mpp` contains JVM patch classes, Android patch DEX, bundled JavaScript and a native `.mpe` extension. Discord APKs, compile-only bridge stubs and downloaded tool binaries are not distributed in the bundle.
 
-Output: `patches/build/libs/patches-1.1.0.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
+Output: `patches/build/libs/patches-1.1.1.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
+
+Verify a downloaded release before local import: place `SHA256SUMS` next to the `.mpp`, then run `sha256sum -c SHA256SUMS` on Linux (or an equivalent SHA-256 tool). The checksum detects corruption; it is not a publisher signature.
 
 Runtime regression tests can also be run independently:
 
@@ -158,7 +183,7 @@ Runtime regression tests can also be run independently:
 node --test tests/runtime.test.cjs
 ```
 
-`tests/native/PcmToolsTest.kt` checks generated PCM signals, durations, sample rates, downmixing, waveform amplitude and chunk invariance. `tests/native/VerifyApk.kt` forbids injected private native startup calls and a second main bundle load, and checks extension method/field/type linkage, the guarded HBC98 prelude, original global-instruction identity, bytecode footer, ordinary-size bypass and APK signature. These checks do **not** simulate physical Android codecs or Discord's servers.
+`tests/native/PcmToolsTest.kt` checks generated PCM signals, durations, sample rates, downmixing, waveform amplitude, chunk invariance, signed extrema, direct/sliced buffers and non-finite float rejection. `tests/native/VerifyApk.kt` forbids injected private native startup calls and a second main bundle load, and checks extension method/field/type linkage, the guarded HBC98 prelude, original global-instruction identity, bytecode footer, ordinary-size bypass and APK signature. These checks do **not** simulate physical Android codecs or Discord's servers.
 
 The new startup path removes the native private-loader call **entirely**, rather than changing its opcode again. A separate main bundle load can mark RN ready and flush queued calls before Discord initializes. Venus instead inserts a fail-open prelude into the pinned HBC98 global entry, retaining all original global instructions and other tables, and activates feature hooks only after the real RN environment initializer returns. Prelude failure falls through to Discord instead of becoming a fatal bootstrap exception. Runtime tests cover deferred, failed and reentrant setup. The prior Kotlin helper/singleton ABI fixes remain in place.
 
@@ -174,6 +199,20 @@ Before treating runtime compatibility as device-verified, check on a real device
 - Picker badges work while scrolling, on zero-byte files and on denied content URIs without blocking taps.
 - MP3, AAC/M4A, WAV, FLAC and Ogg/Opus upload as playable native-looking voice messages with plausible duration and waveform.
 - Cancelling conversion, low storage, unsupported formats, mixed messages and normal recorded voice messages behave safely.
+
+## Troubleshooting
+
+| Symptom | What to check |
+| --- | --- |
+| Morphe still shows 1.1.0 | Refresh the remote source or import `patches-1.1.1.mpp` again. Repatch the original APKM. |
+| Unsupported JavaScript bundle | Confirm Discord 347.12 / 347012 and the exact embedded bundle hash above. Do not bypass the guard. |
+| Preferences say session-only/read failed | Inspect Venus → General; use valid stored settings, check available storage and restart. Switches remain usable for the session. |
+| No size badge | Only local `content://` and `file://` URIs are queried. Invalid/denied metadata hides the badge; retry after the 30-second failure expiry or reopen the picker. |
+| Audio is sent as a normal file | Enable Custom voice messages, use one supported audio attachment with no text, and check API 29+, codec availability and the reported conversion error. |
+| Install fails with signature mismatch | Use the same Morphe signing key as your previous patched installation. Do not uninstall until you understand the local-data loss. |
+| Crash or rendering regression | Disable the affected feature, retry with only Venus settings selected, and report device/API level, patch version, selected features and a redacted stack trace. Never include tokens or private message content. |
+
+Releases distribute only `.mpp` patches and checksums—not your Discord APKM, patched APK, account data or signing keys. Automated checks cannot guarantee that every upstream Discord bug is fixed.
 
 ## Credits and licensing
 
