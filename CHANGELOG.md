@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.1 — performance and reliability audit
+
+- Added a bulk-copy 48 kHz mono PCM16 path and pre-sized resampling arrays, while retaining real waveforms, clipping and duration limits. Synthetic JVM mono conversion is roughly 4× faster in representative runs; generic stereo resampling is not claimed faster, and Android timings remain unmeasured.
+- Scoped picker/toggle subscriptions, structurally shared unchanged React child arrays, LRU completed-size eviction and early disabled-feature exits reduce avoidable work.
+- Coalesced preference persistence to one active write and one latest waiting snapshot.
+- Fixed invalid size values becoming zero-byte files, pre-bridge queues stalling without a preferences directory, and queued reads continuing after picker-off restoration.
+- Fixed same-turn voice cancellation submitting preparation afterward; validate finite bounded duration and integral size metadata; reject malformed preference shapes and non-finite floating PCM.
+- Release codecs even if configuration/start fails, stop encoder draining at EOS and clean failed outputs if metadata generation fails.
+- Added pinned parser-only prelude compaction (about 29% fewer script characters) without identifier mangling or scope rewriting, tested with the full runtime suite in readable and compact forms.
+- Verify newly downloaded tools before caching, remove stale DEX outputs and normalize bundle ZIP entries for repeatable artifacts.
+- Added nine JavaScript regression cases, expanded native PCM checks from 15 to 34, and added a reproducible synthetic benchmark. Improved README installation, upgrade, performance methodology and troubleshooting guidance.
+
+Device launch, physical codecs, playback and Android performance still require device testing. This release targets patch overhead and identified defects, not every bug in Discord.
+
 ## 1.1.0 — media fixes and five new bundled plugins
 
 - Added No typing, QuickDelete, NoDelete, JumpToTop and Hidden Channels as independently selectable offline patches.

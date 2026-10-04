@@ -25,6 +25,7 @@ import java.util.regex.Pattern
 /** Dispatch on the existing Promise-bearing file bridge, leaving ordinary getSize calls unchanged. */
 object VoiceProcessor {
     private const val PREFIX = "venus-voice-v1:"
+    private val jobId = Pattern.compile("[A-Za-z0-9_-]{1,80}")
     private val jobs = ConcurrentHashMap<String, AtomicBoolean>()
     private val worker = ThreadPoolExecutor(1, 1, 30, TimeUnit.SECONDS, ArrayBlockingQueue<Runnable>(4),
         { task -> Thread(task, "Venus-Audio").apply { isDaemon = true } }, ThreadPoolExecutor.AbortPolicy())
@@ -32,11 +33,12 @@ object VoiceProcessor {
 
     @JvmStatic
     fun dispatch(request: String, promise: Promise, context: Context): Boolean {
+        // Kotlin startsWith emits StringsKt.startsWith$default, absent in the obfuscated host.
         if (request.length < PREFIX.length || request.substring(0, PREFIX.length) != PREFIX) return false
         try {
             val command = JSONObject(request.substring(PREFIX.length))
             val id = command.optString("id")
-            require(Pattern.matches("[A-Za-z0-9_-]{1,80}", id)) { "Invalid audio job ID" }
+            require(jobId.matcher(id).matches()) { "Invalid audio job ID" }
             when (command.getString("action")) {
                 "cancel" -> { jobs[id]?.set(true); promise.resolve("cancelled") }
                 "release" -> {
@@ -75,7 +77,8 @@ object VoiceProcessor {
 
     private fun convert(context: Context, uri: Uri, id: String, cancelled: AtomicBoolean): JSONObject {
         check(!cancelled.get()) { "Audio conversion cancelled" }
-        val directory = File(context.cacheDir, "venus-voice").apply { mkdirs() }
+        val directory = File(context.cacheDir, "venus-voice")
+        check(directory.isDirectory || directory.mkdirs()) { "Audio cache directory unavailable" }
         // Bound abandoned outputs; conversion retries reuse the same upload's in-flight Promise in JS.
         // Do not call Kotlin collection/text helpers: their ABIs are obfuscated in Discord.
         val old = ArrayList<File>()
@@ -124,16 +127,18 @@ object VoiceProcessor {
                 require(inputFormat.getLong(MediaFormat.KEY_DURATION) <= 1200000000L) { "Audio exceeds 20 minutes" }
             require(extractor.drmInitData == null) { "DRM-protected audio is not supported" }
             inputFormat.setInteger(MediaFormat.KEY_PCM_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
-            decoder = MediaCodec.createDecoderByType(mime).apply { configure(inputFormat, null, null, 0); start() }
+            decoder = MediaCodec.createDecoderByType(mime)
+            decoder.configure(inputFormat, null, null, 0)
+            decoder.start()
             decoderStarted = true
             val encodedFormat = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_OPUS, 48000, 1).apply {
                 setInteger(MediaFormat.KEY_BIT_RATE, 64000)
                 setInteger(MediaFormat.KEY_PCM_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
                 setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 3840)
             }
-            encoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_OPUS).apply {
-                configure(encodedFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE); start()
-            }
+            encoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_OPUS)
+            encoder.configure(encodedFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            encoder.start()
             encoderStarted = true
             muxer = MediaMuxer(output.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_OGG)
             var outputTrack = -1
@@ -141,7 +146,7 @@ object VoiceProcessor {
             var queuedFrames = 0L
             val encodedInfo = MediaCodec.BufferInfo()
             fun drainEncoder(wait: Boolean) {
-                while (true) {
+                while (!encoderDone) {
                     checkActive()
                     val index = encoder.dequeueOutputBuffer(encodedInfo, if (wait) 10000 else 0)
                     when {
@@ -247,11 +252,12 @@ object VoiceProcessor {
             muxer.stop()
             muxerStarted = false
             require(output.length() > 0) { "Ogg encoder produced an empty file" }
-            success = true
-            return JSONObject().put("uri", Uri.fromFile(output).toString()).put("filename", "voice-message.ogg")
+            val result = JSONObject().put("uri", Uri.fromFile(output).toString()).put("filename", "voice-message.ogg")
                 .put("mimeType", "audio/ogg").put("size", output.length())
                 .put("durationSecs", samples.outputFrames.toDouble() / 48000)
                 .put("waveform", samples.waveform.base64())
+            success = true
+            return result
         } finally {
             // Explicit try/catch avoids dependencies on the host's obfuscated kotlin.Result ABI.
             // Explicit null guards keep cleanup entirely on Java/Android void APIs.
@@ -267,7 +273,7 @@ object VoiceProcessor {
                 if (muxerStarted) try { muxer.stop() } catch (_: Exception) { }
                 try { muxer.release() } catch (_: Exception) { }
             }
-            extractor.release()
+            try { extractor.release() } catch (_: Exception) { }
             if (!success) output.delete()
         }
     }

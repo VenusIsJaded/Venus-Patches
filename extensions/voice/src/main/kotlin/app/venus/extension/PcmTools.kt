@@ -1,6 +1,5 @@
 package app.venus.extension
 
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.Base64
@@ -52,11 +51,11 @@ class PcmResampler(private val rate: Int, private val channels: Int, private val
     private var previous = 0.0
     private val step = rate.toDouble() / 48000.0
 
-    private fun write(value: Double, out: ByteArrayOutputStream) {
+    private fun write(value: Double, out: ByteArray, offset: Int) {
         check(outputFrames < 48000L * 1200) { "Audio exceeds the 20-minute safety limit" }
         val sample = Math.max(-32768L, Math.min(32767L, Math.round(value))).toInt()
-        out.write(sample and 255)
-        out.write((sample shr 8) and 255)
+        out[offset] = sample.toByte()
+        out[offset + 1] = (sample shr 8).toByte()
         waveform.add(sample)
         outputFrames++
     }
@@ -64,28 +63,53 @@ class PcmResampler(private val rate: Int, private val channels: Int, private val
         buffer.order(ByteOrder.LITTLE_ENDIAN)
         val bytesPerFrame = channels * if (floating) 4 else 2
         require(buffer.remaining() % bytesPerFrame == 0) { "Incomplete PCM frame" }
-        val out = ByteArrayOutputStream()
+        val frames = buffer.remaining() / bytesPerFrame
+        if (frames == 0) return ByteArray(0)
+        // Common decoder output: one bulk copy, no interpolation, growth or final copy.
+        if (rate == 48000 && channels == 1 && !floating) {
+            check(outputFrames + frames <= 48000L * 1200) { "Audio exceeds the 20-minute safety limit" }
+            val out = ByteArray(buffer.remaining())
+            buffer.get(out)
+            var offset = 0
+            while (offset < out.size) {
+                waveform.add(((out[offset].toInt() and 255) or (out[offset + 1].toInt() shl 8)).toShort().toInt())
+                offset += 2
+            }
+            outputFrames += frames
+            inputFrames += frames
+            nextPosition = inputFrames.toDouble()
+            return out
+        }
+        // At most two guard samples for fractional positions across decoder chunks.
+        val capacity = Math.min(Math.ceil(frames.toDouble() / step).toLong() + 2, 48000L * 1200 + 1).toInt()
+        val out = ByteArray(capacity * 2)
+        var offset = 0
         while (buffer.remaining() >= bytesPerFrame) {
             var sum = 0.0
             repeat(channels) { sum += if (floating) buffer.float.toDouble() * 32767 else buffer.short.toDouble() }
             val current = sum / channels
+            if (floating) require(java.lang.Double.isFinite(current)) { "Invalid non-finite PCM sample" }
             if (inputFrames == 0L) previous = current
             while (nextPosition <= inputFrames.toDouble()) {
                 val fraction = if (inputFrames == 0L) 1.0 else nextPosition - (inputFrames - 1)
-                write(previous + (current - previous) * Math.max(0.0, Math.min(1.0, fraction)), out)
+                write(previous + (current - previous) * Math.max(0.0, Math.min(1.0, fraction)), out, offset)
+                offset += 2
                 nextPosition += step
             }
             previous = current
             inputFrames++
         }
-        return out.toByteArray()
+        return if (offset == out.size) out else out.copyOf(offset)
     }
     fun finish(): ByteArray {
-        val out = ByteArrayOutputStream()
+        val capacity = Math.max(0, Math.ceil((inputFrames.toDouble() - nextPosition) / step).toInt()) + 1
+        val out = ByteArray(capacity * 2)
+        var offset = 0
         while (nextPosition < inputFrames.toDouble()) {
-            write(previous, out)
+            write(previous, out, offset)
+            offset += 2
             nextPosition += step
         }
-        return out.toByteArray()
+        return if (offset == out.size) out else out.copyOf(offset)
     }
 }

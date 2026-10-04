@@ -17,7 +17,7 @@
     if (features.noDelete) selectModules([573, 5008, 7730]);
     if (features.jumpToTop) selectModules([12549, 10518, 11207, 7730, 2041]);
     if (features.hiddenChannels) selectModules([1074, 1101, 2041, 2096, 4427, 4941, 7730]);
-    const revision = "1.1.0";
+    const revision = "1.1.1";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -34,13 +34,15 @@
     const markedPayloads = new WeakMap();
     const wrapped = new WeakMap();
     // React Native installs Promise during its polyfill phase; no Promise use in this prelude.
-    let React, RN, files, activeReads = 0, writeQueue;
+    let React, RN, files, activeReads = 0, writePending = false, pendingSnapshot;
     const conversions = new WeakMap();
     const convertedUploads = new WeakMap();
     const activeJobs = new Map();
     let jobCounter = 0;
     const PREFS = "venus-patches.json";
-    const notify = () => listeners.forEach(fn => fn());
+    const notify = key => listeners.forEach(entry => {
+        if (!entry.key || key === "*" || entry.key === key) entry.fn();
+    });
     const data = (obj, key) => {
         const descriptor = obj && Object.getOwnPropertyDescriptor(obj, key);
         return descriptor && "value" in descriptor ? descriptor.value : undefined;
@@ -50,12 +52,23 @@
 
     function save() {
         if (!files || status.storage === "loading") return;
-        const snapshot = JSON.stringify(settings);
-        writeQueue = (writeQueue || Promise.resolve()).catch(() => {}).then(() =>
-            files.writeFile("documents", PREFS, snapshot, "utf8")
-        ).then(() => { status.storage = "saved"; notify(); }, () => {
-            status.storage = "save failed (session only)"; notify();
-        });
+        // Keep only the newest waiting snapshot, not one Promise/string per toggle.
+        pendingSnapshot = JSON.stringify(settings);
+        if (writePending) return;
+        writePending = true;
+        function persist() {
+            const snapshot = pendingSnapshot;
+            pendingSnapshot = undefined;
+            return Promise.resolve().then(() => files.writeFile("documents", PREFS, snapshot, "utf8")).then(() => {
+                status.storage = "saved";
+            }, () => { status.storage = "save failed (session only)"; }).then(() => {
+                notify();
+                if (pendingSnapshot !== undefined && pendingSnapshot !== snapshot) return persist();
+                pendingSnapshot = undefined;
+                writePending = false;
+            });
+        }
+        Promise.resolve().then(persist);
     }
     function setSetting(key, value) {
         if (!owns(settings, key) || !features[featureFor(key)]) return false;
@@ -70,17 +83,18 @@
         settings[key] = value;
         dirty.add(key);
         if (key === "picker" && !value) {
-            sizeCache.clear();
-            sizeQueue.splice(0).forEach(entry => entry.resolve(null));
+            clearSizes();
         }
         save();
-        notify();
+        notify(key);
         return true;
     }
     function initFiles(module) {
         if (files) return;
         files = module;
         status.storage = "loading";
+        // Size metadata does not depend on the preferences directory being available.
+        drainSizes();
         let constants;
         try { constants = typeof files.getConstants === "function" ? files.getConstants() : files; }
         catch (_) { constants = {}; }
@@ -92,15 +106,16 @@
         ).then(text => {
             if (text) {
                 const loaded = JSON.parse(text);
+                if (!loaded || typeof loaded !== "object" || Array.isArray(loaded)) throw new Error("Invalid preferences");
                 for (const key of Object.keys(settings))
                     if (!dirty.has(key) && typeof loaded[key] === "boolean") settings[key] = loaded[key];
             }
             status.storage = "ready";
+            if (!enabled("picker")) clearSizes();
             // Persist edits made while the asynchronous restore was in flight.
             if (dirty.size) save();
-            notify();
-        }).catch(() => { status.storage = "read failed (defaults)"; if (dirty.size) save(); notify(); });
-        drainSizes();
+            notify("*");
+        }).catch(() => { status.storage = "read failed (defaults)"; if (dirty.size) save(); notify("*"); });
     }
 
     function formatSize(bytes) {
@@ -115,8 +130,8 @@
     function readSize(entry) {
         activeReads++;
         Promise.resolve().then(() => files.getSize(entry.uri)).then(value => {
-            const bytes = Number(value);
-            entry.value = Number.isFinite(bytes) && bytes >= 0 ? bytes : null;
+            const bytes = typeof value === "number" || typeof value === "string" && value.trim() ? Number(value) : NaN;
+            entry.value = Number.isSafeInteger(bytes) && bytes >= 0 ? bytes : null;
         }, () => { entry.value = null; }).then(() => {
             entry.expires = Date.now() + (entry.value === null ? 30000 : 300000);
             entry.done = true;
@@ -125,20 +140,28 @@
             drainSizes();
         });
     }
+    function clearSizes() {
+        sizeCache.clear();
+        sizeQueue.splice(0).forEach(entry => entry.resolve(null));
+    }
     function drainSizes() {
-        if (!files) return;
+        if (!files || !enabled("picker")) return;
         while (activeReads < 4 && sizeQueue.length) readSize(sizeQueue.shift());
     }
     function getSize(uri) {
         if (!enabled("picker") || typeof uri !== "string" || !/^(content|file):\/\//.test(uri))
             return Promise.resolve(null);
         const existing = sizeCache.get(uri);
-        if (existing && (!existing.done || existing.expires > Date.now())) return existing.promise;
+        if (existing && (!existing.done || existing.expires > Date.now())) {
+            if (existing.done) { sizeCache.delete(uri); sizeCache.set(uri, existing); }
+            return existing.promise;
+        }
         if (existing) sizeCache.delete(uri);
         if (sizeCache.size >= 256) {
-            const removable = Array.from(sizeCache).find(pair => pair[1].done);
-            if (!removable) return Promise.resolve(null);
-            sizeCache.delete(removable[0]);
+            let removable;
+            for (const [key, cached] of sizeCache) if (cached.done) { removable = key; break; }
+            if (removable === undefined) return Promise.resolve(null);
+            sizeCache.delete(removable);
         }
         const entry = { uri, done: false };
         entry.promise = new Promise(resolve => { entry.resolve = resolve; });
@@ -147,16 +170,16 @@
         drainSizes();
         return entry.promise;
     }
-    function useSettings() {
+    function useSettings(key) {
         const [, update] = React.useState(0);
         React.useEffect(() => {
-            const fn = () => update(n => n + 1);
-            listeners.add(fn);
-            return () => listeners.delete(fn);
-        }, []);
+            const entry = {key, fn: () => update(n => n + 1)};
+            listeners.add(entry);
+            return () => listeners.delete(entry);
+        }, [key]);
     }
     function SizeBadge(props) {
-        useSettings();
+        useSettings("picker");
         const [bytes, update] = React.useState(null);
         React.useEffect(() => {
             let live = true;
@@ -232,11 +255,15 @@
         if (typeof uri !== "string" || !/^(content|file):\/\//.test(uri)) return original.apply(upload, args);
         const job = { id: Date.now().toString(36) + "-" + (++jobCounter), cancelled: false };
         activeJobs.set(upload, job);
-        const promise = Promise.resolve().then(() => nativeVoice("prepare", job.id, uri)).then(text => {
+        const promise = Promise.resolve().then(() => {
+            if (job.cancelled || !enabled("voice") || typeof upload.isCancelled === "function" && upload.isCancelled())
+                throw new Error("Audio upload cancelled before conversion");
+            return nativeVoice("prepare", job.id, uri);
+        }).then(text => {
             const result = JSON.parse(text);
             if (!result || typeof result.uri !== "string" || !result.uri.startsWith("file://") ||
-                result.mimeType !== "audio/ogg" || !(result.durationSecs > 0) ||
-                !(result.size > 0) || typeof result.waveform !== "string" || !result.waveform)
+                result.mimeType !== "audio/ogg" || !Number.isFinite(result.durationSecs) || !(result.durationSecs > 0) || result.durationSecs > 1200 ||
+                !Number.isSafeInteger(result.size) || !(result.size > 0) || typeof result.waveform !== "string" || !result.waveform)
                 throw new Error("Native audio conversion returned invalid metadata");
             if (job.cancelled || !enabled("voice") || (typeof upload.isCancelled === "function" && upload.isCancelled())) {
                 nativeVoice("release", job.id).catch(() => {});
@@ -347,7 +374,7 @@
     }
     function settingNode(key, title, description, parent) {
         return { type: "toggle", parent, useTitle: () => title, useDescription: () => description,
-            useValue: function () { useSettings(); return settings[key]; },
+            useValue: function () { useSettings(key); return settings[key]; },
             onValueChange: value => setSetting(key, value) };
     }
     function nativeRegistry(registry) {
@@ -410,8 +437,15 @@
     function cloneTree(node, change, depth) {
         if (!node || typeof node !== "object" || depth > 24) return node;
         if (Array.isArray(node)) {
-            const children = node.map(child => cloneTree(child, change, depth + 1));
-            return children.some((child, i) => child !== node[i]) ? children : node;
+            let children = node;
+            for (let i = 0; i < node.length; i++) {
+                const child = cloneTree(node[i], change, depth + 1);
+                if (child !== node[i]) {
+                    if (children === node) children = node.slice();
+                    children[i] = child;
+                }
+            }
+            return children;
         }
         if (!node.props) return node;
         const children = cloneTree(node.props.children, change, depth + 1);
@@ -552,7 +586,7 @@
             (!sticker.guild_id || sticker.guild_id === channel.guild_id || capability("canUseCustomStickersEverywhere", user));
     }
     function sendStickers(original, receiver, args) {
-        if (!enabled("stickers") || !Array.isArray(args[1]) || !stickerStore || !channelStore) return original.apply(receiver, args);
+        if (!enabled("stickers") || !Array.isArray(args[1]) || !args[1].length || !stickerStore || !channelStore) return original.apply(receiver, args);
         const user = currentUser(), channel = channelStore.getChannel(args[0]);
         if (!user || !channel) return original.apply(receiver, args);
         const keep = [], links = [];
@@ -655,7 +689,7 @@
         return original.apply(receiver, args);
     }
     function jumpButton(original, receiver, args) {
-        if (React) useSettings();
+        if (React) useSettings("jumpToTop");
         const result = original.apply(receiver, args), props = args[0];
         if (!enabled("jumpToTop") || !React || !RN || !props || !props.channelId || !messageActions) return result;
         const channelId = props.channelId;
@@ -674,6 +708,7 @@
                 React.createElement(RN.Text, {style:{padding:12}}, "Jump to top")));
     }
     function hiddenChannel(value) {
+        if (!enabled("hiddenChannels")) return false;
         const channel = typeof value === "string" ? channelStore && channelStore.getChannel(value) : value;
         return !!(enabled("hiddenChannels") && channel && channel.guild_id && ![1,3,4].includes(channel.type) &&
             permissions && viewPermission != null && typeof permissions.can === "function" && !permissions.can(viewPermission, channel));
