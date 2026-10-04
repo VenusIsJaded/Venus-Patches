@@ -14,13 +14,13 @@
     if (features.freeNitro) selectModules([1372, 2041, 5708, 5751, 4446, 14280, 7611, 7730]);
     if (features.noTyping) selectModules([12272]);
     if (features.quickDelete) selectModules([5141, 1115]);
-    if (features.noDelete) selectModules([573, 5008, 5010, 1372, 7730, 8222, 8455]);
+    if (features.noDelete) selectModules([573, 5008, 5010, 1372, 7730, 8222]);
     if (features.jumpToTop) selectModules([12549, 12550, 12551, 9686, 10518, 11207, 7730, 2041]);
-    if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4941, 7730]);
+    if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4941, 7730, 573, 1372, 16569, 5345]);
     if (features.pastelize) selectModules([8222, 1240, 2105]);
-    if (features.platformIndicators) selectModules([4828, 4806, 1372, 11448, 9193, 7235, 9200, 9380]);
-    if (features.reviewDB) selectModules([13382, 4645, 9358, 5854, 1372, 573, 4505]);
-    const revision = "1.2.1";
+    if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 7235, 9200, 9380, 11159, 13603, 16377, 9970]);
+    if (features.reviewDB) selectModules([13382, 4645, 9358, 5854, 5936, 1372, 573, 4505]);
+    const revision = "1.2.2";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -83,7 +83,7 @@
             nativeVoice("cancel", job.id).catch(() => {});
         });
         if (key === "noDelete" && !value) clearDeleted(true);
-        if (key === "hiddenChannels") hiddenViews.clear();
+        if (key === "hiddenChannels") {hiddenViews.clear();if (!value) hiddenNames.clear();}
         settings[key] = value;
         if (key === "noDeleteSave") { if (value) restoreDeleted(); else archiveRestored = false; persistDeleted(); }
         dirty.add(key);
@@ -408,7 +408,7 @@
         plugin("noDelete", "NoDelete", "Retain deleted messages independently of chat updates until app restart. Maximum 512; disabling clears them.");
         plugin("noDeleteSave", "Save deleted messages", "Opt-in local archive across restarts, scoped to your account. Turning this off erases the archive. Attachments are links, not downloaded files.");
         plugin("jumpToTop", "JumpToTop", "Add a button to jump to the start of the current chat.");
-        plugin("hiddenChannels", "Hidden Channels", "Show already-received channel metadata with a locked label. Does not grant access to messages or voice.");
+        plugin("hiddenChannels", "Hidden Channels", "Show received channel/category names with native locks. Server-redacted names are unavailable; never grants message or voice access.");
         if (features.quickDelete) {
             plugins.push("VENUS_QUICKDELETE");
             route("VENUS_QUICKDELETE", "QuickDelete", [section("Confirmation", ["VENUS_QUICKDELETE_MESSAGES", "VENUS_QUICKDELETE_EMBEDS"])], "VENUS_PLUGINS");
@@ -419,7 +419,7 @@
         plugin("pastelAll", "Pastelize all names", "Override role name colors with pastel colors.");
         plugin("pastelWebhookName", "Pastelize webhooks by name", "Use the display name instead of the webhook ID.");
         plugin("pastelContent", "Pastelize message content", "Color rendered text as well as the author name.");
-        plugin("platformIndicators", "PlatformIndicators", "Show status-colored desktop, phone, web and console icons beside profile names. Uses sessions for your own profile; offline or unavailable clients stay hidden.");
+        plugin("platformIndicators", "PlatformIndicators", "Status-colored monitor, phone, web and console icons on profiles, DM headers/lists, friends and voice-member rows. Uses sessions for your own profile.");
         plugin("reviewDB", "ReviewDB", "Read, post, delete and report reviews from profiles. Requests go to manti.vendicated.dev only when you open reviews or authenticate.");
         plugin("copyBios", "CopyBios", "Select and copy text from profile bios.");
         plugin("dashless", "Dashless", "Display spaces instead of dashes in text channel names.");
@@ -482,9 +482,8 @@
         // Both useChannelName and computeChannelName redact isObfuscated records.
         // Use only the name already present in the guild metadata, including categories.
         const locked = hiddenMetadata(channel);
-        const name = locked && typeof channel.name === "string" && channel.name ? channel.name : result;
-        const label = enabled("dashless") && channel && [0, 5, 15, 16].includes(channel.type) && typeof name === "string" ? name.replace(/-/g, " ") : name;
-        return typeof label === "string" && locked ? label.replace(/ \[locked\]$/, "") + " [locked]" : label;
+        const name = locked ? hiddenName(channel) : result;
+        return enabled("dashless") && channel && [0, 5, 15, 16].includes(channel.type) && typeof name === "string" ? name.replace(/-/g, " ") : name;
     }
     const videoPattern = /\.(mp4|webm|mov|avi|mkv|flv|wmv|m4v|gifv)(?:[?#]|$)/i;
     const video = uri => typeof uri === "string" && videoPattern.test(uri);
@@ -641,7 +640,47 @@
     const deletedViews = new Map();
     const ARCHIVE = "venus-deleted-messages.json";
     const deleted = new Map();
-    const hiddenViews = new Map();
+    const hiddenViews = new Map(), hiddenNames = new Map();
+    let hiddenAccount;
+    function receivedName(channel) {
+        return channel && typeof channel.name === "string" && channel.name.trim() && channel.name !== "__hidden__" ? channel.name : null;
+    }
+    function rememberChannelName(channel) {
+        const current = userStore && userStore.getCurrentUser();
+        if (hiddenAccount !== (current && current.id)) {hiddenNames.clear();hiddenAccount = current && current.id;}
+        const name = receivedName(channel);
+        if (!channel || !channel.guild_id || !channel.id || !name) return;
+        if (hiddenNames.size >= 4096 && !hiddenNames.has(channel.id)) hiddenNames.delete(hiddenNames.keys().next().value);
+        hiddenNames.set(channel.id,{guild:channel.guild_id,name});
+    }
+    function hiddenName(channel) {
+        // Basic records can retain names absent from full/obfuscated records. Never
+        // fetch an inaccessible channel, guess a name, or change its permissions/flags.
+        const current = userStore && userStore.getCurrentUser();
+        if (hiddenAccount !== (current && current.id)) {hiddenNames.clear();hiddenAccount = current && current.id;}
+        const basic = channelStore && typeof channelStore.getBasicChannel === "function" && channelStore.getBasicChannel(channel.id);
+        const name = receivedName(channel) || (basic && basic.guild_id === channel.guild_id && receivedName(basic));
+        if (name) {rememberChannelName(Object.assign({},channel,{name}));return name;}
+        const cached = hiddenNames.get(channel.id);
+        return cached && cached.guild === channel.guild_id ? cached.name : channel.type === 4 ? "Hidden category (name unavailable)" : "Hidden channel (name unavailable)";
+    }
+    function channelMetadataEvent(event) {
+        const current = userStore && userStore.getCurrentUser();
+        if (event.type === "LOGOUT" || hiddenAccount !== (current && current.id)) {
+            hiddenNames.clear();hiddenViews.clear();hiddenAccount = current && current.id;
+        }
+        if (event.type === "CHANNEL_DELETE") hiddenNames.delete(event.channel && event.channel.id || event.channelId || event.id);
+        if (event.type === "GUILD_DELETE") {
+            const guild = event.guild && event.guild.id || event.guildId;
+            for (const [id,entry] of hiddenNames) if (entry.guild === guild) hiddenNames.delete(id);
+        }
+        if (!enabled("hiddenChannels")) return;
+        if (["CHANNEL_CREATE","CHANNEL_UPDATE"].includes(event.type)) rememberChannelName(event.channel);
+        if (["GUILD_CREATE","GUILD_UPDATE"].includes(event.type)) {
+            const guild = event.guild;
+            if (guild && Array.isArray(guild.channels)) guild.channels.forEach(channel => rememberChannelName(Object.assign({guild_id:guild.id},channel)));
+        }
+    }
     function typing(orig, self, args) {
         return enabled("noTyping") ? undefined : orig.apply(self, args);
     }
@@ -711,8 +750,9 @@
         }).catch(() => {status.archive = "restore failed"; notify();}).finally(() => {archiveLoading = false;});
     }
     function markDeleted(message) {
-        const content = "[Deleted] " + (message.content || "");
-        return typeof message.merge === "function" ? message.merge({content}) : Object.assign(Object.create(Object.getPrototypeOf(message)),message,{content});
+        // Identity refresh only. Deletion styling belongs to row presentation, never
+        // content: copying, replies, mentions, links and archives retain the original.
+        return Object.create(Object.getPrototypeOf(message),Object.getOwnPropertyDescriptors(message));
     }
     function rawDeleted(message, event) {
         // Retain content/metadata only; no tokens, downloaded attachments or remote fetches.
@@ -771,14 +811,16 @@
         deleted.set(key,{type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id,message:markDeleted(message),raw});
         invalidateDeleted(); persistDeleted();
         // Update the underlying collection too: native row diffing compares record identity.
-        // Sending unchanged content can leave the row cached with no deleted presentation.
-        orig.call(self,{type:"MESSAGE_UPDATE",message:{id:event.id,channel_id:event.channelId,content:markDeleted(message).content}});
+        // The retained view supplies a new record; do not corrupt content to force a diff.
+        orig.call(self,{type:"MESSAGE_UPDATE",message:{id:event.id,channel_id:event.channelId,content:message.content || ""}});
+        if (msgStore && typeof msgStore.emitChange === "function") msgStore.emitChange();
         return true;
     }
     function dispatchEvent(orig, self, args) {
         const event = args[0];
         if (!event) return orig.apply(self, args);
-        if (event.type === "LOGOUT") { clearDeleted(false); archiveRestored = false; reviewAuthAttempt++;reviewToken="";reviewAccount=null;reviewCache.clear(); }
+        if (features.hiddenChannels) channelMetadataEvent(event);
+        if (event.type === "LOGOUT") { clearDeleted(false); archiveRestored = false; reviewAuthAttempt++;reviewToken="";reviewAccount=null;reviewCache.clear();notify("reviewDB"); }
         if (["CONNECTION_OPEN", "CACHE_LOADED"].includes(event.type)) Promise.resolve().then(restoreDeleted);
         if (deleted.size && event.type !== "MESSAGE_DELETE") deletedViews.clear();
         if (event.type === "CHANNEL_DELETE") {
@@ -855,16 +897,24 @@
         const channel = typeof value === "string" ? channelStore && channelStore.getChannel(value) : value;
         return !!(channel && channel.type !== 4 && hiddenMetadata(channel));
     }
+    function displayChannel(channel) {
+        if (!hiddenMetadata(channel)) return channel;
+        const name = hiddenName(channel);
+        return name === channel.name ? channel : cloneWith(channel,"name",name);
+    }
     function hiddenDirectory(orig, self, args) {
         const result = orig.apply(self, args), guild = args[0];
         if (!enabled("hiddenChannels") || !result || !guild || !channelStore || !permissions ||
             typeof channelStore.getMutableGuildChannelsForGuild !== "function") return result;
         const source = channelStore.getMutableGuildChannelsForGuild(guild);
         if (!source) return result;
+        const basic = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
+        if (basic) Object.values(basic).forEach(rememberChannelName);
+        Object.values(source).forEach(rememberChannelName);
         const extra = Object.values(source).filter(channel => hiddenMetadata(channel));
         // Recheck permissions and metadata on each directory lookup; retain stable
         // array identity for unchanged inputs and bound the cache to 16 guilds.
-        const signature = extra.map(c => [c.id,c.position,c.type,c.parent_id,c.name].join(":")).join("|");
+        const signature = extra.map(c => [c.id,c.position,c.type,c.parent_id,hiddenName(c)].join(":")).join("|");
         const references = extra.concat(extra.map(c => source[c.parent_id]).filter(Boolean));
         const cached = hiddenViews.get(guild);
         if (cached && cached.orig === result && cached.source === source && cached.signature === signature &&
@@ -872,15 +922,21 @@
         let next = result;
         function append(key, channels) {
             if (!Array.isArray(next[key])) return;
-            const existing = next[key];
+            const original = next[key];
+            const existing = original.map(entry => {
+                if (!entry.channel) return entry;
+                const channel = displayChannel(entry.channel);
+                return channel === entry.channel ? entry : Object.assign({},entry,{channel});
+            });
+            const renamed = existing.some((entry,index) => entry !== original[index]);
             const ids = new Set(existing.map(entry => entry.channel && entry.channel.id));
             const added = [];
             channels.forEach(channel => {
                 if (ids.has(channel.id)) return;
                 ids.add(channel.id);
-                added.push({channel,comparator:channel.position || 0});
+                added.push({channel:displayChannel(channel),comparator:channel.position || 0});
             });
-            if (!added.length) return;
+            if (!added.length && !renamed) return;
             if (next === result) next = Object.assign({}, result);
             next[key] = existing.concat(added).sort((a,b) => a.comparator - b.comparator);
         }
@@ -909,8 +965,8 @@
         const parent = channel.parent_id && channelStore && channelStore.getChannel(channel.parent_id);
         const pin = channel.lastPinTimestamp || channel.last_pin_timestamp;
         const pinDate = pin && new Date(pin);
-        RN.Alert.alert("This channel is hidden", "#" + channel.name +
-            (parent && parent.name ? "\nCategory: " + parent.name : "") +
+        RN.Alert.alert("This channel is hidden", "#" + hiddenName(channel) +
+            (parent ? "\nCategory: " + hiddenName(parent) : "") +
             "\nTopic: " + (channel.topic || "No topic.") +
             "\nCreated: " + snowflakeDate(channel.id) +
             "\nLast message: " + snowflakeDate(channel.lastMessageId || channel.last_message_id) +
@@ -969,8 +1025,17 @@
         const type = sheetComponent(tree.type, channel, props.onClose);
         return type === tree.type ? tree : el(type, tree.props);
     }
-    let pastelHash, guildMembers, presenceStore, sessionsStore, deletedEmbed, displayNameType, profileInfoType, nativeRows, nativeModals, oauthModal, themeContext;
-    const platformIcons = {}, platformIconModules = {desktop:[9193,"ScreenIcon"],mobile:[7235,"MobilePhoneIcon"],web:[9200,"GlobeEarthIcon"],embedded:[9380,"GameControllerIcon"]};
+    let pastelHash, guildMembers, presenceStore, sessionsStore, displayNameType, profileInfoType, nativeRows, nativeRowGroup, nativeLock, nativeModals, oauthModal, themeContext;
+    const platformIcons = {}, platformIconModules = {mobile:[7235,"MobilePhoneIcon"],web:[9200,"GlobeEarthIcon"],embedded:[9380,"GameControllerIcon"]};
+    function DesktopIndicator(props) {
+        // Independent monitor silhouette: screen, centered stem and foot, matching
+        // upstream PlatformIndicators rather than Discord's filled ScreenIcon.
+        const color = props.color;
+        return el(RN.View,{pointerEvents:"none",style:{width:16,height:16,alignItems:"center",justifyContent:"center"}},
+            el(RN.View,{style:{width:15,height:10,borderWidth:1.5,borderColor:color,borderRadius:1}}),
+            el(RN.View,{style:{width:2,height:2,backgroundColor:color}}),
+            el(RN.View,{style:{width:8,height:1.5,backgroundColor:color,borderRadius:1}}));
+    }
     let reviewToken = "", reviewAccount = null, reviewAuthAttempt = 0;
     const reviewCache = new Map(), reviewWrappers = new WeakMap(), platformWrappers = new WeakMap();
     const REVIEW_API = "https://manti.vendicated.dev/api/reviewdb";
@@ -1033,13 +1098,10 @@
         const channelId = source.channel_id || source.channelId || message.channelId;
         const id = source.id || message.id;
         if (enabled("noDelete") && deleted.has(deletedKey(channelId,id)) && RN && typeof RN.processColor === "function") {
-            // Native row/notice schema from 8227/8455, without injecting AutoMod actions
-            // or poisoning the AutoMod store. Only retained local rows get this visual.
+            // Native row highlight schema from 8227. No injected notice, altered
+            // message content, or AutoMod state. Only retained local rows are tinted.
             const red = RN.processColor("#f23f43");
-            const renderer = deletedEmbed || inspectedExport(8455,"createAutomodBlockedMessageEmbed");
-            const notice = typeof renderer === "function" ? renderer({errorMessage:"This message was deleted",colors:{automodBlockedBodyTextColor:red}}) : null;
-            message = Object.assign({},message,{embeds:notice ? (message.embeds || []).concat([notice]) : message.embeds});
-            next = Object.assign({},next,{message,backgroundHighlight:{backgroundColor:RN.processColor("#f23f431a"),gutterColor:red}});
+            next = Object.assign({},next,{backgroundHighlight:{backgroundColor:RN.processColor("#f23f431a"),gutterColor:red}});
         }
         return next;
     }
@@ -1053,7 +1115,11 @@
         useSettings("platformIndicators");
         const [,update] = React.useState(0);
         // SessionsStore is the upstream source for the current user's own clients.
-        if (!sessionsStore && enabled("platformIndicators")) sessionsStore = inspectedExport(4806,"default");
+        if (enabled("platformIndicators")) {
+            if (!sessionsStore) sessionsStore = inspectedExport(4806,"default");
+            if (!presenceStore) presenceStore = inspectedExport(4828,"default");
+            if (!userStore) userStore = inspectedExport(1372,"default");
+        }
         React.useEffect(() => {
             const change = () => update(n => n+1);
             const stores = [presenceStore,sessionsStore].filter(store => store && typeof store.addChangeListener === "function" && typeof store.removeChangeListener === "function");
@@ -1075,7 +1141,7 @@
         const labels = {desktop:"Desktop",mobile:"Mobile",web:"Web",embedded:"Console"};
         const icons = Object.keys(labels).filter(key => colors[clients[key]]).map(key => {
             const spec = platformIconModules[key];
-            const icon = platformIcons[key] || inspectedExport(spec[0],spec[1]);
+            const icon = key === "desktop" ? DesktopIndicator : platformIcons[key] || inspectedExport(spec[0],spec[1]);
             if (!icon) return null;
             platformIcons[key] = icon;
             return el(RN.View,{key,accessible:true,accessibilityRole:"image",accessibilityLabel:labels[key]+": "+clients[key]},
@@ -1088,6 +1154,31 @@
         const tree = orig.apply(self,args), user = args[0] && args[0].user;
         if (!enabled("platformIndicators") || !React || !RN || !tree || !user) return tree;
         return el(RN.View,{style:{flexDirection:"row",flexWrap:"wrap",gap:6,alignItems:"center"}},tree,el(PlatformBadges,{userId:user.id}));
+    }
+    function platformPlacement(orig,self,args) {
+        if (React) useSettings("platformIndicators");
+        const tree = orig.apply(self,args), props = args[0] || {};
+        if (!enabled("platformIndicators") || !React || !RN || !tree) return tree;
+        const channel = props.channel || channelStore && props.channelId && channelStore.getChannel(props.channelId);
+        const userId = props.user && props.user.id || props.userId || channel && channel.type === 1 && channel.recipients && channel.recipients.length === 1 && channel.recipients[0];
+        if (!userId) return tree;
+        // Verified UserRow exposes label; private headers / DM content expose a
+        // channel-title Text; voice MemberRowItem exposes its username Text. Preserve
+        // every handler, subtitle, trailing action and frozen child.
+        let added = false;
+        return cloneTree(tree,(node,p) => {
+            if (added) return p;
+            if (p.label != null && typeof p.label !== "string" && typeof p.label !== "number") {
+                added = true;
+                return Object.assign({},p,{label:el(RN.View,{key:"venus-platform-label",style:{flexDirection:"row",alignItems:"center",gap:6,flexShrink:1}},p.label,el(PlatformBadges,{userId}))});
+            }
+            const children = Array.isArray(p.children) ? p.children : [p.children];
+            const title = children.find(child => child && child.props && (child.type === RN.Text && typeof child.props.children === "string" || typeof child.props.variant === "string" && /(?:channel-title|heading|semibold)/.test(child.props.variant)));
+            // A React Native Text must not contain a View.
+            if (!title || node.type === RN.Text) return p;
+            added = true;
+            return Object.assign({},p,{children:children.map(child => child !== title ? child : el(RN.View,{key:"venus-platform-title",style:{flexDirection:"row",alignItems:"center",gap:6,flexShrink:1}},child,el(PlatformBadges,{userId})))});
+        },0);
     }
     function wrapProfileTree(tree, target, operation, cache) {
         if (!tree || !target || !React) return tree;
@@ -1111,25 +1202,69 @@
         }
         return visit(tree,0);
     }
+    function hiddenInfo(orig,self,args) {
+        if (React) useSettings("hiddenChannels");
+        const tree = orig.apply(self,args), channel = args[0] && args[0].channel;
+        if (!tree || !React || !RN || !hiddenMetadata(channel)) return tree;
+        const icon = nativeLock || inspectedExport(5345,"LockIcon");
+        if (!icon) return tree;
+        return el(RN.View,{style:{flexDirection:"row",alignItems:"center",gap:4},accessibilityLabel:hiddenName(channel)+", locked"},
+            el(icon,{color:"#80848e",style:{width:16,height:16}}),tree);
+    }
+    function authorizationUrl(result) {
+        // Do not depend on a browser-complete global URL / URLSearchParams in RN.
+        // Rebuild ONLY our fixed HTTPS endpoint; untrusted query keys cannot add
+        // credentials, change the host, request another client mod or leak a token.
+        const location = typeof result === "string" ? result : result && result.location;
+        if (typeof location !== "string" || location.length > 8192) throw new Error("Invalid authorization redirect");
+        const match = /^https:\/\/manti\.vendicated\.dev\/api\/reviewdb\/auth\?([^#]*)$/.exec(location);
+        if (!match) throw new Error("Invalid authorization redirect");
+        const values = {};
+        match[1].split("&").forEach(part => {
+            const index = part.indexOf("="), key = decodeURIComponent(index < 0 ? part : part.slice(0,index));
+            if (!["code","error","error_description"].includes(key)) return;
+            if (owns(values,key)) throw new Error("Invalid authorization redirect");
+            values[key] = decodeURIComponent((index < 0 ? "" : part.slice(index+1)).replace(/\+/g," "));
+        });
+        if (values.error) throw new Error(values.error === "access_denied" ? "Authorization cancelled" : "Discord did not authorize ReviewDB");
+        if (!values.code || values.code.length > 2048 || /[\s\u0000-\u001f]/.test(values.code)) throw new Error("Invalid authorization redirect");
+        return REVIEW_API+"/auth?code="+encodeURIComponent(values.code)+"&returnType=json&clientMod=vendetta";
+    }
+    async function reviewJson(url,options) {
+        const controller = typeof global.AbortController === "function" ? new global.AbortController() : null;
+        let timer;
+        const task = Promise.resolve().then(async () => {
+            const response = await global.fetch(url,Object.assign({credentials:"omit",headers:{accept:"application/json","content-type":"application/json"}},options,controller ? {signal:controller.signal} : {}));
+            let result;
+            try {result = await response.json();} catch (_) {throw new Error("ReviewDB returned an unreadable response (HTTP "+response.status+")");}
+            if (!response.ok || !result || result.success === false) throw new Error(result && result.message || "ReviewDB HTTP "+response.status);
+            return result;
+        });
+        // Abort alone is insufficient on Android versions without AbortController,
+        // or on fetch implementations that don't reject when the signal aborts.
+        const timeout = new Promise((resolve,reject) => {
+            if (global.setTimeout) timer = global.setTimeout(() => {reject(new Error("Authorization timed out"));if (controller) controller.abort();},15000);
+        });
+        try {return await Promise.race([task,timeout]);}
+        finally {if (timer !== undefined && global.clearTimeout) global.clearTimeout(timer);}
+    }
     async function reviewRequest(path, method, body) {
         if (!enabled("reviewDB") || typeof global.fetch !== "function") throw new Error("ReviewDB is disabled or networking is unavailable");
         if (!/^\/(users(?:\/\d{17,20}\/reviews)?|reports)(?:\?|$)/.test(path)) throw new Error("Invalid ReviewDB request");
-        const controller = typeof global.AbortController === "function" ? new global.AbortController() : null;
-        const timer = global.setTimeout && global.setTimeout(() => {if(controller) controller.abort();},15000);
-        try {
-            const response = await global.fetch(REVIEW_API+path,{method:method || "GET",credentials:"omit",
-                headers:{accept:"application/json","content-type":"application/json"},
-                ...(body ? {body:JSON.stringify(body)} : {}),...(controller ? {signal:controller.signal} : {})});
-            if (!response.ok) throw new Error("ReviewDB HTTP " + response.status);
-            const result = await response.json();
-            if (!result || result.success === false) throw new Error(result && result.message || "ReviewDB request failed");
-            return result;
-        } finally {if(timer && global.clearTimeout) global.clearTimeout(timer);}
+        return reviewJson(REVIEW_API+path,{method:method || "GET",...(body ? {body:JSON.stringify(body)} : {})});
     }
     function authenticateReviews() {
-        if (!enabled("reviewDB") || !nativeModals || typeof nativeModals.pushModal !== "function") return;
+        if (!enabled("reviewDB")) return;
+        // These helpers may not have been evaluated when a profile is first opened.
+        if (!nativeModals) {
+            const pushModal = inspectedExport(4645,"pushModal"), popModal = inspectedExport(4645,"popModal");
+            if (pushModal && popModal) nativeModals = {pushModal,popModal};
+        }
+        if (!nativeModals || typeof nativeModals.pushModal !== "function" || typeof nativeModals.popModal !== "function") {
+            RN.Alert.alert("ReviewDB authentication","Discord's native authorization navigation is unavailable. Reopen the profile and try again.");return;
+        }
         // Only load the inspected OAuth screen on this explicit user action.
-        const modal = oauthModal || (typeof global.__r === "function" && global.__r(9358).default);
+        const modal = oauthModal || inspectedExport(9358,"default");
         if (!modal) {RN.Alert.alert("ReviewDB","The native OAuth screen is not available yet. Try again after reopening this profile.");return;}
         const key = "venus-reviewdb-auth";
         const current = userStore && userStore.getCurrentUser();
@@ -1138,26 +1273,18 @@
         let exchanging = false;
         function live() { const user = userStore && userStore.getCurrentUser(); return enabled("reviewDB") && attempt === reviewAuthAttempt && user && user.id === accountId; }
         nativeModals.pushModal({key,modal:{key,modal,animation:"slide-up",shouldPersistUnderModals:false,closable:true,
-            props:{clientId:"915703782174752809",redirectUri:REVIEW_API+"/auth",scopes:["identify"],responseType:"code",permissions:BigInt(0),cancelCompletesFlow:false,
+            props:{clientId:"915703782174752809",redirectUri:REVIEW_API+"/auth",scopes:["identify"],responseType:"code",permissions:BigInt(0),prompt:"consent",cancelCompletesFlow:false,
                 dismissOAuthModal:()=>{if (attempt === reviewAuthAttempt) reviewAuthAttempt++;nativeModals.popModal(key);},callback:async result => {
                     if (!live() || exchanging) return;
                     exchanging = true;
-                    const controller = typeof global.AbortController === "function" ? new global.AbortController() : null;
-                    const timer = controller && global.setTimeout && global.setTimeout(()=>controller.abort(),15000);
                     try {
-                        const url = new global.URL(result && result.location);
-                        if (url.origin !== "https://manti.vendicated.dev" || url.pathname !== "/api/reviewdb/auth" || !url.searchParams.get("code")) throw new Error("Invalid authorization redirect");
-                        // The live service rejects unknown clientMod values (including "venus").
-                        // Preserve the original Vendetta ReviewDB client's supported protocol value.
-                        url.searchParams.set("returnType","json");url.searchParams.set("clientMod","vendetta");
-                        const response = await global.fetch(url.toString(),{credentials:"omit",headers:{accept:"application/json"},...(controller ? {signal:controller.signal} : {})});
-                        const auth = await response.json();
+                        const auth = await reviewJson(authorizationUrl(result),{method:"GET"});
                         if (!live()) return;
-                        if (!response.ok || !auth || !auth.success || typeof auth.token !== "string" || !auth.token) throw new Error(auth && auth.message || "ReviewDB authorization failed (HTTP " + response.status + ")");
+                        if (!auth.success || typeof auth.token !== "string" || !auth.token.trim()) throw new Error(auth.message || "ReviewDB did not return an authorization token. Reopen authorization and try again.");
                         reviewToken = auth.token; reviewAccount = accountId; reviewAuthAttempt++;
                         nativeModals.popModal(key);notify("reviewDB");
                     } catch (error) {if (live()) RN.Alert.alert("ReviewDB authentication",String(error.message || error));}
-                    finally {exchanging = false;if (timer && global.clearTimeout) global.clearTimeout(timer);}
+                    finally {exchanging = false;}
                 }}}});
     }
     function reviewsFor(userId, refresh) {
@@ -1176,6 +1303,21 @@
         if (!current || current.id!==reviewAccount) {reviewToken="";reviewAccount=null;}
         return reviewToken;
     }
+    function ReviewCard(props) {
+        const review = props.review, sender = review.sender, fg = props.color;
+        const group = nativeRowGroup || inspectedExport(5936,"TableRowGroup") || RN.View;
+        const image = uri => typeof uri === "string" && /^https:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net|manti\.vendicated\.dev)\//.test(uri);
+        const date = review.type !== 3 && Number.isFinite(review.timestamp) && new Date(review.timestamp*1000);
+        const label = el(RN.View,{style:{flexDirection:"row",alignItems:"center",gap:4,flexWrap:"wrap"}},
+            el(RN.Text,{style:{color:fg,fontWeight:"700"}},String(sender.username || "Unknown")),
+            (Array.isArray(sender.badges) ? sender.badges.slice(0,8) : []).filter(badge => badge && image(badge.icon)).map((badge,index) =>
+                el(RN.Image,{key:String(index),source:{uri:badge.icon},style:{width:16,height:16},accessibilityLabel:String(badge.name || "Reviewer badge")})),
+            date && Number.isFinite(date.getTime()) ? el(RN.Text,{style:{color:fg,fontSize:12,opacity:0.65}},date.toLocaleDateString()) : null);
+        return el(group,{style:{marginBottom:8,borderRadius:12,overflow:"hidden"}},
+            el(nativeRows.TableRow,{label,subLabel:el(RN.Text,{selectable:true,style:{color:fg,fontSize:14}},review.comment.slice(0,4000)),
+                icon:RN.Image && image(sender.profilePhoto) ? el(RN.Image,{source:{uri:sender.profilePhoto},style:{width:36,height:36,borderRadius:18},accessibilityIgnoresInvertColors:true}) : undefined}),
+            props.actions);
+    }
     function ReviewsPanel(props) {
         useSettings("reviewDB");
         const [open,setOpen]=React.useState(false), [reviews,setReviews]=React.useState([]), [error,setError]=React.useState(""),
@@ -1191,37 +1333,42 @@
                 .finally(()=>{if(live)setBusy(false);});
             return ()=>{live=false;};
         },[open,props.userId,generation,settings.reviewDB]);
+        if (enabled("reviewDB") && !nativeRows) {
+            const TableRow = inspectedExport(5854,"TableRow");
+            if (TableRow) nativeRows = {TableRow};
+        }
         if (!enabled("reviewDB") || !RN || !nativeRows || !nativeRows.TableRow) return null;
         function row(label,onPress) {return el(nativeRows.TableRow,{key:label,label,onPress,disabled:busy});}
         function mutate(path,method,body) {
             if (busy || !reviewAuth()) return;
             setBusy(true);setError("");
-            reviewRequest(path,method,Object.assign({},body,{token:reviewToken})).then(()=>{setComment("");reviewCache.delete(props.userId);reload(n=>n+1);},reason=>setError(String(reason.message || reason)))
-                .finally(()=>setBusy(false));
+            const account = reviewAccount, token = reviewToken;
+            const live = () => enabled("reviewDB") && reviewAuth() === token && reviewAccount === account;
+            reviewRequest(path,method,Object.assign({},body,{token})).then(()=>{if(live()){setComment("");reviewCache.delete(props.userId);reload(n=>n+1);}},reason=>{if(live())setError(String(reason.message || reason));})
+                .finally(()=>{if(live())setBusy(false);});
         }
         const current=userStore && userStore.getCurrentUser();
         return el(RN.View,{key:"venus-reviews",style:{marginVertical:8,borderRadius:12,backgroundColor:bg}},
-            row(open ? "Hide ReviewDB" : "Reviews (ReviewDB)",()=>setOpen(value=>!value)),
+            row(open ? "Reviews · "+reviews.filter(review=>review.type!==3).length : "Reviews (ReviewDB)",()=>setOpen(value=>!value)),
             !open ? null : el(RN.View,{style:{padding:12,gap:8}},
                 el(RN.Text,{style:{color:fg}},"Community reviews, not verified facts. Be respectful. Opening this list shares the profile ID with ReviewDB."),
                 error ? el(RN.Text,{accessibilityRole:"alert",style:{color:"#f23f43"}},error) : null,
                 busy ? el(RN.ActivityIndicator,null) : null,
-                el(RN.ScrollView,{style:{maxHeight:320}},reviews.map((review,index)=>el(RN.View,{key:String(review.id || index),style:{paddingVertical:8,gap:4}},
-                    el(RN.Text,{style:{color:fg,fontWeight:"700"}},String(review.sender.username || "Unknown")),
-                    el(RN.Text,{selectable:true,style:{color:fg}},review.comment.slice(0,4000)),
-                    reviewAuth() && review.id != null ? el(RN.View,null,
+                !busy && !error && !reviews.length ? el(RN.Text,{style:{color:fg,opacity:0.65}},"No reviews yet. Be the first to leave one.") : null,
+                el(RN.ScrollView,{style:{maxHeight:360},nestedScrollEnabled:true},reviews.map((review,index)=>el(ReviewCard,{key:String(review.id == null ? index : review.id),review,color:fg,
+                    actions:reviewAuth() && review.type!==3 && review.id != null ? el(RN.View,{style:{flexDirection:"row"}},
                         current && review.sender.discordID===current.id ? row("Delete your review",()=>RN.Alert.alert("Delete review?","This removes your review from ReviewDB.",[{text:"Cancel",style:"cancel"},{text:"Delete",style:"destructive",onPress:()=>mutate("/users/"+props.userId+"/reviews","DELETE",{reviewid:review.id})}])) : null,
-                        row("Report review",()=>RN.Alert.alert("Report review?","Send this review to ReviewDB moderators?",[{text:"Cancel",style:"cancel"},{text:"Report",onPress:()=>mutate("/reports","PUT",{reviewid:review.id})}]))) : null))),
+                        row("Report review",()=>RN.Alert.alert("Report review?","Send this review to ReviewDB moderators?",[{text:"Cancel",style:"cancel"},{text:"Report",onPress:()=>mutate("/reports","PUT",{reviewid:review.id})}]))) : null}))),
                 row("Refresh reviews",()=>reload(n=>n+1)),
                 !reviewAuth() ? row("Authenticate with ReviewDB",authenticateReviews) : el(RN.View,null,
-                    el(RN.TextInput,{value:comment,onChangeText:setComment,maxLength:2000,multiline:true,placeholder:"Write or update your review",placeholderTextColor:light?"#666":"#aaa",style:{color:fg,padding:8}}),
+                    el(RN.TextInput,{value:comment,onChangeText:setComment,maxLength:2000,multiline:true,editable:!busy,placeholder:"Tap to add or edit your review",placeholderTextColor:light?"#666":"#aaa",style:{color:fg,padding:12,borderRadius:12,backgroundColor:light?"#e3e5e8":"#111214",minHeight:48}}),
                     row("Post / update review",()=>{const text=comment.trim();if(text)mutate("/users/"+props.userId+"/reviews","PUT",{comment:text});}),
                     row("Log out of ReviewDB",()=>{reviewToken="";reviewAccount=null;notify("reviewDB");}))) );
     }
     function reviewInfo(orig,self,args) {
         const tree=orig.apply(self,args), props=args[0], userId=props && (props.userId || props.user && props.user.id);
         if (!React || !RN || !userId) return tree;
-        return el(RN.View,null,tree,el(ReviewsPanel,{userId}));
+        return el(RN.View,null,tree,el(ReviewsPanel,{key:userId,userId}));
     }
     function cloneWith(object, key, value) {
         // ES module markers, React tags, symbols and lazy getters are not necessarily enumerable.
@@ -1268,7 +1415,6 @@
         if (features.pastelize && id === 1240) pastelHash = typeof exports === "function" ? exports : exports.default;
         if (features.pastelize && id === 2105) guildMembers = exports.default;
         if ((features.pastelize || features.noDelete) && id === 8222 && exports.default && exports.default.prototype) hookExport(exports.default.prototype,"generate",messageRow);
-        if (features.noDelete && id === 8455) deletedEmbed = exports.createAutomodBlockedMessageEmbed;
         if (features.platformIndicators && id === 4828) presenceStore = exports.default;
         if (features.platformIndicators && id === 4806) sessionsStore = exports.default;
         if (features.platformIndicators) Object.keys(platformIconModules).forEach(key => {
@@ -1279,9 +1425,13 @@
             exports=hookExport(exports,"DisplayName",platformName);
             return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),displayNameType,platformName,platformWrappers));
         }
+        if (features.platformIndicators && [11159,13603,16377,9970].includes(id)) return hookComponent(exports,platformPlacement);
         if (features.reviewDB && id === 4645) nativeModals=exports;
         if (features.reviewDB && id === 9358) oauthModal=exports.default;
         if (features.reviewDB && id === 5854) nativeRows=exports;
+        if (features.reviewDB && id === 5936) nativeRowGroup=exports.TableRowGroup;
+        if (features.hiddenChannels && id === 5345) nativeLock=exports.LockIcon;
+        if (features.hiddenChannels && id === 16569) return hookComponent(exports,hiddenInfo);
         if (features.reviewDB && id === 4505) themeContext=exports;
         if (features.reviewDB && id === 13382) {
             profileInfoType=exports.PrimaryInfo;
@@ -1305,13 +1455,13 @@
         if (features.quickDelete && id === 1115) locale = exports;
         if (features.quickDelete && id === 5141) return replaceValue(exports, "default", hookExport(exports.default, "show", quickConfirm));
         if (features.noDelete && id === 5010) {messageRecords = exports; restoreDeleted();}
-        if ((features.noDelete || features.reviewDB || features.platformIndicators) && id === 1372) {userStore = exports.default; restoreDeleted();}
+        if ((features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels) && id === 1372) {userStore = exports.default; restoreDeleted();}
         if (features.noDelete && id === 5008) {
             msgStore = exports.default;
             exports = replaceValue(exports,"default",hookExport(hookExport(msgStore,"getMessage",retainedMessage),"getMessages",retainedMessages));
             restoreDeleted(); return exports;
         }
-        if ((features.noDelete || features.reviewDB) && id === 573) {
+        if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 573) {
             dispatcher = exports.default.dispatch.bind(exports.default);
             return replaceValue(exports, "default", hookExport(exports.default, "dispatch", dispatchEvent));
         }
