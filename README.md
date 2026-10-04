@@ -4,7 +4,7 @@ Independent Discord tools for use with **Morphe**. Small, bundled patches—not 
 
 [Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-> **Release channel: 1.0.0 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
+> **Release channel: 1.1.0 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
 
 ## What you get
 
@@ -16,9 +16,14 @@ Independent Discord tools for use with **Morphe**. Small, bundled patches—not 
 | **Dashless** | Displays spaces instead of dashes in text channel names. | On |
 | **FavouriteAnything** | Favourites images and videos through the media viewer. | On |
 | **FreeNitro** | Shares unavailable custom emojis and stickers as CDN links. | Emoji and sticker switches independently on |
+| **No typing** | Suppresses outgoing typing indicators only. | On |
+| **QuickDelete** | Independently skips localized message/preview confirmations. | Both off—enable explicitly |
+| **NoDelete** | Retains up to 512 cached deleted messages, marked as deleted, for the session. | Off—enable explicitly |
+| **JumpToTop** | Adds chat and channel/forum action-sheet jump-to-start controls. | On |
+| **Hidden Channels** | Displays already-received locked channel metadata without granting access. | Off—enable explicitly |
 | **Venus settings** | Native Discord settings section with General, Plugins and persistent controls. | Always available |
 
-**Open Discord Settings → Venus → General or Plugins.** The Venus section appears after the Account section using Discord's native settings rows, page navigation and themes. There is no floating button, root overlay or authors list. Switches apply without reinstalling; reopen an already-visible picker or media viewer after toggling its feature. Only patches selected in Morphe are offered.
+**Open Discord Settings → Venus → General or Plugins.** The Venus section appears after the Account section using Discord's native settings rows, page navigation and themes. There is no floating button, root overlay or authors list. Switches apply without reinstalling; reopen an already-visible picker or media viewer after toggling its feature. Only patches selected in Morphe are offered. **FileSizeOnPicker and Custom voice messages are now in Plugins**, alongside the other feature switches; General contains version and preference status.
 
 ## Install
 
@@ -31,9 +36,9 @@ Independent Discord tools for use with **Morphe**. Small, bundled patches—not 
 4. Select the features you want; keep **Venus settings** enabled. All requested plugins are bundled locally; no remote plugin installation is needed. Let Morphe merge the splits, patch and sign the APK.
 5. Install the result and open **Discord Settings → Venus**. Turn **Send audio as voice messages** on when needed.
 
-The `main` branch's `patches-bundle.json` points to **v1.0.0**, published without the prerelease flag.
+The `main` branch's `patches-bundle.json` points to **v1.1.0**, published without the prerelease flag.
 
-**Local import:** download `patches-1.0.0.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
+**Local import:** download `patches-1.1.0.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
 
 **Signing:** a patched APK has a different signing certificate from official Discord. Android may require uninstalling official Discord first; understand the loss of local app data before doing so. Future patched updates must use the same signing key. Never share your signing key.
 
@@ -42,7 +47,12 @@ The `main` branch's `patches-bundle.json` points to **v1.0.0**, published withou
 - **CopyBios:** select profile bio text to copy it. Existing links and press handlers stay intact.
 - **Dashless:** display-only text-channel name formatting. Does not rename channels, change messages or rewrite all React Native Views.
 - **FavouriteAnything:** adds favourite support for images and videos in the media viewer and provides cached Discord-hosted video thumbnails. Favourites continue to use Discord's existing storage. External video hosts may not provide image thumbnails; signed CDN URLs can still expire under Discord's normal rules.
-- **FreeNitro:** combines the requested Freemoji and FreeStickers behaviors. **Plugins → FreeNitro** contains independent **Free emojis** and **Free stickers** switches, plus compact links and an always-use-links option.
+- **No typing:** does not send start/stop typing actions; incoming typing indicators remain stock. Switching off restores the original actions immediately.
+- **QuickDelete:** separate opt-in message and embed switches. Matches exact Discord-localized confirmation text, never generic “delete” substrings; unknown dialogs keep their confirmation. Message deletion is irreversible.
+- **NoDelete:** only messages already present in Discord's local message store can be retained. Bulk deletions are handled, duplicate gateway events are ignored and retained messages are visibly marked. The 512-entry limit evicts the oldest retained message; disabling removes the retained messages. Dismissing one uses local dispatch, not a second DELETE request. There is no message archive, remote fetch or separate content log.
+- **JumpToTop:** preserves Jump to Present and adds an entry point when it is absent. Uses the chat's own channel ID, not a possibly stale selected-channel singleton; channel/forum action-sheet rows reuse Discord's row component. Voice-panel dismissal controls are not repurposed.
+- **Hidden Channels:** opt-in, read-only metadata already received by your client. Marks locked names and shows a native information dialog instead of navigating into a locked channel. Real permission results are never overwritten; this cannot read hidden messages or join locked voice channels. Restart/reopen a guild view after changing the switch if its native list is already mounted.
+- **FreeNitro:** combines the requested Freemoji and FreeStickers behaviors. **Plugins → FreeNitro** contains independent **FreeMoji / Free emojis** and **Free stickers** switches, plus compact links and an always-use-links option.
 
 FreeNitro shares **links**, not genuine paid/native emoji or sticker entitlements. Existing usable items stay native unless forced. Channel permissions, Discord's message-length limits and other server restrictions still apply. Code spans, escaped emoji tokens, unknown items and unrelated invalid-emoji diagnostics are retained.
 
@@ -84,8 +94,16 @@ Send **one audio attachment with no accompanying text, stickers, poll or extra a
 - Per-upload Promise reuse prevents duplicate conversions on retries. Cancelling an upload or turning the switch off cancels pending work.
 - Abandoned converted outputs are pruned during subsequent conversions: at most 32 outputs retained, with six-hour expiry. Original source files are never deleted.
 
+**New plugin ports**
+- Disabled/unselected features take the stock path; no downloaded JavaScript or broad React/global-network interception.
+- NoDelete tracks at most 512 deletion IDs, not duplicated full message objects, and clears session bookkeeping on logout/cache resets.
+- Hidden Channels has a 16-guild cache with stable array identity; native permission and record-reference checks invalidate stale entries. It never probes an inaccessible channel's API.
+- QuickDelete resolves its two localized labels only at the confirmation boundary, preserving locale changes and stock fallbacks.
+- Media wrappers preserve non-enumerable Metro module markers, React memo/forwardRef tags, symbols and property descriptors. This fixes the invalid component-object wrapping behind the reported media-viewer crash.
+- FreeMoji hooks the actual default capability object and direct emoji catalog checks. Send conversion consults real eligibility, not the picker override, so non-Nitro emoji tokens become links correctly.
+
 **Runtime**
-- At most **23 inspected Metro factories** are wrapped when all patches are selected, including the exact RN environment initializer. Unselected plugin modules are not wrapped. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers, startup network requests or root component wrapper.
+- At most **36 inspected Metro factories** are wrapped when all patches are selected, including the exact RN environment initializer. Unselected plugin modules are not wrapped. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers, startup network requests or root component wrapper.
 - The feature code is included in the patched APK. No Vendetta/Revenge runtime, downloaded JavaScript, analytics or account-token handling.
 - Switches are stored in `venus-patches.json` in Discord's private documents directory. Failed persistence is reported in the menu; switches still work for the session.
 
@@ -107,7 +125,11 @@ The patches refuse a different embedded JavaScript bundle, even if its displayed
 | Native settings section/pages | `createList`, module `11754`; `SettingsList`, module `14993` |
 | CopyBios / Dashless | `BioText`, module `11503`; `useChannelName`, module `4941` |
 | FavouriteAnything | Media-viewer favourite button `13288`, actions `10661`, mobile favourites `10664` |
-| FreeNitro | Stores `1372`, `2041`, `5708`, `5751`; capabilities `4446`; sticker rules `7611`; default message-action singleton `7730` |
+| FreeNitro | Stores `1372`, `2041`, `5708`, `5751`; default capabilities `4446` and catalog `14280`; sticker rules `7611`; default message-action singleton `7730` |
+| No typing / QuickDelete | Default typing actions `12272`; native alerts `5141`, live locale `1115` |
+| NoDelete | Default dispatcher `573`, MessageStore `5008`, local dismiss via message actions `7730` |
+| JumpToTop | Native Jump to Present `12549`, channel/forum sheets `11207` / `10518`, message actions `7730` |
+| Hidden Channels | Constants `1074`, real permissions `4427`, directory `2096`, ChannelStore `2041`, labels `4941`, routing `1101` |
 | Picker tiles | `Pressable`, module `414`, with `localImageSource` children |
 | Local files | `NativeFileModule`, module `1151` |
 | Audio preparation | `CloudUpload.reactNativeCompressAndExtractData`, module `5375` |
@@ -128,7 +150,7 @@ python3 scripts/build.py
 
 Toolchain downloads are pinned and SHA-256 checked. The `.mpp` contains JVM patch classes, Android patch DEX, bundled JavaScript and a native `.mpe` extension. Discord APKs, compile-only bridge stubs and downloaded tool binaries are not distributed in the bundle.
 
-Output: `patches/build/libs/patches-1.0.0.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
+Output: `patches/build/libs/patches-1.1.0.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
 
 Runtime regression tests can also be run independently:
 
@@ -148,6 +170,7 @@ Before treating runtime compatibility as device-verified, check on a real device
 - Discord launches, Settings → Venus → General/Plugins opens, back navigation and light/dark themes work, switches persist after restarting, and disabled features remain inactive.
 - Bio selection and links, text channel labels, image/video favourites and video previews behave correctly.
 - FreeNitro switches work independently; local/native, external and animated media, replies, mixed stickers, APNG, unsupported Lottie and channel permission failures behave safely.
+- No typing restores outgoing status when disabled; QuickDelete only skips enabled message/embed confirmations in the current locale; NoDelete marks/dismisses cached deletions and handles bulk events; JumpToTop works in DMs, guilds and forum/channel sheets; Hidden Channels shows only metadata and never admits locked chat/voice access.
 - Picker badges work while scrolling, on zero-byte files and on denied content URIs without blocking taps.
 - MP3, AAC/M4A, WAV, FLAC and Ogg/Opus upload as playable native-looking voice messages with plausible duration and waveform.
 - Cancelling conversion, low storage, unsupported formats, mixed messages and normal recorded voice messages behave safely.
@@ -156,7 +179,7 @@ Before treating runtime compatibility as device-verified, check on a real device
 
 Inspired by [Martinz64's FileSizeOnPicker](https://martinz64.github.io/vendetta-plugins/FileSizeOnPicker/) ([source](https://github.com/Martinz64/vendetta-plugins), Unlicense) and [shipwr3ckd/siguma's Custom Voice Messages](https://shipwr3ckd.github.io/revengeplugin/customVoiceMessages/) ([source](https://github.com/shipwr3ckd/revengeplugin), CC0). The runtime and native conversion are independent implementations for the inspected Discord build, not unmodified plugin bundles.
 
-The new bundled features are inspired by [CopyBios](https://shipwr3ckd.github.io/revengeplugin/CopyBios/), [Dashless](https://awesomegamergame.github.io/bunny-plugins/dashless/), [FavouriteAnything](https://theunrealzaka.github.io/FavouriteAnything/favouriteanything/), [Freemoji](https://rico040.github.io/bunny-plugins/freemoji/) and [FreeStickers](https://aliernfrog.github.io/vd-plugins/FreeStickers/). Native settings integration follows the registry/list pattern used by [Revenge](https://github.com/revenge-mod/revenge). Source attribution is retained here, not displayed as author rows in the app.
+The new bundled features are inspired by [CopyBios](https://shipwr3ckd.github.io/revengeplugin/CopyBios/), [Dashless](https://awesomegamergame.github.io/bunny-plugins/dashless/), [FavouriteAnything](https://theunrealzaka.github.io/FavouriteAnything/favouriteanything/), [Freemoji](https://rico040.github.io/bunny-plugins/freemoji/) and [FreeStickers](https://aliernfrog.github.io/vd-plugins/FreeStickers/). The five new ports are independently implemented from the requested [No typing](https://redstonekasi.github.io/vendetta-plugins/no-typing/), [QuickDelete](https://purple-eyez.github.io/RevengePlugins/QuickDelete/), [NoDelete](https://meqativ.github.io/dumsane/NoDelete/), [JumpToTop](https://tralwdwd.github.io/plugins/JumpToTop/) and [Hidden Channels](https://lioncat6.github.io/revenge-plugins/hidden-channels/) behaviors, not bundled unmodified third-party scripts. Native settings integration follows the registry/list pattern used by [Revenge](https://github.com/revenge-mod/revenge). Source attribution is retained here, not displayed as author rows in the app.
 
 Built against the [official Morphe patcher and template](https://github.com/MorpheApp/morphe-patches-template). See Morphe's [patch sources guide](https://github.com/MorpheApp/morphe-manager/blob/main/docs/patch-sources.md) and [development documentation](https://github.com/MorpheApp/morphe-patcher/tree/main/docs).
 

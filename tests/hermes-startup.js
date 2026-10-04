@@ -35,7 +35,7 @@
                 if (typeof setup.default !== "function") throw Error("Missing original RN initializer");
                 setup.default();
                 ready = true;
-                if (!g.__venusPatches || g.__venusPatches.revision !== "1.0.0-dev.3 / eval-scope")
+                if (!g.__venusPatches || g.__venusPatches.revision !== "1.1.0")
                     throw Error("Replacement prelude did not execute");
                 print("HBC98_REAL_RN_ENVIRONMENT_PASS");
             }

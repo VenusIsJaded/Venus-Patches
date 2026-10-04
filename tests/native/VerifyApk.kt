@@ -28,8 +28,8 @@ fun main(args: Array<String>) {
         check("/*__FEATURES__*/" !in script) { "Unresolved feature selection placeholder" }
         check("const features = {picker:" in script)
         val metadata = zip.getInputStream(zip.getEntry("assets/venus/injection.json")).bufferedReader().readText()
-        check("\"revision\":\"1.0.0\"" in metadata && "const revision = \"1.0.0\"" in script)
-        for (feature in listOf("copyBios", "dashless", "favouriteAnything", "freeNitro"))
+        check("\"revision\":\"1.1.0\"" in metadata && "const revision = \"1.1.0\"" in script)
+        for (feature in listOf("copyBios", "dashless", "favouriteAnything", "freeNitro", "noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels"))
             check("$feature:true" in script) { "Missing selected feature: $feature" }
         check("VenusRoot" !in script && "RN.Modal" !in script && "registerRoot" !in script)
         check("SETTING_RENDERER_CONFIG" in script && "VENUS_FREENITRO" in script)

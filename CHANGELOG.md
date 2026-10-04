@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 — media fixes and five new bundled plugins
+
+- Added No typing, QuickDelete, NoDelete, JumpToTop and Hidden Channels as independently selectable offline patches.
+- Fixed media component wrapping by preserving Metro markers, React tags and all stock property descriptors.
+- Fixed FreeMoji selection against the real default capability object and direct emoji catalog; keep native eligibility separate from link conversion.
+- Moved FileSizeOnPicker and Custom voice messages from General into Plugins.
+- Added opt-in destructive/privacy-sensitive controls, bounded session retention and metadata caches, immutable native UI transforms and locked-channel navigation guards.
+- Retained native settings, existing bundled plugins and real Opus conversion.
+
+Published on the non-prerelease channel. Automated checks do not replace real-device validation. Hidden Channels cannot grant access; NoDelete cannot retrieve uncached messages; FreeNitro shares CDN links rather than Nitro entitlements.
+
 ## 1.0.0 — native settings and bundled plugins
 
 - Replaced the floating Venus button with a native Discord settings section, without author rows.
