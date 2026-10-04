@@ -5,12 +5,15 @@ import android.media.AudioFormat
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.media.MediaCodecList
 import android.media.MediaMuxer
 import android.net.Uri
 import android.os.Build
 import com.facebook.react.bridge.Promise
 import org.json.JSONObject
 import java.io.File
+import java.io.InputStream
+import java.io.BufferedInputStream
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.RejectedExecutionException
@@ -101,6 +104,8 @@ object VoiceProcessor {
         var muxerStarted = false
         var decoderStarted = false
         var encoderStarted = false
+        var pcmStream: InputStream? = null
+        var pcmSource: PcmFileInput? = null
         val deadline = System.nanoTime() + TimeUnit.MINUTES.toNanos(10)
         fun checkActive() {
             check(!cancelled.get()) { "Audio conversion cancelled" }
@@ -108,29 +113,37 @@ object VoiceProcessor {
         }
         try {
             checkActive()
-            extractor.setDataSource(context, uri, null)
-            var track = -1
-            var candidate = 0
-            while (candidate < extractor.trackCount) {
-                val candidateMime = extractor.getTrackFormat(candidate).getString(MediaFormat.KEY_MIME)
-                if (candidateMime != null && candidateMime.length >= 6 && candidateMime.substring(0, 6) == "audio/") {
-                    track = candidate
-                    break
+            pcmStream = BufferedInputStream(checkNotNull(context.contentResolver.openInputStream(uri)) { "Audio source is inaccessible" })
+            pcmSource = PcmFileInput.open(pcmStream)
+            if (pcmSource == null) {
+                pcmStream.close()
+                pcmStream = null
+                extractor.setDataSource(context, uri, null)
+                var track = -1
+                val codecs = MediaCodecList(MediaCodecList.REGULAR_CODECS)
+                var candidate = 0
+                while (candidate < extractor.trackCount) {
+                    val candidateMime = extractor.getTrackFormat(candidate).getString(MediaFormat.KEY_MIME)
+                    if (candidateMime != null && candidateMime.length >= 6 && candidateMime.substring(0, 6) == "audio/" &&
+                        codecs.findDecoderForFormat(extractor.getTrackFormat(candidate)) != null) {
+                        track = candidate
+                        break
+                    }
+                    candidate++
                 }
-                candidate++
+                require(track >= 0) { "No decodable audio track found" }
+                extractor.selectTrack(track)
+                val inputFormat = extractor.getTrackFormat(track)
+                val mime = inputFormat.getString(MediaFormat.KEY_MIME)!!
+                if (inputFormat.containsKey(MediaFormat.KEY_DURATION))
+                    require(inputFormat.getLong(MediaFormat.KEY_DURATION) <= 1200000000L) { "Audio exceeds 20 minutes" }
+                require(extractor.drmInitData == null) { "DRM-protected audio is not supported" }
+                inputFormat.setInteger(MediaFormat.KEY_PCM_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
+                decoder = MediaCodec.createDecoderByType(mime)
+                decoder.configure(inputFormat, null, null, 0)
+                decoder.start()
+                decoderStarted = true
             }
-            require(track >= 0) { "No decodable audio track found" }
-            extractor.selectTrack(track)
-            val inputFormat = extractor.getTrackFormat(track)
-            val mime = inputFormat.getString(MediaFormat.KEY_MIME)!!
-            if (inputFormat.containsKey(MediaFormat.KEY_DURATION))
-                require(inputFormat.getLong(MediaFormat.KEY_DURATION) <= 1200000000L) { "Audio exceeds 20 minutes" }
-            require(extractor.drmInitData == null) { "DRM-protected audio is not supported" }
-            inputFormat.setInteger(MediaFormat.KEY_PCM_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
-            decoder = MediaCodec.createDecoderByType(mime)
-            decoder.configure(inputFormat, null, null, 0)
-            decoder.start()
-            decoderStarted = true
             val encodedFormat = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_OPUS, 48000, 1).apply {
                 setInteger(MediaFormat.KEY_BIT_RATE, 64000)
                 setInteger(MediaFormat.KEY_PCM_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
@@ -196,21 +209,31 @@ object VoiceProcessor {
             }
             var inputDone = false
             var decodedDone = false
-            var resampler: PcmResampler? = null
+            var resampler: PcmResampler? = if (pcmSource != null) PcmResampler(pcmSource.rate, pcmSource.channels, true) else null
             val decodedInfo = MediaCodec.BufferInfo()
+            if (pcmSource != null) {
+                while (true) {
+                    checkActive()
+                    val frames = pcmSource.readFrames() ?: break
+                    val converted = checkNotNull(resampler).convert(frames)
+                    if (converted.isNotEmpty()) queuePcm(converted)
+                }
+                decodedDone = true
+            }
             while (!decodedDone) {
                 checkActive()
+                val activeDecoder = checkNotNull(decoder) { "Audio decoder unavailable" }
                 if (!inputDone) {
-                    val index = decoder.dequeueInputBuffer(10000)
+                    val index = activeDecoder.dequeueInputBuffer(10000)
                     if (index >= 0) {
-                        val buffer = decoder.getInputBuffer(index)!!
+                        val buffer = activeDecoder.getInputBuffer(index)!!
                         buffer.clear()
                         val size = extractor.readSampleData(buffer, 0)
                         if (size < 0) {
-                            decoder.queueInputBuffer(index, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            activeDecoder.queueInputBuffer(index, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
                             inputDone = true
                         } else {
-                            decoder.queueInputBuffer(index, 0, size, maxOf(0, extractor.sampleTime), 0)
+                            activeDecoder.queueInputBuffer(index, 0, size, maxOf(0, extractor.sampleTime), 0)
                             extractor.advance()
                             // Match the assignment-only EOS branch instead of returning advance()'s
                             // boolean: mixed Unit/Boolean branches generate the renamed Unit.INSTANCE.
@@ -218,9 +241,9 @@ object VoiceProcessor {
                         }
                     }
                 }
-                val index = decoder.dequeueOutputBuffer(decodedInfo, 10000)
+                val index = activeDecoder.dequeueOutputBuffer(decodedInfo, 10000)
                 if (index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                    val format = decoder.outputFormat
+                    val format = activeDecoder.outputFormat
                     val pcm = if (format.containsKey(MediaFormat.KEY_PCM_ENCODING))
                         format.getInteger(MediaFormat.KEY_PCM_ENCODING) else AudioFormat.ENCODING_PCM_16BIT
                     require(pcm == AudioFormat.ENCODING_PCM_16BIT || pcm == AudioFormat.ENCODING_PCM_FLOAT) { "Unsupported PCM encoding" }
@@ -231,13 +254,13 @@ object VoiceProcessor {
                     var pcmBytes: ByteArray? = null
                     try {
                         if (decodedInfo.size > 0 && decodedInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG == 0) {
-                            val buffer = decoder.getOutputBuffer(index)!!.duplicate()
+                            val buffer = activeDecoder.getOutputBuffer(index)!!.duplicate()
                             buffer.position(decodedInfo.offset)
                             buffer.limit(decodedInfo.offset + decodedInfo.size)
                             pcmBytes = checkNotNull(resampler) { "Decoder output missing format" }.convert(buffer.slice())
                         }
                         decodedDone = decodedInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0
-                    } finally { decoder.releaseOutputBuffer(index, false) }
+                    } finally { activeDecoder.releaseOutputBuffer(index, false) }
                     if (pcmBytes != null && pcmBytes.isNotEmpty()) queuePcm(pcmBytes)
                 }
                 drainEncoder(false)
@@ -273,6 +296,7 @@ object VoiceProcessor {
                 if (muxerStarted) try { muxer.stop() } catch (_: Exception) { }
                 try { muxer.release() } catch (_: Exception) { }
             }
+            if (pcmStream != null) try { pcmStream.close() } catch (_: Exception) { }
             try { extractor.release() } catch (_: Exception) { }
             if (!success) output.delete()
         }

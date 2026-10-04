@@ -4,18 +4,19 @@ Independent Discord tools for use with **Morphe**. Small, bundled patches—not 
 
 [Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-> **Release channel: 1.1.1 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
+> **Release channel: 1.2.0 (non-prerelease).** Compilation, automated regression tests and patch placement are checked separately from Android runtime behavior. Real-device launch, native settings interaction, media sharing and hardware codecs still need device validation. A successful build is not an end-to-end device test.
 
-## 1.1.1: performance and reliability update
+## 1.2.0: chat reliability, requested ports and voice formats
 
-- **Faster common audio path:** 48 kHz mono PCM16 uses one bulk copy, without interpolation or per-byte stream writes. Other sample rates retain streaming resampling; output limits and waveform measurements remain enforced.
-- **Less UI work:** picker badges and plugin switches subscribe only to their own setting; unrelated changes and preference-write notifications no longer redraw every badge. Immutable tree transforms allocate child arrays only when a child changes.
-- **Less repeated I/O:** completed size entries use least-recently-used eviction, and rapid setting changes retain only the latest waiting save snapshot. Native reads and audio jobs remain bounded.
-- **Bug fixes:** invalid size metadata no longer becomes a fake zero-byte file; pre-bridge size requests drain even without a preferences directory; restoring picker-off resolves queued work; same-turn voice cancellation cannot enqueue a later preparation. Non-finite PCM, invalid voice metadata and malformed preferences fail safely. Codecs created before a configuration/start failure are now released.
-- **Smaller startup prelude:** parser-only compaction removes comments/whitespace without renaming identifiers or rewriting scopes. The bundled script is about **29% shorter**, reducing the character-array construction used by the guarded HBC prelude. Both readable and compact forms run the full JavaScript regression suite. This is not a measured Android startup-time claim.
-- **Safer builds:** downloaded tools are verified before entering the cache, old DEX outputs are removed, and bundle ZIP entries have fixed timestamps/order/modes.
+- **JumpToTop:** replaces the unstyled fixed-height fallback with Discord's themed floating navigation pill and native composer/suggestion-height hooks.
+- **Hidden Channels:** fills native numeric channel buckets and gives only the mobile metadata-list factory a visibility facade. Real permission results, message fetching and navigation stay protected. Reopen/restart the guild view after enabling.
+- **NoDelete:** keeps independent snapshots across new messages, cache replacement, reconnects and truncation, rather than abusing AutoMod errors. Optional **Save deleted messages** retains an account-scoped local archive across restarts. Turning saving off erases it. Limit: 512 entries / 8 MiB archive; oldest entries can be evicted. Logout clears session records. Only already-cached content is retained; media links may expire.
+- **Pastelize:** stable pastel names and mentions, with optional role overrides, webhook-by-name and message-content controls.
+- **PlatformIndicators:** live Desktop / Mobile / Web / Console status labels on **profiles**. This port does not yet reproduce the upstream DM-header and member-list icons.
+- **ReviewDB:** opt-in profile panel with explicit-load reviews, native OAuth, post/update, delete-own-review and report controls. Requests go to `manti.vendicated.dev`; opening a review list shares that profile ID. ReviewDB credentials are held only for the app session, never stored in preferences. Community reviews are not verified facts. Live OAuth/service interaction still needs device validation.
+- **Voice formats:** direct streaming PCM WAV/RIFX (8/16/24/32-bit integer, 32/64-bit float, extensible PCM) and AIFF/AIFF-C (`NONE`, `twos`, `sowt`, `fl32`, `fl64`) decoding; Android codecs remain the fallback for compressed formats. More extension/MIME aliases, decoder-availability checks and stricter waveform validation.
 
-This optimizes **Venus's overhead**, not Discord's closed-source renderer, network stack or all of its bugs. See the [changelog](CHANGELOG.md) for scope and the device checklist below for remaining validation.
+Compilation and automated regressions are **not** a physical-device launch, UI, OAuth or hardware-codec test.
 
 ## What you get
 
@@ -44,12 +45,12 @@ This optimizes **Venus's overhead**, not Discord's closed-source renderer, netwo
    https://github.com/VenusIsJaded/Venus-Patches
    ```
 3. Select the original **Discord 347.12 - Stable**, version code **347012**, in **APKM** format. Use the unmodified APKM, not an already-patched client.
-4. Select the features you want; keep **Venus settings** enabled. All requested plugins are bundled locally; no remote plugin installation is needed. Let Morphe merge the splits, patch and sign the APK.
+4. Select the features you want; keep **Venus settings** enabled. The requested feature ports are bundled locally; no remote plugin installation is needed. Let Morphe merge the splits, patch and sign the APK.
 5. Install the result and open **Discord Settings → Venus**. Turn **Send audio as voice messages** on when needed.
 
-The remote source uses `main` branch metadata to discover the published **v1.1.1** bundle; refresh the source after upgrading.
+The remote source uses `main` branch metadata to discover the published **v1.2.0** bundle; refresh the source after upgrading.
 
-**Local import:** download `patches-1.1.1.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
+**Local import:** download `patches-1.2.0.mpp` from Releases, then choose **Sources → + → Local**. A local source does not update itself. Refresh remote sources or reimport local sources when upgrading. Repatch the **original APKM**, not a previously patched APK, and keep your existing Morphe signing key to install as an update without clearing app data.
 
 **Signing:** a patched APK has a different signing certificate from official Discord. Android may require uninstalling official Discord first; understand the loss of local app data before doing so. Future patched updates must use the same signing key. Never share your signing key.
 
@@ -60,7 +61,7 @@ The remote source uses `main` branch metadata to discover the published **v1.1.1
 - **FavouriteAnything:** adds favourite support for images and videos in the media viewer and provides cached Discord-hosted video thumbnails. Favourites continue to use Discord's existing storage. External video hosts may not provide image thumbnails; signed CDN URLs can still expire under Discord's normal rules.
 - **No typing:** does not send start/stop typing actions; incoming typing indicators remain stock. Switching off restores the original actions immediately.
 - **QuickDelete:** separate opt-in message and embed switches. Matches exact Discord-localized confirmation text, never generic “delete” substrings; unknown dialogs keep their confirmation. Message deletion is irreversible.
-- **NoDelete:** only messages already present in Discord's local message store can be retained. Bulk deletions are handled, duplicate gateway events are ignored and retained messages are visibly marked. The 512-entry limit evicts the oldest retained message; disabling removes the retained messages. Dismissing one uses local dispatch, not a second DELETE request. There is no message archive, remote fetch or separate content log.
+- **NoDelete:** only messages already present in Discord's local message store can be retained. Bulk deletions are handled, duplicate gateway events are ignored and retained messages are visibly marked. The 512-entry limit evicts the oldest retained message; disabling removes the retained messages. Dismissing one uses local dispatch, not a second DELETE request. An opt-in account-scoped local archive is available; it does not fetch remote content or download attachments.
 - **JumpToTop:** preserves Jump to Present and adds an entry point when it is absent. Uses the chat's own channel ID, not a possibly stale selected-channel singleton; channel/forum action-sheet rows reuse Discord's row component. Voice-panel dismissal controls are not repurposed.
 - **Hidden Channels:** opt-in, read-only metadata already received by your client. Marks locked names and shows a native information dialog instead of navigating into a locked channel. Real permission results are never overwritten; this cannot read hidden messages or join locked voice channels. Restart/reopen a guild view after changing the switch if its native list is already mounted.
 - **FreeNitro:** combines the requested Freemoji and FreeStickers behaviors. **Plugins → FreeNitro** contains independent **FreeMoji / Free emojis** and **Free stickers** switches, plus compact links and an always-use-links option.
@@ -73,9 +74,9 @@ PNG, APNG and GIF stickers use Discord's CDN only. **APNG previews may be static
 
 The reference plugin supplies a constant waveform and a fixed 60-second duration and changes the MIME label without re-encoding the audio. Venus instead implements:
 
-- A native **MediaExtractor → MediaCodec → Ogg MediaMuxer** conversion path.
+- A native **streaming PCM reader or MediaExtractor → MediaCodec → Ogg MediaMuxer** conversion path.
 - **48 kHz, mono, 64 kbit/s Opus** output—not a renamed MP3.
-- Duration calculated from the PCM actually processed and a waveform derived from its amplitude.
+- Duration calculated from the PCM actually processed and a waveform derived from its amplitude, consumed by Discord's **native voice-attachment waveform renderer**. The inspected APK has no callable file-to-waveform generator, so measurement remains local instead of using placeholder bars.
 - Preparation at Discord's existing asynchronous native-upload boundary, before it uploads the converted URI.
 - Voice flag `8192` added to the final message payload **without overwriting other flags**.
 - Original files left untouched. Temporary output lives only in Discord's private cache.
@@ -106,16 +107,16 @@ Send **one audio attachment with no accompanying text, stickers, poll or extra a
 - Abandoned converted outputs are pruned during subsequent conversions: at most 32 outputs retained, with six-hour expiry. Original source files are never deleted.
 
 **New plugin ports**
-- Disabled/unselected features take the stock path; no downloaded JavaScript or broad React/global-network interception.
-- NoDelete tracks at most 512 deletion IDs, not duplicated full message objects, and clears session bookkeeping on logout/cache resets.
+- Disabled/unselected features take the stock path; no downloaded JavaScript or broad React/global-network interception. ReviewDB alone makes explicit third-party service requests.
+- NoDelete retains at most 512 independent snapshots; the optional archive is limited to 8 MiB. Session snapshots survive cache resets and clear on logout.
 - Hidden Channels has a 16-guild cache with stable array identity; native permission and record-reference checks invalidate stale entries. It never probes an inaccessible channel's API.
 - QuickDelete resolves its two localized labels only at the confirmation boundary, preserving locale changes and stock fallbacks.
 - Media wrappers preserve non-enumerable Metro module markers, React memo/forwardRef tags, symbols and property descriptors. This fixes the invalid component-object wrapping behind the reported media-viewer crash.
 - FreeMoji hooks the actual default capability object and direct emoji catalog checks. Send conversion consults real eligibility, not the picker override, so non-Nitro emoji tokens become links correctly.
 
 **Runtime**
-- At most **36 inspected Metro factories** are wrapped when all patches are selected, including the exact RN environment initializer. Unselected plugin modules are not wrapped. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers, startup network requests or root component wrapper.
-- The feature code is included in the patched APK. No Vendetta/Revenge runtime, downloaded JavaScript, analytics or account-token handling.
+- At most **51 inspected Metro factories** are wrapped when all patches are selected, including the exact RN environment initializer. Unselected plugin modules are not wrapped. Feature hooks activate only after that initializer successfully returns. Unrelated factories pass through unchanged; no eager module scans, polling timers, startup network requests or root component wrapper.
+- The feature code is included in the patched APK. ReviewDB is the only opt-in service integration. No Vendetta/Revenge runtime, downloaded JavaScript or analytics. ReviewDB uses its own identify-only OAuth credential, not your Discord account token.
 - Switches are stored in `venus-patches.json` in Discord's private documents directory. Writes are serialized with at most one latest waiting snapshot, not an unbounded Promise queue. Failed persistence is reported in the menu; switches still work for the session.
 
 ### Measuring performance responsibly
@@ -173,7 +174,7 @@ python3 scripts/build.py
 
 Toolchain downloads are pinned and SHA-256 checked. The `.mpp` contains JVM patch classes, Android patch DEX, bundled JavaScript and a native `.mpe` extension. Discord APKs, compile-only bridge stubs and downloaded tool binaries are not distributed in the bundle.
 
-Output: `patches/build/libs/patches-1.1.1.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
+Output: `patches/build/libs/patches-1.2.0.mpp` and `SHA256SUMS`. `patches-list.json` is generated from the actual compiled patch objects, not maintained as a guessed feature list.
 
 Verify a downloaded release before local import: place `SHA256SUMS` next to the `.mpp`, then run `sha256sum -c SHA256SUMS` on Linux (or an equivalent SHA-256 tool). The checksum detects corruption; it is not a publisher signature.
 
@@ -204,7 +205,7 @@ Before treating runtime compatibility as device-verified, check on a real device
 
 | Symptom | What to check |
 | --- | --- |
-| Morphe still shows 1.1.0 | Refresh the remote source or import `patches-1.1.1.mpp` again. Repatch the original APKM. |
+| Morphe still shows 1.1.0 | Refresh the remote source or import `patches-1.2.0.mpp` again. Repatch the original APKM. |
 | Unsupported JavaScript bundle | Confirm Discord 347.12 / 347012 and the exact embedded bundle hash above. Do not bypass the guard. |
 | Preferences say session-only/read failed | Inspect Venus → General; use valid stored settings, check available storage and restart. Switches remain usable for the session. |
 | No size badge | Only local `content://` and `file://` URIs are queried. Invalid/denied metadata hides the badge; retry after the 30-second failure expiry or reopen the picker. |
@@ -223,3 +224,5 @@ The new bundled features are inspired by [CopyBios](https://shipwr3ckd.github.io
 Built against the [official Morphe patcher and template](https://github.com/MorpheApp/morphe-patches-template). See Morphe's [patch sources guide](https://github.com/MorpheApp/morphe-manager/blob/main/docs/patch-sources.md) and [development documentation](https://github.com/MorpheApp/morphe-patcher/tree/main/docs).
 
 Venus Patches is licensed under [GPL-3.0](LICENSE), with the upstream branding notice retained in [NOTICE](NOTICE). This project is not affiliated with Discord or Morphe. Releases contain patches only, not Discord APKs. Use modified clients at your own risk and review Discord's terms.
+
+Requested ports are independent implementations inspired by [Pastelize](https://vd-plugins.github.io/proxy/cynosphere.github.io/VendettaPlugins/Pastelize/), [PlatformIndicators](https://martinz64.github.io/vendetta-plugins/PlatformIndicators/) and [ReviewDB](https://janisslsm.github.io/vdplugins/ReviewDB). No remote plugin scripts are shipped. PlatformIndicators currently targets profiles; upstream DM/member-list icons are not included.

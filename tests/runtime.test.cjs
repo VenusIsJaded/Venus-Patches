@@ -470,7 +470,7 @@ test('conversion disabled has no codec bridge calls for audio uploads', async ()
     await upload.reactNativeCompressAndExtractData();assert.equal(calls,0);
 });
 
-const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true, noTyping:true, quickDelete:true, noDelete:true, jumpToTop:true, hiddenChannels:true};
+const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true, noTyping:true, quickDelete:true, noDelete:true, jumpToTop:true, hiddenChannels:true, pastelize:true, platformIndicators:true, reviewDB:true};
 function reactHarness(b) {
     const React = {
         createElement(type, props, ...children) { return {type, props:{...props, ...(children.length ? {children:children.length === 1 ? children[0] : children} : {})}}; },
@@ -660,7 +660,7 @@ test('APNG uses only Discord CDN and unsupported, unknown or unavailable sticker
         const ids=[id,'20'];const msg={content:'keep'};b.actions.sendStickers('channel',ids,msg);
         assert.equal(b.sent.at(-1)[1],ids);assert.equal(b.sent.at(-1)[2],msg);
     }
-    assert.doesNotMatch(raw,/ezgif\.com|fetch\(|setTimeout\(|setInterval\(/);
+    assert.doesNotMatch(raw.slice(0,raw.indexOf("let pastelHash")),/ezgif\.com|fetch\(|setTimeout\(|setInterval\(/);
 });
 test('sticker sendability preserves unavailable, permission-blocked and unsupported states', () => {
     const b=nitroHarness();assert.equal(b.rules.getStickerSendability(b.stickers['60']),2);
@@ -792,7 +792,7 @@ test('NoDelete retains only cached messages, marks once and dismisses locally wi
     b.messages.set('c:1',{content:'hello'});assert.equal(b.dispatch.dispatch(event),'dispatched');assert.equal(b.messages.size,0);
     b.api.setSetting('noDelete',true);b.messages.set('c:1',{content:'hello'});
     b.dispatch.dispatch(event);assert.equal(b.messages.get('c:1').content,'hello');
-    assert.equal(b.events.at(-1).type,'MESSAGE_EDIT_FAILED_AUTOMOD');assert.match(b.events.at(-1).errorResponseBody.message,/deleted/);
+    assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'hello');
     const n=b.events.length;b.dispatch.dispatch(event);assert.equal(b.events.length,n);
     await b.actions.deleteMessage('c','1');assert.equal(b.messages.size,0);assert.equal(b.network.length,0);
     assert.equal(b.actions.deleteMessage('c','2'),'remote');assert.equal(b.network.length,1);
@@ -840,8 +840,12 @@ test('JumpToTop clones frozen controls, keeps Jump to Present and uses each curr
 test('JumpToTop is available when Jump to Present is absent without wrapping unrelated voice controls', () => {
     const b=boot(allFeatures);reactHarness(b);const jumps=[];
     b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,7730);
+    b.load({default:'NativeFloatingButton'},null,12550);b.load({default:'NativeArrow'},null,12551);
+    b.load({useChatInputContainerHeight:()=>140,useSmallSuggestionBarHeight:()=>28},null,9686);
     const component=b.load({default:()=>null},null,12549).default;
-    const result=component({channelId:'123'});result.props.children.props.onPress();assert.equal(jumps[0].messageId,'123');
+    const result=component({channelId:'123',screenIndex:0});assert.equal(result.props.style.bottom,180);
+    assert.equal(result.props.children.props.children.type,'NativeFloatingButton');
+    result.props.children.props.children.props.onPress();assert.equal(jumps[0].messageId,'123');
     assert.equal(component({}),null);
 });
 function hiddenHarness() {
@@ -1053,4 +1057,108 @@ test('invalid voice duration and byte size fall back without mutating the upload
         await upload.reactNativeCompressAndExtractData();
         assert.equal(upload.calls, 1); assert.equal(upload.item.uri, 'content://audio');
     }
+});
+
+class MessageCollection {
+    constructor(messages=[]) {this.messages=messages;this.ready=true;this.hasMoreBefore=true;}
+    clone(){const next=new MessageCollection(this.messages.slice());next.ready=this.ready;next.hasMoreBefore=this.hasMoreBefore;return next;}
+    merge(records){for(const record of records){const index=this.messages.findIndex(m=>m.id===record.id);if(index<0)this.messages.push(record);else this.messages[index]=record;}this.messages.sort((a,b)=>a.id.localeCompare(b.id));return this;}
+    toArray(){return this.messages;}
+}
+test('NoDelete snapshots survive incoming messages, cache replacement, reconnect and truncation',()=>{
+    const b=deletionHarness();let collection=new MessageCollection([{id:'1',content:'original',author:{id:'u'}}]);
+    const store=b.load({default:{getMessage:(c,id)=>collection.toArray().find(m=>m.id===id),getMessages:()=>collection}},null,5008).default;
+    b.api.setSetting('noDelete',true);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
+    assert.equal(store.getMessage('c','1').content,'[Deleted] original');
+    collection=new MessageCollection([{id:'2',content:'new'}]);b.dispatch.dispatch({type:'MESSAGE_CREATE',channelId:'c',message:{id:'2'}});
+    const retained=store.getMessages('c');assert.equal(retained.toArray().length,2);assert.equal(collection.toArray().length,1);
+    assert.equal(retained.ready,true);assert.equal(retained.hasMoreBefore,true);assert.equal(store.getMessages('c'),retained);
+    for(const type of ['CONNECTION_OPEN','CACHE_LOADED','MESSAGE_TRUNCATE']){b.dispatch.dispatch({type});assert.equal(store.getMessage('c','1').content,'[Deleted] original');}
+    b.api.setSetting('noDelete',false);assert.equal(store.getMessages('c'),collection);assert.equal(store.getMessage('c','1'),undefined);
+});
+async function archiveHarness(saved,account='owner') {
+    const b=boot(allFeatures);let disk=saved,writes=[];
+    const store=b.load({default:{getMessage:()=>undefined,getMessages:()=>new MessageCollection(),emitChange(){}}},null,5008).default;
+    b.load({createMessageRecord:raw=>({...raw})},null,5010);b.load({default:{getCurrentUser:()=>({id:account})}},null,1372);
+    b.load({default:native({fileExists:async path=>path.endsWith('venus-deleted-messages.json')&&!!disk,
+        readFile:async()=>disk,writeFile:async(dir,name,text)=>{writes.push([name,text]);if(name==='venus-deleted-messages.json')disk=text;}})});
+    await flush();await flush();b.api.setSetting('noDelete',true);b.api.setSetting('noDeleteSave',true);await flush();await flush();
+    return {...b,store,writes,getDisk:()=>disk};
+}
+test('NoDelete archive is opt-in, account-scoped, restores markers and can be erased',async()=>{
+    const raw={id:'1',channel_id:'c',author:{id:'u'},content:'saved'};
+    const saved=JSON.stringify({version:1,accountId:'owner',messages:[{id:'1',channelId:'c',message:raw}]});
+    const b=await archiveHarness(saved);assert.equal(b.store.getMessage('c','1').content,'[Deleted] saved');
+    assert.equal(JSON.parse(b.getDisk()).messages[0].message.content,'saved');
+    b.api.setSetting('noDeleteSave',false);await flush();await flush();assert.equal(JSON.parse(b.getDisk()).messages.length,0);
+    const other=await archiveHarness(saved,'different');assert.equal(other.store.getMessage('c','1'),undefined);
+    const malformed=await archiveHarness('{broken');assert.equal(malformed.api.status.archive,'restore failed');assert.equal(malformed.store.getMessage('c','1'),undefined);
+});
+test('Hidden Channels mobile list facade handles named/default imports without changing real permission results',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    // boot's require mocks return nothing; load a realistic factory directly through __d instead.
+    const real=b.permission;let captured;
+    b.context.__d(function(g,req,imp,all,m){captured=[req(4427).default,imp(4427),all(4427).default];m.exports={};},7802,[]);
+    b.factories.get(7802)(b.context,()=>({default:real}),()=>real,()=>({default:real}),{exports:{}},{},[]);
+    for(const facade of captured){assert.equal(facade.can(b.viewPermission,b.channels.hidden),true);assert.equal(real.can(b.viewPermission,b.channels.hidden),false);}
+    b.api.setSetting('hiddenChannels',false);for(const facade of captured)assert.equal(facade.can(b.viewPermission,b.channels.hidden),false);
+});
+test('Hidden Channels fills numeric native channel-type buckets and gets direct permission constants',()=>{
+    const b=hiddenHarness();b.load({Permissions:{VIEW_CHANNEL:b.viewPermission}},null,1085);b.load({},null,1074);
+    const original={0:[],2:[],4:[],SELECTABLE:[],VOCAL:[]};const store=b.load({default:{getChannels:()=>original}},null,2096).default;
+    b.api.setSetting('hiddenChannels',true);const value=store.getChannels('g');assert.equal(value[0].length,2);assert.equal(value[2].length,1);assert.equal(original[0].length,0);
+});
+
+test('Pastelize preserves role colors and immutable mentions, supports webhook and content controls',()=>{
+    const b=boot(allFeatures);const {RN}=reactHarness(b);RN.processColor=hex=>parseInt(hex.slice(1),16)|0xff000000;
+    b.load({default:seed=>Array.from(seed).reduce((a,c)=>a+c.charCodeAt(0),0)},null,1240);
+    class Rows {generate(row){return row.result;}}
+    b.load({default:Rows},null,8222);
+    const message=Object.freeze({authorId:'123',username:'Test',roleColor:null,content:Object.freeze([Object.freeze({type:'mention',userId:'456',content:'test'})])});
+    const row={rowType:1,message:{},result:Object.freeze({message})}, rows=new Rows();
+    const result=rows.generate(row);assert.notEqual(result,row.result);assert.equal(message.roleColor,null);assert.match(result.message.colorString,/^#[0-9a-f]{6}$/);assert.equal(message.content[0].colorString,undefined);
+    assert.match(result.message.content[0].colorString,/^#/);assert.equal(rows.generate(row).message.colorString,result.message.colorString);
+    const colored={...row,result:{message:{...message,roleColor:123,content:[]}}};assert.equal(rows.generate(colored).message.roleColor,123);
+    b.api.setSetting('pastelAll',true);assert.notEqual(rows.generate(colored).message.roleColor,123);
+    b.api.setSetting('pastelContent',true);assert.equal(rows.generate(row).message.content[0].type,'link');
+    b.api.setSetting('pastelize',false);assert.equal(rows.generate(row),row.result);
+});
+test('PlatformIndicators uses real client status, hides unknown/offline clients and preserves immutable profiles',()=>{
+    const b=boot(allFeatures),{React}=reactHarness(b);const clients={desktop:'online',mobile:'idle',web:'offline',unknown:'dnd'};
+    b.load({default:{getClientStatus:()=>clients,addChangeListener(){},removeChangeListener(){}}},null,4828);
+    function DisplayName(props){return Object.freeze(React.createElement('Name',{children:props.user.id}));}
+    const profile=Object.freeze(React.createElement('View',{children:React.createElement(DisplayName,{user:{id:'u'}})}));
+    const exports=b.load({DisplayName,default:()=>profile},null,11448);
+    const tree=exports.default({});assert.notEqual(tree,profile);const named=tree.props.children.type(tree.props.children.props);
+    const badges=named.props.children[1];const rendered=badges.type(badges.props);assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children),['Desktop','Mobile']);
+    b.api.setSetting('platformIndicators',false);assert.equal(badges.type(badges.props),null);
+});
+function reviewHarness() {
+    const b=boot(allFeatures),{React,RN}=reactHarness(b);RN.Alert={alert(){}};RN.ScrollView='ScrollView';RN.TextInput='TextInput';RN.ActivityIndicator='Spinner';
+    const requests=[];b.context.URL=URL;b.context.fetch=async(url,options)=>{requests.push([url,options]);return {ok:true,json:async()=>url.includes('/auth')?{success:true,token:'review-only-token'}:{success:true,reviews:[{id:1,comment:'hello',sender:{discordID:'other',username:'Other'}}]}};};
+    b.load({default:{getCurrentUser:()=>({id:'111111111111111111'})}},null,1372);
+    b.load({TableRow:'NativeRow'},null,5854);
+    let pushed;const popped=[];b.load({pushModal:value=>pushed=value,popModal:key=>popped.push(key)},null,4645);b.load({default:'OAuthModal'},null,9358);
+    function PrimaryInfo(){return React.createElement('Info',null);}
+    const profile=b.load({PrimaryInfo,default:()=>React.createElement('Profile',{children:React.createElement(PrimaryInfo,{user:{id:'222222222222222222'}})})},null,13382);
+    const tree=profile.default({}),info=tree.props.children.type(tree.props.children.props);const panel=info.props.children[1];
+    return {...b,React,RN,requests,panel,popped,getPushed:()=>pushed};
+}
+test('ReviewDB has no startup requests and expands a native opt-in profile panel only after enabling',()=>{
+    const b=reviewHarness();assert.equal(b.requests.length,0);assert.equal(b.panel.type(b.panel.props),null);
+    b.api.setSetting('reviewDB',true);const panel=b.panel.type(b.panel.props);assert.equal(panel.props.children[0].type,'NativeRow');assert.equal(b.requests.length,0);
+});
+test('ReviewDB explicit expansion fetches only its API; OAuth rejects untrusted redirects and never stores account tokens',async()=>{
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);const states=[0,true,[],"",false,"",0],effects=[];
+    let index=0;b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,value=>{states[i]=typeof value==='function'?value(states[i]):value}];};
+    b.React.useEffect=fn=>effects.push(fn);
+    let panel=b.panel.type(b.panel.props);effects.forEach(fn=>fn());await flush();assert.equal(b.requests.length,1);assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/users/222222222222222222/reviews');
+    assert.equal(b.requests[0][1].credentials,'omit');assert.equal(b.requests[0][1].headers.Authorization,undefined);
+    index=0;effects.length=0;panel=b.panel.type(b.panel.props);
+    const details=panel.props.children[1].props.children;const auth=details.at(-1);auth.props.onPress();
+    const modal=b.getPushed();assert.equal(modal.modal.props.clientId,'915703782174752809');
+    await modal.modal.props.callback({location:'https://evil.example/auth?code=x'});assert.equal(b.requests.length,1);
+    await modal.modal.props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});assert.equal(b.requests.length,2);assert.equal(b.popped.length,1);
+    index=0;panel=b.panel.type(b.panel.props);assert.equal(panel.props.children[1].props.children.at(-1).type,b.RN.View);
+    b.api.setSetting('reviewDB',false);assert.equal(b.api.settings.reviewToken,undefined);
 });

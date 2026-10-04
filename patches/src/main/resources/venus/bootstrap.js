@@ -14,17 +14,20 @@
     if (features.freeNitro) selectModules([1372, 2041, 5708, 5751, 4446, 14280, 7611, 7730]);
     if (features.noTyping) selectModules([12272]);
     if (features.quickDelete) selectModules([5141, 1115]);
-    if (features.noDelete) selectModules([573, 5008, 7730]);
-    if (features.jumpToTop) selectModules([12549, 10518, 11207, 7730, 2041]);
-    if (features.hiddenChannels) selectModules([1074, 1101, 2041, 2096, 4427, 4941, 7730]);
-    const revision = "1.1.1";
+    if (features.noDelete) selectModules([573, 5008, 5010, 1372, 7730]);
+    if (features.jumpToTop) selectModules([12549, 12550, 12551, 9686, 10518, 11207, 7730, 2041]);
+    if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4941, 7730]);
+    if (features.pastelize) selectModules([8222, 1240]);
+    if (features.platformIndicators) selectModules([4828, 573, 11448]);
+    if (features.reviewDB) selectModules([13382, 4645, 9358, 5854, 1372, 573, 4505]);
+    const revision = "1.2.0";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
-    const deferredModules = new Map();
+    const deferred = new Map();
     const settings = { picker: true, voice: false, copyBios: true, dashless: true, favouriteAnything: true, emojis: true, stickers: true, hyperlinks: true, forceLinks: false,
-        noTyping: true, quickDelete: false, quickDeleteEmbeds: false, noDelete: false,
-        jumpToTop: true, hiddenChannels: false };
+        noTyping: true, quickDelete: false, quickDeleteEmbeds: false, noDelete: false, noDeleteSave: false,
+        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, reviewDB:false };
     const status = { picker: false, attachment: false, request: false, menu: false, conversion: false, audioError: "", storage: "waiting" };
     const listeners = new Set();
     const dirty = new Set();
@@ -34,9 +37,9 @@
     const markedPayloads = new WeakMap();
     const wrapped = new WeakMap();
     // React Native installs Promise during its polyfill phase; no Promise use in this prelude.
-    let React, RN, files, activeReads = 0, writePending = false, pendingSnapshot;
+    let React, RN, files, activeReads = 0, writePending = false, nextSave;
     const conversions = new WeakMap();
-    const convertedUploads = new WeakMap();
+    const readyUploads = new WeakMap();
     const activeJobs = new Map();
     let jobCounter = 0;
     const PREFS = "venus-patches.json";
@@ -53,18 +56,18 @@
     function save() {
         if (!files || status.storage === "loading") return;
         // Keep only the newest waiting snapshot, not one Promise/string per toggle.
-        pendingSnapshot = JSON.stringify(settings);
+        nextSave = JSON.stringify(settings);
         if (writePending) return;
         writePending = true;
         function persist() {
-            const snapshot = pendingSnapshot;
-            pendingSnapshot = undefined;
+            const snapshot = nextSave;
+            nextSave = undefined;
             return Promise.resolve().then(() => files.writeFile("documents", PREFS, snapshot, "utf8")).then(() => {
                 status.storage = "saved";
             }, () => { status.storage = "save failed (session only)"; }).then(() => {
                 notify();
-                if (pendingSnapshot !== undefined && pendingSnapshot !== snapshot) return persist();
-                pendingSnapshot = undefined;
+                if (nextSave !== undefined && nextSave !== snapshot) return persist();
+                nextSave = undefined;
                 writePending = false;
             });
         }
@@ -74,6 +77,7 @@
         if (!owns(settings, key) || !features[featureFor(key)]) return false;
         if (settings[key] === !!value && status.storage !== "loading" && status.storage !== "waiting") return true;
         value = !!value;
+        if (key === "reviewDB" && !value) { reviewToken = ""; reviewAccount = null; reviewCache.clear(); }
         if (key === "voice" && !value) activeJobs.forEach(job => {
             job.cancelled = true;
             nativeVoice("cancel", job.id).catch(() => {});
@@ -81,6 +85,7 @@
         if (key === "noDelete" && !value) clearDeleted(true);
         if (key === "hiddenChannels") hiddenViews.clear();
         settings[key] = value;
+        if (key === "noDeleteSave") { if (value) restoreDeleted(); else archiveRestored = false; persistDeleted(); }
         dirty.add(key);
         if (key === "picker" && !value) {
             clearSizes();
@@ -114,6 +119,7 @@
             if (!enabled("picker")) clearSizes();
             // Persist edits made while the asynchronous restore was in flight.
             if (dirty.size) save();
+            restoreDeleted();
             notify("*");
         }).catch(() => { status.storage = "read failed (defaults)"; if (dirty.size) save(); notify("*"); });
     }
@@ -170,6 +176,7 @@
         drainSizes();
         return entry.promise;
     }
+    function el() { return React.createElement.apply(React,arguments); }
     function useSettings(key) {
         const [, update] = React.useState(0);
         React.useEffect(() => {
@@ -188,11 +195,11 @@
             return () => { live = false; };
         }, [props.uri, settings.picker]);
         if (!enabled("picker") || bytes === null || !RN) return null;
-        return React.createElement(RN.View, {
+        return el(RN.View, {
             pointerEvents: "none",
             style: { position: "absolute", top: 3, left: 3, borderRadius: 4,
                 backgroundColor: "#17181ccc", paddingHorizontal: 4, paddingVertical: 2 }
-        }, React.createElement(RN.Text, {
+        }, el(RN.Text, {
             style: { color: "white", fontSize: 10, fontWeight: "700", includeFontPadding: false }
         }, formatSize(bytes)));
     }
@@ -201,18 +208,18 @@
         const first = Array.isArray(props.children) ? props.children[0] : props.children;
         const uri = first && first.props && first.props.localImageSource && first.props.localImageSource.uri;
         if (typeof uri !== "string") return props;
-        return Object.assign({}, props, { children: React.createElement(RN.View, {
+        return Object.assign({}, props, { children: el(RN.View, {
             style: { position: "relative" }, pointerEvents: "box-none"
-        }, props.children, React.createElement(SizeBadge, { uri })) });
+        }, props.children, el(SizeBadge, { uri })) });
     }
     function pickerComponent(component) {
         if (!component || wrapped.has(component)) return wrapped.get(component) || component;
         if (typeof component === "function" && (component.displayName || component.name) === "Pressable") {
-            const original = component;
+            const orig = component;
             const result = function () {
                 const args = Array.from(arguments);
                 args[0] = pickerProps(args[0]);
-                return original.apply(this, args);
+                return orig.apply(this, args);
             };
             result.displayName = "Pressable";
             wrapped.set(component, result);
@@ -221,11 +228,11 @@
         }
         if (typeof component === "object") {
             for (const key of ["type", "render"]) {
-                const original = data(component, key);
-                if (!original) continue;
-                const replacement = pickerComponent(original);
-                if (replacement !== original) {
-                    const result = cloneWith(component, key, replacement);
+                const orig = data(component, key);
+                if (!orig) continue;
+                const patched = pickerComponent(orig);
+                if (patched !== orig) {
+                    const result = cloneWith(component, key, patched);
                     wrapped.set(component, result);
                     return result;
                 }
@@ -242,17 +249,17 @@
         if (!upload || upload.spoiler) return false;
         const item = upload.item || {};
         const mime = upload.mimeType || item.mimeType || "";
-        if (mime.startsWith("audio/")) return true;
+        if (mime.startsWith("audio/") || ["application/ogg","application/x-ogg","application/x-flac"].includes(mime.toLowerCase())) return true;
         if (mime && mime !== "application/octet-stream") return false;
-        return /\.(mp3|m4a|aac|wav|flac|ogg|oga|opus|amr|aif|aiff|wma|ac3|caf)$/i.test(upload.filename || item.filename || "");
+        return /\.(mp3|mp2|mpga|m4a|m4b|aac|wav|wave|flac|ogg|oga|opus|amr|awb|3ga|3gp|3gpp|aif|aiff|aifc|wma|ac3|eac3|caf|weba|alac)$/i.test(upload.filename || item.filename || "");
     }
-    function prepareUpload(original, upload, args) {
-        if (!enabled("voice") || !isAudio(upload)) return original.apply(upload, args);
+    function prepareUpload(orig, upload, args) {
+        if (!enabled("voice") || !isAudio(upload)) return orig.apply(upload, args);
         const old = conversions.get(upload);
         if (old) return old.promise;
         const item = upload.item || {};
         const uri = item.uri || upload.uri;
-        if (typeof uri !== "string" || !/^(content|file):\/\//.test(uri)) return original.apply(upload, args);
+        if (typeof uri !== "string" || !/^(content|file):\/\//.test(uri)) return orig.apply(upload, args);
         const job = { id: Date.now().toString(36) + "-" + (++jobCounter), cancelled: false };
         activeJobs.set(upload, job);
         const promise = Promise.resolve().then(() => {
@@ -263,12 +270,12 @@
             const result = JSON.parse(text);
             if (!result || typeof result.uri !== "string" || !result.uri.startsWith("file://") ||
                 result.mimeType !== "audio/ogg" || !Number.isFinite(result.durationSecs) || !(result.durationSecs > 0) || result.durationSecs > 1200 ||
-                !Number.isSafeInteger(result.size) || !(result.size > 0) || typeof result.waveform !== "string" || !result.waveform)
+                !Number.isSafeInteger(result.size) || !(result.size > 0) || typeof result.waveform !== "string" || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(result.waveform) || !result.waveform || result.waveform.length > 344)
                 throw new Error("Native audio conversion returned invalid metadata");
             if (job.cancelled || !enabled("voice") || (typeof upload.isCancelled === "function" && upload.isCancelled())) {
                 nativeVoice("release", job.id).catch(() => {});
                 if (typeof upload.isCancelled === "function" && upload.isCancelled()) throw new Error("Audio upload cancelled");
-                return original.apply(upload, args);
+                return orig.apply(upload, args);
             }
             // This async pre-upload boundary is awaited by CloudUpload.upload in the inspected build.
             // Both native upload paths consume item.uri; no Blob/base64 full-file buffering in JS.
@@ -280,18 +287,18 @@
             upload.durationSecs = result.durationSecs;
             upload.waveform = result.waveform;
             upload.reactNativeFilePrepped = true;
-            convertedUploads.set(upload, result);
+            readyUploads.set(upload, result);
             status.audioError = "";
             notify();
             return upload;
         }).catch(error => {
             if (typeof upload.isCancelled === "function" && upload.isCancelled()) throw error;
-            // Unsupported codecs/devices remain ordinary original attachments, never spoofed voice files.
+            // Unsupported codecs/devices remain ordinary orig attachments, never spoofed voice files.
             status.audioError = String(error && error.message || error);
             notify();
             if (!job.cancelled && RN && RN.Alert) RN.Alert.alert("Voice conversion unavailable",
                 status.audioError + "\nThis file will be uploaded normally instead.");
-            return original.apply(upload, args);
+            return orig.apply(upload, args);
         }).finally(() => { activeJobs.delete(upload); });
         job.promise = promise;
         conversions.set(upload, job);
@@ -300,12 +307,12 @@
     function instrumentCloudUpload(CloudUpload) {
         if (!features.voice || typeof CloudUpload !== "function" || !CloudUpload.prototype) return;
         const prototype = CloudUpload.prototype;
-        const original = prototype.reactNativeCompressAndExtractData;
-        if (typeof original !== "function" || wrapped.has(original)) return;
-        const replacement = function () { return prepareUpload(original, this, arguments); };
-        prototype.reactNativeCompressAndExtractData = replacement;
-        wrapped.set(original, replacement);
-        wrapped.set(replacement, replacement);
+        const orig = prototype.reactNativeCompressAndExtractData;
+        if (typeof orig !== "function" || wrapped.has(orig)) return;
+        const patched = function () { return prepareUpload(orig, this, arguments); };
+        prototype.reactNativeCompressAndExtractData = patched;
+        wrapped.set(orig, patched);
+        wrapped.set(patched, patched);
         for (const key of ["cancel", "delete"]) {
             const method = prototype[key];
             if (typeof method !== "function") continue;
@@ -320,9 +327,9 @@
         }
         status.conversion = true;
     }
-    function attachmentPayload(original, receiver, args) {
-        const result = original.apply(receiver, args);
-        const metadata = convertedUploads.get(args[0]);
+    function attachmentPayload(orig, self, args) {
+        const result = orig.apply(self, args);
+        const metadata = readyUploads.get(args[0]);
         if (!enabled("voice") || !metadata || !result || typeof result !== "object") return result;
         const payload = Object.assign({}, result, { duration_secs: metadata.durationSecs, waveform: metadata.waveform });
         // These fields are real, but still belong only to custom voice conversion when the flag is off.
@@ -334,17 +341,17 @@
         }
         return payload;
     }
-    function postRequest(original, receiver, args) {
+    function postRequest(orig, self, args) {
         const request = args[0];
         // Fast path for all other API traffic; no fetch/XMLHttpRequest interception.
         if (!request || typeof request.url !== "string" || !/^\/channels\/\d+\/messages$/.test(request.url))
-            return original.apply(receiver, args);
+            return orig.apply(self, args);
         const body = request.body;
         if (!body || !Array.isArray(body.attachments) || ((Number(body.flags) || 0) & 8192))
-            return original.apply(receiver, args);
+            return orig.apply(self, args);
         const markers = body.attachments.map(attachment => attachment &&
             (markedPayloads.get(attachment) || pendingVoice.get(attachment.uploaded_filename)));
-        if (!markers.some(Boolean)) return original.apply(receiver, args);
+        if (!markers.some(Boolean)) return orig.apply(self, args);
         const eligible = enabled("voice") && body.attachments.length === 1 && markers[0] &&
             !body.content && !(body.sticker_ids && body.sticker_ids.length) &&
             !(body.embeds && body.embeds.length) && !body.poll;
@@ -359,17 +366,17 @@
         });
         const nextArgs = Array.from(args);
         nextArgs[0] = Object.assign({}, request, { body: nextBody });
-        return original.apply(receiver, nextArgs);
+        return orig.apply(self, nextArgs);
     }
 
     // Native setting nodes use Discord's own themed rows, navigation and back stack.
     let SettingsList;
-    const featureFor = key => key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key;
+    const featureFor = key => key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" ? "noDelete" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key;
     function section(label, keys) { return { label, settings: keys }; }
     function settingsPage(sections) {
         const node = { type: "list", sections };
         return function VenusSettingsPage() {
-            return React && SettingsList ? React.createElement(SettingsList, { node }) : null;
+            return React && SettingsList ? el(SettingsList, { node }) : null;
         };
     }
     function settingNode(key, title, description, parent) {
@@ -387,7 +394,7 @@
                 screen: { route: key, getComponent: () => page } };
         }
         next.VENUS_VERSION = { type: "static", parent: "VENUS_GENERAL", useTitle: () => "Venus " + revision,
-            useDescription: function () { useSettings(); return "Preferences: " + status.storage + (status.audioError ? "\n" + status.audioError : ""); } };
+            useDescription: function () { useSettings(); return "Preferences: " + status.storage + (status.archive ? "\nDeleted archive: " + status.archive : "") + (status.audioError ? "\n" + status.audioError : ""); } };
         route("VENUS_GENERAL", "General", [section("About", ["VENUS_VERSION"])]);
         const plugins = [];
         function plugin(key, title, hint) {
@@ -398,7 +405,8 @@
         plugin("picker", "FileSizeOnPicker", "Show cached local file sizes on media-picker thumbnails.");
         plugin("voice", "Custom voice messages", "Convert one audio attachment to Ogg/Opus. Android 10+; no accompanying text.");
         plugin("noTyping", "No typing", "Hide your outgoing typing status. Incoming indicators remain unchanged.");
-        plugin("noDelete", "NoDelete", "Keep cached deleted messages for this session, marked as deleted. Off by default; disabling clears them. Maximum 512.");
+        plugin("noDelete", "NoDelete", "Retain deleted messages independently of chat updates until app restart. Maximum 512; disabling clears them.");
+        plugin("noDeleteSave", "Save deleted messages", "Opt-in local archive across restarts, scoped to your account. Turning this off erases the archive. Attachments are links, not downloaded files.");
         plugin("jumpToTop", "JumpToTop", "Add a button to jump to the start of the current chat.");
         plugin("hiddenChannels", "Hidden Channels", "Show already-received channel metadata with a locked label. Does not grant access to messages or voice.");
         if (features.quickDelete) {
@@ -407,6 +415,12 @@
             next.VENUS_QUICKDELETE_MESSAGES = settingNode("quickDelete", "Delete messages without confirmation", "Off by default. Deletion cannot be undone.", "VENUS_QUICKDELETE");
             next.VENUS_QUICKDELETE_EMBEDS = settingNode("quickDeleteEmbeds", "Remove embeds without confirmation", "Only the embed-removal confirmation is skipped.", "VENUS_QUICKDELETE");
         }
+        plugin("pastelize", "Pastelize", "Stable pastel colors for uncolored chat names and mentions. Existing role colors are preserved.");
+        plugin("pastelAll", "Pastelize all names", "Override role name colors with pastel colors.");
+        plugin("pastelWebhookName", "Pastelize webhooks by name", "Use the display name instead of the webhook ID.");
+        plugin("pastelContent", "Pastelize message content", "Color rendered text as well as the author name.");
+        plugin("platformIndicators", "PlatformIndicators", "Show desktop, mobile and web presence on profiles. Offline or unavailable presence stays hidden.");
+        plugin("reviewDB", "ReviewDB", "Read, post, delete and report reviews from profiles. Requests go to manti.vendicated.dev only when you open reviews or authenticate.");
         plugin("copyBios", "CopyBios", "Select and copy text from profile bios.");
         plugin("dashless", "Dashless", "Display spaces instead of dashes in text channel names.");
         plugin("favouriteAnything", "FavouriteAnything", "Favourite images and videos from the media viewer.");
@@ -423,15 +437,15 @@
         status.menu = true;
         return next;
     }
-    function settingsSections(original, receiver, args) {
+    function settingsSections(orig, self, args) {
         const config = args[0];
-        if (!status.menu || !config || !Array.isArray(config.sections)) return original.apply(receiver, args);
+        if (!status.menu || !config || !Array.isArray(config.sections)) return orig.apply(self, args);
         const index = config.sections.findIndex(s => s && Array.isArray(s.settings) && s.settings.includes("ACCOUNT"));
-        if (index < 0 || config.sections.some(s => s && s.label === "Venus")) return original.apply(receiver, args);
+        if (index < 0 || config.sections.some(s => s && s.label === "Venus")) return orig.apply(self, args);
         const sections = config.sections.slice();
         sections.splice(index + 1, 0, section("Venus", ["VENUS_GENERAL", "VENUS_PLUGINS"]));
         const next = Array.from(args); next[0] = Object.assign({}, config, { sections });
-        return original.apply(receiver, next);
+        return orig.apply(self, next);
     }
 
     function cloneTree(node, change, depth) {
@@ -453,8 +467,8 @@
         props = change(node, props);
         return props === node.props ? node : React.cloneElement(node, props);
     }
-    function copyBio(original, receiver, args) {
-        const result = original.apply(receiver, args);
+    function copyBio(orig, self, args) {
+        const result = orig.apply(self, args);
         if (!enabled("copyBios") || !React || !RN) return result;
         return cloneTree(result, function (node, props) {
             // Preserve clickable links and handlers, never mutate React's frozen elements.
@@ -462,8 +476,8 @@
             return props.selectable === true ? props : Object.assign({}, props, { selectable: true });
         }, 0);
     }
-    function channelLabel(original, receiver, args) {
-        const result = original.apply(receiver, args);
+    function channelLabel(orig, self, args) {
+        const result = orig.apply(self, args);
         const channel = args[0];
         const label = enabled("dashless") && channel && [0, 5, 15, 16].includes(channel.type) && typeof result === "string" ? result.replace(/-/g, " ") : result;
         return typeof label === "string" && hiddenChannel(channel) ? label + " [locked]" : label;
@@ -478,30 +492,30 @@
         result = /[?&]format=/.test(result) ? result.replace(/([?&])format=[^&]*/g, "$1format=jpeg") : result + (result.includes("?") ? "&" : "?") + "format=jpeg";
         return result + suffix;
     }
-    function favouriteButton(original, receiver, args) {
+    function favouriteButton(orig, self, args) {
         const props = args[0], source = props && props.source;
-        if (!enabled("favouriteAnything") || !source || source.isGIFV || typeof source.uri !== "string" || !/^https?:\/\//i.test(source.uri)) return original.apply(receiver, args);
+        if (!enabled("favouriteAnything") || !source || source.isGIFV || typeof source.uri !== "string" || !/^https?:\/\//i.test(source.uri)) return orig.apply(self, args);
         const next = Array.from(args);
         next[0] = Object.assign({}, props, { source: Object.assign({}, source, { isGIFV: true,
             embedURI: source.embedURI || source.sourceURI || source.uri, videoURI: source.videoURI || source.uri,
             embedProviderName: source.embedProviderName || "" }) });
-        return original.apply(receiver, next);
+        return orig.apply(self, next);
     }
-    function favouriteAdd(original, receiver, args) {
+    function favouriteAdd(orig, self, args) {
         const item = args[0];
-        if (!enabled("favouriteAnything") || !item || typeof item !== "object") return original.apply(receiver, args);
+        if (!enabled("favouriteAnything") || !item || typeof item !== "object") return orig.apply(self, args);
         const isVideo = video(item.url) || video(item.gifSrc);
         const isImage = typeof item.url === "string" && /\.(png|jpe?g|gif|webp|avif|heic|heif)(?:[?#]|$)/i.test(item.url);
         // Preserve native formats for opaque provider URLs instead of misclassifying videos as images.
-        if (!isVideo && !isImage) return original.apply(receiver, args);
+        if (!isVideo && !isImage) return orig.apply(self, args);
         const format = isVideo ? 2 : 1;
-        if (item.format === format) return original.apply(receiver, args);
+        if (item.format === format) return orig.apply(self, args);
         const next = Array.from(args); next[0] = Object.assign({}, item, { format });
-        return original.apply(receiver, next);
+        return orig.apply(self, next);
     }
     const favouriteViews = new WeakMap();
-    function favouriteList(original, receiver, args) {
-        const result = original.apply(receiver, args);
+    function favouriteList(orig, self, args) {
+        const result = orig.apply(self, args);
         if (!enabled("favouriteAnything") || !result || !Array.isArray(result.favorites)) return result;
         let favorites = favouriteViews.get(result.favorites);
         if (!favorites) {
@@ -525,22 +539,22 @@
     function currentUser() { return userStore && userStore.getCurrentUser(); }
     let nativeCapabilities = 0;
     function capability(key, user) {
-        // The original capability delegates to canUserUse. Conversion must see real
+        // The orig capability delegates to canUserUse. Conversion must see real
         // eligibility, not the picker override, or a non-Nitro send stays an invalid token.
         nativeCapabilities++;
         try { return typeof premiumOriginal[key] === "function" && premiumOriginal[key](user); }
         finally { nativeCapabilities--; }
     }
-    function catalogEligibility(original, receiver, args) {
+    function catalogEligibility(orig, self, args) {
         const user = currentUser(), feature = args[0];
         if (!nativeCapabilities && enabled("emojis") && user && args[1] && args[1].id === user.id &&
             (feature === emojiCatalog.EMOJIS_EVERYWHERE || feature === emojiCatalog.ANIMATED_EMOJIS)) return true;
-        return original.apply(receiver, args);
+        return orig.apply(self, args);
     }
     function premiumOverride(key, setting) {
-        return function (original, receiver, args) {
+        return function (orig, self, args) {
             const user = currentUser();
-            return enabled(setting) && user && args[0] && args[0].id === user.id ? true : original.apply(receiver, args);
+            return enabled(setting) && user && args[0] && args[0].id === user.id ? true : orig.apply(self, args);
         };
     }
     function shareLink(name, uri) {
@@ -570,11 +584,11 @@
             next[key] = message[key].filter(item => !converted.has(typeof item === "string" ? item : item && item.id));
         return next;
     }
-    function sendMessage(original, receiver, args) {
+    function sendMessage(orig, self, args) {
         const message = emojiMessage(args[1], args[0]);
-        if (message === args[1]) return original.apply(receiver, args);
+        if (message === args[1]) return orig.apply(self, args);
         const next = Array.from(args); next[1] = message;
-        return original.apply(receiver, next);
+        return orig.apply(self, next);
     }
     function stickerLink(sticker) {
         if (!sticker || sticker.available === false || !/^\d+$/.test(sticker.id)) return null;
@@ -585,49 +599,52 @@
         return !settings.forceLinks && sticker && sticker.available !== false &&
             (!sticker.guild_id || sticker.guild_id === channel.guild_id || capability("canUseCustomStickersEverywhere", user));
     }
-    function sendStickers(original, receiver, args) {
-        if (!enabled("stickers") || !Array.isArray(args[1]) || !args[1].length || !stickerStore || !channelStore) return original.apply(receiver, args);
+    function sendStickers(orig, self, args) {
+        if (!enabled("stickers") || !Array.isArray(args[1]) || !args[1].length || !stickerStore || !channelStore) return orig.apply(self, args);
         const user = currentUser(), channel = channelStore.getChannel(args[0]);
-        if (!user || !channel) return original.apply(receiver, args);
+        if (!user || !channel) return orig.apply(self, args);
         const keep = [], links = [];
         for (const id of args[1]) {
             const sticker = stickerStore.getStickerById(id);
-            if (!sticker) return original.apply(receiver, args);
+            if (!sticker) return orig.apply(self, args);
             if (nativeSticker(sticker, channel, user)) { keep.push(id); continue; }
             const link = stickerLink(sticker);
             // Fail closed as a whole: never drop an unknown/unsupported sticker from a mixed send.
-            if (!link) return original.apply(receiver, args);
+            if (!link) return orig.apply(self, args);
             links.push(link);
         }
-        if (!links.length) return original.apply(receiver, args);
+        if (!links.length) return orig.apply(self, args);
         const message = args[2], content = typeof message === "string" ? message : message && message.content || "";
         const combined = (content ? content + "\n" : "") + links.join("\n");
-        if (combined.length > (user.premiumType === 2 ? 4000 : 2000)) return original.apply(receiver, args);
+        if (combined.length > (user.premiumType === 2 ? 4000 : 2000)) return orig.apply(self, args);
         const next = Array.from(args); next[1] = keep;
         next[2] = emojiMessage(Object.assign({}, typeof message === "object" ? message : null, { content: combined }), args[0]);
         // Original sendStickers preserves replies, TTS, nonce, permissions and native stickers in one message.
-        return original.apply(receiver, next);
+        return orig.apply(self, next);
     }
-    function sendability(original, receiver, args) {
-        const result = original.apply(receiver, args), sticker = args[0];
+    function sendability(orig, self, args) {
+        const result = orig.apply(self, args), sticker = args[0];
         return enabled("stickers") && stickerRules && result === stickerRules.StickerSendability.SENDABLE_WITH_PREMIUM && stickerLink(sticker) ? stickerRules.StickerSendability.SENDABLE : result;
     }
-    function sendableSticker(original, receiver, args) {
-        const result = original.apply(receiver, args);
+    function sendableSticker(orig, self, args) {
+        const result = orig.apply(self, args);
         if (result || !enabled("stickers") || !stickerRules) return result;
         const code = stickerRules.getStickerSendability.apply(stickerRules, args);
         return code === stickerRules.StickerSendability.SENDABLE;
     }
-    let messageStore, messageActions, permissions, viewPermission, locale, dispatcher;
+    let msgStore, msgActions, permissions, viewPermission, locale, dispatcher, messageRecords, chatHeight, jumpPill, jumpIcon;
+    let deletedRevision = 0, archiveRestored = false, archiveLoading = false, archiveWriting = false, archivePending;
+    const deletedViews = new Map();
+    const ARCHIVE = "venus-deleted-messages.json";
     const deleted = new Map();
     const hiddenViews = new Map();
-    function typing(original, receiver, args) {
-        return enabled("noTyping") ? undefined : original.apply(receiver, args);
+    function typing(orig, self, args) {
+        return enabled("noTyping") ? undefined : orig.apply(self, args);
     }
-    function quickConfirm(original, receiver, args) {
+    function quickConfirm(orig, self, args) {
         const popup = args[0];
         if (!popup || typeof popup.onConfirm !== "function" || !locale || !locale.intl || !locale.t)
-            return original.apply(receiver, args);
+            return orig.apply(self, args);
         const title = popup.children && popup.children.props && popup.children.props.title;
         const texts = [title, popup.body].filter(text => typeof text === "string");
         // Localized, exact confirmation strings. No generic 'delete' matching, and
@@ -639,73 +656,178 @@
         }
         if (enabled("quickDelete") && matches("AMvpS4") || enabled("quickDeleteEmbeds") && matches("vXZ+Fo"))
             return popup.onConfirm();
-        return original.apply(receiver, args);
+        return orig.apply(self, args);
     }
     function deletedKey(channelId, id) { return channelId + ":" + id; }
+    function invalidateDeleted() { deletedRevision++; deletedViews.clear(); }
+    function persistDeleted() {
+        if (!files || status.storage === "loading") return;
+        const user = userStore && userStore.getCurrentUser && userStore.getCurrentUser();
+        if (settings.noDeleteSave && (!user || !archiveRestored)) return;
+        try {
+            archivePending = JSON.stringify({version:1, accountId:settings.noDeleteSave && user ? user.id : null,
+                messages:settings.noDeleteSave ? Array.from(deleted.values()).map(entry => ({channelId:entry.channelId,id:entry.id,message:entry.raw})) : []});
+            if (archivePending.length > 8 * 1024 * 1024) throw new Error("Deleted message archive exceeds 8 MiB");
+        } catch (_) { status.archive = "save failed"; notify(); return; }
+        if (archiveWriting) return;
+        archiveWriting = true;
+        function write() {
+            const snapshot = archivePending; archivePending = undefined;
+            return Promise.resolve().then(() => files.writeFile("documents", ARCHIVE, snapshot, "utf8"))
+                .then(() => {status.archive = settings.noDeleteSave ? "saved locally" : "erased";}, () => {status.archive = "save failed";})
+                .then(() => {notify(); if (archivePending !== undefined) return write(); archiveWriting = false;});
+        }
+        Promise.resolve().then(write);
+    }
+    function restoreDeleted() {
+        if (!enabled("noDeleteSave") || !files || !messageRecords || archiveRestored || archiveLoading || status.storage === "loading") return;
+        const user = userStore && userStore.getCurrentUser && userStore.getCurrentUser();
+        const constants = files.getConstants && files.getConstants();
+        if (!user || !constants || typeof constants.DocumentsDirPath !== "string") return;
+        const accountId = user.id, path = constants.DocumentsDirPath.replace(/\/$/, "") + "/" + ARCHIVE;
+        archiveLoading = true;
+        Promise.resolve().then(() => files.fileExists(path)).then(exists => exists ? files.readFile(path,"utf8") : null).then(text => {
+            const current = userStore.getCurrentUser();
+            if (!enabled("noDeleteSave") || !current || current.id !== accountId) return;
+            if (text) {
+                if (text.length > 8 * 1024 * 1024) throw new Error("Archive too large");
+                const saved = JSON.parse(text);
+                if (saved.version !== 1 || !Array.isArray(saved.messages) || saved.messages.length > 512) throw new Error("Invalid archive");
+                if (saved.accountId === accountId) saved.messages.forEach(entry => {
+                    if (!entry || typeof entry.id !== "string" || typeof entry.channelId !== "string" || !entry.message || entry.message.id !== entry.id || entry.message.channel_id !== entry.channelId || !entry.message.author) return;
+                    const key = deletedKey(entry.channelId,entry.id);
+                    if (deleted.size < 512 && !deleted.has(key)) {
+                        try { entry.message = Object.assign({},entry.message); deleted.set(key,{type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id,raw:entry.message,message:markDeleted(messageRecords.createMessageRecord(entry.message))}); }
+                        catch (_) { /* Invalid individual records do not poison the archive. */ }
+                    }
+                });
+            }
+            archiveRestored = true; invalidateDeleted(); persistDeleted();
+            if (msgStore && typeof msgStore.emitChange === "function") msgStore.emitChange();
+        }).catch(() => {status.archive = "restore failed"; notify();}).finally(() => {archiveLoading = false;});
+    }
+    function markDeleted(message) {
+        const content = "[Deleted] " + (message.content || "");
+        return typeof message.merge === "function" ? message.merge({content}) : Object.assign(Object.create(Object.getPrototypeOf(message)),message,{content});
+    }
+    function rawDeleted(message, event) {
+        // Retain content/metadata only; no tokens, downloaded attachments or remote fetches.
+        const raw = {id:event.id,channel_id:event.channelId,content:message.content || "",author:message.author,
+            timestamp:message.timestamp && typeof message.timestamp.toISOString === "function" ? message.timestamp.toISOString() : message.timestamp,
+            type:message.type || 0,flags:message.flags || 0,attachments:message.attachments || [],embeds:message.embeds || [],
+            mentions:message.mentions || [],mention_roles:message.mentionRoles || [],referenced_message:null};
+        return JSON.parse(JSON.stringify(raw));
+    }
     function clearDeleted(remove) {
         const events = Array.from(deleted.values());
-        deleted.clear();
-        if (remove && dispatcher) events.forEach(event => dispatcher(event));
+        deleted.clear(); invalidateDeleted();
+        if (remove && dispatcher) events.forEach(entry => dispatcher({type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id}));
+        if (remove) persistDeleted();
     }
-    function rememberDeleted(event, original, receiver) {
+    function retainedMessage(orig, self, args) {
+        const result = orig.apply(self,args);
+        const entry = enabled("noDelete") && deleted.get(deletedKey(args[0],args[1]));
+        return entry ? entry.message : result;
+    }
+    function retainedMessages(orig, self, args) {
+        const result = orig.apply(self,args), channelId = args[0];
+        if (!enabled("noDelete") || !result) return result;
+        const records = Array.from(deleted.values()).filter(entry => entry.channelId === channelId).map(entry => entry.message);
+        if (!records.length || typeof result.clone !== "function" || typeof result.merge !== "function") return result;
+        const cached = deletedViews.get(channelId);
+        if (cached && cached.orig === result && cached.revision === deletedRevision) return cached.value;
+        const value = result.clone().merge(records);
+        if (deletedViews.size >= 16) deletedViews.delete(deletedViews.keys().next().value);
+        deletedViews.set(channelId,{orig:result,revision:deletedRevision,value});
+        return value;
+    }
+    function rememberDeleted(event, orig, self) {
         const key = deletedKey(event.channelId, event.id);
-        if (deleted.has(key)) return true; // Replayed gateway deletion is not a dismissal.
-        if (!messageStore || !messageStore.getMessage(event.channelId, event.id)) return false;
+        if (deleted.has(key)) return true;
+        const message = msgStore && msgStore.getMessage(event.channelId,event.id);
+        if (!message) return false;
         if (deleted.size >= 512) {
             const oldest = deleted.keys().next().value, pending = deleted.get(oldest);
             deleted.delete(oldest);
-            original.call(receiver, pending); // Actually release the oldest cached message.
+            orig.call(self,{type:"MESSAGE_DELETE",channelId:pending.channelId,id:pending.id});
         }
-        deleted.set(key, {type:"MESSAGE_DELETE", channelId:event.channelId, id:event.id});
-        original.call(receiver, {type:"MESSAGE_EDIT_FAILED_AUTOMOD",
-            messageData:{type:1, message:{channelId:event.channelId, messageId:event.id}},
-            errorResponseBody:{code:200000, message:"This message was deleted (kept locally by NoDelete)."}});
+        let raw;
+        try { raw = rawDeleted(message,event); } catch (_) { raw = null; }
+        deleted.set(key,{type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id,message:markDeleted(message),raw});
+        invalidateDeleted(); persistDeleted();
+        // A real MESSAGE_UPDATE notifies subscribers. No temporary AutoMod failure state.
+        orig.call(self,{type:"MESSAGE_UPDATE",message:{id:event.id,channel_id:event.channelId,content:message.content || ""}});
         return true;
     }
-    function dispatchEvent(original, receiver, args) {
+    function dispatchEvent(orig, self, args) {
         const event = args[0];
-        if (!event) return original.apply(receiver, args);
-        if (["LOGOUT", "CONNECTION_OPEN", "CACHE_LOADED"].includes(event.type)) clearDeleted(false);
+        if (!event) return orig.apply(self, args);
+        if (event.type === "LOGOUT") { clearDeleted(false); archiveRestored = false; reviewToken="";reviewAccount=null;reviewCache.clear(); }
+        if (["CONNECTION_OPEN", "CACHE_LOADED"].includes(event.type)) Promise.resolve().then(restoreDeleted);
+        if (deleted.size && event.type !== "MESSAGE_DELETE") deletedViews.clear();
         if (event.type === "CHANNEL_DELETE") {
             const id = event.channel && event.channel.id || event.channelId || event.id;
             for (const [key, entry] of deleted) if (entry.channelId === id) deleted.delete(key);
+            invalidateDeleted(); persistDeleted();
         }
-        if (!enabled("noDelete")) return original.apply(receiver, args);
-        if (event.type === "MESSAGE_DELETE" && event.channelId && event.id && rememberDeleted(event, original, receiver)) return;
+        if (!enabled("noDelete")) return orig.apply(self, args);
+        if (event.type === "MESSAGE_DELETE" && event.channelId && event.id && rememberDeleted(event, orig, self)) return;
         if (event.type === "MESSAGE_DELETE_BULK" && event.channelId && Array.isArray(event.ids)) {
-            const remaining = event.ids.filter(id => !rememberDeleted({channelId:event.channelId,id}, original, receiver));
+            const remaining = event.ids.filter(id => !rememberDeleted({channelId:event.channelId,id}, orig, self));
             if (!remaining.length) return;
             const next = Array.from(args); next[0] = Object.assign({}, event, {ids:remaining});
-            return original.apply(receiver, next);
+            return orig.apply(self, next);
         }
-        return original.apply(receiver, args);
+        return orig.apply(self, args);
     }
-    function deleteMessage(original, receiver, args) {
+    function deleteMessage(orig, self, args) {
         const key = deletedKey(args[0], args[1]), event = deleted.get(key);
         if (event && dispatcher) {
-            deleted.delete(key); dispatcher(event);
+            deleted.delete(key); invalidateDeleted(); persistDeleted(); dispatcher({type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id});
             return Promise.resolve(); // Dismiss locally; never DELETE an already-deleted message on the server.
         }
-        return original.apply(receiver, args);
+        return orig.apply(self, args);
     }
-    function jumpButton(original, receiver, args) {
+    function jumpButton(orig, self, args) {
         if (React) useSettings("jumpToTop");
-        const result = original.apply(receiver, args), props = args[0];
-        if (!enabled("jumpToTop") || !React || !RN || !props || !props.channelId || !messageActions) return result;
+        const props = args[0], screenIndex = props && props.screenIndex;
+        // Same native hooks as JumpToPresent; respects composer resizing and suggestion bars.
+        const inputHeight = chatHeight && chatHeight.useChatInputContainerHeight(screenIndex);
+        const suggestionHeight = chatHeight && chatHeight.useSmallSuggestionBarHeight(screenIndex);
+        const result = orig.apply(self, args);
+        if (!enabled("jumpToTop") || !React || !RN || !props || !props.channelId || !msgActions) return result;
         const channelId = props.channelId;
         if (hiddenChannel(channelId)) return result;
-        const onPress = () => messageActions.jumpToMessage({channelId, messageId:channelId, flash:true, jumpType:"ANIMATED"});
+        const onPress = () => msgActions.jumpToMessage({channelId, messageId:channelId, flash:true, jumpType:"ANIMATED"});
         const child = result && result.props && result.props.children;
         if (child && child.props && typeof child.props.onPress === "function") {
             const top = React.cloneElement(child, {key:"venus-jump-top", onPress, accessibilityLabel:"Jump to top"});
-            return React.cloneElement(result, {children:React.createElement(RN.View, null,
-                React.createElement(RN.View, {style:{transform:[{scaleY:-1}]}}, top), child)});
+            return React.cloneElement(result, {children:el(RN.View, {style:{gap:8}},
+                el(RN.View, {style:{transform:[{scaleY:-1}]}}, top), child)});
         }
-        if (result) return result; // Voice-panel dismissal is not a jump button.
-        // Keep the entry point available when Discord's Jump to Present is hidden.
-        return React.createElement(RN.View, {pointerEvents:"box-none", style:{position:"absolute",bottom:48,right:16}},
-            React.createElement(RN.Pressable, {onPress, accessibilityRole:"button", accessibilityLabel:"Jump to top"},
-                React.createElement(RN.Text, {style:{padding:12}}, "Jump to top")));
+        if (result || !jumpPill || !jumpIcon) return result;
+        // Never render bare black text over chat/media. Use Discord's themed native pill.
+        const bottom = Math.max(0,Number.isFinite(inputHeight) ? inputHeight : 64) + Math.max(0,Number(suggestionHeight) || 0) + 12;
+        return el(RN.View, {pointerEvents:"box-none", style:{position:"absolute",bottom,right:16}},
+            el(RN.View,{style:{transform:[{scaleY:-1}]}},
+                el(jumpPill,{icon:jumpIcon,onPress,accessibilityLabel:"Jump to top"})));
+    }
+    // The mobile list has a second VIEW_CHANNEL filter. Give ONLY that factory a
+    // metadata-list facade; the real permission store and all other callers stay stock.
+    function listImport(importer) {
+        if (typeof importer !== "function") return importer;
+        return function () {
+            const result = importer.apply(this,arguments);
+            if (arguments[0] !== 4427 || !result) return result;
+            const real = result.default || result;
+            if (typeof real.can !== "function") return result;
+            const facade = Object.create(real);
+            facade.can = function (bit, channel) {
+                if (bit === viewPermission && hiddenChannel(channel)) return true;
+                return real.can.apply(real,arguments);
+            };
+            return result.default ? cloneWith(result,"default",facade) : facade;
+        };
     }
     function hiddenChannel(value) {
         if (!enabled("hiddenChannels")) return false;
@@ -713,8 +835,8 @@
         return !!(enabled("hiddenChannels") && channel && channel.guild_id && ![1,3,4].includes(channel.type) &&
             permissions && viewPermission != null && typeof permissions.can === "function" && !permissions.can(viewPermission, channel));
     }
-    function hiddenDirectory(original, receiver, args) {
-        const result = original.apply(receiver, args), guild = args[0];
+    function hiddenDirectory(orig, self, args) {
+        const result = orig.apply(self, args), guild = args[0];
         if (!enabled("hiddenChannels") || !result || !guild || !channelStore || !permissions ||
             typeof channelStore.getMutableGuildChannelsForGuild !== "function") return result;
         const source = channelStore.getMutableGuildChannelsForGuild(guild);
@@ -725,7 +847,7 @@
         const signature = extra.map(c => [c.id,c.position,c.type,c.parent_id,c.name].join(":")).join("|");
         const references = extra.concat(extra.map(c => source[c.parent_id]).filter(Boolean));
         const cached = hiddenViews.get(guild);
-        if (cached && cached.original === result && cached.source === source && cached.signature === signature &&
+        if (cached && cached.orig === result && cached.source === source && cached.signature === signature &&
             references.length === cached.references.length && references.every((c,i) => c === cached.references[i])) return cached.value;
         let next = result;
         function append(key, channels) {
@@ -741,16 +863,17 @@
             if (next === result) next = Object.assign({}, result);
             next[key] = result[key].concat(added).sort((a,b) => a.comparator - b.comparator);
         }
+        for (const type of [0,2,5,10,11,12,13,15,16]) append(type, extra.filter(c => c.type === type));
         append("SELECTABLE", extra.filter(c => ![2,13].includes(c.type)));
         append("VOCAL", extra.filter(c => [2,13].includes(c.type)));
         append(4, extra.map(c => source[c.parent_id]).filter(c => c && c.type === 4));
         if (hiddenViews.size >= 16 && !hiddenViews.has(guild)) hiddenViews.delete(hiddenViews.keys().next().value);
-        hiddenViews.set(guild, {original:result,source,signature,references,value:next});
+        hiddenViews.set(guild, {orig:result,source,signature,references,value:next});
         return next;
     }
-    function hiddenFetch(original, receiver, args) {
+    function hiddenFetch(orig, self, args) {
         const channelId = typeof args[0] === "string" ? args[0] : args[0] && args[0].channelId;
-        if (!hiddenChannel(channelId)) return original.apply(receiver, args);
+        if (!hiddenChannel(channelId)) return orig.apply(self, args);
         const channel = channelStore.getChannel(channelId);
         showHidden(channel);
         return Promise.resolve();
@@ -759,21 +882,21 @@
         if (RN && RN.Alert) RN.Alert.alert("This channel is hidden", "#" + channel.name +
             "\n" + (channel.topic || "No topic.") + "\nYou do not have permission to read messages or join voice here.");
     }
-    function hiddenNavigation(original, receiver, args) {
+    function hiddenNavigation(orig, self, args) {
         const route = args[0];
         const match = typeof route === "string" && /^\/channels\/(?:@me|[^/]+)\/([^/?#]+)(?:[/?#]|$)/.exec(route);
-        if (!match || !hiddenChannel(match[1])) return original.apply(receiver, args);
+        if (!match || !hiddenChannel(match[1])) return orig.apply(self, args);
         showHidden(channelStore.getChannel(match[1]));
         return; // Metadata-only. Never navigate into a locked chat/voice channel.
     }
-    function hiddenGuildNavigation(original, receiver, args) {
-        if (!hiddenChannel(args[1])) return original.apply(receiver, args);
+    function hiddenGuildNavigation(orig, self, args) {
+        if (!hiddenChannel(args[1])) return orig.apply(self, args);
         showHidden(channelStore.getChannel(args[1]));
     }
     function sheetComponent(component, channel, onClose) {
         if (!component || !React) return component;
-        function transform(original, receiver, args) {
-            const tree = original.apply(receiver, args);
+        function transform(orig, self, args) {
+            const tree = orig.apply(self, args);
             return addJumpRow(tree, channel, onClose);
         }
         if (typeof component === "function") return function () { return transform(component, this, arguments); };
@@ -794,14 +917,14 @@
             const row = React.cloneElement(template, {key:"venus-jump-top",label:"Jump to top",icon:undefined,
                 onPress:function () {
                     if (typeof onClose === "function") onClose();
-                    messageActions.jumpToMessage({channelId:channel.id,messageId:channel.id,flash:true,jumpType:"ANIMATED"});
+                    msgActions.jumpToMessage({channelId:channel.id,messageId:channel.id,flash:true,jumpType:"ANIMATED"});
                 }});
             return Object.assign({}, props, {children:[row].concat(props.children)});
         }, 0);
     }
-    function jumpSheet(original, receiver, args) {
-        const tree = original.apply(receiver, args), props = args[0];
-        if (!enabled("jumpToTop") || !React || !tree || !props || !messageActions) return tree;
+    function jumpSheet(orig, self, args) {
+        const tree = orig.apply(self, args), props = args[0];
+        if (!enabled("jumpToTop") || !React || !tree || !props || !msgActions) return tree;
         const channel = props.thread || props.channel || channelStore && channelStore.getChannel(props.channelId);
         if (!channel || ![0,1,3,5,10,11,12].includes(channel.type) || hiddenChannel(channel)) return tree;
         // ChannelLongPressActionSheet returns a connected component. Preserve its
@@ -809,7 +932,209 @@
         const transformed = addJumpRow(tree, channel, props.onClose);
         if (transformed !== tree) return transformed;
         const type = sheetComponent(tree.type, channel, props.onClose);
-        return type === tree.type ? tree : React.createElement(type, tree.props);
+        return type === tree.type ? tree : el(type, tree.props);
+    }
+    let pastelHash, presenceStore, displayNameType, profileInfoType, nativeRows, nativeModals, oauthModal, themeContext;
+    let reviewToken = "", reviewAccount = null;
+    const reviewCache = new Map(), reviewWrappers = new WeakMap(), platformWrappers = new WeakMap();
+    const REVIEW_API = "https://manti.vendicated.dev/api/reviewdb";
+    function pastelColor(seed, saturation, lightness) {
+        if (!pastelHash || !RN || typeof RN.processColor !== "function") return null;
+        const hue = ((pastelHash(String(seed)) >>> 0) % 360) / 360;
+        function component(offset) {
+            const k = (offset + hue * 12) % 12;
+            return Math.round(255 * (lightness - saturation * Math.min(lightness,1-lightness) * Math.max(-1,Math.min(k-3,9-k,1))));
+        }
+        const hex = "#" + [component(0),component(8),component(4)].map(value => value.toString(16).padStart(2,"0")).join("");
+        return {hex, value:RN.processColor(hex)};
+    }
+    function pastelMentions(content) {
+        if (!Array.isArray(content)) return content;
+        let changed = false;
+        const next = content.map(node => {
+            if (!node || typeof node !== "object") return node;
+            let result = node;
+            if (node.type === "mention" && node.userId && (!node.colorString || settings.pastelAll)) {
+                const color = pastelColor(node.userId,0.85,0.75);
+                if (color) result = Object.assign({},node,{roleColor:color.value,color:color.value,colorString:color.hex});
+            }
+            if (Array.isArray(node.content)) {
+                const children = pastelMentions(node.content);
+                if (children !== node.content) result = Object.assign({},result,{content:children});
+            }
+            if (result !== node) changed = true;
+            return result;
+        });
+        return changed ? next : content;
+    }
+    function pastelMessage(message, source) {
+        if (!message || !message.authorId) return message;
+        let next = message, seed;
+        if (source && source.webhookId) seed = settings.pastelWebhookName ? message.username : source.webhookId;
+        else if (!message.roleColor || settings.pastelAll) seed = message.authorId;
+        const color = seed && pastelColor(seed,0.75,0.6);
+        if (color) next = Object.assign({},message,{roleColor:color.value,usernameColor:color.value,colorString:color.hex,shouldShowRoleOnName:true});
+        const content = pastelMentions(message.content);
+        if (content !== message.content) next = Object.assign({},next,{content});
+        if (color && settings.pastelContent && Array.isArray(next.content)) next = Object.assign({},next,{content:[{
+            type:"link",target:"usernameOnClick",content:next.content,context:{username:1,medium:true,
+                usernameOnClick:{action:"0",userId:"0",messageChannelId:"0",linkColor:pastelColor(seed,0.85,0.75).value}}}]});
+        return next;
+    }
+    function pastelRow(orig, self, args) {
+        const result = orig.apply(self,args), row = args[0];
+        if (!enabled("pastelize") || !result || !row || row.rowType !== 1 || !result.message) return result;
+        let message = pastelMessage(result.message,row.message);
+        if (message.referencedMessage && message.referencedMessage.message) message = Object.assign({},message,{referencedMessage:
+            Object.assign({},message.referencedMessage,{message:pastelMessage(message.referencedMessage.message,null)})});
+        return message === result.message ? result : Object.assign({},result,{message});
+    }
+    function PlatformBadges(props) {
+        useSettings("platformIndicators");
+        const [,update] = React.useState(0);
+        React.useEffect(() => {
+            const change = () => update(n => n+1);
+            if (!presenceStore || typeof presenceStore.addChangeListener !== "function") return;
+            presenceStore.addChangeListener(change);
+            return () => presenceStore.removeChangeListener(change);
+        },[]);
+        if (!enabled("platformIndicators") || !presenceStore || !RN) return null;
+        const clients = presenceStore.getClientStatus(props.userId);
+        if (!clients) return null;
+        const colors = {online:"#23a55a",idle:"#f0b232",dnd:"#f23f43"};
+        const labels = {desktop:"Desktop",mobile:"Mobile",web:"Web",embedded:"Console"};
+        return el(RN.View,{key:"venus-platforms",style:{flexDirection:"row",gap:6,alignItems:"center"}},
+            Object.keys(labels).filter(key => colors[clients[key]]).map(key => el(RN.Text,{key,
+                accessibilityLabel:labels[key]+": "+clients[key],style:{fontSize:11,color:colors[clients[key]],fontWeight:"600"}},labels[key])));
+    }
+    function platformName(orig, self, args) {
+        if (React) useSettings("platformIndicators");
+        const tree = orig.apply(self,args), user = args[0] && args[0].user;
+        if (!enabled("platformIndicators") || !React || !RN || !tree || !user) return tree;
+        return el(RN.View,{style:{gap:4}},tree,el(PlatformBadges,{userId:user.id}));
+    }
+    function wrapProfileTree(tree, target, operation, cache) {
+        if (!tree || !target || !React) return tree;
+        let patched = cache.get(target);
+        if (!patched) {
+            patched = function () { return operation(target,this,arguments); };
+            cache.set(target,patched);
+        }
+        // cloneTree transforms props, not element types; replace the specific named
+        // child without invoking it outside React's hook lifecycle.
+        function visit(node,depth) {
+            if (!node || depth>18 || typeof node!=="object" || !node.props) return node;
+            if (node.type === target) return el(patched,Object.assign({},node.props,{key:node.key}));
+            const children=node.props.children;
+            if (Array.isArray(children)) {
+                const next=children.map(child=>visit(child,depth+1));
+                return next.some((child,i)=>child!==children[i]) ? React.cloneElement(node,{children:next}) : node;
+            }
+            const child=visit(children,depth+1);
+            return child===children ? node : React.cloneElement(node,{children:child});
+        }
+        return visit(tree,0);
+    }
+    async function reviewRequest(path, method, body) {
+        if (!enabled("reviewDB") || typeof global.fetch !== "function") throw new Error("ReviewDB is disabled or networking is unavailable");
+        if (!/^\/(users(?:\/\d{17,20}\/reviews)?|reports)(?:\?|$)/.test(path)) throw new Error("Invalid ReviewDB request");
+        const controller = typeof global.AbortController === "function" ? new global.AbortController() : null;
+        const timer = global.setTimeout && global.setTimeout(() => {if(controller) controller.abort();},15000);
+        try {
+            const response = await global.fetch(REVIEW_API+path,{method:method || "GET",credentials:"omit",
+                headers:{accept:"application/json","content-type":"application/json"},
+                ...(body ? {body:JSON.stringify(body)} : {}),...(controller ? {signal:controller.signal} : {})});
+            if (!response.ok) throw new Error("ReviewDB HTTP " + response.status);
+            const result = await response.json();
+            if (!result || result.success === false) throw new Error(result && result.message || "ReviewDB request failed");
+            return result;
+        } finally {if(timer && global.clearTimeout) global.clearTimeout(timer);}
+    }
+    function authenticateReviews() {
+        if (!enabled("reviewDB") || !nativeModals || typeof nativeModals.pushModal !== "function") return;
+        // Only load the inspected OAuth screen on this explicit user action.
+        const modal = oauthModal || (typeof global.__r === "function" && global.__r(9358).default);
+        if (!modal) {RN.Alert.alert("ReviewDB","The native OAuth screen is not available yet. Try again after reopening this profile.");return;}
+        const key = "venus-reviewdb-auth";
+        nativeModals.pushModal({key,modal:{key,modal,animation:"slide-up",shouldPersistUnderModals:false,closable:true,
+            props:{clientId:"915703782174752809",redirectUri:REVIEW_API+"/auth",scopes:["identify"],responseType:"code",permissions:BigInt(0),cancelCompletesFlow:false,
+                dismissOAuthModal:()=>nativeModals.popModal(key),callback:async result => {
+                    try {
+                        const url = new global.URL(result.location);
+                        if (url.origin !== "https://manti.vendicated.dev" || url.pathname !== "/api/reviewdb/auth" || !url.searchParams.get("code")) throw new Error("Invalid authorization redirect");
+                        url.searchParams.set("returnType","json");url.searchParams.set("clientMod","venus");
+                        const response = await global.fetch(url.toString(),{credentials:"omit",headers:{accept:"application/json"}});
+                        const auth = await response.json();
+                        if (!response.ok || !auth.success || typeof auth.token !== "string" || !enabled("reviewDB")) throw new Error("ReviewDB authorization failed");
+                        const current = userStore && userStore.getCurrentUser();
+                        if (!current) throw new Error("Discord account unavailable");
+                        reviewToken = auth.token; reviewAccount = current.id;
+                        nativeModals.popModal(key);notify("reviewDB");
+                    } catch (error) {RN.Alert.alert("ReviewDB authentication",String(error.message || error));}
+                }}}});
+    }
+    function reviewsFor(userId, refresh) {
+        if (!/^\d{17,20}$/.test(userId)) return Promise.reject(new Error("Invalid profile ID"));
+        const cached = reviewCache.get(userId);
+        if (!refresh && cached && cached.expires>Date.now()) return cached.promise;
+        if (reviewCache.size>=32) reviewCache.delete(reviewCache.keys().next().value);
+        const promise=reviewRequest("/users/"+userId+"/reviews").then(result=>{
+            if (!Array.isArray(result.reviews)) throw new Error("Invalid review list");
+            return result.reviews.slice(0,100).filter(review=>review && review.sender && typeof review.comment==="string");
+        }).catch(error=>{reviewCache.delete(userId);throw error;});
+        reviewCache.set(userId,{promise,expires:Date.now()+60000});return promise;
+    }
+    function reviewAuth() {
+        const current=userStore && userStore.getCurrentUser();
+        if (!current || current.id!==reviewAccount) {reviewToken="";reviewAccount=null;}
+        return reviewToken;
+    }
+    function ReviewsPanel(props) {
+        useSettings("reviewDB");
+        const [open,setOpen]=React.useState(false), [reviews,setReviews]=React.useState([]), [error,setError]=React.useState(""),
+            [busy,setBusy]=React.useState(false), [comment,setComment]=React.useState(""), [generation,reload]=React.useState(0);
+        const context = themeContext && themeContext.useThemeContext && themeContext.useThemeContext();
+        const light = context && context.theme === "light";
+        const fg=light ? "#202127" : "#f2f3f5", bg=light ? "#f2f3f5" : "#202127";
+        React.useEffect(()=>{
+            let live=true;
+            if (!open || !enabled("reviewDB")) return;
+            setBusy(true);setError("");
+            reviewsFor(props.userId,generation>0).then(list=>{if(live)setReviews(list);},reason=>{if(live)setError(String(reason.message || reason));})
+                .finally(()=>{if(live)setBusy(false);});
+            return ()=>{live=false;};
+        },[open,props.userId,generation,settings.reviewDB]);
+        if (!enabled("reviewDB") || !RN || !nativeRows || !nativeRows.TableRow) return null;
+        function row(label,onPress) {return el(nativeRows.TableRow,{key:label,label,onPress,disabled:busy});}
+        function mutate(path,method,body) {
+            if (busy || !reviewAuth()) return;
+            setBusy(true);setError("");
+            reviewRequest(path,method,Object.assign({},body,{token:reviewToken})).then(()=>{setComment("");reviewCache.delete(props.userId);reload(n=>n+1);},reason=>setError(String(reason.message || reason)))
+                .finally(()=>setBusy(false));
+        }
+        const current=userStore && userStore.getCurrentUser();
+        return el(RN.View,{key:"venus-reviews",style:{marginVertical:8,borderRadius:12,backgroundColor:bg}},
+            row(open ? "Hide ReviewDB" : "Reviews (ReviewDB)",()=>setOpen(value=>!value)),
+            !open ? null : el(RN.View,{style:{padding:12,gap:8}},
+                el(RN.Text,{style:{color:fg}},"Community reviews, not verified facts. Be respectful. Opening this list shares the profile ID with ReviewDB."),
+                error ? el(RN.Text,{accessibilityRole:"alert",style:{color:"#f23f43"}},error) : null,
+                busy ? el(RN.ActivityIndicator,null) : null,
+                el(RN.ScrollView,{style:{maxHeight:320}},reviews.map((review,index)=>el(RN.View,{key:String(review.id || index),style:{paddingVertical:8,gap:4}},
+                    el(RN.Text,{style:{color:fg,fontWeight:"700"}},String(review.sender.username || "Unknown")),
+                    el(RN.Text,{selectable:true,style:{color:fg}},review.comment.slice(0,4000)),
+                    reviewAuth() && review.id != null ? el(RN.View,null,
+                        current && review.sender.discordID===current.id ? row("Delete your review",()=>RN.Alert.alert("Delete review?","This removes your review from ReviewDB.",[{text:"Cancel",style:"cancel"},{text:"Delete",style:"destructive",onPress:()=>mutate("/users/"+props.userId+"/reviews","DELETE",{reviewid:review.id})}])) : null,
+                        row("Report review",()=>RN.Alert.alert("Report review?","Send this review to ReviewDB moderators?",[{text:"Cancel",style:"cancel"},{text:"Report",onPress:()=>mutate("/reports","PUT",{reviewid:review.id})}]))) : null))),
+                row("Refresh reviews",()=>reload(n=>n+1)),
+                !reviewAuth() ? row("Authenticate with ReviewDB",authenticateReviews) : el(RN.View,null,
+                    el(RN.TextInput,{value:comment,onChangeText:setComment,maxLength:2000,multiline:true,placeholder:"Write or update your review",placeholderTextColor:light?"#666":"#aaa",style:{color:fg,padding:8}}),
+                    row("Post / update review",()=>{const text=comment.trim();if(text)mutate("/users/"+props.userId+"/reviews","PUT",{comment:text});}),
+                    row("Log out of ReviewDB",()=>{reviewToken="";reviewAccount=null;notify("reviewDB");}))) );
+    }
+    function reviewInfo(orig,self,args) {
+        const tree=orig.apply(self,args), props=args[0], userId=props && (props.userId || props.user && props.user.id);
+        if (!React || !RN || !userId) return tree;
+        return el(RN.View,null,tree,el(ReviewsPanel,{userId}));
     }
     function cloneWith(object, key, value) {
         // ES module markers, React tags, symbols and lazy getters are not necessarily enumerable.
@@ -835,23 +1160,40 @@
         return cloneWith(object, key, value);
     }
     function hookExport(exports, key, operation) {
-        const original = exports && exports[key];
-        if (typeof original !== "function") return exports;
-        const replacement = function () { return operation(original, this, arguments); };
-        return replaceValue(exports, key, replacement);
+        const orig = exports && exports[key];
+        if (typeof orig !== "function") return exports;
+        const patched = function () { return operation(orig, this, arguments); };
+        return replaceValue(exports, key, patched);
     }
     function hookComponent(exports, operation) {
         const component = exports.default;
         if (component && typeof component === "object" && component.$$typeof) {
             const key = typeof component.type === "function" ? "type" : typeof component.render === "function" ? "render" : null;
             if (!key) return exports;
-            const original = component[key];
-            const replacement = function () { return operation(original, this, arguments); };
-            return replaceValue(exports, "default", cloneWith(component, key, replacement));
+            const orig = component[key];
+            const patched = function () { return operation(orig, this, arguments); };
+            return replaceValue(exports, "default", cloneWith(component, key, patched));
         }
         return hookExport(exports, "default", operation);
     }
     function activatePlugins(id, exports) {
+        if (features.pastelize && id === 1240) pastelHash = exports.default;
+        if (features.pastelize && id === 8222 && exports.default && exports.default.prototype) hookExport(exports.default.prototype,"generate",pastelRow);
+        if (features.platformIndicators && id === 4828) presenceStore = exports.default;
+        if (features.platformIndicators && id === 11448) {
+            displayNameType=exports.DisplayName;
+            exports=hookExport(exports,"DisplayName",platformName);
+            return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),displayNameType,platformName,platformWrappers));
+        }
+        if (features.reviewDB && id === 4645) nativeModals=exports;
+        if (features.reviewDB && id === 9358) oauthModal=exports.default;
+        if (features.reviewDB && id === 5854) nativeRows=exports;
+        if (features.reviewDB && id === 4505) themeContext=exports;
+        if (features.reviewDB && id === 13382) {
+            profileInfoType=exports.PrimaryInfo;
+            return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),profileInfoType,reviewInfo,reviewWrappers));
+        }
+
         if (id === 14892) exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG);
         if (id === 11754) return hookExport(exports, "createList", settingsSections);
         if (id === 14993) SettingsList = exports.SettingsList;
@@ -865,12 +1207,18 @@
             hookExport(hookExport(exports.default, "startTyping", typing), "stopTyping", typing));
         if (features.quickDelete && id === 1115) locale = exports;
         if (features.quickDelete && id === 5141) return replaceValue(exports, "default", hookExport(exports.default, "show", quickConfirm));
-        if (features.noDelete && id === 5008) messageStore = exports.default;
-        if (features.noDelete && id === 573) {
+        if (features.noDelete && id === 5010) {messageRecords = exports; restoreDeleted();}
+        if ((features.noDelete || features.reviewDB) && id === 1372) {userStore = exports.default; restoreDeleted();}
+        if (features.noDelete && id === 5008) {
+            msgStore = exports.default;
+            exports = replaceValue(exports,"default",hookExport(hookExport(msgStore,"getMessage",retainedMessage),"getMessages",retainedMessages));
+            restoreDeleted(); return exports;
+        }
+        if ((features.noDelete || features.reviewDB) && id === 573) {
             dispatcher = exports.default.dispatch.bind(exports.default);
             return replaceValue(exports, "default", hookExport(exports.default, "dispatch", dispatchEvent));
         }
-        if (features.hiddenChannels && id === 1074) viewPermission = exports.Permissions && exports.Permissions.VIEW_CHANNEL;
+        if (features.hiddenChannels && [1074,1085].includes(id) && exports.Permissions) viewPermission = exports.Permissions.VIEW_CHANNEL;
         if (features.hiddenChannels && id === 1101) {
             exports = hookExport(exports, "transitionTo", hiddenNavigation);
             exports = hookExport(exports, "replaceWith", hiddenNavigation);
@@ -878,6 +1226,9 @@
         }
         if (features.hiddenChannels && id === 4427) permissions = exports.default;
         if (features.hiddenChannels && id === 2096) return replaceValue(exports, "default", hookExport(exports.default, "getChannels", hiddenDirectory));
+        if (features.jumpToTop && id === 9686) chatHeight = exports;
+        if (features.jumpToTop && id === 12550) jumpPill = exports.default;
+        if (features.jumpToTop && id === 12551) jumpIcon = exports.default;
         if (features.jumpToTop && id === 12549) return hookComponent(exports, jumpButton);
         if (features.jumpToTop && [10518,11207].includes(id)) return hookComponent(exports, jumpSheet);
         if (id === 7730) {
@@ -890,7 +1241,7 @@
                 actions = hookExport(actions, "_sendMessage", sendMessage);
                 actions = hookExport(actions, "sendStickers", sendStickers);
             }
-            messageActions = actions;
+            msgActions = actions;
             return replaceValue(exports, "default", actions);
         }
         if (!features.freeNitro) return exports;
@@ -929,7 +1280,7 @@
         if (typeof data(exports, "getSize") === "function" && typeof data(exports, "readFile") === "function" &&
             typeof data(exports, "writeFile") === "function") initFiles(exports);
         if (features.voice && owns(exports, "CloudUpload")) instrumentCloudUpload(exports.CloudUpload);
-        const replacements = new Map();
+        const changes = new Map();
         let proxy = exports;
         if (features.picker) {
             const patched = pickerComponent(exports);
@@ -938,22 +1289,22 @@
         // Invocation-scoped captures also work when Hermes eval disables block scoping.
         // The binding check fails fast at hook time (caught as "Hook unavailable",
         // leaving the module stock) instead of crashing the app at call time.
-        function replacementFor(operation, original) {
-            if (typeof operation !== "function" || typeof original !== "function")
+        function replacementFor(operation, orig) {
+            if (typeof operation !== "function" || typeof orig !== "function")
                 throw new Error("Venus: unusable export binding for hook");
-            return function () { return operation(original, this === proxy ? exports : this, arguments); };
+            return function () { return operation(orig, this === proxy ? exports : this, arguments); };
         }
         // Only read explicitly identified export keys, never enumerate or invoke unrelated getters.
         for (const key of ["getAttachmentPayload", "post"]) {
             if (!owns(exports, key)) continue;
             if (key === "getAttachmentPayload" && !features.voice) continue;
             if (key === "post" && (!features.voice || !owns(exports, "get") || !owns(exports, "put"))) continue;
-            let original;
-            try { original = exports[key]; } catch (_) { continue; }
-            if (typeof original !== "function") continue;
+            let orig;
+            try { orig = exports[key]; } catch (_) { continue; }
+            if (typeof orig !== "function") continue;
             const operation = key === "post" ? postRequest : attachmentPayload;
-            const replacement = replacementFor(operation, original);
-            replacements.set(key, replacement);
+            const patched = replacementFor(operation, orig);
+            changes.set(key, patched);
             if (key === "post") status.request = true;
             if (key === "getAttachmentPayload") status.attachment = true;
         }
@@ -961,34 +1312,34 @@
             // Data exports only: default getters can be cyclic during module initialization.
             const candidate = data(exports, key);
             if (!candidate || candidate === exports) continue;
-            const replacement = instrument(candidate, depth + 1);
-            if (replacement !== candidate) replacements.set(key, replacement);
+            const patched = instrument(candidate, depth + 1);
+            if (patched !== candidate) changes.set(key, patched);
         }
-        if (!replacements.size) return exports;
+        if (!changes.size) return exports;
         // Preserve module identity and cached aliases wherever descriptors allow it.
-        for (const [key, replacement] of Array.from(replacements)) {
+        for (const [key, patched] of Array.from(changes)) {
             const descriptor = Object.getOwnPropertyDescriptor(exports, key);
             if (descriptor && descriptor.configurable) {
-                Object.defineProperty(exports, key, { value: replacement, writable: true,
+                Object.defineProperty(exports, key, { value: patched, writable: true,
                     configurable: true, enumerable: descriptor.enumerable });
-                replacements.delete(key);
+                changes.delete(key);
             } else if (descriptor && "value" in descriptor && descriptor.writable) {
-                exports[key] = replacement;
-                replacements.delete(key);
+                exports[key] = patched;
+                changes.delete(key);
             }
         }
-        if (!replacements.size) return exports;
+        if (!changes.size) return exports;
         // Only immutable accessor exports need a proxy; never inspect them during RN initialization.
         // Do not violate Proxy invariants on non-writable, non-configurable data properties.
-        for (const key of Array.from(replacements.keys())) {
+        for (const key of Array.from(changes.keys())) {
             const descriptor = Object.getOwnPropertyDescriptor(exports, key);
             if (descriptor && !descriptor.configurable && "value" in descriptor && !descriptor.writable)
-                replacements.delete(key);
+                changes.delete(key);
         }
-        proxy = new Proxy(exports, { get(target, key, receiver) {
-            return replacements.has(key) ? replacements.get(key) : Reflect.get(target, key, receiver);
+        proxy = new Proxy(exports, { get(target, key, self) {
+            return changes.has(key) ? changes.get(key) : Reflect.get(target, key, self);
         } });
-        return replacements.size ? proxy : exports;
+        return changes.size ? proxy : exports;
     }
     function activateModule(id, module) {
         try {
@@ -1012,7 +1363,13 @@
             if (typeof factory !== "function" || (!targetModules.has(id) && id !== 120)) return define.apply(this, arguments);
             const args = Array.from(arguments);
             args[0] = function () {
-                const result = factory.apply(this, arguments);
+                const factoryArgs = Array.from(arguments);
+                if (features.hiddenChannels && id === 7802) {
+                    factoryArgs[1] = listImport(factoryArgs[1]);
+                    factoryArgs[2] = listImport(factoryArgs[2]);
+                    factoryArgs[3] = listImport(factoryArgs[3]);
+                }
+                const result = factory.apply(this, factoryArgs);
                 const module = arguments[4]; // Verified Metro factory ABI in Discord 347.12.
                 if (module && module.exports) {
                     if (id === 120) {
@@ -1026,11 +1383,11 @@
                             try { value = initialize.apply(this, arguments); }
                             finally { initializing = false; }
                             environmentReady = true;
-                            for (const [pendingId, pending] of deferredModules) activateModule(pendingId, pending);
-                            deferredModules.clear();
+                            for (const [pendingId, pending] of deferred) activateModule(pendingId, pending);
+                            deferred.clear();
                             return value;
                         };
-                    } else if (!environmentReady) deferredModules.set(id, module);
+                    } else if (!environmentReady) deferred.set(id, module);
                     else activateModule(id, module);
                 }
                 return result;

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0 — chat reliability, requested ports and voice formats
+
+- Native themed JumpToTop fallback with composer/suggestion height hooks.
+- Hidden Channels native type buckets and list-local visibility facade, without changing the real permission store.
+- NoDelete independent snapshots through message/cache updates; opt-in account-scoped local archive (512 entries, 8 MiB), erase-on-save-off and logout clearing.
+- Added selectable Pastelize, profile-only PlatformIndicators and opt-in ReviewDB with explicit requests/native identify-only OAuth and session credentials.
+- Added streaming WAV/RIFX/extensible and AIFF/AIFF-C integer/float decoding, more audio aliases, decoder checks and validated native waveform payloads.
+- Expanded readable/compact JavaScript regressions and JVM PCM/container checks. Native renderer consumes measured waveform data; no public native file-waveform generator was found.
+
+Android launch, physical codecs, native UI and live ReviewDB OAuth/service behavior remain device-unverified. PlatformIndicators DM-header/member-list icons remain outside this port.
+
 ## 1.1.1 — performance and reliability audit
 
 - Added a bulk-copy 48 kHz mono PCM16 path and pre-sized resampling arrays, while retaining real waveforms, clipping and duration limits. Synthetic JVM mono conversion is roughly 4× faster in representative runs; generic stereo resampling is not claimed faster, and Android timings remain unmeasured.

@@ -13,7 +13,7 @@ internal object HbcPrelude {
         .joinToString("") { "%02x".format(it) }
 
     fun inject(file: File, source: String): Result {
-        require(source.length in 1..65535) { "Unexpected bootstrap size" }
+        require(source.length in 1..100000) { "Unexpected bootstrap size" }
         var result: Result
         RandomAccessFile(file, "rw").use { raf ->
             fun intAt(offset: Long): Int { raf.seek(offset); return Integer.reverseBytes(raf.readInt()) }
@@ -64,7 +64,8 @@ internal object HbcPrelude {
             }
             // An array + join is linear-time and reuses existing literal strings. No string table changes.
             emit(61, 10) // GetGlobalObject r10
-            emit(8, 11, source.length and 255, source.length ushr 8) // NewArray r11
+            val initialCapacity = minOf(source.length, 65535)
+            emit(8, 11, initialCapacity and 255, initialCapacity ushr 8) // NewArray r11
             source.forEachIndexed { index, character ->
                 string(12, chars.getValue(character))
                 if (index < 256) emit(88, 11, 12, index) // DefineOwnByIndex
