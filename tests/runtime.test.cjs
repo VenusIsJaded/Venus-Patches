@@ -1158,48 +1158,29 @@ test('PlatformIndicators uses real client status, hides unknown/offline clients 
     b.api.setSetting('platformIndicators',false);assert.equal(badges.type(badges.props),null);
 });
 function reviewHarness() {
-    const b=boot(allFeatures),{React,RN}=reactHarness(b);const alerts=[];RN.Alert={alert(...args){alerts.push(args);}};RN.ScrollView='ScrollView';RN.TextInput='TextInput';RN.ActivityIndicator='Spinner';
-    const requests=[];b.context.URL=URL;b.context.fetch=async(url,options)=>{requests.push([url,options]);return {ok:true,json:async()=>url.includes('/auth')?{success:true,token:'review-only-token'}:{success:true,reviews:[{id:1,comment:'hello',sender:{discordID:'other',username:'Other'}}]}};};
-    const account={id:'111111111111111111'};
-    const toasts=[],confirms=[];
-    const native={4784:{Text:'NativeText'},5856:{Card:'NativeCard'},5216:{Stack:'NativeStack'},5218:{Button:'NativeButton'},7362:{TextArea:'NativeTextArea'},
-        5141:{default:{show:value=>confirms.push(value)}},4486:{default:{open:value=>toasts.push(value)}},5854:{TableRow:'NativeRow'}};
+    const b=boot(allFeatures),{React,RN}=reactHarness(b);const alerts=[];RN.Alert={alert(...args){alerts.push(args);}};RN.ScrollView='ScrollView';RN.TextInput='RNTextInput';RN.Image='Image';
+    React.Fragment='Fragment';
+    const requests=[];b.context.fetch=async(url,options)=>{requests.push([url,options]);return {ok:true,json:async()=>url.includes('/auth?')?{success:true,token:'review-only-token'}:
+        url.endsWith('/admins')?['999999999999999999']:{success:true,reviews:[{id:0,type:3,comment:'Be nice',sender:{discordID:'1',username:'Warning',badges:[]}},
+            {id:1,comment:'hello',timestamp:1700000000,sender:{discordID:'333333333333333333',username:'Other',profilePhoto:'https://cdn.discordapp.com/a.png',badges:[{name:'Donor',icon:'https://cdn.discordapp.com/b.webp'}]}}]}};};
+    const account={id:'111111111111111111'};const toasts=[],confirms=[],sheets=[],simple=[],pushed=[],popped=[],copied=[];
+    const native={5854:{TableRow:'NativeRow'},5936:{TableRowGroup:'RowGroup'},7477:{TableSwitchRow:'SwitchRow'},5216:{Stack:'Stack'},7484:{default:'UserProfileCard'},
+        8903:{FormRow:'FormRow',FormLabel:'FormLabel',FormSubLabel:'FormSubLabel'},6880:{TextInput:'NativeTextInput'},4732:{SendMessageIcon:'SendIcon'},
+        7474:{ActionSheet:'ActionSheet'},7426:{BottomSheetTitleHeader:'SheetHeader'},7475:{ActionSheetCloseButton:'SheetClose'},
+        4755:{default:{openLazy:(promise,key,props)=>sheets.push({promise,key,props}),hideActionSheet(){}}},7472:{showSimpleActionSheet:value=>simple.push(value)},
+        7469:{Clipboard:{setString:value=>copied.push(value)}},5141:{default:{show:value=>confirms.push(value)}},4486:{default:{open:value=>toasts.push(value)}},
+        4645:{pushModal:value=>pushed.push(value),popModal:key=>popped.push(key)},9358:{default:'OAuth2AuthorizeModal'},4505:{useThemeContext:()=>({primaryColor:'#123456'})}};
     b.context.__r=id=>native[id]||null;
     b.load({default:{getCurrentUser:()=>account}},null,1372);
-    b.load({TableRow:'NativeRow'},null,5854);
-    let pushed;const popped=[];b.load({pushModal:value=>pushed=value,popModal:key=>popped.push(key)},null,4645);b.load({default:'OAuthModal'},null,9358);
-    function PrimaryInfo(){return React.createElement('Info',null);}
-    const heading=React.createElement(PrimaryInfo,{user:{id:'222222222222222222'}}),aboutOriginal=React.createElement('About',{children:'About me'});
-    const original=React.createElement('Profile',{children:[heading,aboutOriginal]});
-    const about=b.load({default:()=>aboutOriginal},null,11502).default;
-    const profile={default:props=>{const result=about({userId:props.user && props.user.id});return result===aboutOriginal?original:React.cloneElement(original,{children:[heading,result]});}};
-    const getPanel=tree=>tree.props.children[1].props.children[1];
-    b.api.setSetting('reviewDB',true);const panel=getPanel(profile.default({user:{id:'222222222222222222'}}));b.api.setSetting('reviewDB',false);
+    const noteOriginal=React.createElement('Note',null);
+    const note=b.load({default:()=>noteOriginal},null,13373).default;
+    const progressOriginal=React.createElement('Progress',null);
+    const guild=b.load({default:()=>progressOriginal},null,14273).default;
+    const menuCalls=[];const menu=b.load({ContextMenuPopout:props=>{menuCalls.push(props);return 'menu';}},null,14479);
     const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14892).SETTING_RENDERER_CONFIG;
     const Settings=registry.VENUS_REVIEWDB.screen.getComponent();
-    return {...b,React,RN,requests,panel,popped,alerts,account,profile,original,about,aboutOriginal,getPanel,registry,Settings,toasts,confirms,native,getPushed:()=>pushed};
+    return {...b,React,RN,requests,alerts,account,toasts,confirms,sheets,simple,pushed,popped,copied,note,noteOriginal,guild,progressOriginal,menu,menuCalls,Settings,native};
 }
-test('ReviewDB has no startup requests and expands a native opt-in profile panel only after enabling',()=>{
-    const b=reviewHarness();assert.equal(b.requests.length,0);assert.equal(b.panel.type(b.panel.props),null);
-    b.api.setSetting('reviewDB',true);const panel=b.panel.type(b.panel.props);const header=panel.props.children;
-    assert.equal(header.type,'NativeRow');assert.equal(header.props.label,'Reviews');assert.equal(header.props.arrow,true);assert.equal(b.requests.length,0);
-});
-test('ReviewDB explicit expansion fetches only its API; OAuth rejects untrusted redirects and never stores account tokens',async()=>{
-    const b=reviewHarness();b.api.setSetting('reviewDB',true);const states=[0,true,[],"",false,"",0],effects=[];
-    let index=0;b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,value=>{states[i]=typeof value==='function'?value(states[i]):value}];};
-    b.React.useEffect=fn=>effects.push(fn);
-    let panel=b.panel.type(b.panel.props);effects.forEach(fn=>fn());await flush();assert.equal(b.requests.length,1);assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/users/222222222222222222/reviews');
-    assert.equal(b.requests[0][1].credentials,'omit');assert.equal(b.requests[0][1].headers.Authorization,undefined);
-    index=0;effects.length=0;panel=b.panel.type(b.panel.props);
-    const auth=walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB')[0];auth.props.onPress();
-    const modal=b.getPushed();assert.equal(modal.modal.props.clientId,'915703782174752809');
-    await modal.modal.props.callback({location:'https://evil.example/auth?code=x'});assert.equal(b.requests.length,1);
-    await modal.modal.props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});assert.equal(b.requests.length,2);assert.equal(b.popped.length,1);
-    const redirect=new URL(b.requests.at(-1)[0]);assert.equal(redirect.searchParams.get('clientMod'),'vendetta');assert.equal(redirect.searchParams.get('returnType'),'json');
-    index=0;panel=b.panel.type(b.panel.props);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
-    b.api.setSetting('reviewDB',false);assert.equal(b.api.settings.reviewToken,undefined);
-});
-
 // Schemas below reflect the inspected 347.12 boundaries; the older clone()-only
 // mock hid a real native integration failure. These are not Android device tests.
 class NativeChannelMessages {
@@ -1295,46 +1276,99 @@ test('PlatformIndicators demand-loads native icon components, uses own sessions 
     b.api.setSetting('platformIndicators',false);assert.equal(b.badges.type(b.badges.props),null);cleanup();
 });
 function openReviewAuth(b) {
-    b.api.setSetting('reviewDB',true);const states=[0,true,[],"",false,"",0];let index=0;
-    b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,()=>{}];};b.React.useEffect=()=>{};
-    function render(){index=0;return b.panel.type(b.panel.props);}
+    b.api.setSetting('reviewDB',true);
     walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB')[0].props.onPress();
-    return {props:b.getPushed().modal.props,render};
+    return b.pushed.at(-1).modal.props;
 }
-test('ReviewDB uses the accepted original clientMod and displays service failures instead of hiding them',async()=>{
-    const b=reviewHarness(),{props,render}=openReviewAuth(b);let redirect;
-    b.context.fetch=async url=>{redirect=new URL(url);return {ok:true,status:200,json:async()=>({success:false,message:'Invalid or expired code',token:''})};};
-    await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=expired&clientMod=venus'});
-    assert.equal(redirect.searchParams.get('clientMod'),'vendetta');assert.equal(redirect.searchParams.get('returnType'),'json');
-    assert.equal(b.alerts.at(-1)[1],'Invalid or expired code');assert.equal(b.popped.length,0);
-    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
-    b.context.fetch=async()=>({ok:true,json:async()=>({success:true,token:'review-token'})});
-    await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=valid'});
+function mountReviews(b,userId) {
+    const tree=b.note({userId}),section=tree.props.children[1];
+    const states=[];let i=0;b.React.useState=initial=>{const k=i++;if(!(k in states))states[k]=initial;return [states[k],v=>{states[k]=typeof v==='function'?v(states[k]):v;}];};
+    const effects=[];b.React.useEffect=fn=>effects.push(fn);
+    return {tree,section,render(){i=0;return section.type(section.props);},effects};
+}
+async function loadedReviews(b,userId) {
+    const m=mountReviews(b,userId);m.render();m.effects.splice(0).forEach(fn=>fn());await flush();await flush();return m;
+}
+test('ReviewDB settings match the original: Authentication and Settings groups with native rows',()=>{
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);const tree=b.Settings();
+    assert.deepEqual(walkElements(tree,n=>n.type==='RowGroup').map(n=>n.props.title),['ReviewDB','Authentication','Settings']);
+    const login=walkElements(tree,n=>n.props.label==='Authenticate with ReviewDB')[0];assert.equal(login.type,'NativeRow');assert.equal(login.props.arrow,true);assert.equal(login.props.disabled,false);
+    const logout=walkElements(tree,n=>n.props.label==='Log out of ReviewDB')[0];assert.equal(logout.props.disabled,true);assert.match(logout.props.subLabel,/Authorized Apps/);
+    assert.deepEqual(walkElements(tree,n=>n.type==='SwitchRow').map(n=>n.props.label),['Enable ReviewDB','Use profile-themed send button','Show Warning']);
+    assert.equal(walkElements(tree,n=>n.type==='Stack')[0].props.spacing,24);
+});
+test('ReviewDB OAuth follows the traced 347.12 order: dismissOAuthModal BEFORE callback still signs in',async()=>{
+    const b=reviewHarness();const props=openReviewAuth(b);
+    assert.equal(b.pushed[0].key,'oauth2-authorize');assert.equal(b.pushed[0].modal.modal,'OAuth2AuthorizeModal');
+    assert.equal(props.clientId,'915703782174752809');assert.equal(props.redirectUri,'https://manti.vendicated.dev/api/reviewdb/auth');assert.equal(props.cancelCompletesFlow,false);
+    props.dismissOAuthModal();assert.deepEqual(b.popped,['oauth2-authorize']);
+    props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb'});await flush();await flush();
+    assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb&returnType=json&clientMod=vendetta');
     assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
+    assert.equal(b.toasts.at(-1).content,'Successfully authenticated with ReviewDB');
 });
-test('ReviewDB ignores late OAuth success after cancellation, disable, logout or account switching',async()=>{
-    for(const action of ['cancel','disable','logout','account']) {
-        const b=reviewHarness(),{props,render}=openReviewAuth(b);let resolve;let requests=0;
-        b.context.fetch=()=>{requests++;return new Promise(done=>resolve=done);};
-        const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=once'});
-        await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=duplicate'});await flush();assert.equal(requests,1);
-        if(action==='cancel')await props.callback({canceled:true});
-        if(action==='disable')b.api.setSetting('reviewDB',false);
-        if(action==='logout')b.load({default:{dispatch(){}}},null,573).default.dispatch({type:'LOGOUT'});
-        if(action==='account')b.account.id='333333333333333333';
-        resolve({ok:true,json:async()=>({success:true,token:'must-not-survive'})});await pending;
-        if(action==='disable')b.api.setSetting('reviewDB',true);
-        assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);assert.equal(b.alerts.length,0);
-    }
+test('ReviewDB sign-in survives disabling the plugin and logs out explicitly, like the original authToken',async()=>{
+    const b=reviewHarness();const props=openReviewAuth(b);props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});await flush();await flush();
+    b.api.setSetting('reviewDB',false);b.api.setSetting('reviewDB',true);
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
+    walkElements(b.Settings(),n=>n.props.label==='Log out of ReviewDB')[0].props.onPress();
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
 });
-test('ReviewDB OAuth exchanges are bounded and reject malformed or untrusted redirects without requests',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);
-    for(const location of ['https://evil.example/api/reviewdb/auth?code=x','https://manti.vendicated.dev/other?code=x','https://manti.vendicated.dev/api/reviewdb/auth','not a URL'])await props.callback({location});
-    assert.equal(b.requests.length,0);assert.equal(b.alerts.length,4);
-    let timeout,cleared=false;b.context.AbortController=AbortController;b.context.setTimeout=(fn,ms)=>{assert.equal(ms,15000);timeout=fn;return 42;};b.context.clearTimeout=id=>{assert.equal(id,42);cleared=true;};
-    b.context.fetch=(url,{signal})=>new Promise((resolve,reject)=>signal.addEventListener('abort',()=>reject(new Error('Authorization timed out'))));
-    const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});timeout();await pending;
-    assert.equal(cleared,true);assert.equal(b.alerts.at(-1)[1],'Authorization timed out');
+test('ReviewDB cancellation, malformed redirects and account switches never sign in',async()=>{
+    const b=reviewHarness();let props=openReviewAuth(b);props.callback({canceled:true});await flush();
+    assert.equal(b.requests.length,0);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
+    for(const location of ['https://evil.example/api/reviewdb/auth?code=x','https://manti.vendicated.dev/api/reviewdb/auth?error=access_denied','not a URL']){props=openReviewAuth(b);props.callback({location});await flush();}
+    assert.equal(b.requests.length,0);
+    let resolve;b.context.fetch=()=>new Promise(done=>{resolve=done;});
+    props=openReviewAuth(b);props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=late'});await flush();
+    b.account.id='222222222222222222';resolve({ok:true,json:async()=>({success:true,token:'must-not-survive'})});await flush();await flush();
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,0);
+});
+test('ReviewDB profile section renders directly after the profile note card with the original layout',async()=>{
+    const b=reviewHarness();assert.equal(b.note({userId:'222222222222222222'}).props.children[0],b.noteOriginal);
+    b.api.setSetting('reviewDB',true);const m=await loadedReviews(b,'222222222222222222');
+    assert.equal(m.tree.type,'Fragment');assert.equal(m.tree.props.children[0],b.noteOriginal);assert.equal(m.section.props.userId,'222222222222222222');
+    const profileCard=m.render().props.children;assert.equal(profileCard.type,'UserProfileCard');assert.equal(profileCard.props.title,'Reviews');
+    const rows=profileCard.props.children[0].props.children;assert.equal(rows.length,2);
+    const row=rows[1].type(rows[1].props);const form=row.props.children;assert.equal(row.type,'RowGroup');assert.equal(form.type,'FormRow');
+    assert.equal(form.props.subLabel.type,'FormSubLabel');assert.equal(form.props.subLabel.props.text,'hello');assert.equal(form.props.leading.props.style.height,36);
+    assert.equal(walkElements(form.props.label,n=>n.type==='FormLabel')[0].props.text,'Other');
+    const input=profileCard.props.children[1];const rendered=input.type(input.props);
+    assert.equal(walkElements(rendered,n=>n.type==='NativeTextInput')[0].props.placeholder,'You must be authenticated to add a review.');
+    form.props.onLongPress();assert.equal(b.simple.at(-1).header.title,'Review by Other');assert.deepEqual(Array.from(b.simple.at(-1).options,o=>o.label),['Copy Text']);
+    b.simple.at(-1).options[0].onPress();assert.deepEqual(b.copied,['hello']);
+    b.api.setSetting('reviewWarning',false);assert.equal(m.render().props.children.props.children[0].props.children.length,1);
+    assert.equal(b.requests.filter(([u])=>u.includes('/reviews')).every(([,o])=>!o.headers.authorization),true);
+});
+test('ReviewDB server sheet shows a single Reviews row that opens the reviews action sheet',async()=>{
+    const b=reviewHarness();const off=b.guild({guild:{id:'444444444444444444'}});assert.equal(off.props.guild.id,'444444444444444444');
+    b.api.setSetting('reviewDB',true);const row=b.guild({guild:{id:'444444444444444444'}});
+    assert.equal(row.type,'RowGroup');assert.equal(row.props.children.props.label,'Reviews');row.props.children.props.onPress();
+    assert.equal(b.sheets[0].key,'ActionSheet');assert.equal(b.sheets[0].props.userId,'444444444444444444');
+    const sheet=(await b.sheets[0].promise).default({userId:'444444444444444444'});assert.equal(sheet.type,'ActionSheet');assert.equal(sheet.props.header.props.title,'Reviews');
+});
+test('ReviewDB user context menu gains a Reviews entry and signed-in actions follow the original permissions',async()=>{
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);
+    b.menu.ContextMenuPopout({menu:{key:'222222222222222222',items:[1,2,3]}});const items=b.menuCalls.at(-1).menu.items;assert.equal(items.at(-1).label,'Reviews');
+    items.at(-1).action();assert.equal(b.sheets.at(-1).props.userId,'222222222222222222');
+    b.menu.ContextMenuPopout({menu:{key:'x',items:[1,2,3]}});assert.equal(b.menuCalls.at(-1).menu.items.length,3);
+    const props=openReviewAuth(b);props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});await flush();await flush();
+    const m=await loadedReviews(b,'111111111111111111');
+    const rows=m.render().props.children.props.children[0].props.children;
+    rows[1].type(rows[1].props).props.children.props.onLongPress();
+    assert.deepEqual(Array.from(b.simple.at(-1).options,o=>o.label),['Copy Text','Delete Review','Report Review']);
+    b.simple.at(-1).options[1].onPress();assert.equal(b.confirms.at(-1).title,'Delete Review');b.confirms.at(-1).onConfirm();await flush();
+    const del=b.requests.find(([,o])=>o&&o.method==='DELETE');assert.equal(del[1].headers.authorization,'review-only-token');assert.deepEqual(JSON.parse(del[1].body),{reviewid:1});
+    rows[0].type(rows[0].props).props.children.props.onLongPress();assert.equal(b.simple.at(-1).header.title,'ReviewDB System Message');assert.deepEqual(Array.from(b.simple.at(-1).options,o=>o.label),['Copy Text']);
+});
+test('NoDelete never retains your own deletions, unsent messages or ephemeral messages, and returns a thenable',async()=>{
+    const b=deletionHarness();b.api.setSetting('noDelete',true);
+    b.messages.set('c:1',{content:'mine'});b.actions.deleteMessage('c','1');b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});assert.equal(b.messages.has('c:1'),false);assert.equal(b.network.length,1);
+    b.messages.set('c:2',{content:'failed',state:'SEND_FAILED'});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'2'});assert.equal(b.messages.has('c:2'),false);
+    b.messages.set('c:3',{content:'only you',flags:64});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'3'});assert.equal(b.messages.has('c:3'),false);
+    b.messages.set('c:4',{content:'local'});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'4',local:true});assert.equal(b.messages.has('c:4'),false);
+    b.messages.set('c:5',{content:'theirs'});const result=b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'5'});
+    assert.notEqual(result,undefined);await result;assert.equal(b.messages.get('c:5').content,'theirs');
 });
 test('NoDelete reorders restored native records exactly without sharing the stock array',()=>{
     const b=deletionHarness();
@@ -1495,146 +1529,9 @@ test('PlatformIndicators excludes groups and guild channel lists from single-use
     const content=b.load({default:()=>original},null,16377).default;
     for(const channel of [{type:3,recipients:['a','b']},{type:0,recipients:['a']},{type:1,recipients:[]}])assert.equal(content({channel}),original);
 });
-test('ReviewDB handles the native string callback without URL globals and rebuilds only approved query keys',async()=>{
-    const b=reviewHarness(),{props,render}=openReviewAuth(b);delete b.context.URL;delete b.context.URLSearchParams;
-    assert.equal(props.prompt,'consent');assert.deepEqual(Array.from(props.scopes),['identify']);
-    await props.callback('https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb%3D&clientMod=evil&token=forbidden&returnType=html');
-    assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb%3D&returnType=json&clientMod=vendetta');assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
-    assert.equal(b.requests[0][1].headers.Authorization,undefined);assert.equal(b.requests[0][1].credentials,'omit');
-});
-test('ReviewDB refuses ambiguous, encoded-host, credential, fragment and denied redirects',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);
-    for(const location of ['https://manti.vendicated.dev.evil/api/reviewdb/auth?code=x','https://manti.vendicated.dev@evil.example/api/reviewdb/auth?code=x','https://manti.vendicated.dev/api/reviewdb/auth?code=x#fragment','https://manti.vendicated.dev/api/reviewdb/auth?code=x&code=y','https://manti.vendicated.dev/api/reviewdb/auth?code=%','https://manti.vendicated.dev/api/reviewdb/auth?code=%0A','https://manti.vendicated.dev/api/reviewdb/auth?error=access_denied'])await props.callback({location});
-    assert.equal(b.requests.length,0);assert.equal(b.alerts.length,7);assert.equal(b.alerts.at(-1)[1],'Authorization cancelled');
-});
-test('ReviewDB timeout includes response JSON parsing and works without AbortController',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);delete b.context.AbortController;let timeout,clear;
-    b.context.setTimeout=(fn,ms)=>{assert.equal(ms,15000);timeout=fn;return 0;};b.context.clearTimeout=id=>clear=id;
-    b.context.fetch=async()=>({ok:true,json:()=>new Promise(()=>{})});const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});await flush();timeout();await pending;
-    assert.equal(clear,0);assert.equal(b.alerts.at(-1)[1],'Authorization timed out');
-});
-test('ReviewDB surfaces unreadable service responses without storing credentials or leaking callback codes',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);b.context.fetch=async()=>({ok:false,status:502,json:async()=>{throw Error('secret-code');}});
-    await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=secret-code'});assert.match(b.alerts.at(-1)[1],/unreadable response.*502/);assert.doesNotMatch(b.alerts.at(-1)[1],/secret-code/);
-});
-test('ReviewDB cards use native Card and Text tokens with avatars, badges, dates and selectable comments',()=>{
-    const b=reviewHarness();b.api.setSetting('reviewDB',true);b.RN.Image='Image';
-    const review={id:0,type:3,timestamp:0,comment:'Be respectful',sender:{username:'Warning',profilePhoto:'https://cdn.discordapp.com/avatars/u/a.webp',badges:[{name:'Donor',icon:'https://cdn.discordapp.com/emojis/1.webp'}]}};
-    const states=[0,true,[review],'',false,'',0,1];let index=0;b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];b.React.useEffect=()=>{};
-    const tree=b.panel.type(b.panel.props),scroll=walkElements(tree,n=>n.type==='ScrollView')[0],card=scroll.props.children[0],rendered=card.type(card.props);
-    assert.equal(rendered.type,'NativeCard');
-    const texts=walkElements(rendered,n=>n.type==='NativeText');
-    assert.ok(texts.every(n=>/^(text|heading)-/.test(n.props.variant)&&/^text-/.test(n.props.color)));
-    const comment=texts.find(n=>n.props.children==='Be respectful');assert.equal(comment.props.selectable,true);
-    assert.equal(walkElements(rendered,n=>n.type==='Image'&&n.props.style.width===40).length,1);
-    assert.equal(walkElements(rendered,n=>n.type==='Image'&&n.props.accessibilityLabel==='Donor').length,1);
-    assert.equal(walkElements(rendered,n=>n.type==='NativeButton').length,0);
-    // Native hex colors are gone; theming comes from tokens.
-    assert.doesNotMatch(JSON.stringify(tree)+JSON.stringify(rendered),/#[0-9a-f]{6}/i);
-    review.type=0;review.timestamp=1700000000;const dated=card.type(card.props);
-    assert.equal(walkElements(dated,n=>n.type==='NativeText'&&n.props.variant==='text-xs/medium'&&/2023/.test(n.props.children)).length,1);
-    const header=walkElements(tree,n=>n.type==='NativeRow')[0];assert.equal(header.props.subLabel,'1 review from ReviewDB');
-});
-
-
 // HBC98 #124513: Call2(callback, result) at 0xf7, no Promise yield for that
 // return; dismissOAuthModal at 0x1ac. The old tests awaited callback first and
 // therefore could not reproduce the reported native close-before-auth race.
-test('ReviewDB native callback-then-dismiss retains the exchange and sign-in across reopened profiles and guild sheets',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);let resolve;
-    b.context.fetch=()=>new Promise(done=>resolve=done);
-    const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=native-code'});
-    props.dismissOAuthModal();props.dismissOAuthModal();
-    assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticating with ReviewDB…').length,1);
-    await flush();resolve({ok:true,json:async()=>({success:true,token:'review-session-token'})});await pending;
-    assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
-    for(let repeat=0;repeat<3;repeat++) {
-        const profile=b.profile.default({user:{id:'222222222222222222'}}),panel=b.getPanel(profile);
-        const states=[0,true,[],'',false,'',0];let index=0;b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];
-        const rendered=panel.type(panel.props);assert.equal(walkElements(rendered,n=>n.type==='NativeTextArea')[0].props.disabled,false);
-        assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
-        assert.equal(b.original.props.children.length,2);assert.equal(profile.props.children[0],b.original.props.children[0]);
-        assert.equal(profile.props.children[1].props.children[0],b.original.props.children[1]);
-    }
-    const guild=b.load({default:()=>null},null,14273).default({guild:{id:'333333333333333333'}});
-    const panel=guild.props.children[1];assert.equal(panel.props.userId,'333333333333333333');assert.equal(panel.props.server,true);
-    let index=0;const states=[0,true,[],'',false,'',0];b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];
-    const rendered=panel.type(panel.props);assert.equal(walkElements(rendered,n=>n.type==='NativeTextArea')[0].props.label,'Add a review');
-    assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
-});
-test('ReviewDB real cancellation before redirect ignores late callback with no exchange or false success',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);props.dismissOAuthModal();
-    await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=too-late'});
-    assert.equal(b.requests.length,0);assert.equal(b.popped.length,1);assert.equal(b.alerts.length,0);
-    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
-});
-test('ReviewDB failed exchange remains visible in plugin settings after native dismissal and permits retry',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);let resolve;
-    b.context.fetch=()=>new Promise(done=>resolve=done);
-    const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=bad'});props.dismissOAuthModal();await flush();
-    resolve({ok:true,json:async()=>({success:false,message:'Expired code'})});await pending;
-    const row=walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB')[0];assert.equal(row.props.subLabel,'Expired code');assert.equal(row.props.disabled,false);
-    row.props.onPress();assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticating with ReviewDB…').length,1);
-    const next=b.getPushed().modal.props;assert.notEqual(next,props);
-    // A stale callback cannot dismiss the newly opened native modal.
-    props.dismissOAuthModal();assert.equal(b.popped.length,1);next.dismissOAuthModal();assert.equal(b.popped.length,2);
-});
-test('ReviewDB settings use the inspected native switch and group with no nested settings-list scroller',()=>{
-    const b=reviewHarness();b.load({TableSwitchRow:'NativeSwitch'},null,7477);b.load({TableRowGroup:'NativeGroup'},null,5936);
-    assert.equal(b.registry.VENUS_REVIEWDB.type,'route');assert.equal(b.registry.VENUS_REVIEWDB.parent,'VENUS_PLUGINS');
-    let tree=b.Settings();assert.equal(tree.type,'ScrollView');assert.equal(walkElements(tree,n=>n.type==='NativeGroup').length,2);
-    const toggle=walkElements(tree,n=>n.type==='NativeSwitch')[0];assert.equal(toggle.props.value,false);toggle.props.onValueChange(true);
-    tree=b.Settings();assert.equal(walkElements(tree,n=>n.props.label==='Authenticate with ReviewDB')[0].props.disabled,false);
-    assert.equal(walkElements(tree,n=>typeof n.type==='function').length,0);
-});
-test('ReviewDB server lists and mutations use the guild ID and preserve native guild progress',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=valid'});
-    const progress=b.React.createElement('Progress',{onPress:()=>{},children:'Native onboarding'});
-    const component=b.load({default:()=>progress},null,14273).default;
-    const tree=component({guild:{id:'333333333333333333'}});assert.equal(tree.props.children[0],progress);
-    const panel=tree.props.children[1],states=[0,true,[],'',false,'server review',0],effects=[];let index=0;
-    b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,value=>states[i]=typeof value==='function'?value(states[i]):value];};
-    b.React.useEffect=fn=>effects.push(fn);
-    let rendered=panel.type(panel.props);effects.forEach(fn=>fn());await flush();
-    assert.equal(b.requests.at(-1)[0],'https://manti.vendicated.dev/api/reviewdb/users/333333333333333333/reviews');
-    index=0;effects.length=0;rendered=panel.type(panel.props);
-    assert.equal(walkElements(rendered,n=>n.type==='NativeRow')[0].props.label,'Server reviews');
-    walkElements(rendered,n=>n.type==='NativeButton'&&n.props.text==='Post review')[0].props.onPress();await flush();
-    const [url,options]=b.requests.at(-1);assert.equal(url,'https://manti.vendicated.dev/api/reviewdb/users/333333333333333333/reviews');assert.equal(options.method,'PUT');
-    // Credentials travel in the Authorization header, never in the JSON body.
-    assert.deepEqual(JSON.parse(options.body),{comment:'server review'});assert.equal(options.headers.authorization,'review-only-token');
-    assert.equal(b.toasts.at(-1).content,'Review posted');
-    assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
-    assert.equal(component({guild:{id:'bad-id'}}),progress);b.api.setSetting('reviewDB',false);assert.equal(component({guild:{id:'333333333333333333'}}),progress);
-});
-test('ReviewDB profile cards remain inside native About Me stack and target changes get independent React keys',()=>{
-    const b=reviewHarness();b.api.setSetting('reviewDB',true);
-    const first=b.profile.default({user:{id:'222222222222222222'}}),second=b.profile.default({user:{id:'444444444444444444'}});
-    assert.equal(first.type,'Profile');assert.equal(b.getPanel(first).props.userId,'222222222222222222');
-    assert.equal(b.getPanel(second).props.userId,'444444444444444444');assert.notEqual(b.getPanel(first).props.key,b.getPanel(second).props.key);
-    assert.equal(b.original.props.children.length,2);assert.equal(first.props.children[0],b.original.props.children[0]);
-    assert.equal(first.props.children[1].props.children[0],b.aboutOriginal);
-    assert.equal(b.about({userId:'222222222222222222',pendingBio:'Editing preview'}),b.aboutOriginal);
-    b.api.setSetting('reviewDB',false);assert.equal(b.profile.default({user:{id:'222222222222222222'}}),b.original);
-});
-test('ReviewDB account subscription invalidates pending sign-in and cleans up without keeping credentials',async()=>{
-    const b=reviewHarness(),listeners=new Set(),effects=[];b.load({default:{getCurrentUser:()=>b.account,addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>listeners.delete(fn)}},null,1372);
-    b.React.useEffect=fn=>effects.push(fn);b.Settings();const cleanups=effects.map(fn=>fn()).filter(fn=>typeof fn==='function');assert.equal(listeners.size,1);
-    const {props}=openReviewAuth(b);let resolve;b.context.fetch=()=>new Promise(done=>resolve=done);
-    const pending=props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=one'});await flush();
-    b.account.id='999999999999999999';listeners.forEach(fn=>fn());assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
-    resolve({ok:true,json:async()=>({success:true,token:'must-not-leak'})});await pending;assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,0);
-    cleanups.forEach(fn=>fn());assert.equal(listeners.size,0);
-});
-test('ReviewDB authentication and logout never serialize OAuth codes, ReviewDB credentials or Discord tokens',async()=>{
-    const b=reviewHarness(),writes=[];b.load({default:native({writeFile:async(...args)=>writes.push(args)})});await flush();
-    const {props}=openReviewAuth(b);await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=private-code'});
-    b.api.setSetting('dashless',false);await flush();
-    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
-    walkElements(b.Settings(),n=>n.props.label==='Log out of ReviewDB')[0].props.onPress();
-    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
-    assert.doesNotMatch(JSON.stringify(writes),/review-only-token|private-code|authToken|reviewToken/);
-});
 test('Hidden Channels captures initial READY and supplemental names before native records are redacted',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};b.channels.cat={...b.channels.cat,name:'__hidden__'};
     const dispatch=b.load({default:{dispatch(){}}},null,573).default;
@@ -1690,50 +1587,4 @@ test('Hidden Channels READY cache belongs to the incoming account before UserSto
     dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'222222222222222222'},guilds:[{id:'g',channels:[{id:'hidden',name:'second-staff'}]}]});
     assert.equal(b.label(b.channels.hidden),'second staff');
     account={id:'333333333333333333'};assert.match(b.label(b.channels.hidden),/name unavailable/);
-});
-test('ReviewDB actions follow Vencord permissions, confirm with native AlertModal and never send tokens on reads',async()=>{
-    const b=reviewHarness(),{props}=openReviewAuth(b);await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=valid'});
-    const me=b.account.id;
-    const reviews=[
-        {id:0,type:3,timestamp:0,comment:'System notice',sender:{discordID:'1',username:'Warning'}},
-        {id:10,type:0,timestamp:1700000000,comment:'mine',sender:{discordID:me,username:'Me'}},
-        {id:11,type:0,timestamp:1700000000,comment:'theirs',sender:{discordID:'555555555555555555',username:'Other'}}];
-    function render(userId){
-        const states=[0,true,reviews,'',false,'',0,2];let index=0;
-        b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,()=>{}];};b.React.useEffect=()=>{};
-        const panel=b.React.createElement(b.panel.type,{userId});
-        const tree=panel.type(panel.props),scroll=walkElements(tree,n=>n.type==='ScrollView')[0];
-        return {tree,cards:scroll.props.children.map(card=>card.type(card.props))};
-    }
-    const buttons=card=>walkElements(card,n=>n.type==='NativeButton').map(n=>n.props.text);
-    // Someone else's profile: delete only own review, report only others, nothing on system notices.
-    let {tree,cards}=render('222222222222222222');
-    assert.deepEqual(cards.map(buttons),[[],['Delete'],['Report']]);
-    assert.equal(walkElements(tree,n=>n.type==='NativeTextArea')[0].props.label,'Your review');
-    assert.ok(walkElements(tree,n=>n.type==='NativeButton'&&n.props.text==='Update review').length===1);
-    // Own profile: owner may also delete reviews written about them.
-    ({cards}=render(me));assert.deepEqual(cards.map(buttons),[[],['Delete'],['Delete','Report']]);
-    // Destructive actions go through Discord's native AlertModal first.
-    const report=walkElements(cards[2],n=>n.type==='NativeButton'&&n.props.text==='Report')[0];
-    const before=b.requests.length;report.props.onPress();assert.equal(b.requests.length,before);
-    const confirm=b.confirms.at(-1);assert.equal(confirm.title,'Report review?');assert.equal(confirm.confirmText,'Report');assert.equal(typeof confirm.body,'string');
-    confirm.onConfirm();await flush();
-    const [url,options]=b.requests.at(-1);assert.equal(url,'https://manti.vendicated.dev/api/reviewdb/reports');assert.equal(options.method,'PUT');
-    assert.deepEqual(JSON.parse(options.body),{reviewid:11});assert.equal(options.headers.authorization,'review-only-token');
-    assert.equal(b.toasts.at(-1).content,'Review reported');
-    // Reading reviews never attaches the ReviewDB credential.
-    const effects=[];b.React.useEffect=fn=>effects.push(fn);const states=[0,true,[],'',false,'',1,null];let index=0;
-    b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,()=>{}];};
-    b.panel.type(b.panel.props);effects.forEach(fn=>fn());await flush();
-    const read=b.requests.at(-1);assert.equal(read[1].method,'GET');assert.equal(read[1].headers.authorization,undefined);assert.equal(read[1].body,undefined);
-});
-test('ReviewDB signed-out panel explains where to sign in and offers no write controls',()=>{
-    const b=reviewHarness();b.api.setSetting('reviewDB',true);
-    const states=[0,true,[{id:5,type:0,timestamp:1700000000,comment:'hi',sender:{discordID:'9',username:'X'}}],'',false,'',0,1];let index=0;
-    b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];b.React.useEffect=()=>{};
-    const tree=b.panel.type(b.panel.props);
-    assert.equal(walkElements(tree,n=>n.type==='NativeTextArea').length,0);
-    assert.ok(walkElements(tree,n=>n.type==='NativeText'&&/Settings → Venus → Plugins → ReviewDB/.test(n.props.children)).length===1);
-    const cards=walkElements(tree,n=>n.type==='ScrollView')[0].props.children.map(card=>card.type(card.props));
-    assert.equal(walkElements(cards,n=>n.type==='NativeButton').length,0);
 });

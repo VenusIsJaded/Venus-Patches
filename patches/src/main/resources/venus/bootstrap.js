@@ -19,15 +19,15 @@
     if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4428, 4941, 7730, 573, 1372, 16569, 5345]);
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 7235, 9200, 9380, 11159, 13603, 16377, 9970]);
-    if (features.reviewDB) selectModules([11502, 14273, 4645, 9358, 5854, 5936, 7477, 1372, 573, 4505]);
-    const revision = "1.2.5";
+    if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
+    const revision = "1.2.6";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
     const deferred = new Map();
     const settings = { picker: true, voice: false, copyBios: true, dashless: true, favouriteAnything: true, emojis: true, stickers: true, hyperlinks: true, forceLinks: false,
         noTyping: true, quickDelete: false, quickDeleteEmbeds: false, noDelete: false, noDeleteSave: false,
-        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, reviewDB:false };
+        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, reviewDB:false, reviewThemedSend:true, reviewWarning:true };
     const status = { picker: false, attachment: false, request: false, menu: false, conversion: false, audioError: "", storage: "waiting" };
     const listeners = new Set();
     const dirty = new Set();
@@ -56,7 +56,7 @@
     function save() {
         if (!files || status.storage === "loading") return;
         // Keep only the newest waiting snapshot, not one Promise/string per toggle.
-        nextSave = JSON.stringify(settings);
+        nextSave = JSON.stringify(features.reviewDB && reviewToken && reviewAccount ? Object.assign({}, settings, {reviewAuth:{account:reviewAccount, token:reviewToken}}) : settings);
         if (writePending) return;
         writePending = true;
         function persist() {
@@ -77,7 +77,7 @@
         if (!owns(settings, key) || !features[featureFor(key)]) return false;
         if (settings[key] === !!value && status.storage !== "loading" && status.storage !== "waiting") return true;
         value = !!value;
-        if (key === "reviewDB" && !value) clearReviewAuth();
+        if (key === "reviewDB" && !value) { reviewAuthAttempt++; reviewCache.clear(); }
         if (key === "voice" && !value) activeJobs.forEach(job => {
             job.cancelled = true;
             nativeVoice("cancel", job.id).catch(() => {});
@@ -114,6 +114,10 @@
                 if (!loaded || typeof loaded !== "object" || Array.isArray(loaded)) throw new Error("Invalid preferences");
                 for (const key of Object.keys(settings))
                     if (!dirty.has(key) && typeof loaded[key] === "boolean") settings[key] = loaded[key];
+                const auth = loaded.reviewAuth;
+                // Restore a saved ReviewDB sign-in (a ReviewDB token, never the Discord token).
+                if (features.reviewDB && !reviewToken && auth && typeof auth.token === "string" && auth.token.length <= 8192 &&
+                    typeof auth.account === "string" && /^\d{17,20}$/.test(auth.account)) { reviewToken = auth.token; reviewAccount = auth.account; }
             }
             status.storage = "ready";
             if (!enabled("picker")) clearSizes();
@@ -371,7 +375,7 @@
 
     // Native setting nodes use Discord's own themed rows, navigation and back stack.
     let SettingsList;
-    const featureFor = key => key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" ? "noDelete" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key;
+    const featureFor = key => key === "reviewThemedSend" || key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" ? "noDelete" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key;
     function section(label, keys) { return { label, settings: keys }; }
     function settingsPage(sections) {
         const node = { type: "list", sections };
@@ -646,7 +650,8 @@
     let deletedRevision = 0, archiveRestored = false, archiveLoading = false, archiveWriting = false, archivePending;
     const deletedViews = new Map();
     const ARCHIVE = "venus-deleted-messages.json";
-    const deleted = new Map();
+    const deleted = new Map(), deletedByChannel = new Map(), ownDeletes = new Map();
+    let archiveTimer;
     const hiddenViews = new Map(), hiddenNames = new Map();
     let hiddenAccount;
     function receivedName(channel) {
@@ -739,7 +744,36 @@
     }
     function deletedKey(channelId, id) { return channelId + ":" + id; }
     function invalidateDeleted() { deletedRevision++; deletedViews.clear(); }
+    function keepDeleted(key, entry) {
+        deleted.set(key, entry);
+        let bucket = deletedByChannel.get(entry.channelId);
+        if (!bucket) deletedByChannel.set(entry.channelId, bucket = new Map());
+        bucket.set(key, entry);
+    }
+    function dropDeleted(key) {
+        const entry = deleted.get(key);
+        if (!entry) return null;
+        deleted.delete(key);
+        const bucket = deletedByChannel.get(entry.channelId);
+        if (bucket) { bucket.delete(key); if (!bucket.size) deletedByChannel.delete(entry.channelId); }
+        return entry;
+    }
+    function retainable(message, event) {
+        // Only messages someone else removed from the server. Your own deletions, unsent or
+        // failed local messages and dismissed ephemeral ("Only you can see this") messages
+        // must disappear exactly like stock Discord.
+        if (!message || event.local === true || ownDeletes.has(deletedKey(event.channelId, event.id))) return false;
+        if (message.state != null && message.state !== "SENT") return false;
+        return !((Number(message.flags) || 0) & 64);
+    }
     function persistDeleted() {
+        // Coalesce bursts (raids, purges) into one archive write instead of one full
+        // serialization per deleted message.
+        if (!files || status.storage === "loading" || !(settings.noDeleteSave || archiveRestored || status.archive)) return;
+        if (archiveTimer !== undefined) return;
+        archiveTimer = later(() => { archiveTimer = undefined; writeArchive(); }, 750);
+    }
+    function writeArchive() {
         if (!files || status.storage === "loading") return;
         const user = userStore && userStore.getCurrentUser && userStore.getCurrentUser();
         if (settings.noDeleteSave && (!user || !archiveRestored)) return;
@@ -776,7 +810,7 @@
                     if (!entry || typeof entry.id !== "string" || typeof entry.channelId !== "string" || !entry.message || entry.message.id !== entry.id || entry.message.channel_id !== entry.channelId || !entry.message.author) return;
                     const key = deletedKey(entry.channelId,entry.id);
                     if (deleted.size < 512 && !deleted.has(key)) {
-                        try { entry.message = Object.assign({},entry.message); deleted.set(key,{type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id,raw:entry.message,message:markDeleted(messageRecords.createMessageRecord(entry.message))}); }
+                        try { entry.message = Object.assign({},entry.message); keepDeleted(key,{type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id,raw:entry.message,message:markDeleted(messageRecords.createMessageRecord(entry.message))}); }
                         catch (_) { /* Invalid individual records do not poison the archive. */ }
                     }
                 });
@@ -800,7 +834,7 @@
     }
     function clearDeleted(remove) {
         const events = Array.from(deleted.values());
-        deleted.clear(); invalidateDeleted();
+        deleted.clear(); deletedByChannel.clear(); invalidateDeleted();
         if (remove && dispatcher) events.forEach(entry => dispatcher({type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id}));
         if (remove) persistDeleted();
     }
@@ -812,10 +846,25 @@
     function retainedMessages(orig, self, args) {
         const result = orig.apply(self,args), channelId = args[0];
         if (!enabled("noDelete") || !result) return result;
-        const records = Array.from(deleted.values()).filter(entry => entry.channelId === channelId).map(entry => entry.message);
-        if (!records.length || typeof result.merge !== "function") return result;
+        const bucket = deletedByChannel.get(channelId);
+        if (!bucket || typeof result.merge !== "function") return result;
         const cached = deletedViews.get(channelId);
         if (cached && cached.orig === result && cached.revision === deletedRevision) return cached.value;
+        const array = Array.isArray(result._array) ? result._array : null;
+        const first = array && array.length ? String(array[0].id) : null, last = array && array.length ? String(array[array.length - 1].id) : null;
+        const older = (a, b) => a.length - b.length || (a === b ? 0 : a < b ? -1 : 1);
+        // Never paste a retained message into a window that doesn't contain its position;
+        // that produced out-of-place rows above unloaded history or below an older jump.
+        const records = [];
+        bucket.forEach(entry => {
+            const id = String(entry.id);
+            if (first !== null && /^\d+$/.test(id) && /^\d+$/.test(first)) {
+                if (older(id, first) < 0 && result.hasMoreBefore === true) return;
+                if (older(id, last) > 0 && result.hasMoreAfter === true) return;
+            }
+            records.push(entry.message);
+        });
+        if (!records.length) { deletedViews.set(channelId,{orig:result,revision:deletedRevision,value:result}); return result; }
         // Discord's ChannelMessages has immutable merge()/mutate(), NOT clone().
         // clone() exists only on its internal before/after caches. Never mutate the store.
         let value = typeof result.clone === "function" ? result.clone().merge(records) : result.merge(records);
@@ -836,21 +885,19 @@
         const key = deletedKey(event.channelId, event.id);
         if (deleted.has(key)) return true;
         const message = msgStore && msgStore.getMessage(event.channelId,event.id);
-        if (!message) return false;
+        if (!retainable(message, event)) return false;
         if (deleted.size >= 512) {
-            const oldest = deleted.keys().next().value, pending = deleted.get(oldest);
-            deleted.delete(oldest);
-            orig.call(self,{type:"MESSAGE_DELETE",channelId:pending.channelId,id:pending.id});
+            const pending = dropDeleted(deleted.keys().next().value);
+            if (pending) orig.call(self,{type:"MESSAGE_DELETE",channelId:pending.channelId,id:pending.id});
         }
         let raw;
         try { raw = rawDeleted(message,event); } catch (_) { raw = null; }
-        deleted.set(key,{type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id,message:markDeleted(message),raw});
+        keepDeleted(key,{type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id,message:markDeleted(message),raw});
         invalidateDeleted(); persistDeleted();
         // Update the underlying collection too: native row diffing compares record identity.
         // The retained view supplies a new record; do not corrupt content to force a diff.
-        orig.call(self,{type:"MESSAGE_UPDATE",message:{id:event.id,channel_id:event.channelId,content:message.content || ""}});
-        if (msgStore && typeof msgStore.emitChange === "function") msgStore.emitChange();
-        return true;
+        // The store's own MESSAGE_UPDATE change re-renders; never emitChange mid-dispatch.
+        return orig.call(self,{type:"MESSAGE_UPDATE",message:{id:event.id,channel_id:event.channelId,content:message.content || ""}}) || true;
     }
     function dispatchEvent(orig, self, args) {
         const event = args[0];
@@ -858,17 +905,24 @@
         if (features.hiddenChannels) channelMetadataEvent(event);
         if (event.type === "LOGOUT") { clearDeleted(false); archiveRestored = false; clearReviewAuth(); }
         if (["CONNECTION_OPEN", "CACHE_LOADED"].includes(event.type)) Promise.resolve().then(restoreDeleted);
-        if (deleted.size && event.type !== "MESSAGE_DELETE") deletedViews.clear();
+        // Views are keyed by the store's own ChannelMessages identity, so unrelated events
+        // (typing, presence, reactions) no longer force a re-merge and re-sort of every chat.
         if (event.type === "CHANNEL_DELETE") {
-            const id = event.channel && event.channel.id || event.channelId || event.id;
-            for (const [key, entry] of deleted) if (entry.channelId === id) deleted.delete(key);
-            invalidateDeleted(); persistDeleted();
+            const id = event.channel && event.channel.id || event.channelId || event.id, bucket = deletedByChannel.get(id);
+            if (bucket) { Array.from(bucket.keys()).forEach(dropDeleted); invalidateDeleted(); persistDeleted(); }
         }
         if (!enabled("noDelete")) return orig.apply(self, args);
-        if (event.type === "MESSAGE_DELETE" && event.channelId && event.id && rememberDeleted(event, orig, self)) return;
+        if (event.type === "MESSAGE_DELETE" && event.channelId && event.id) {
+            const key = deletedKey(event.channelId, event.id);
+            // Your own deletion of a message we were already showing: remove it for real.
+            if ((event.local === true || ownDeletes.has(key)) && dropDeleted(key)) { invalidateDeleted(); persistDeleted(); return orig.apply(self, args); }
+            const kept = rememberDeleted(event, orig, self);
+            // Discord's deleteMessage chains .then() on dispatch(); always hand back a thenable.
+            if (kept) return kept === true ? Promise.resolve() : kept;
+        }
         if (event.type === "MESSAGE_DELETE_BULK" && event.channelId && Array.isArray(event.ids)) {
             const remaining = event.ids.filter(id => !rememberDeleted({channelId:event.channelId,id}, orig, self));
-            if (!remaining.length) return;
+            if (!remaining.length) return Promise.resolve();
             const next = Array.from(args); next[0] = Object.assign({}, event, {ids:remaining});
             return orig.apply(self, next);
         }
@@ -877,10 +931,17 @@
     function deleteMessage(orig, self, args) {
         const key = deletedKey(args[0], args[1]), event = deleted.get(key);
         if (event && dispatcher) {
-            deleted.delete(key); invalidateDeleted(); persistDeleted(); dispatcher({type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id});
+            dropDeleted(key); invalidateDeleted(); persistDeleted(); dispatcher({type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id});
             return Promise.resolve(); // Dismiss locally; never DELETE an already-deleted message on the server.
         }
-        return orig.apply(self, args);
+        // The gateway echo of your own deletion can arrive before the HTTP response.
+        if (ownDeletes.size >= 64) ownDeletes.delete(ownDeletes.keys().next().value);
+        ownDeletes.set(key, Date.now());
+        const forget = () => later(() => ownDeletes.delete(key), 30000, false); // bounded to 64 keys without timers
+        let result;
+        try { result = orig.apply(self, args); } catch (error) { ownDeletes.delete(key); throw error; }
+        if (result && typeof result.then === "function") result.then(forget, () => ownDeletes.delete(key)); else forget();
+        return result;
     }
     function jumpButton(orig, self, args) {
         if (React) useSettings("jumpToTop");
@@ -1213,7 +1274,7 @@
         const type = sheetComponent(tree.type, channel, props.onClose);
         return type === tree.type ? tree : el(type, tree.props);
     }
-    let pastelHash, guildMembers, presenceStore, sessionsStore, displayNameType, nativeRows, nativeRowGroup, nativeSwitchRow, nativeLock, nativeModals, oauthModal, themeContext;
+    let pastelHash, guildMembers, presenceStore, sessionsStore, displayNameType, nativeRowGroup, nativeSwitchRow, nativeLock, oauthModal;
     const platformIcons = {}, platformIconModules = {mobile:[7235,"MobilePhoneIcon"],web:[9200,"GlobeEarthIcon"],embedded:[9380,"GameControllerIcon"]};
     function DesktopIndicator(props) {
         // Independent monitor silhouette: screen, centered stem and foot, matching
@@ -1293,6 +1354,8 @@
         }
         return next;
     }
+    // Deferred retention bookkeeping; runs immediately where timers are absent.
+    function later(fn, ms, immediate) { if (typeof global.setTimeout === "function") return global.setTimeout(fn, ms); if (immediate !== false) fn(); return undefined; }
     function inspectedExport(id, key) {
         // Demand-load only a verified bundled helper at the UI action/render boundary.
         // No module scans, remote scripts, or eager initialization of unrelated screens.
@@ -1448,14 +1511,7 @@
     }
     function clearReviewAuth() {
         reviewAuthAttempt++;reviewToken="";reviewAccount=null;reviewAuthState="idle";reviewAuthError="";
-        reviewCache.clear();notify("reviewDB");
-    }
-    function reviewSettingsRow(label,onPress,disabled,subLabel) {
-        if (!nativeRows) {
-            const TableRow = inspectedExport(5854,"TableRow");
-            if (TableRow) nativeRows = {TableRow};
-        }
-        return nativeRows && el(nativeRows.TableRow,{label,onPress,disabled,subLabel});
+        reviewCache.clear();save();notify("reviewDB");
     }
     function useReviews() {
         useSettings("reviewDB");
@@ -1467,61 +1523,101 @@
             return () => {if (typeof store.removeChangeListener==="function") store.removeChangeListener(changed);};
         },[userStore]);
     }
+    function currentId() { const user=userStore && userStore.getCurrentUser(); return user && user.id; }
+    // Discord design-system parts traced in the pinned HBC98 bundle. Demand-loaded at
+    // render/action time only; no extra Metro factories are wrapped for them.
+    let reviewParts;
+    function reviewUI() {
+        if (reviewParts) return reviewParts;
+        const x=inspectedExport;
+        let tokens=null;
+        try { const t=typeof global.__r==="function" && global.__r(576); tokens=t && (t.default || t); } catch (_) {}
+        const parts={TableRow:x(5854,"TableRow"),TableRowGroup:nativeRowGroup || x(5936,"TableRowGroup"),TableSwitchRow:nativeSwitchRow || x(7477,"TableSwitchRow"),
+            Stack:x(5216,"Stack"),Card:x(7484,"default"),FormRow:x(8903,"FormRow"),FormLabel:x(8903,"FormLabel"),FormSubLabel:x(8903,"FormSubLabel"),
+            TextInput:x(6880,"TextInput"),Send:x(4732,"SendMessageIcon"),ActionSheet:x(7474,"ActionSheet"),Header:x(7426,"BottomSheetTitleHeader"),
+            Close:x(7475,"ActionSheetCloseButton"),sheets:x(4755,"default"),simpleSheet:x(7472,"showSimpleActionSheet"),clipboard:x(7469,"Clipboard"),
+            alerts:x(5141,"default"),toasts:x(4486,"default"),pushModal:x(4645,"pushModal"),popModal:x(4645,"popModal"),OAuth:oauthModal || x(9358,"default"),
+            createStyles:x(4788,"createStyles"),theme:x(4505,"useThemeContext"),colors:tokens && tokens.colors};
+        if (parts.TableRow && parts.FormRow && parts.Card) reviewParts=parts;
+        return parts;
+    }
+    function reviewToast(ui,content) {
+        try { if (ui.toasts && typeof ui.toasts.open==="function") ui.toasts.open({key:"venus-reviewdb",content}); } catch (_) {}
+    }
+    function hideReviewSheet(ui) { try { if (ui.sheets && typeof ui.sheets.hideActionSheet==="function") ui.sheets.hideActionSheet(); } catch (_) {} }
+    // Styles from Discord's createStyles, as the original plugin: semantic tokens resolve
+    // per theme. Decided once so a mounted card never changes its hook count.
+    let reviewStyleHook, reviewStylesTried=false;
+    function useReviewStyles(ui) {
+        if (!reviewStylesTried) {
+            reviewStylesTried=true;
+            const c=ui.colors;
+            if (typeof ui.createStyles==="function" && c) try {
+                reviewStyleHook=ui.createStyles({card:{backgroundColor:c.CARD_BACKGROUND_DEFAULT,borderRadius:16,padding:8},
+                    row:{backgroundColor:c.CARD_SECONDARY_BG},text:{color:c.TEXT_DEFAULT},muted:{color:c.TEXT_MUTED},
+                    placeholder:{color:c.INPUT_PLACEHOLDER_TEXT_DEFAULT}});
+            } catch (_) { reviewStyleHook=null; }
+        }
+        let styles=null;
+        if (reviewStyleHook) try { styles=reviewStyleHook(); } catch (_) {}
+        return styles || {card:{borderRadius:16,padding:8},row:{},text:{},muted:{},placeholder:{}};
+    }
     function ReviewSettings() {
         useReviews();
-        if (!React || !RN) return null;
-        const authenticated = !!reviewAuth(), pending = ["authorizing","exchanging"].includes(reviewAuthState);
-        const group = nativeRowGroup || inspectedExport(5936,"TableRowGroup") || RN.View;
-        const SwitchRow=nativeSwitchRow || inspectedExport(7477,"TableSwitchRow");
-        return el(RN.ScrollView || RN.View,{contentContainerStyle:{padding:16,gap:16}},
-            el(group,{title:"ReviewDB"},SwitchRow ? el(SwitchRow,{label:"Enable ReviewDB",value:settings.reviewDB,onValueChange:value=>setSetting("reviewDB",value),
-                subLabel:"Show community reviews on profiles and servers. Opening a list shares that ID with manti.vendicated.dev."}) :
-                reviewSettingsRow(settings.reviewDB ? "Disable ReviewDB" : "Enable ReviewDB",()=>setSetting("reviewDB",!settings.reviewDB),false)),
-            el(group,{title:"Authentication"},
-                reviewSettingsRow(authenticated ? "Authenticated with ReviewDB" : pending ? "Authenticating with ReviewDB…" : "Authenticate with ReviewDB",
-                    authenticateReviews,!enabled("reviewDB") || authenticated || pending,
-                    reviewAuthError || (reviewAuthState === "exchanging" ? "Finishing sign-in… you can close Discord's authorization screen." : authenticated ? "Signed in for this session. You can write, delete and report reviews." : "Needed to write, delete or report reviews. Lasts until Discord closes; your Discord token is never used.")),
-                reviewSettingsRow("Log out of ReviewDB",clearReviewAuth,!authenticated && !pending,"Ends this ReviewDB session on this device.")));
+        const ui=reviewUI();
+        if (!React || !RN || !ui.TableRow) return null;
+        const authenticated=!!reviewAuth(), pending=reviewAuthState==="exchanging";
+        const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
+        const toggle=(key,label,subLabel) => Switch ? el(Switch,{key,label,subLabel,value:settings[key],onValueChange:value=>setSetting(key,value)}) : null;
+        const groups=[
+            el(Group,{key:"plugin",title:"ReviewDB"},toggle("reviewDB","Enable ReviewDB","Show community reviews on profiles and servers. Viewing one shares its ID with manti.vendicated.dev.")),
+            el(Group,{key:"auth",title:"Authentication"},
+                el(ui.TableRow,{key:"login",label:pending ? "Authenticating with ReviewDB..." : authenticated ? "Authenticated with ReviewDB" : "Authenticate with ReviewDB",
+                    arrow:true,disabled:!enabled("reviewDB") || authenticated || pending,onPress:authenticateReviews,subLabel:reviewAuthError || undefined}),
+                el(ui.TableRow,{key:"logout",label:"Log out of ReviewDB",variant:authenticated ? "danger" : undefined,disabled:!authenticated,onPress:clearReviewAuth,
+                    subLabel:"Note that this does not remove ReviewDB from your Authorized Apps page in Discord."})),
+            el(Group,{key:"settings",title:"Settings"},
+                toggle("reviewThemedSend","Use profile-themed send button","Controls whether the review send button should attempt to match the user's profile colors."),
+                toggle("reviewWarning","Show Warning","Show the warning to be respectful at the top of the reviews list."))];
+        const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
+            el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
+        return RN.ScrollView ? el(RN.ScrollView,null,body) : body;
     }
     function authenticateReviews() {
-        if (!enabled("reviewDB") || ["authorizing","exchanging"].includes(reviewAuthState)) return;
-        if (!nativeModals) {
-            const pushModal = inspectedExport(4645,"pushModal"), popModal = inspectedExport(4645,"popModal");
-            if (pushModal && popModal) nativeModals = {pushModal,popModal};
+        if (!enabled("reviewDB") || reviewAuthState==="exchanging") return;
+        const ui=reviewUI();
+        if (typeof ui.pushModal!=="function" || typeof ui.popModal!=="function" || !ui.OAuth) {RN.Alert.alert("ReviewDB","Discord's authorization screen is unavailable. Reopen this page and try again.");return;}
+        const accountId=currentId();
+        if (!accountId) {RN.Alert.alert("ReviewDB","Discord account unavailable");return;}
+        const attempt=++reviewAuthAttempt, key="oauth2-authorize";
+        let closed=false;
+        reviewAuthError="";notify("reviewDB");
+        const live=() => enabled("reviewDB") && attempt===reviewAuthAttempt && currentId()===accountId;
+        const close=() => { if (closed) return; closed=true; try { ui.popModal(key); } catch (_) {} };
+        function fail(error) {
+            if (!live()) return;
+            reviewAuthState="idle";reviewAuthError=String(error && error.message || error);notify("reviewDB");
+            reviewToast(ui,"Authorization failed! "+reviewAuthError);
         }
-        const modal = oauthModal || inspectedExport(9358,"default");
-        if (!nativeModals || typeof nativeModals.pushModal!=="function" || typeof nativeModals.popModal!=="function" || !modal) {RN.Alert.alert("ReviewDB","Native OAuth is unavailable. Reopen these plugin settings and try again.");return;}
-        const current = userStore && userStore.getCurrentUser();
-        if (!current) {RN.Alert.alert("ReviewDB","Discord account unavailable");return;}
-        const accountId = current.id, attempt = ++reviewAuthAttempt, key = "venus-reviewdb-auth";
-        let exchanging = false, dismissed = false;
-        reviewAccount=accountId;reviewAuthState="authorizing";reviewAuthError="";notify("reviewDB");
-        function live() { const user = userStore && userStore.getCurrentUser(); return enabled("reviewDB") && attempt === reviewAuthAttempt && user && user.id === accountId; }
-        function close() {if (!dismissed) {dismissed=true;nativeModals.popModal(key);}}
-        nativeModals.pushModal({key,modal:{key,modal,animation:"slide-up",shouldPersistUnderModals:false,closable:true,
-            props:{clientId:"915703782174752809",redirectUri:REVIEW_API+"/auth",scopes:["identify"],responseType:"code",permissions:BigInt(0),prompt:"consent",cancelCompletesFlow:false,
-                dismissOAuthModal:()=>{
+        ui.pushModal({key,modal:{key,modal:ui.OAuth,animation:"slide-up",shouldPersistUnderModals:false,closable:true,props:{
+            clientId:"915703782174752809",redirectUri:REVIEW_API+"/auth",scopes:["identify"],responseType:"code",permissions:BigInt(0),cancelCompletesFlow:false,
+            // Traced in 347.12 (useOAuth2AuthorizeForm, fn124513): after Authorize the form calls
+            // dismissOAuthModal FIRST, waits 100 ms, and only THEN calls callback({location}).
+            // Dismissal is never a cancellation; treating it as one discarded every sign-in.
+            dismissOAuthModal:close,
+            callback:result => {
+                close();
+                if (!live() || !result || result.canceled===true) return;
+                let url;
+                try { url=authorizationUrl(result); } catch (error) { fail(error); return; }
+                reviewAuthState="exchanging";notify("reviewDB");
+                reviewJson(url,{method:"GET"},"ReviewDB took too long to authorize. Try again.").then(auth => {
                     if (!live()) return;
-                    // HBC98 success generator #124513 invokes callback without awaiting
-                    // its Promise, then dismissOAuthModal. That is completion, NOT cancel.
-                    if (!exchanging) {reviewAuthAttempt++;reviewAuthState="idle";notify("reviewDB");}
-                    close();
-                },callback:async result => {
-                    if (!live()) return;
-                    if (result && result.canceled === true) {reviewAuthAttempt++;reviewAuthState="idle";reviewAuthError="";close();notify("reviewDB");return;}
-                    if (exchanging) return;
-                    try {
-                        const url = authorizationUrl(result);
-                        exchanging=true;reviewAuthState="exchanging";reviewAuthError="";notify("reviewDB");
-                        const auth = await reviewJson(url,{method:"GET"},"Authorization timed out");
-                        if (!live()) return;
-                        if (auth.success !== true || typeof auth.token !== "string" || !auth.token.trim() || auth.token.length>8192) throw new Error("ReviewDB did not return an authorization token. Try signing in again from plugin settings.");
-                        reviewToken=auth.token;reviewAccount=accountId;reviewAuthState="authenticated";reviewAuthAttempt++;
-                        close();notify("reviewDB");
-                    } catch (error) {
-                        if (live()) {reviewAuthState="idle";reviewAuthError=String(error.message || error);notify("reviewDB");RN.Alert.alert("ReviewDB authentication",reviewAuthError);}
-                    } finally {exchanging=false;}
-                }}}});
+                    if (auth.success!==true || typeof auth.token!=="string" || !auth.token.trim() || auth.token.length>8192) throw new Error(auth.message || "ReviewDB did not return a token");
+                    reviewToken=auth.token;reviewAccount=accountId;reviewAuthState="idle";reviewAuthError="";reviewCache.clear();
+                    save();notify("reviewDB");reviewToast(ui,"Successfully authenticated with ReviewDB");
+                }).catch(fail);
+            }}}});
     }
     function reviewsFor(userId, refresh) {
         if (!/^\d{17,20}$/.test(userId)) return Promise.reject(new Error("Invalid profile ID"));
@@ -1530,148 +1626,150 @@
         if (reviewCache.size>=32) reviewCache.delete(reviewCache.keys().next().value);
         const promise=reviewRequest("/users/"+userId+"/reviews").then(result=>{
             if (!Array.isArray(result.reviews)) throw new Error("Invalid review list");
-            const list=result.reviews.slice(0,100).filter(review=>review && review.sender && typeof review.comment==="string");
-            // The service reports the true total; rows are capped at 100 locally.
-            const count=Number.isInteger(result.reviewCount) && result.reviewCount>=0 ? result.reviewCount : list.filter(review=>review.type!==3).length;
-            return {reviews:list,count};
+            return result.reviews.slice(0,100).filter(review=>review && review.sender && typeof review.comment==="string");
         }).catch(error=>{reviewCache.delete(userId);throw error;});
         reviewCache.set(userId,{promise,expires:Date.now()+60000});return promise;
     }
     function reviewAuth() {
-        const current=userStore && userStore.getCurrentUser();
-        if (reviewAccount && (!current || current.id!==reviewAccount)) {
-            // This may run during React rendering; do not synchronously set state
-            // in other mounted panels. Store subscriptions handle their re-render.
-            reviewAuthAttempt++;reviewToken="";reviewAccount=null;reviewAuthState="idle";reviewAuthError="";reviewCache.clear();
+        const current=currentId();
+        // Only an actual account switch invalidates the token; an unloaded store at startup does not.
+        if (reviewToken && reviewAccount && current && current!==reviewAccount) {
+            reviewAuthAttempt++;reviewToken="";reviewAccount=null;reviewAuthState="idle";reviewCache.clear();save();
         }
         return reviewToken;
     }
-    // Discord design-system components traced in the pinned HBC98 bundle; all are
-    // demand-loaded at render time, so no extra Metro factories are wrapped.
-    function reviewUI() {
-        return {Text:inspectedExport(4784,"Text"), Card:inspectedExport(5856,"Card"), Stack:inspectedExport(5216,"Stack"),
-            Button:inspectedExport(5218,"Button"), TextArea:inspectedExport(7362,"TextArea"), alerts:inspectedExport(5141,"default"),
-            toasts:inspectedExport(4486,"default")};
+    let reviewAdminsLoaded=false;
+    const reviewAdmins=new Set();
+    function loadReviewAdmins() {
+        if (reviewAdminsLoaded || typeof global.fetch!=="function") return;
+        reviewAdminsLoaded=true;
+        reviewJson("https://manti.vendicated.dev/admins",{method:"GET"}).then(list => {
+            if (Array.isArray(list)) list.forEach(id => { if (typeof id==="string") reviewAdmins.add(id); });
+        },() => {reviewAdminsLoaded=false;});
     }
-    function reviewToast(ui,content) {
-        try { if (ui.toasts && typeof ui.toasts.open === "function") {ui.toasts.open({key:"venus-reviewdb",content});return;} } catch (_) {}
-    }
-    function reviewConfirm(ui,title,body,confirmText,onConfirm,destructive) {
-        // Native AlertModal (same as Discord's own confirmations); platform alert as fallback.
-        if (ui.alerts && typeof ui.alerts.show === "function") {
-            try {ui.alerts.show({title,body,confirmText,cancelText:"Cancel",onConfirm});return;} catch (_) {}
+    const reviewImage=uri => typeof uri==="string" && /^https:\/\//.test(uri);
+    function reviewActions(review, owner, ui, refetch) {
+        const system=review.type===3, me=currentId(), sender=review.sender || {};
+        function confirm(title, content, onConfirm) {
+            if (ui.alerts && typeof ui.alerts.show==="function") try { ui.alerts.show({title,body:content,confirmText:"Yes",cancelText:"No",onConfirm}); return; } catch (_) {}
+            RN.Alert.alert(title,content,[{text:"No",style:"cancel"},{text:"Yes",style:"destructive",onPress:onConfirm}]);
         }
-        RN.Alert.alert(title,body,[{text:"Cancel",style:"cancel"},{text:confirmText,style:destructive ? "destructive" : "default",onPress:onConfirm}]);
+        function mutate(path, method, body, done) {
+            reviewRequest(path,method,body).then(result => {reviewCache.delete(owner);refetch();reviewToast(ui,result && result.message || done);},
+                error => reviewToast(ui,String(error && error.message || error)));
+        }
+        const options=[{label:"Copy Text",onPress:() => {
+            try { (ui.clipboard || RN.Clipboard).setString(review.comment); } catch (_) {}
+            reviewToast(ui,"Copied Review Text");
+        }}];
+        if (reviewAuth() && !system) {
+            if (sender.discordID===me || owner===me || reviewAdmins.has(me)) options.push({label:"Delete Review",isDestructive:true,
+                onPress:() => confirm("Delete Review","Are you sure you want to delete this review?",() => mutate("/users/"+owner+"/reviews","DELETE",{reviewid:review.id},"Review deleted"))});
+            options.push({label:"Report Review",isDestructive:true,
+                onPress:() => confirm("Report Review","Are you sure you want to report this review?",() => mutate("/reports","PUT",{reviewid:review.id},"Review reported"))});
+        }
+        const title=system ? "ReviewDB System Message" : "Review by "+String(sender.username || "Unknown");
+        if (typeof ui.simpleSheet==="function") try {
+            ui.simpleSheet({key:"ReviewOverflow",header:{title,onClose:() => hideReviewSheet(ui)},options});return;
+        } catch (_) {}
+        RN.Alert.alert(title,undefined,options.map(option => ({text:option.label,style:option.isDestructive ? "destructive" : "default",onPress:option.onPress}))
+            .concat([{text:"Cancel",style:"cancel"}]));
     }
-    function reviewDate(review) {
-        if (review.type === 3 || !Number.isFinite(review.timestamp) || review.timestamp <= 0) return null;
-        const date = new Date(review.timestamp*1000);
-        if (!Number.isFinite(date.getTime())) return null;
-        try {return date.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});} catch (_) {return date.toLocaleDateString();}
+    function ReviewRow(props) {
+        const review=props.review, ui=props.ui, styles=props.styles, sender=review.sender;
+        const timestamp=review.type!==3 && Number.isFinite(review.timestamp) ? new Date(review.timestamp*1000).toLocaleDateString() : "";
+        const badges=(Array.isArray(sender.badges) ? sender.badges.slice(0,8) : []).filter(badge => badge && reviewImage(badge.icon));
+        const label=el(RN.View,{style:{flexDirection:"row",alignItems:"center"}},
+            el(ui.FormLabel,{text:String(sender.username || "Unknown"),style:styles.text}),
+            el(RN.View,{style:{flexDirection:"row",alignItems:"center"}},badges.map((badge,index) =>
+                el(RN.Pressable,{key:String(index),style:{marginLeft:4},onPress:() => reviewToast(ui,String(badge.name || ""))},
+                    el(RN.Image,{source:{uri:badge.icon,width:16,height:16},style:{width:16,height:16}})))),
+            el(ui.FormLabel,{text:timestamp,style:[styles.muted,{marginLeft:5}]}));
+        return el(ui.TableRowGroup || RN.View,{style:[styles.row]},
+            el(ui.FormRow,{style:[styles.row],label,
+                subLabel:el(ui.FormSubLabel,{text:review.comment,style:styles.text}),
+                leading:reviewImage(sender.profilePhoto) ? el(RN.Image,{style:{height:36,width:36,borderRadius:18},source:{uri:sender.profilePhoto}}) : undefined,
+                onLongPress:() => reviewActions(review,props.owner,ui,props.refetch)}));
     }
-    function ReviewCard(props) {
-        const review = props.review, sender = review.sender, ui = props.ui, Text = ui.Text;
-        const image = uri => typeof uri === "string" && /^https:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net|manti\.vendicated\.dev)\//.test(uri);
-        const date = reviewDate(review), system = review.type === 3;
-        const badges = (Array.isArray(sender.badges) ? sender.badges.slice(0,8) : []).filter(badge => badge && image(badge.icon));
-        const actions = props.actions.filter(Boolean);
-        const body = el(RN.View,{style:{flexDirection:"row",gap:12}},
-            RN.Image && image(sender.profilePhoto) ? el(RN.Image,{source:{uri:sender.profilePhoto},style:{width:40,height:40,borderRadius:20},accessibilityIgnoresInvertColors:true}) : null,
-            el(RN.View,{style:{flex:1,gap:4}},
-                el(RN.View,{style:{flexDirection:"row",alignItems:"center",gap:6,flexWrap:"wrap"}},
-                    el(Text,{variant:"text-md/semibold",color:system ? "text-brand" : "text-strong"},String(sender.username || "Unknown")),
-                    badges.map((badge,index) => el(RN.Image,{key:String(index),source:{uri:badge.icon},style:{width:16,height:16},accessibilityLabel:String(badge.name || "Reviewer badge")})),
-                    date ? el(Text,{variant:"text-xs/medium",color:"text-muted"},date) : null),
-                el(Text,{variant:"text-sm/medium",color:"text-default",selectable:true},review.comment.slice(0,4000)),
-                actions.length ? el(RN.View,{style:{flexDirection:"row",gap:8,marginTop:6}},actions) : null));
-        return ui.Card ? el(ui.Card,{style:{marginBottom:8}},body) : el(RN.View,{style:{marginBottom:8,padding:12}},body);
+    function ReviewInput(props) {
+        const ui=props.ui, styles=props.styles;
+        const [text,setText]=React.useState(""), [busy,setBusy]=React.useState(false);
+        const theme=typeof ui.theme==="function" ? ui.theme() : null;
+        const authenticated=!!reviewAuth(), canSend=authenticated && !busy && text.length>0;
+        const placeholder=!authenticated ? "You must be authenticated to add a review." : "Tap to "+(props.shouldEdit ? "edit your" : "add a")+" review";
+        function send() {
+            if (!canSend || !text.trim()) return;
+            setBusy(true);
+            reviewRequest("/users/"+props.userId+"/reviews","PUT",{comment:text.trim()}).then(result => {
+                setText("");props.refetch();reviewToast(ui,result && result.message || "Review posted");
+            },error => reviewToast(ui,String(error && error.message || error))).then(() => setBusy(false));
+        }
+        const input=ui.TextInput ?
+            el(ui.TextInput,{style:[{flex:1,fontSize:16},styles.text],isDisabled:!authenticated,placeholder,placeholderTextColor:styles.placeholder.color,
+                value:text,onChange:setText,maxLength:1000}) :
+            el(RN.TextInput,{style:[{flex:1,fontSize:16},styles.text],editable:authenticated,placeholder,placeholderTextColor:styles.placeholder.color,
+                value:text,onChangeText:setText,maxLength:1000});
+        const color=settings.reviewThemedSend && theme && theme.primaryColor || "#5865f2";
+        return el(RN.View,{style:{flexDirection:"row",alignItems:"center",gap:8,paddingHorizontal:8,paddingVertical:4}},
+            el(RN.View,{style:{flex:1}},input),
+            el(RN.Pressable,{accessibilityRole:"button",accessibilityLabel:props.shouldEdit ? "Update review" : "Send review",disabled:!canSend,onPress:send,
+                style:{minHeight:40,minWidth:40,borderRadius:999,alignItems:"center",justifyContent:"center",backgroundColor:color,opacity:canSend ? 1 : 0.25}},
+                ui.Send ? el(ui.Send,{size:"sm",color:"#ffffff"}) : el(RN.Text,{style:{color:"#ffffff",fontWeight:"700"}},">")));
     }
-    function ReviewsPanel(props) {
+    function ReviewSection(props) {
         useReviews();
-        const [open,setOpen]=React.useState(false), [reviews,setReviews]=React.useState([]), [error,setError]=React.useState(""),
-            [busy,setBusy]=React.useState(false), [comment,setComment]=React.useState(""), [generation,reload]=React.useState(0), [count,setCount]=React.useState(null);
-        React.useEffect(()=>{
+        const ui=reviewUI(), styles=useReviewStyles(ui), userId=props.userId;
+        const [reviews,setReviews]=React.useState(null), [generation,reload]=React.useState(0);
+        const valid=typeof userId==="string" && /^\d{17,20}$/.test(userId);
+        React.useEffect(() => {
             let live=true;
-            if (!open || !enabled("reviewDB")) return;
-            setBusy(true);setError("");
-            reviewsFor(props.userId,generation>0).then(result=>{if(live){setReviews(result.reviews);setCount(result.count);}},reason=>{if(live)setError(String(reason.message || reason));})
-                .finally(()=>{if(live)setBusy(false);});
-            return ()=>{live=false;};
-        },[open,props.userId,generation,settings.reviewDB]);
-        if (enabled("reviewDB") && !nativeRows) {
-            const TableRow = inspectedExport(5854,"TableRow");
-            if (TableRow) nativeRows = {TableRow};
-        }
-        if (!enabled("reviewDB") || !RN || !nativeRows || !nativeRows.TableRow) return null;
-        const ui = reviewUI(), signedIn = !!reviewAuth();
-        const current = userStore && userStore.getCurrentUser(), me = current && current.id;
-        function mutate(path,method,body,done) {
-            if (busy || !reviewAuth()) return;
-            setBusy(true);setError("");
-            const account = reviewAccount, token = reviewToken;
-            const live = () => enabled("reviewDB") && reviewAuth() === token && reviewAccount === account;
-            reviewRequest(path,method,body).then(result=>{if(live()){reviewCache.delete(props.userId);reload(n=>n+1);reviewToast(ui,result && result.message || done);if(method==="PUT" && path!=="/reports")setComment("");}},
-                reason=>{if(live())setError(String(reason.message || reason));})
-                .finally(()=>{if(live())setBusy(false);});
-        }
-        const header = el(nativeRows.TableRow,{label:props.server ? "Server reviews" : "Reviews",
-            subLabel:open && count != null ? count+(count===1 ? " review" : " reviews")+" from ReviewDB" : "Community reviews from ReviewDB",
-            arrow:true,onPress:()=>setOpen(value=>!value)});
-        if (!open) return el(RN.View,{key:"venus-reviews",style:{marginVertical:8}},header);
-        if (!ui.Text) return el(RN.View,{key:"venus-reviews",style:{marginVertical:8}},header);
-        const Text = ui.Text, Button = ui.Button;
-        function action(text,onPress,variant) {
-            return Button ? el(Button,{key:text,text,size:"sm",variant:variant || "secondary",disabled:busy,onPress}) :
-                el(nativeRows.TableRow,{key:text,label:text,onPress,disabled:busy});
-        }
-        const mine = reviews.find(review => review.type !== 3 && review.sender && review.sender.discordID === me);
-        const list = reviews.map((review,index)=>{
-            const real = signedIn && review.type !== 3 && review.id != null;
-            const author = review.sender.discordID === me;
-            // Like Vencord: authors and the profile owner can delete; you can't report your own review.
-            const canDelete = real && (author || (!props.server && props.userId === me));
-            return el(ReviewCard,{key:String(review.id == null ? index : review.id),review,ui,actions:[
-                canDelete ? action("Delete",()=>reviewConfirm(ui,"Delete review?",author ? "This removes your review from ReviewDB." : "This removes the review from your profile.","Delete",
-                    ()=>mutate("/users/"+props.userId+"/reviews","DELETE",{reviewid:review.id},"Review deleted"),true),"secondary") : null,
-                real && !author ? action("Report",()=>reviewConfirm(ui,"Report review?","Send this review to ReviewDB moderators?","Report",
-                    ()=>mutate("/reports","PUT",{reviewid:review.id},"Review reported"),true),"secondary") : null]});
-        });
-        const Input = ui.TextArea;
-        const placeholder = mine ? "Update your review" : "Write a review";
-        const composer = !signedIn ?
-            el(Text,{variant:"text-sm/medium",color:"text-muted"},"Sign in from Settings → Venus → Plugins → ReviewDB to write reviews.") :
-            el(RN.View,{style:{gap:8}},
-                Input ? el(Input,{label:mine ? "Your review" : "Add a review",value:comment,onChange:setComment,maxLength:1000,placeholder,disabled:busy}) :
-                    el(RN.TextInput,{value:comment,onChangeText:setComment,maxLength:1000,multiline:true,editable:!busy,placeholder,style:{minHeight:48,padding:12}}),
-                Button ? el(Button,{text:mine ? "Update review" : "Post review",variant:"primary",size:"md",loading:busy,disabled:busy || !comment.trim(),
-                    onPress:()=>{const text=comment.trim();if(text)mutate("/users/"+props.userId+"/reviews","PUT",{comment:text},mine ? "Review updated" : "Review posted");}}) :
-                    el(nativeRows.TableRow,{label:mine ? "Update review" : "Post review",disabled:busy || !comment.trim(),onPress:()=>{const text=comment.trim();if(text)mutate("/users/"+props.userId+"/reviews","PUT",{comment:text},"Review posted");}}));
-        return el(RN.View,{key:"venus-reviews",style:{marginVertical:8,gap:8}},header,
-            el(RN.View,{style:{gap:8}},
-                el(Text,{variant:"text-xs/medium",color:"text-muted"},"Community reviews, not verified facts. Opening this list shares this "+(props.server ? "server" : "profile")+" ID with ReviewDB."),
-                error ? el(Text,{variant:"text-sm/medium",color:"text-feedback-critical",accessibilityRole:"alert"},error) : null,
-                busy && !reviews.length ? el(RN.ActivityIndicator,null) : null,
-                !busy && !error && !reviews.length ? el(Text,{variant:"text-sm/medium",color:"text-muted"},"No reviews yet. Be the first to leave one.") : null,
-                el(RN.ScrollView,{style:{maxHeight:420},nestedScrollEnabled:true},list),
-                composer,
-                Button ? el(Button,{text:"Refresh",variant:"tertiary",size:"sm",disabled:busy,onPress:()=>reload(n=>n+1)}) : null));
+            if (!enabled("reviewDB") || !valid) return;
+            loadReviewAdmins();
+            reviewsFor(userId,generation>0).then(list => {if (live) setReviews(list);},() => {if (live) setReviews(null);});
+            return () => {live=false;};
+        },[userId,generation,settings.reviewDB]);
+        if (!enabled("reviewDB") || !valid || !RN || !ui.Card || !ui.FormRow) return null;
+        const list=reviews || [], me=currentId();
+        const shown=settings.reviewWarning ? list : list.filter(review => review.type!==3);
+        const refetch=() => {reviewCache.delete(userId);reload(n => n+1);};
+        return el(RN.View,{style:[styles.card]},
+            el(ui.Card,{title:"Reviews"},
+                el(RN.View,{style:{gap:8}},shown.map((review,index) => el(ReviewRow,{key:(review.id==null ? "" : String(review.id))+":"+index,review,owner:userId,ui,styles,refetch}))),
+                el(ReviewInput,{userId,ui,styles,refetch,shouldEdit:list.some(review => review.type!==3 && review.sender.discordID===me)})));
     }
-    function reviewAbout(orig,self,args) {
-        if (React) useReviews();
-        const tree=orig.apply(self,args), props=args[0] || {}, userId=props.userId;
-        if (!enabled("reviewDB") || !React || !RN || !/^\d{17,20}$/.test(userId) || typeof props.pendingBio === "string") return tree;
-        // HBC98 module 11502 is shared by normal, bot, compact and About-tab
-        // profiles. The parent mounts it in the actual card stack, not the name
-        // heading. Hooking the parent heading missed deferred/tabbed content.
-        return el(RN.View,null,tree,el(ReviewsPanel,{key:"venus-reviews:"+userId,userId}));
+    function ReviewSheet(props) {
+        const ui=reviewUI();
+        return el(ui.ActionSheet,{header:ui.Header ? el(ui.Header,{title:"Reviews",trailing:ui.Close ? el(ui.Close,{onPress:() => hideReviewSheet(ui)}) : undefined}) : undefined},
+            el(RN.View,null,el(RN.ScrollView,{style:{gap:12,marginBottom:12}},el(ReviewSection,{userId:props.userId}))));
     }
+    function openReviewSheet(userId) {
+        const ui=reviewUI();
+        if (!ui.ActionSheet || !ui.sheets || typeof ui.sheets.openLazy!=="function") return;
+        ui.sheets.openLazy(Promise.resolve({default:ReviewSheet}),"ActionSheet",{userId});
+    }
+    // Profiles: the original appends ReviewSection as the LAST card of the profile card stack
+    // (after the note). In 347.12 UserProfileNote (13373) is that last card in the normal, bot,
+    // tabbed and You-screen layouts, so reviews render directly beneath it.
+    function reviewNote(orig,self,args) {
+        const tree=orig.apply(self,args), userId=args[0] && args[0].userId;
+        if (!React || !RN || !features.reviewDB || typeof userId!=="string") return tree;
+        return el(React.Fragment,null,tree,el(ReviewSection,{key:"venus-reviews:"+userId,userId}));
+    }
+    // Servers: like the original, the guild sheet's progress slot becomes a single "Reviews"
+    // row that opens the reviews in an action sheet. Rendered as a child so hook order is stable.
     function reviewGuild(orig,self,args) {
-        if (React) useReviews();
-        const tree=orig.apply(self,args), guild=args[0] && args[0].guild;
-        if (!enabled("reviewDB") || !React || !RN || !guild || !/^\d{17,20}$/.test(guild.id)) return tree;
-        // Native GuildActionSheetProgress can be null for ordinary members.
-        // Preserve any onboarding/progress card, then add reviews for the guild ID.
-        return el(RN.View,null,tree,el(ReviewsPanel,{key:guild.id,userId:guild.id,server:true}));
+        if (React) useSettings("reviewDB");
+        const props=args[0] || {}, guild=props.guild, ui=reviewUI();
+        if (!enabled("reviewDB") || !React || !RN || !guild || !/^\d{17,20}$/.test(guild.id) || !ui.TableRow) return React ? el(orig,props) : orig.apply(self,args);
+        return el(ui.TableRowGroup || RN.View,null,el(ui.TableRow,{label:"Reviews",onPress:() => openReviewSheet(guild.id)}));
+    }
+    // User long-press context menu gets a "Reviews" item, as in the original plugin.
+    function reviewMenu(orig,self,args) {
+        const props=args[0], menu=props && props.menu, id=menu && menu.key;
+        if (!enabled("reviewDB") || !menu || !Array.isArray(menu.items) || menu.items.length!==3 || typeof id!=="string" || !/^\d{17,20}$/.test(id)) return orig.apply(self,args);
+        const next=Array.from(args);
+        next[0]=Object.assign({},props,{menu:Object.assign({},menu,{items:menu.items.concat([{label:"Reviews",action:() => openReviewSheet(id)}])})});
+        return orig.apply(self,next);
     }
     function cloneWith(object, key, value) {
         // ES module markers, React tags, symbols and lazy getters are not necessarily enumerable.
@@ -1729,9 +1827,7 @@
             return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),displayNameType,platformName,platformWrappers));
         }
         if (features.platformIndicators && [11159,13603,16377,9970].includes(id)) return hookComponent(exports,platformPlacement);
-        if (features.reviewDB && id === 4645) nativeModals=exports;
         if (features.reviewDB && id === 9358) oauthModal=exports.default;
-        if (features.reviewDB && id === 5854) nativeRows=exports;
         if (features.reviewDB && id === 5936) nativeRowGroup=exports.TableRowGroup;
         if (features.reviewDB && id === 7477) nativeSwitchRow=exports.TableSwitchRow;
         if (features.hiddenChannels && id === 5345) nativeLock=exports.LockIcon;
@@ -1741,8 +1837,8 @@
             exports = hookComponent(exports,hiddenInfo);
             return hookExport(exports, "ChannelInfo", hiddenInfo);
         }
-        if (features.reviewDB && id === 4505) themeContext=exports;
-        if (features.reviewDB && id === 11502) return hookComponent(exports,reviewAbout);
+        if (features.reviewDB && id === 13373) return hookComponent(exports,reviewNote);
+        if (features.reviewDB && id === 14479) return hookExport(exports,"ContextMenuPopout",reviewMenu);
 
         if (features.reviewDB && id === 14273) return hookComponent(exports,reviewGuild);
         if (id === 14892) exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG);

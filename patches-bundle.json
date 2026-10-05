@@ -1,8 +1,8 @@
 {
-  "created_at": "2026-10-05T01:30:36.990760+00:00",
-  "description": "Discord 347.12: ReviewDB redesigned with native Discord cards, buttons and text field; token moved to the Authorization header; Vencord-style delete/report permissions.",
-  "download_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/download/v1.2.5/patches-1.2.5.mpp",
-  "page_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/tag/v1.2.5",
+  "created_at": "2026-10-05T04:10:08.374332+00:00",
+  "description": "Discord 347.12: ReviewDB sign-in fixed (no more Authorize loop) and UI/placement matched to the original plugin; NoDelete retention bugs fixed and faster.",
+  "download_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/download/v1.2.6/patches-1.2.6.mpp",
+  "page_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/tag/v1.2.6",
   "signature_download_url": "",
-  "version": "1.2.5"
+  "version": "1.2.6"
 }
