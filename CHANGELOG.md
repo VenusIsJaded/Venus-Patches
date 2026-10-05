@@ -2,6 +2,21 @@
 
 All releases target **Discord 347.12 - Stable (347012)**. Patch the original APKM each time.
 
+## 1.2.6 — ReviewDB sign-in and NoDelete fixes
+
+### ReviewDB
+- **Sign-in works.** Tapping **Authorize** used to send you back to "Authenticate with ReviewDB" every time. Discord 347.12 closes the authorization screen *before* it hands over the code, and the plugin treated that as a cancel. It now waits for the code, exchanges it, and shows a "Successfully authenticated" toast.
+- **Stays signed in.** The ReviewDB sign-in is saved and survives restarts and turning the plugin off, like the original. **Log out of ReviewDB** removes it.
+- **Original layout and placement.** Profiles show a **Reviews** card directly under the note, with avatar, name, badges and date on each review and the text field and round send button at the bottom. The server sheet shows a single **Reviews** row that opens the reviews in a sheet, and long-pressing a user adds a **Reviews** menu entry.
+- **Original actions.** Long-press a review for **Copy Text**, **Delete Review** and **Report Review**. Admins, review authors and the profile owner can delete.
+- **Original settings.** The settings page has Authentication and Settings groups, with **Use profile-themed send button** and **Show Warning**.
+
+### NoDelete
+- **Your own deletions disappear again.** Deleting your own message, a failed or unsent message, or an "Only you can see this" message no longer leaves it stuck in red.
+- **No more errors after deleting.** Discord's delete action no longer gets an empty result when a deletion is kept.
+- **Rows stay in order.** Kept messages no longer appear above history that hasn't loaded yet, or after an older jump.
+- **Faster.** Kept messages are indexed per channel, chats aren't re-merged on every unrelated event, and saving the archive is batched instead of rewritten once per deletion.
+
 ## 1.2.5 — ReviewDB redesign
 
 - **Native look.** Reviews now use Discord's own components: Card, Text, Button, TextArea and toasts. They follow light, dark and AMOLED themes with no hardcoded colors.

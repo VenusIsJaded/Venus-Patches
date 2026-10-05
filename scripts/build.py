@@ -199,7 +199,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: ReviewDB redesigned with native Discord cards, buttons and text field; token moved to the Authorization header; Vencord-style delete/report permissions.",
+        "description": "Discord 347.12: ReviewDB sign-in fixed (no more Authorize loop) and UI/placement matched to the original plugin; NoDelete retention bugs fixed and faster.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",
