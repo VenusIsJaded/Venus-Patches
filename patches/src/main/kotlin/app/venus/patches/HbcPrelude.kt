@@ -13,7 +13,7 @@ internal object HbcPrelude {
         .joinToString("") { "%02x".format(it) }
 
     fun inject(file: File, source: String): Result {
-        require(source.length in 1..100000) { "Unexpected bootstrap size" }
+        require(source.length in 1..120000) { "Unexpected bootstrap size" }
         var result: Result
         RandomAccessFile(file, "rw").use { raf ->
             fun intAt(offset: Long): Int { raf.seek(offset); return Integer.reverseBytes(raf.readInt()) }

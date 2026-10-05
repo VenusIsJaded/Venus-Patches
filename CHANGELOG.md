@@ -2,6 +2,27 @@
 
 All releases target **Discord 347.12 - Stable (347012)**. Patch the original APKM each time.
 
+## 1.2.9 — NoDelete, PlatformIndicators and ReviewDB fixes
+
+### NoDelete
+- **Your own deletions are kept again.** Messages you delete now keep the same red outline as everyone else's, like the original plugin. 1.2.6 deliberately dropped them; that change is reverted. Failed or unsent messages and "Only you can see this" messages still disappear.
+- **New NoDelete settings page** (Settings → Venus → Plugins → NoDelete) with three options:
+  - **Enable NoDelete**.
+  - **Save permanently.** On: kept messages survive restarts, stored locally for your account. Off: they are kept until Discord restarts, and the saved archive is erased.
+  - **Maximum saved messages.** Type a number from 1 to 5000 (default 512). Lowering it removes the oldest kept messages right away.
+- The local archive cap is raised to 32 MiB to fit larger maximums.
+
+### PlatformIndicators
+- **Original icons.** Uses the original plugin's tinted desktop, mobile, web, console and VR glyphs. The hand-drawn desktop monitor is gone.
+- **More places.** Adds icons to the users in a profile's voice-channel list and shows VR clients. Clients appear in the order Discord reports them.
+- **Original settings.** Show icons on the DM top bar, the users and DMs list, and user profiles. **Hide mobile status from the normal indicator** (on by default) shows the plain status dot instead of Discord's phone badge on avatars.
+
+### ReviewDB
+- **Server Reviews opens.** Long-pressing a server and tapping **Reviews** did nothing. Discord 347.12's sheet opener called our reviews loader as a function and failed silently. Reviews now open in a sheet stacked above the server sheet.
+
+### Build
+- Raised the prelude size limit (now 118,000 build / 120,000 injector) to fit the bundled icons. No Morphe Patcher run; validated against the original APK's bundle.
+
 ## 1.2.8 — Deeper privacy audit
 
 - **Fixed a cached/OTA bundle bypass:** analytics, crash-reporting and telemetry patches now independently pin Discord's packaged Hermes bundle. They still do not require Venus settings. A shared dependency prevents duplicate loader hooks when settings and privacy are combined.
