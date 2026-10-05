@@ -840,7 +840,13 @@
     function markDeleted(message) {
         // Identity refresh only. Deletion styling belongs to row presentation, never
         // content: copying, replies, mentions, links and archives retain the original.
-        return Object.create(Object.getPrototypeOf(message),Object.getOwnPropertyDescriptors(message));
+        const copy = Object.create(Object.getPrototypeOf(message),Object.getOwnPropertyDescriptors(message));
+        // ChatManager.determineChangeType (HBC fn54452) deep-compares old and new records with
+        // objEquiv (enumerable keys) and returns NOOP for equal ones, so an identical copy never
+        // re-rendered the row until the chat was reopened. One enumerable marker key makes the
+        // retained record differ and the red outline appear immediately; content is untouched.
+        try { Object.defineProperty(copy,"venusDeleted",{value:true,enumerable:true,configurable:true}); } catch (_) {}
+        return copy;
     }
     function rawDeleted(message, event) {
         // Retain content/metadata only; no tokens, downloaded attachments or remote fetches.
@@ -1427,6 +1433,52 @@
         if (!enabled("platformIndicators") || !settings.piProfile || !React || !RN || !tree || !user) return tree;
         return el(RN.View,{style:{flexDirection:"row",flexWrap:"wrap",gap:6,alignItems:"center"}},tree,el(PlatformBadges,{userId:user.id}));
     }
+    // DM header (HBC fn58674 PrivateChannelHeader) renders its name inside a separate
+    // ChannelTitle component (fn58681, props title/accessibleTitle/userId), so the badge
+    // goes inside ChannelTitle's own output: right after the name, before the arrow.
+    const platformTitleTypes = new WeakMap();
+    function platformHeader(orig,self,args) {
+        if (React) useSettings("platformIndicators");
+        const tree = orig.apply(self,args);
+        if (!enabled("platformIndicators") || !settings.piDmHeader || !React || !RN || !tree) return tree;
+        let swapped = false;
+        function visit(node,depth) {
+            if (!node || depth > 18 || typeof node !== "object") return node;
+            if (Array.isArray(node)) { const next = node.map(child => visit(child,depth+1)); return next.some((c,i)=>c!==node[i]) ? next : node; }
+            if (!node.props) return node;
+            const p = node.props;
+            if (!swapped && typeof node.type === "function" && "accessibleTitle" in p && "title" in p && typeof p.userId === "string") {
+                swapped = true;
+                let type = platformTitleTypes.get(node.type);
+                if (!type) { const target = node.type; type = function () { return platformPlacement(target,this,arguments,"piDmHeader"); }; platformTitleTypes.set(target,type); }
+                return el(type,Object.assign({},p,{key:node.key}));
+            }
+            const child = visit(p.children,depth+1);
+            return child === p.children ? node : React.cloneElement(node,{children:child});
+        }
+        const next = visit(tree,0);
+        return swapped ? next : platformPlacement(() => tree,self,args,"piDmHeader");
+    }
+    // DM list rows (MessagesItemChannelContent, fn65485): the name shares its line with the
+    // server tag, so icons go in the right-side channelIcons row beside the muted/favorite
+    // icon (props muted/selected/blocked), above the timestamp.
+    function platformDmRow(orig,self,args) {
+        if (React) useSettings("platformIndicators");
+        const tree = orig.apply(self,args), channel = args[0] && args[0].channel;
+        if (!enabled("platformIndicators") || !settings.piUserList || !React || !RN || !tree || !channel) return tree;
+        const userId = channel.type === 1 && Array.isArray(channel.recipients) && channel.recipients.length === 1 && channel.recipients[0];
+        if (!userId) return tree;
+        const isIcon = child => child && child.props && "muted" in child.props && "selected" in child.props && "blocked" in child.props;
+        let added = false;
+        const next = cloneTree(tree,(node,p) => {
+            if (added || node.type === RN.Text) return p;
+            const children = Array.isArray(p.children) ? p.children : [p.children];
+            if (!children.some(isIcon)) return p;
+            added = true;
+            return Object.assign({},p,{children:children.concat(el(RN.View,{key:"venus-platform-dm",style:{marginRight:4}},el(PlatformBadges,{userId})))});
+        },0);
+        return added ? next : platformPlacement(() => tree,self,args,"piUserList");
+    }
     function platformPlacement(orig,self,args,option) {
         if (React) useSettings("platformIndicators");
         const tree = orig.apply(self,args), props = args[0] || {};
@@ -1445,7 +1497,7 @@
                 return Object.assign({},p,{label:el(RN.View,{key:"venus-platform-label",style:{flexDirection:"row",alignItems:"center",gap:6,flexShrink:1}},p.label,el(PlatformBadges,{userId}))});
             }
             const children = Array.isArray(p.children) ? p.children : [p.children];
-            const title = children.find(child => child && child.props && (child.type === RN.Text && typeof child.props.children === "string" || typeof child.props.variant === "string" && /(?:channel-title|heading|semibold)/.test(child.props.variant)));
+            const title = children.find(child => child && child.props && (child.type === RN.Text && typeof child.props.children === "string" || typeof child.props.variant === "string" && /(?:channel-title|heading|semibold)/.test(child.props.variant) || typeof child.props.userName === "string" && "userId" in child.props));
             // A React Native Text must not contain a View.
             if (!title || node.type === RN.Text) return p;
             added = true;
@@ -1880,7 +1932,9 @@
             exports=hookExport(exports,"DisplayName",platformName);
             return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),displayNameType,platformName,platformWrappers));
         }
-        if (features.platformIndicators && [11159,13603,16377,9970].includes(id)) {
+        if (features.platformIndicators && id === 13603) return hookComponent(exports,platformHeader);
+        if (features.platformIndicators && id === 16377) return hookComponent(exports,platformDmRow);
+        if (features.platformIndicators && [11159,9970].includes(id)) {
             const option = id === 13603 ? "piDmHeader" : "piUserList";
             return hookComponent(exports,(orig,self,args)=>platformPlacement(orig,self,args,option));
         }

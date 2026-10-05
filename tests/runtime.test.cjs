@@ -1611,3 +1611,21 @@ test('PlatformIndicators adds badges to profile voice-channel user rows',()=>{
     assert.equal(tree.props.label.props.children[1].props.userId,'u');
     b.api.setSetting('piUserList',false);assert.equal(row.type(row.props).props.label.props.children,'u');
 });
+test('PlatformIndicators places DM list icons beside the mute icon and DM header icons inside ChannelTitle',()=>{
+    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4828);
+    const channel={id:'dm',type:1,recipients:['friend']};
+    const icon=React.createElement('ChannelIcon',{muted:false,favorite:false,ignored:false,blocked:false,selected:false});
+    const row=Object.freeze(React.createElement(RN.View,{children:[React.createElement(RN.View,{children:icon}),React.createElement(RN.Text,{children:'23h'})]}));
+    const content=b.load({default:()=>row},null,16377).default;const tree=content({channel});
+    const icons=tree.props.children[0].props.children;assert.equal(icons[0],icon);assert.equal(walkElements(icons[1],n=>n.type&&n.type.name==='PlatformBadges')[0].props.userId,'friend');
+    function ChannelTitle(){return React.createElement(RN.View,{children:React.createElement(RN.Text,{variant:'redesign/heading-18/semibold',children:'User'})});}
+    const header=b.load({default:()=>React.createElement(RN.View,{children:React.createElement(ChannelTitle,{title:'User',accessibleTitle:'User',userId:'friend'})})},null,13603).default;
+    const title=header({channelId:'dm'}).props.children;assert.notEqual(title.type,ChannelTitle);
+    const inner=title.type(title.props);assert.equal(walkElements(inner,n=>n.type&&n.type.name==='PlatformBadges')[0].props.userId,'friend');
+});
+test('NoDelete retained records differ from the live record so the native row re-renders immediately',()=>{
+    const b=deletionHarness();b.api.setSetting('noDelete',true);const live={id:'1',content:'x'};b.messages.set('c:1',live);
+    b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
+    const kept=b.load({default:{getMessage:()=>live}},null,5008).default.getMessage('c','1');
+    assert.notEqual(kept,live);assert.equal(kept.content,'x');assert.equal(kept.venusDeleted,true);assert.notDeepEqual(Object.keys(kept),Object.keys(live));
+});
