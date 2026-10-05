@@ -16,7 +16,7 @@
     if (features.quickDelete) selectModules([5141, 1115]);
     if (features.noDelete) selectModules([573, 5008, 5010, 1372, 7730, 8222]);
     if (features.jumpToTop) selectModules([12549, 12550, 12551, 9686, 10518, 11207, 7730, 2041]);
-    if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4428, 4505, 4645, 4941, 7730, 573, 1372, 16569, 5345]);
+    if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4428, 4941, 7730, 573, 1372, 16569, 5345]);
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 7235, 9200, 9380, 11159, 13603, 16377, 9970]);
     if (features.reviewDB) selectModules([11502, 14273, 4645, 9358, 5854, 5936, 7477, 1372, 573, 4505]);
@@ -688,7 +688,7 @@
         const owner = event.type === "CONNECTION_OPEN" && event.user && event.user.id || current && current.id;
         if (event.type === "LOGOUT" || hiddenAccount !== owner) {
             hiddenNames.clear();hiddenViews.clear();hiddenAccount = owner;
-            try { hiddenConfirmed.clear(); } catch (_) {}
+            try { hiddenConfirmed.clear(); hiddenPrompts.clear(); } catch (_) {}
         }
         if (event.type === "CHANNEL_DELETE") hiddenNames.delete(event.channel && event.channel.id || event.channelId || event.id);
         if (event.type === "GUILD_DELETE") {
@@ -1087,87 +1087,77 @@
         try { return Number(BigInt(id) >> BigInt(22)) + 1420070400000; }
         catch (_) { return NaN; }
     }
-    function HiddenInfoModal(modalProps) {
-        // Discord-themed info sheet mirroring the original popup content:
-        // precise timestamps only, Cancel / View Anyway actions. No title text,
-        // no channel name, no category, no topic.
-        const info = (modalProps && modalProps.info) || {};
-        const context = themeContext && themeContext.useThemeContext && themeContext.useThemeContext();
-        const light = !!(context && context.theme === "light");
-        const fg = light ? "#202127" : "#f2f3f5", bg = light ? "#f2f3f5" : "#2b2d31";
-        const sub = light ? "#4e5058" : "#b5bac1";
-        function row(label, value) {
-            return el(RN.View, { key: label, style: { paddingVertical: 8 } },
-                el(RN.Text, { style: { color: sub, fontSize: 12, fontWeight: "700" } }, label),
-                el(RN.Text, { selectable: true, style: { color: fg, fontSize: 15 } }, value));
+    function hiddenStamp(value, fallback) {
+        // {relative, absolute} for a snowflake, Date or ISO timestamp.
+        let ms = NaN;
+        if (typeof value === "string" && /^\d{17,20}$/.test(value)) ms = snowflakeMs(value);
+        else if (value instanceof Date) ms = value.getTime();
+        else if (value != null && value !== "") {
+            const parsed = new Date(value);
+            if (Number.isFinite(parsed.getTime())) ms = parsed.getTime();
         }
-        const Pressable = RN.Pressable || RN.TouchableOpacity || RN.View;
-        // Centered card with no backdrop of our own: the modal host already dims
-        // behind the sheet, and our own dim layer was rendering opaque black.
-        return el(RN.View, { style: { flex: 1, justifyContent: "center", padding: 24 } },
-          el(RN.View, { style: { backgroundColor: bg, borderRadius: 16, padding: 20, elevation: 8 } },
-            row("Creation date", info.creation || "Unavailable"),
-            row("Last message", info.lastMessage || "Unavailable"),
-            row("Last pin", info.lastPin || "Unavailable"),
-            el(RN.View, { style: { flexDirection: "row", justifyContent: "flex-end", marginTop: 8 } },
-                el(Pressable, { onPress: modalProps.onCancel, accessibilityRole: "button" },
-                    el(RN.Text, { style: { color: sub, fontWeight: "700", padding: 12 } }, "Cancel")),
-                el(Pressable, { onPress: modalProps.onConfirm, accessibilityRole: "button" },
-                    el(RN.Text, { style: { color: "#5865F2", fontWeight: "700", padding: 12 } }, "View Anyway")))));
+        const relative = preciseAgo(ms);
+        if (relative === null) return {relative:fallback, absolute:null};
+        let absolute = null;
+        try { absolute = new Date(ms).toLocaleString(); } catch (_) {}
+        return {relative, absolute};
     }
-    let hiddenModalCount = 0;
-    function showHidden(channel, onViewAnyway) {
-        if (!channel || !RN || !RN.Alert) return;
-        function stamp(value, fallback) {
-            let ms = NaN;
-            if (typeof value === "string" && /^\d{17,20}$/.test(value)) ms = snowflakeMs(value);
-            else if (value instanceof Date) ms = value.getTime();
-            else if (value != null && value !== "") {
-                const parsed = new Date(value);
-                if (Number.isFinite(parsed.getTime())) ms = parsed.getTime();
-            }
-            const ago = preciseAgo(ms);
-            if (ago === null) return fallback || "Unavailable";
-            const absolute = Number.isFinite(ms) ? new Date(ms).toLocaleString() : null;
-            return absolute ? ago + " (" + absolute + ")" : ago;
-        }
+    function hiddenDetails(channel) {
         const pin = channel.lastPinTimestamp || channel.last_pin_timestamp;
-        const info = {
-            creation: stamp(channel.id, "Unavailable"),
-            lastMessage: stamp(channel.lastMessageId || channel.last_message_id, "No messages."),
-            lastPin: pin ? stamp(pin, "No pins.") : "No pins."
-        };
-        // Prefer a Discord-native themed sheet (same modal stack as ReviewDB auth):
-        // precise timestamps only, Cancel / View Anyway. Falls back to a plain
-        // alert only when the native modal host is unavailable.
-        if (RN && React && nativeModals && typeof nativeModals.pushModal === "function" &&
-            typeof nativeModals.popModal === "function" && themeContext) {
+        const last = channel.lastMessageId || channel.last_message_id;
+        return [
+            ["Created", hiddenStamp(channel.id, "Unavailable")],
+            ["Last message", last ? hiddenStamp(last, "No messages yet") : {relative:"No messages yet", absolute:null}],
+            ["Last pin", pin ? hiddenStamp(pin, "No pins yet") : {relative:"No pins yet", absolute:null}]
+        ];
+    }
+    function HiddenDetails(props) {
+        // Rendered inside Discord's own AlertModal (HBC98 module 5146) as extraContent:
+        // native Text tokens follow the active theme; no hardcoded colors or backdrop.
+        const Text = props.Text;
+        return el(RN.View, {style:{gap:14}}, props.rows.map(([label, stamp]) =>
+            el(RN.View, {key:label, style:{gap:2}},
+                el(Text, {variant:"text-xs/semibold", color:"text-muted"}, label.toUpperCase()),
+                el(Text, {variant:"text-md/medium", color:"text-default", selectable:true}, stamp.relative),
+                stamp.absolute ? el(Text, {variant:"text-sm/medium", color:"text-muted", selectable:true}, stamp.absolute) : null)));
+    }
+    // One prompt per channel at a time: a navigation guard and a fetch guard can
+    // fire for the same tap, which used to stack duplicate dialogs. Native
+    // backdrop dismissal calls onCancel (HBC98 closure #80886), so every close
+    // path releases the guard; 30 s is only a safety net.
+    const hiddenPrompts = new Map();
+    function showHidden(channel, onViewAnyway) {
+        if (!channel || !RN) return;
+        const now = Date.now(), open = hiddenPrompts.get(channel.id);
+        if (open && now - open.at < 30000) return;
+        const prompt = {at:now};
+        hiddenPrompts.set(channel.id, prompt);
+        const settle = () => { if (hiddenPrompts.get(channel.id) === prompt) hiddenPrompts.delete(channel.id); };
+        const confirm = () => { settle(); if (typeof onViewAnyway === "function") onViewAnyway(); };
+        const rows = hiddenDetails(channel);
+        const title = channel.type === 2 || channel.type === 13 ? "Locked voice channel" : "Locked channel";
+        const body = "You don't have permission to view this channel. These details come from what Discord already sent your client.";
+        // Discord's native alert (the "Delete Message" dialog): blurred backdrop,
+        // themed card, Discord buttons. String title/body/confirmText + children
+        // selects the modern AlertModal path in AlertActionCreators.show (module 5141).
+        // Demand-loaded at tap time: no extra Metro factories are wrapped at startup.
+        const alerts = inspectedExport(5141, "default");
+        const Text = inspectedExport(4784, "Text");
+        if (React && alerts && typeof alerts.show === "function" && Text) {
             try {
-                const key = "venus-hidden-" + channel.id + "-" + (++hiddenModalCount);
-                const close = () => { try { nativeModals.popModal(key); } catch (_) {} };
-                nativeModals.pushModal({ key, modal: { key, modal: HiddenInfoModal, animation: "slide-up",
-                    shouldPersistUnderModals: false, closable: true,
-                    props: { info,
-                        onCancel: close,
-                        onConfirm: () => { close(); if (typeof onViewAnyway === "function") onViewAnyway(); } } } });
+                alerts.show({title, body, children:el(HiddenDetails, {rows, Text}),
+                    confirmText:"View Anyway", cancelText:"Cancel", onConfirm:confirm, onCancel:settle});
                 return;
-            } catch (_) { /* fall through to alert */ }
+            } catch (_) { /* fall through to the platform alert */ }
         }
-        const message = "Creation date: " + info.creation +
-            "\nLast message: " + info.lastMessage +
-            "\nLast pin: " + info.lastPin;
-        // Like the original plugin online: Cancel / View Anyway so Discord loads real channel data.
-        // Server still enforces message/voice access; this only reveals names.
-        if (typeof onViewAnyway === "function") {
-            try {
-                RN.Alert.alert("", message, [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "View Anyway", onPress: onViewAnyway }
-                ]);
-                return;
-            } catch (_) {}
-        }
-        RN.Alert.alert("", message);
+        if (!RN.Alert) {settle();return;}
+        const message = rows.map(([label, stamp]) => label + ": " + stamp.relative + (stamp.absolute ? " (" + stamp.absolute + ")" : "")).join("\n");
+        try {
+            RN.Alert.alert(title, message, [
+                {text:"Cancel", style:"cancel", onPress:settle},
+                {text:"View Anyway", onPress:confirm}
+            ], {cancelable:true, onDismiss:settle});
+        } catch (_) { settle(); }
     }
     function hiddenNavigation(orig, self, args) {
         const route = args[0];
@@ -1683,7 +1673,7 @@
             return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),displayNameType,platformName,platformWrappers));
         }
         if (features.platformIndicators && [11159,13603,16377,9970].includes(id)) return hookComponent(exports,platformPlacement);
-        if ((features.reviewDB || features.hiddenChannels) && id === 4645) nativeModals=exports;
+        if (features.reviewDB && id === 4645) nativeModals=exports;
         if (features.reviewDB && id === 9358) oauthModal=exports.default;
         if (features.reviewDB && id === 5854) nativeRows=exports;
         if (features.reviewDB && id === 5936) nativeRowGroup=exports.TableRowGroup;
@@ -1695,7 +1685,7 @@
             exports = hookComponent(exports,hiddenInfo);
             return hookExport(exports, "ChannelInfo", hiddenInfo);
         }
-        if ((features.reviewDB || features.hiddenChannels) && id === 4505) themeContext=exports;
+        if (features.reviewDB && id === 4505) themeContext=exports;
         if (features.reviewDB && id === 11502) return hookComponent(exports,reviewAbout);
 
         if (features.reviewDB && id === 14273) return hookComponent(exports,reviewGuild);
