@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.4 — Hidden Channels parity, original-style popup and precise timestamps
+
+- Hidden Channels now matches the original plugin's behavior: global `VIEW_CHANNEL` bypass on both permission modules (`4427` and `4428`, found via HBC `getChannelPermissions` trace) so Discord builds real channel records instead of obfuscated `hidden` stubs. Message and voice fetching/navigation stay guarded behind an explicit View Anyway confirmation.
+- Gateway names (`CONNECTION_OPEN`, `GUILD_CREATE`, updates, thread syncs) and message `mention_channels` are cached even while the toggle is off, so enabling later still resolves. Server redactions (`hidden`, `__hidden__`, `_hidden` variants) and our own unavailable facades are never cached as real names.
+- The hidden-channel popup mirrors the original: topic, creation date, last message and last pin with **precise** relative timestamps ("8 days, 7 hours and 7 minutes ago") plus the absolute date, Cancel / View Anyway buttons, and a 20px native lock icon next to hidden names.
+- The hidden-channel sheet is Discord-native themed (same modal stack and theme context as ReviewDB auth): precise Creation date / Last message / Last pin rows only — no title text, no channel name, no category, no topic — with Cancel / View Anyway actions. A plain alert remains as fallback only.
+- Truly server-redacted channels (no name in any received source) still show name unavailable rather than a guessed name; message and voice access are never granted.
+- ChannelInfo is hooked as both default and named export, so the lock renders on rows that consume it by name (e.g. GuildRolesAndChannelsRow).
+
 ## 1.2.3 — traced OAuth lifecycle, shared profile/server reviews and native channel names
 
 - Disassembled the supplied unmodified Discord 347.12 HBC98, verified its pinned hash, and traced native OAuth completion down to nested success generator #124513. Native dismissal occurs without awaiting the ReviewDB token exchange; preserve validated exchanges instead of misclassifying completion as cancellation.

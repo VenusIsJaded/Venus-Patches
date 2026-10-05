@@ -16,11 +16,11 @@
     if (features.quickDelete) selectModules([5141, 1115]);
     if (features.noDelete) selectModules([573, 5008, 5010, 1372, 7730, 8222]);
     if (features.jumpToTop) selectModules([12549, 12550, 12551, 9686, 10518, 11207, 7730, 2041]);
-    if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4941, 7730, 573, 1372, 16569, 5345]);
+    if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4428, 4505, 4645, 4941, 7730, 573, 1372, 16569, 5345]);
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 7235, 9200, 9380, 11159, 13603, 16377, 9970]);
     if (features.reviewDB) selectModules([11502, 14273, 4645, 9358, 5854, 5936, 7477, 1372, 573, 4505]);
-    const revision = "1.2.3";
+    const revision = "1.2.4";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -83,7 +83,7 @@
             nativeVoice("cancel", job.id).catch(() => {});
         });
         if (key === "noDelete" && !value) clearDeleted(true);
-        if (key === "hiddenChannels") {hiddenViews.clear();if (!value) hiddenNames.clear();}
+        if (key === "hiddenChannels") {hiddenViews.clear();}
         settings[key] = value;
         if (key === "noDeleteSave") { if (value) restoreDeleted(); else archiveRestored = false; persistDeleted(); }
         dirty.add(key);
@@ -642,6 +642,7 @@
         return code === stickerRules.StickerSendability.SENDABLE;
     }
     let msgStore, msgActions, permissions, viewPermission, locale, dispatcher, messageRecords, chatHeight, jumpPill, jumpIcon;
+    let permissionsCanOrig = null, permissionsCanBasicOrig = null;
     let deletedRevision = 0, archiveRestored = false, archiveLoading = false, archiveWriting = false, archivePending;
     const deletedViews = new Map();
     const ARCHIVE = "venus-deleted-messages.json";
@@ -649,7 +650,15 @@
     const hiddenViews = new Map(), hiddenNames = new Map();
     let hiddenAccount;
     function receivedName(channel) {
-        return channel && typeof channel.name === "string" && channel.name.trim() && channel.name !== "__hidden__" ? channel.name : null;
+        if (!channel || typeof channel.name !== "string") return null;
+        const trimmed = channel.name.trim();
+        if (!trimmed) return null;
+        // Server redactions: "hidden", "__hidden__", "_hidden" and underscore variants (HBC string 34016).
+        // Strip surrounding underscores and compare case-insensitively so redacted stubs never pollute the cache.
+        if (trimmed.replace(/^_+|_+$/g, "").toLowerCase() === "hidden") return null;
+        // Never cache our own unavailable facades as if they were real names.
+        if (trimmed === "Hidden channel (name unavailable)" || trimmed === "Hidden category (name unavailable)") return null;
+        return channel.name;
     }
     function rememberChannelName(channel, accountId) {
         const current = userStore && userStore.getCurrentUser(), owner = typeof accountId === "string" ? accountId : current && current.id;
@@ -679,13 +688,15 @@
         const owner = event.type === "CONNECTION_OPEN" && event.user && event.user.id || current && current.id;
         if (event.type === "LOGOUT" || hiddenAccount !== owner) {
             hiddenNames.clear();hiddenViews.clear();hiddenAccount = owner;
+            try { hiddenConfirmed.clear(); } catch (_) {}
         }
         if (event.type === "CHANNEL_DELETE") hiddenNames.delete(event.channel && event.channel.id || event.channelId || event.id);
         if (event.type === "GUILD_DELETE") {
             const guild = event.guild && event.guild.id || event.guildId;
             for (const [id,entry] of hiddenNames) if (entry.guild === guild) hiddenNames.delete(id);
         }
-        if (!enabled("hiddenChannels")) return;
+        if (!features.hiddenChannels) return;
+        // Cache even while the toggle is off so enabling later still has READY names.
         if (["CHANNEL_CREATE","CHANNEL_UPDATE"].includes(event.type)) rememberChannelName(event.channel,owner);
         function rememberGuild(guild) {
             if (!guild || !guild.id) return;
@@ -697,6 +708,13 @@
         if (["CHANNEL_UPDATES","THREAD_LIST_SYNC"].includes(event.type)) {
             for (const key of ["channels","threads"]) if (Array.isArray(event[key]))
                 event[key].forEach(channel => rememberChannelName(Object.assign({guild_id:event.guildId},channel),owner));
+        }
+        // Real unobfuscated names arrive inside message mention_channels (fn34524/fn35281):
+        // harvest them so mentioned hidden channels resolve even when stores are redacted.
+        if (["MESSAGE_CREATE","MESSAGE_UPDATE"].includes(event.type)) {
+            const msg = event.message || event;
+            const mentions = msg && Array.isArray(msg.mention_channels) && msg.mention_channels;
+            if (mentions) mentions.forEach(channel => rememberChannelName(channel, owner));
         }
     }
     function typing(orig, self, args) {
@@ -888,13 +906,26 @@
             el(RN.View,{style:{transform:[{scaleY:-1}]}},
                 el(jumpPill,{icon:jumpIcon,onPress,accessibilityLabel:"Jump to top"})));
     }
+    function hiddenCan(orig, self, args) {
+        const bit = args && args[0], channel = args && args[1];
+        if (!enabled("hiddenChannels")) return orig.apply(self, args);
+        // Original plugin's escape hatch: realCheck asks for the true result.
+        if (channel && channel.realCheck) return orig.apply(self, args);
+        // Loose equality: VIEW_CHANNEL can be BigInt/object across module copies.
+        if (viewPermission != null && bit == viewPermission && channel && channel.guild_id && ![1,3].includes(channel.type)) {
+            let hidden = false;
+            try { hidden = !realCan(bit, channel); } catch (_) { hidden = false; }
+            if (hidden) return true;
+        }
+        return orig.apply(self, args);
+    }
     // The mobile list has a second VIEW_CHANNEL filter. Give ONLY that factory a
     // metadata-list facade; the real permission store and all other callers stay stock.
     function listImport(importer) {
         if (typeof importer !== "function") return importer;
         return function () {
             const result = importer.apply(this,arguments);
-            if (!result || ![2041,4427].includes(arguments[0])) return result;
+            if (!result || ![2041,4427,4428].includes(arguments[0])) return result;
             const real = result.default || result;
             if (arguments[0] === 2041) {
                 const methods=new Map();
@@ -925,11 +956,29 @@
         if (!channelStore || !id) return null;
         return channelStore.getChannel(id) || typeof channelStore.getBasicChannel === "function" && channelStore.getBasicChannel(id);
     }
+    function realCan(bit, channel) {
+        // Real permission result, bypassing our own global facade.
+        // Supports the original plugin's realCheck escape hatch.
+        if (channel && channel.realCheck) {
+            const clone = Object.assign({}, channel);
+            delete clone.realCheck;
+            try {
+                if (permissionsCanOrig) return permissionsCanOrig(bit, clone);
+                if (permissions && typeof permissions.can === "function") return permissions.can.call(permissions, bit, clone);
+            } catch (_) { return false; }
+            return false;
+        }
+        try {
+            if (permissionsCanOrig) return permissionsCanOrig(bit, channel);
+            if (permissions && typeof permissions.can === "function") return permissions.can.call(permissions, bit, channel);
+        } catch (_) { return false; }
+        return false;
+    }
     function hiddenMetadata(value) {
         if (!enabled("hiddenChannels")) return false;
         const channel = typeof value === "string" ? receivedChannel(value) : value;
         return !!(channel && channel.guild_id && ![1,3].includes(channel.type) &&
-            permissions && viewPermission != null && typeof permissions.can === "function" && !permissions.can(viewPermission, channel));
+            permissions && viewPermission != null && !realCan(viewPermission, channel));
     }
     function hiddenChannel(value) {
         const channel = typeof value === "string" ? receivedChannel(value) : value;
@@ -942,6 +991,19 @@
     }
     function hiddenDirectory(orig, self, args) {
         const result = orig.apply(self, args), guild = args[0];
+        // Always cache names from the current store even while the toggle is off,
+        // so enabling later still resolves. This read-only scan never changes permissions.
+        try {
+            if (guild && channelStore && typeof channelStore.getMutableGuildChannelsForGuild === "function") {
+                const fullCache = channelStore.getMutableGuildChannelsForGuild(guild);
+                if (fullCache) {
+                    const basicCache = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
+                    const src = basicCache ? Object.assign({},basicCache,fullCache) : fullCache;
+                    if (basicCache) Object.values(basicCache).forEach(rememberChannelName);
+                    Object.values(src).forEach(rememberChannelName);
+                }
+            }
+        } catch (_) {}
         if (!enabled("hiddenChannels") || !result || !guild || !channelStore || !permissions ||
             typeof channelStore.getMutableGuildChannelsForGuild !== "function") return result;
         const full = channelStore.getMutableGuildChannelsForGuild(guild);
@@ -989,41 +1051,136 @@
         hiddenViews.set(guild, {orig:result,source:full,basic,signature,references,value:next});
         return next;
     }
+    const hiddenConfirmed = new Set();
     function hiddenFetch(orig, self, args) {
         const channelId = typeof args[0] === "string" ? args[0] : args[0] && args[0].channelId;
-        if (!hiddenChannel(channelId)) return orig.apply(self, args);
+        if (!hiddenChannel(channelId) || hiddenConfirmed.has(channelId)) return orig.apply(self, args);
         const channel = receivedChannel(channelId);
-        showHidden(channel);
+        showHidden(channel, () => { hiddenConfirmed.add(channelId); return orig.apply(self, args); });
         return Promise.resolve();
     }
-    function showHidden(channel) {
-        if (!channel || !RN || !RN.Alert) return;
-        function snowflakeDate(id) {
-            if (typeof id !== "string" || !/^\d{17,20}$/.test(id)) return "Unavailable";
-            const date = new Date(Number(BigInt(id) >> BigInt(22)) + 1420070400000);
-            return Number.isFinite(date.getTime()) ? date.toLocaleString() : "Unavailable";
+    function preciseAgo(ms) {
+        // Precise relative durations like the original popup, but exact:
+        // "8 days, 7 hours and 7 minutes ago". Three largest nonzero units.
+        if (!Number.isFinite(ms)) return null;
+        let diff = Date.now() - ms;
+        if (diff < 0) diff = 0;
+        const minute = 60000, hour = 60 * minute, day = 24 * hour, month = 30 * day, year = 365 * day;
+        const parts = [];
+        function take(unit, singular, plural) {
+            const value = Math.floor(diff / unit);
+            if (value > 0) { parts.push(value + " " + (value === 1 ? singular : plural)); diff -= value * unit; }
         }
-        const parent = receivedChannel(channel.parent_id);
+        if (diff < 45 * 1000) {
+            const secs = Math.floor(diff / 1000);
+            return secs <= 5 ? "just now" : secs + " seconds ago";
+        }
+        take(year, "year", "years"); take(month, "month", "months"); take(day, "day", "days");
+        take(hour, "hour", "hours"); take(minute, "minute", "minutes");
+        const shown = parts.slice(0, 3);
+        if (!shown.length) return "just now";
+        if (shown.length === 1) return shown[0] + " ago";
+        return shown.slice(0, -1).join(", ") + " and " + shown[shown.length - 1] + " ago";
+    }
+    function snowflakeMs(id) {
+        if (typeof id !== "string" || !/^\d{17,20}$/.test(id)) return NaN;
+        try { return Number(BigInt(id) >> BigInt(22)) + 1420070400000; }
+        catch (_) { return NaN; }
+    }
+    function HiddenInfoModal(modalProps) {
+        // Discord-themed info sheet mirroring the original popup content:
+        // precise timestamps only, Cancel / View Anyway actions. No title text,
+        // no channel name, no category, no topic.
+        const info = (modalProps && modalProps.info) || {};
+        const context = themeContext && themeContext.useThemeContext && themeContext.useThemeContext();
+        const light = !!(context && context.theme === "light");
+        const fg = light ? "#202127" : "#f2f3f5", bg = light ? "#f2f3f5" : "#2b2d31";
+        const sub = light ? "#4e5058" : "#b5bac1";
+        function row(label, value) {
+            return el(RN.View, { key: label, style: { paddingVertical: 8 } },
+                el(RN.Text, { style: { color: sub, fontSize: 12, fontWeight: "700" } }, label),
+                el(RN.Text, { selectable: true, style: { color: fg, fontSize: 15 } }, value));
+        }
+        const Pressable = RN.Pressable || RN.TouchableOpacity || RN.View;
+        // Centered card with no backdrop of our own: the modal host already dims
+        // behind the sheet, and our own dim layer was rendering opaque black.
+        return el(RN.View, { style: { flex: 1, justifyContent: "center", padding: 24 } },
+          el(RN.View, { style: { backgroundColor: bg, borderRadius: 16, padding: 20, elevation: 8 } },
+            row("Creation date", info.creation || "Unavailable"),
+            row("Last message", info.lastMessage || "Unavailable"),
+            row("Last pin", info.lastPin || "Unavailable"),
+            el(RN.View, { style: { flexDirection: "row", justifyContent: "flex-end", marginTop: 8 } },
+                el(Pressable, { onPress: modalProps.onCancel, accessibilityRole: "button" },
+                    el(RN.Text, { style: { color: sub, fontWeight: "700", padding: 12 } }, "Cancel")),
+                el(Pressable, { onPress: modalProps.onConfirm, accessibilityRole: "button" },
+                    el(RN.Text, { style: { color: "#5865F2", fontWeight: "700", padding: 12 } }, "View Anyway")))));
+    }
+    let hiddenModalCount = 0;
+    function showHidden(channel, onViewAnyway) {
+        if (!channel || !RN || !RN.Alert) return;
+        function stamp(value, fallback) {
+            let ms = NaN;
+            if (typeof value === "string" && /^\d{17,20}$/.test(value)) ms = snowflakeMs(value);
+            else if (value instanceof Date) ms = value.getTime();
+            else if (value != null && value !== "") {
+                const parsed = new Date(value);
+                if (Number.isFinite(parsed.getTime())) ms = parsed.getTime();
+            }
+            const ago = preciseAgo(ms);
+            if (ago === null) return fallback || "Unavailable";
+            const absolute = Number.isFinite(ms) ? new Date(ms).toLocaleString() : null;
+            return absolute ? ago + " (" + absolute + ")" : ago;
+        }
         const pin = channel.lastPinTimestamp || channel.last_pin_timestamp;
-        const pinDate = pin && new Date(pin);
-        RN.Alert.alert("This channel is hidden", "#" + hiddenName(channel) +
-            (parent ? "\nCategory: " + hiddenName(parent) : "") +
-            "\nTopic: " + (channel.topic || "No topic.") +
-            "\nCreated: " + snowflakeDate(channel.id) +
-            "\nLast message: " + snowflakeDate(channel.lastMessageId || channel.last_message_id) +
-            "\nLast pin: " + (pinDate && Number.isFinite(pinDate.getTime()) ? pinDate.toLocaleString() : "No pins.") +
-            "\nMetadata only. You do not have permission to read messages or join voice here.");
+        const info = {
+            creation: stamp(channel.id, "Unavailable"),
+            lastMessage: stamp(channel.lastMessageId || channel.last_message_id, "No messages."),
+            lastPin: pin ? stamp(pin, "No pins.") : "No pins."
+        };
+        // Prefer a Discord-native themed sheet (same modal stack as ReviewDB auth):
+        // precise timestamps only, Cancel / View Anyway. Falls back to a plain
+        // alert only when the native modal host is unavailable.
+        if (RN && React && nativeModals && typeof nativeModals.pushModal === "function" &&
+            typeof nativeModals.popModal === "function" && themeContext) {
+            try {
+                const key = "venus-hidden-" + channel.id + "-" + (++hiddenModalCount);
+                const close = () => { try { nativeModals.popModal(key); } catch (_) {} };
+                nativeModals.pushModal({ key, modal: { key, modal: HiddenInfoModal, animation: "slide-up",
+                    shouldPersistUnderModals: false, closable: true,
+                    props: { info,
+                        onCancel: close,
+                        onConfirm: () => { close(); if (typeof onViewAnyway === "function") onViewAnyway(); } } } });
+                return;
+            } catch (_) { /* fall through to alert */ }
+        }
+        const message = "Creation date: " + info.creation +
+            "\nLast message: " + info.lastMessage +
+            "\nLast pin: " + info.lastPin;
+        // Like the original plugin online: Cancel / View Anyway so Discord loads real channel data.
+        // Server still enforces message/voice access; this only reveals names.
+        if (typeof onViewAnyway === "function") {
+            try {
+                RN.Alert.alert("", message, [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "View Anyway", onPress: onViewAnyway }
+                ]);
+                return;
+            } catch (_) {}
+        }
+        RN.Alert.alert("", message);
     }
     function hiddenNavigation(orig, self, args) {
         const route = args[0];
         const match = typeof route === "string" && /^\/channels\/(?:@me|[^/]+)\/([^/?#]+)(?:[/?#]|$)/.exec(route);
-        if (!match || !hiddenChannel(match[1])) return orig.apply(self, args);
-        showHidden(receivedChannel(match[1]));
-        return; // Metadata-only. Never navigate into a locked chat/voice channel.
+        if (!match || !hiddenChannel(match[1]) || hiddenConfirmed.has(match[1])) return orig.apply(self, args);
+        const id = match[1];
+        showHidden(receivedChannel(id), () => { hiddenConfirmed.add(id); return orig.apply(self, args); });
+        return; // Wait for user choice; View Anyway navigates like the original plugin.
     }
     function hiddenGuildNavigation(orig, self, args) {
-        if (!hiddenChannel(args[1])) return orig.apply(self, args);
-        showHidden(receivedChannel(args[1]));
+        if (!hiddenChannel(args[1]) || hiddenConfirmed.has(args[1])) return orig.apply(self, args);
+        const id = args[1];
+        showHidden(receivedChannel(id), () => { hiddenConfirmed.add(id); return orig.apply(self, args); });
     }
     function sheetComponent(component, channel, onClose) {
         if (!component || !React) return component;
@@ -1249,8 +1406,9 @@
         if (!tree || !React || !RN || !hiddenMetadata(channel)) return tree;
         const icon = nativeLock || inspectedExport(5345,"LockIcon");
         if (!icon) return tree;
-        return el(RN.View,{style:{flexDirection:"row",alignItems:"center",gap:4},accessibilityLabel:hiddenName(channel)+", locked"},
-            el(icon,{color:"#80848e",style:{width:16,height:16}}),tree);
+        // Lock next to hidden names, like the original plugin (20px lock, right margin).
+        return el(RN.View,{style:{flexDirection:"row",alignItems:"center"},accessibilityLabel:hiddenName(channel)+", locked"},
+            el(icon,{color:"#80848e",style:{width:20,height:20,marginRight:4}}),tree);
     }
     function authorizationUrl(result) {
         // Do not depend on a browser-complete global URL / URLSearchParams in RN.
@@ -1525,14 +1683,19 @@
             return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),displayNameType,platformName,platformWrappers));
         }
         if (features.platformIndicators && [11159,13603,16377,9970].includes(id)) return hookComponent(exports,platformPlacement);
-        if (features.reviewDB && id === 4645) nativeModals=exports;
+        if ((features.reviewDB || features.hiddenChannels) && id === 4645) nativeModals=exports;
         if (features.reviewDB && id === 9358) oauthModal=exports.default;
         if (features.reviewDB && id === 5854) nativeRows=exports;
         if (features.reviewDB && id === 5936) nativeRowGroup=exports.TableRowGroup;
         if (features.reviewDB && id === 7477) nativeSwitchRow=exports.TableSwitchRow;
         if (features.hiddenChannels && id === 5345) nativeLock=exports.LockIcon;
-        if (features.hiddenChannels && id === 16569) return hookComponent(exports,hiddenInfo);
-        if (features.reviewDB && id === 4505) themeContext=exports;
+        if (features.hiddenChannels && id === 16569) {
+            // ChannelInfo can be consumed as default export and as named export
+            // (GuildRolesAndChannelsRow reads it by name); hook both.
+            exports = hookComponent(exports,hiddenInfo);
+            return hookExport(exports, "ChannelInfo", hiddenInfo);
+        }
+        if ((features.reviewDB || features.hiddenChannels) && id === 4505) themeContext=exports;
         if (features.reviewDB && id === 11502) return hookComponent(exports,reviewAbout);
 
         if (features.reviewDB && id === 14273) return hookComponent(exports,reviewGuild);
@@ -1569,7 +1732,38 @@
             exports = hookExport(exports, "replaceWith", hiddenNavigation);
             return hookExport(exports, "transitionToGuild", hiddenGuildNavigation);
         }
-        if (features.hiddenChannels && id === 4427) permissions = exports.default;
+        if (features.hiddenChannels && (id === 4427 || id === 4428)) {
+            // Lioncat6 finds permissions via findByProps("getChannelPermissions","can");
+            // HBC fn4428 references both strings, so hook 4428 as well as 4427.
+            // Candidate may be default export or the exports object itself.
+            const candidate = exports && exports.default && typeof exports.default.can === "function" ? exports.default :
+                exports && typeof exports.can === "function" ? exports : null;
+            if (candidate) permissions = candidate;
+            // Like the original plugin: globally reveal VIEW_CHANNEL so Discord builds
+            // real channel records (names) instead of obfuscated "hidden" stubs.
+            // Message/voice access stays blocked via hiddenFetch/hiddenNavigation guards.
+            // Use hookExport so frozen/sealed singletons are still patched via clone.
+            try {
+                if (permissions && typeof permissions.can === "function" && !permissionsCanOrig) {
+                    permissionsCanOrig = permissions.can.bind(permissions);
+                    if (typeof permissions.canBasicChannel === "function") permissionsCanBasicOrig = permissions.canBasicChannel.bind(permissions);
+                    const patched = hookExport(hookExport(permissions, "can", hiddenCan), "canBasicChannel", hiddenCan);
+                    permissions = patched;
+                    if (candidate === exports.default || (exports && exports.default && candidate === permissions)) {
+                        exports = replaceValue(exports, "default", patched);
+                    } else if (candidate === exports) {
+                        exports = patched;
+                    }
+                    return exports;
+                } else if (candidate && candidate !== permissions && typeof candidate.can === "function") {
+                    // Second permission object (4428 vs 4427): patch it too with same bypass.
+                    const patched2 = hookExport(hookExport(candidate, "can", hiddenCan), "canBasicChannel", hiddenCan);
+                    if (candidate === exports.default) exports = replaceValue(exports, "default", patched2);
+                    else if (candidate === exports) exports = patched2;
+                    return exports;
+                }
+            } catch (_) {}
+        }
         if (features.hiddenChannels && id === 2096) return replaceValue(exports, "default", hookExport(exports.default, "getChannels", hiddenDirectory));
         if (features.jumpToTop && id === 9686) chatHeight = exports;
         if (features.jumpToTop && id === 12550) jumpPill = exports.default;

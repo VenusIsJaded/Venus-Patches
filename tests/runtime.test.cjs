@@ -871,13 +871,29 @@ test('Hidden Channels adds cached metadata immutably, deduplicates categories an
     const b=hiddenHarness();assert.equal(b.store.getChannels('g'),b.result);b.api.setSetting('hiddenChannels',true);
     const result=b.store.getChannels('g');assert.equal(result.SELECTABLE.length,3);assert.equal(result.VOCAL.length,1);assert.equal(result[4].length,1);
     assert.equal(b.result.SELECTABLE.length,1);assert.equal(b.store.getChannels('g'),result);
-    assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),false);assert.equal(b.label(b.channels.hidden),'staff chat');
+    // Global bypass like the original plugin: UI sees true, realCheck reveals real false.
+    assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),true);
+    assert.equal(b.permission.can(b.viewPermission,Object.assign({},b.channels.hidden,{realCheck:true})),false);
+    assert.equal(b.label(b.channels.hidden),'staff chat');
     b.allowed.add('hidden');const next=b.store.getChannels('g');assert.notEqual(next,result);assert.equal(b.label(b.channels.hidden),'staff chat');
     b.api.setSetting('hiddenChannels',false);assert.equal(b.store.getChannels('g'),b.result);
 });
+test('Hidden Channels caches READY names while toggle is off so enabling later still resolves',()=>{
+    const b=hiddenHarness();
+    // Default toggle is off; READY arrives before the user enables.
+    const dispatch=b.load({default:{dispatch(){}}},null,573).default;
+    b.load({default:{getCurrentUser:()=>({id:'me'})}},null,1372);
+    dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'me'},guilds:[{id:'g',channels:[{id:'hidden',name:'staff-chat',type:0},{id:'cat',name:'private',type:4}]}]});
+    b.api.setSetting('hiddenChannels',true);
+    // Store later redacts to server marker; cached gateway names must win.
+    b.channels.hidden={...b.channels.hidden,name:'__hidden__'};
+    b.channels.cat={...b.channels.cat,name:'__hidden__'};
+    assert.equal(b.label(b.channels.hidden),'staff chat');
+    assert.equal(b.label(b.channels.cat),'private');
+});
 test('Hidden Channels refuses message fetches for locked channels and preserves visible or disabled traffic', async () => {
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
-    await b.actions.fetchMessages({channelId:'hidden'});assert.equal(b.fetched.length,0);assert.match(b.alerts[0][1],/Staff only/);
+    await b.actions.fetchMessages({channelId:'hidden'});assert.equal(b.fetched.length,0);assert.match(b.alerts[0][1],/Creation date: Unavailable/);assert.match(b.alerts[0][1],/No messages\./);
     b.actions.fetchMessages({channelId:'public'});assert.equal(b.fetched.length,1);
     b.api.setSetting('hiddenChannels',false);b.actions.fetchMessages({channelId:'hidden'});assert.equal(b.fetched.length,2);
 });
@@ -1100,7 +1116,9 @@ test('Hidden Channels mobile list facade handles named/default imports without c
     const real=b.permission;let captured;
     b.context.__d(function(g,req,imp,all,m){captured=[req(4427).default,imp(4427),all(4427).default];m.exports={};},7802,[]);
     b.factories.get(7802)(b.context,()=>({default:real}),()=>real,()=>({default:real}),{exports:{}},{},[]);
-    for(const facade of captured){assert.equal(facade.can(b.viewPermission,b.channels.hidden),true);assert.equal(real.can(b.viewPermission,b.channels.hidden),false);}
+    // Global bypass is active when enabled; realCheck reveals the true false.
+    for(const facade of captured){assert.equal(facade.can(b.viewPermission,b.channels.hidden),true);assert.equal(real.can(b.viewPermission,b.channels.hidden),true);}
+    assert.equal(real.can(b.viewPermission,Object.assign({},b.channels.hidden,{realCheck:true})),false);
     b.api.setSetting('hiddenChannels',false);for(const facade of captured)assert.equal(facade.can(b.viewPermission,b.channels.hidden),false);
 });
 test('Hidden Channels fills numeric native channel-type buckets and gets direct permission constants',()=>{
@@ -1223,7 +1241,9 @@ test('Hidden Channels replaces obfuscated names in both native formatters, inclu
     assert.equal(names.computeChannelName(b.channels.hidden),'staff chat');
     assert.equal(names.default(b.channels.hidden),'staff chat');assert.equal(names.computeChannelName(category),'PRIVATE STAFF');
     assert.equal(b.store.getChannels('g')[4].some(entry=>entry.channel.id==='empty'),true);
-    assert.equal(b.permission.can(b.viewPermission,category),false);
+    // Global bypass reveals hidden categories; realCheck shows true denial.
+    assert.equal(b.permission.can(b.viewPermission,category),true);
+    assert.equal(b.permission.can(b.viewPermission,Object.assign({},category,{realCheck:true})),false);
     b.permission.can=(bit,channel)=>bit===b.viewPermission && b.allowed.has(channel.id);
     let facade;b.context.__d((g,r,i,a,m)=>{facade=i(4427);m.exports={};},7802,[]);
     b.factories.get(7802)(b.context,()=>b.permission,()=>b.permission,()=>b.permission,{exports:{}},{},[]);
@@ -1329,7 +1349,7 @@ test('Hidden Channels information uses only cached topics, parent and snowflake/
     const id=String((BigInt(Date.UTC(2020,0,1)-1420070400000)<<22n)+1n);
     b.channels.details={...b.channels.hidden,id,lastMessageId:id,lastPinTimestamp:'2020-01-02T00:00:00.000Z'};
     b.actions.fetchMessages({channelId:'details'});assert.equal(b.fetched.length,0);
-    const text=b.alerts.at(-1)[1];assert.match(text,/Category: private/);assert.match(text,/Topic: Staff only/);assert.match(text,/Created: .*2020/);assert.match(text,/Last message: .*2020/);assert.match(text,/Last pin: .*2020/);assert.match(text,/Metadata only/);
+    const text=b.alerts.at(-1)[1];assert.match(text,/Creation date: .*ago \(.*2020/);assert.match(text,/Last message: .*ago \(.*2020/);assert.match(text,/Last pin: .*2020/);assert.doesNotMatch(text,/Category:|Topic:/);
 });
 
 
@@ -1363,16 +1383,56 @@ test('Hidden Channels resolves real basic record names and immutable numeric sec
     const original=Object.freeze({0:Object.freeze([{channel:b.channels.hidden,comparator:3}]),4:Object.freeze([{channel:b.channels.cat,comparator:2}])});
     const store=b.load({default:{getChannels:()=>original}},null,2096).default;const list=store.getChannels('g');
     assert.equal(list[0][0].channel.name,'staff-chat');assert.equal(list[4][0].channel.name,'PRIVATE STAFF');assert.equal(original[0][0].channel.name,'__hidden__');
-    assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),false);assert.equal(b.fetched.length,0);
+    assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),true);
+    assert.equal(b.permission.can(b.viewPermission,Object.assign({},b.channels.hidden,{realCheck:true})),false);
+    assert.equal(b.fetched.length,0);
     basic.hidden={...basic.hidden,name:'renamed-staff'};
     assert.equal(names.default(b.channels.hidden),'renamed staff');assert.equal(store.getChannels('g')[0][0].channel.name,'renamed-staff');
+});
+test('Hidden Channels harvests real names from message mention_channels',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    b.channels.hidden={...b.channels.hidden,name:'hidden'};
+    let account='me';b.load({default:{getCurrentUser:()=>({id:account})}},null,1372);
+    const dispatch=b.load({default:{dispatch(){}}},null,573).default;
+    assert.match(b.label(b.channels.hidden),/unavailable/);
+    dispatch.dispatch({type:'MESSAGE_CREATE',message:{id:'m',channel_id:'public',mention_channels:[{id:'hidden',guild_id:'g',type:0,name:'staff-chat'}]}});
+    assert.equal(b.label(b.channels.hidden),'staff chat');
+});
+test('Hidden Channels popup shows precise relative timestamps',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    const minute=60000, hour=60*minute, day=24*hour;
+    const ago = 8*day + 7*hour + 7*minute;
+    const id = String((BigInt(Date.now()-ago-1420070400000)<<22n)+1n);
+    b.channels.timed={...b.channels.hidden,id,lastMessageId:id,lastPinTimestamp:new Date(Date.now()-ago).toISOString()};
+    b.actions.fetchMessages({channelId:'timed'});
+    const text=b.alerts.at(-1)[1];
+    assert.match(text,/8 days, 7 hours and 7 minutes ago/);
+});
+test('Hidden Channels popup uses a themed native sheet without names or topics',()=>{
+    const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
+    const pushed=[], popped=[];
+    b.load({pushModal:value=>pushed.push(value),popModal:key=>popped.push(key)},null,4645);
+    b.load({useThemeContext:()=>({theme:'dark'})},null,4505);
+    const minute=60000, hour=60*minute, day=24*hour;
+    const ago = 8*day + 7*hour + 7*minute;
+    const id = String((BigInt(Date.now()-ago-1420070400000)<<22n)+1n);
+    b.channels.timed={...b.channels.hidden,id,lastMessageId:id,lastPinTimestamp:new Date(Date.now()-ago).toISOString()};
+    b.actions.fetchMessages({channelId:'timed'});
+    assert.equal(pushed.length,1);assert.equal(b.alerts.length,0);
+    const modal=pushed[0].modal, tree=modal.modal(modal.props);
+    const dump=JSON.stringify(tree);
+    assert.match(dump,/8 days, 7 hours and 7 minutes ago/);
+    assert.doesNotMatch(dump,/Category:|Topic:|discord-updates|staff-chat|This channel is hidden/);
+    assert.match(dump,/#202127|#2b2d31/);
+    modal.props.onCancel();assert.deepEqual(popped,[pushed[0].key]);
 });
 test('Hidden Channels never presents a server redaction as a real name or fetches unknown names',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};b.channels.cat={...b.channels.cat,name:'__hidden__'};
     assert.equal(b.label(b.channels.hidden),'Hidden channel (name unavailable)');assert.equal(b.label(b.channels.cat),'Hidden category (name unavailable)');
-    b.actions.fetchMessages({channelId:'hidden'});assert.equal(b.fetched.length,0);assert.doesNotMatch(b.alerts[0][1],/__hidden__|\[locked\]/);
+    b.actions.fetchMessages({channelId:'hidden'});assert.equal(b.fetched.length,0);
+    assert.doesNotMatch(String(b.alerts[0][1]),/__hidden__|\[locked\]|Category:|Topic:/);
 });
-test('Hidden Channels cached gateway names clear on logout, account switch, channel removal and disabling',()=>{
+test('Hidden Channels cached gateway names clear on logout, account switch and channel removal but survive disabling',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};
     let account='first';b.load({default:{getCurrentUser:()=>({id:account})}},null,1372);
     const dispatch=b.load({default:{dispatch(){}}},null,573).default;
@@ -1380,7 +1440,9 @@ test('Hidden Channels cached gateway names clear on logout, account switch, chan
     remember();dispatch.dispatch({type:'LOGOUT'});assert.match(b.label(b.channels.hidden),/name unavailable/);
     remember();account='second';assert.match(b.label(b.channels.hidden),/name unavailable/);
     remember();dispatch.dispatch({type:'CHANNEL_DELETE',channel:{id:'hidden'}});assert.match(b.label(b.channels.hidden),/name unavailable/);
-    remember();b.api.setSetting('hiddenChannels',false);b.api.setSetting('hiddenChannels',true);assert.match(b.label(b.channels.hidden),/name unavailable/);
+    // Disabling keeps the cache so re-enabling still resolves; views go stock while off.
+    remember();b.api.setSetting('hiddenChannels',false);assert.equal(b.store.getChannels('g'),b.result);
+    b.api.setSetting('hiddenChannels',true);assert.equal(b.label(b.channels.hidden),'received name');
 });
 test('Hidden Channels uses a native lock icon and preserves frozen ChannelInfo and stock disabled output',()=>{
     const b=hiddenHarness(),{React}=reactHarness(b);b.api.setSetting('hiddenChannels',true);
@@ -1559,9 +1621,11 @@ test('Hidden Channels includes basic-only native metadata and blocks its message
     const parent={id:'basic-cat',guild_id:'g',type:4,name:'BASIC CATEGORY',position:6};const basic={'basic-only':extra,'basic-cat':parent};
     b.load({default:{getChannel:id=>b.channels[id],getBasicChannel:id=>basic[id],getMutableGuildChannelsForGuild:()=>b.channels,getMutableBasicGuildChannelsForGuild:()=>basic}},null,2041);
     const list=b.store.getChannels('g');assert.equal(list.SELECTABLE.find(entry=>entry.channel.id===extra.id).channel.name,'private-basic');assert.equal(list[4].find(entry=>entry.channel.id===parent.id).channel.name,'BASIC CATEGORY');
-    assert.equal(b.store.getChannels('g'),list);await b.actions.fetchMessages({channelId:extra.id});assert.equal(b.fetched.length,0);assert.match(b.alerts.at(-1)[1],/BASIC CATEGORY/);
+    assert.equal(b.store.getChannels('g'),list);await b.actions.fetchMessages({channelId:extra.id});assert.equal(b.fetched.length,0);assert.match(b.alerts.at(-1)[1],/Creation date: Unavailable/);
     const calls=[];const routes=b.load({transitionTo:r=>calls.push(r),transitionToGuild:(g,c)=>calls.push(c)},null,1101);
-    routes.transitionTo('/channels/g/basic-only');routes.transitionToGuild('g','basic-only');assert.equal(calls.length,0);assert.equal(b.permission.can(b.viewPermission,extra),false);
+    routes.transitionTo('/channels/g/basic-only');routes.transitionToGuild('g','basic-only');assert.equal(calls.length,0);
+    assert.equal(b.permission.can(b.viewPermission,extra),true);
+    assert.equal(b.permission.can(b.viewPermission,Object.assign({},extra,{realCheck:true})),false);
 });
 test('Hidden Channels renderer-scoped ChannelStore facade preserves real singleton receivers and model flags',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__',flags:32768};
