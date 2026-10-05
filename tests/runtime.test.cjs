@@ -1161,6 +1161,10 @@ function reviewHarness() {
     const b=boot(allFeatures),{React,RN}=reactHarness(b);const alerts=[];RN.Alert={alert(...args){alerts.push(args);}};RN.ScrollView='ScrollView';RN.TextInput='TextInput';RN.ActivityIndicator='Spinner';
     const requests=[];b.context.URL=URL;b.context.fetch=async(url,options)=>{requests.push([url,options]);return {ok:true,json:async()=>url.includes('/auth')?{success:true,token:'review-only-token'}:{success:true,reviews:[{id:1,comment:'hello',sender:{discordID:'other',username:'Other'}}]}};};
     const account={id:'111111111111111111'};
+    const toasts=[],confirms=[];
+    const native={4784:{Text:'NativeText'},5856:{Card:'NativeCard'},5216:{Stack:'NativeStack'},5218:{Button:'NativeButton'},7362:{TextArea:'NativeTextArea'},
+        5141:{default:{show:value=>confirms.push(value)}},4486:{default:{open:value=>toasts.push(value)}},5854:{TableRow:'NativeRow'}};
+    b.context.__r=id=>native[id]||null;
     b.load({default:{getCurrentUser:()=>account}},null,1372);
     b.load({TableRow:'NativeRow'},null,5854);
     let pushed;const popped=[];b.load({pushModal:value=>pushed=value,popModal:key=>popped.push(key)},null,4645);b.load({default:'OAuthModal'},null,9358);
@@ -1173,11 +1177,12 @@ function reviewHarness() {
     b.api.setSetting('reviewDB',true);const panel=getPanel(profile.default({user:{id:'222222222222222222'}}));b.api.setSetting('reviewDB',false);
     const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14892).SETTING_RENDERER_CONFIG;
     const Settings=registry.VENUS_REVIEWDB.screen.getComponent();
-    return {...b,React,RN,requests,panel,popped,alerts,account,profile,original,about,aboutOriginal,getPanel,registry,Settings,getPushed:()=>pushed};
+    return {...b,React,RN,requests,panel,popped,alerts,account,profile,original,about,aboutOriginal,getPanel,registry,Settings,toasts,confirms,native,getPushed:()=>pushed};
 }
 test('ReviewDB has no startup requests and expands a native opt-in profile panel only after enabling',()=>{
     const b=reviewHarness();assert.equal(b.requests.length,0);assert.equal(b.panel.type(b.panel.props),null);
-    b.api.setSetting('reviewDB',true);const panel=b.panel.type(b.panel.props);assert.equal(panel.props.children[0].type,'NativeRow');assert.equal(b.requests.length,0);
+    b.api.setSetting('reviewDB',true);const panel=b.panel.type(b.panel.props);const header=panel.props.children;
+    assert.equal(header.type,'NativeRow');assert.equal(header.props.label,'Reviews');assert.equal(header.props.arrow,true);assert.equal(b.requests.length,0);
 });
 test('ReviewDB explicit expansion fetches only its API; OAuth rejects untrusted redirects and never stores account tokens',async()=>{
     const b=reviewHarness();b.api.setSetting('reviewDB',true);const states=[0,true,[],"",false,"",0],effects=[];
@@ -1512,14 +1517,23 @@ test('ReviewDB surfaces unreadable service responses without storing credentials
     const b=reviewHarness(),{props}=openReviewAuth(b);b.context.fetch=async()=>({ok:false,status:502,json:async()=>{throw Error('secret-code');}});
     await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=secret-code'});assert.match(b.alerts.at(-1)[1],/unreadable response.*502/);assert.doesNotMatch(b.alerts.at(-1)[1],/secret-code/);
 });
-test('ReviewDB cards reproduce grouped reviewer avatars, badges, dates and selectable comments',()=>{
-    const b=reviewHarness();b.api.setSetting('reviewDB',true);b.RN.Image='Image';b.load({TableRowGroup:'NativeGroup'},null,5936);
+test('ReviewDB cards use native Card and Text tokens with avatars, badges, dates and selectable comments',()=>{
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);b.RN.Image='Image';
     const review={id:0,type:3,timestamp:0,comment:'Be respectful',sender:{username:'Warning',profilePhoto:'https://cdn.discordapp.com/avatars/u/a.webp',badges:[{name:'Donor',icon:'https://cdn.discordapp.com/emojis/1.webp'}]}};
-    const states=[0,true,[review],'',false,'',0];let index=0;b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];b.React.useEffect=()=>{};
+    const states=[0,true,[review],'',false,'',0,1];let index=0;b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];b.React.useEffect=()=>{};
     const tree=b.panel.type(b.panel.props),scroll=walkElements(tree,n=>n.type==='ScrollView')[0],card=scroll.props.children[0],rendered=card.type(card.props);
-    assert.equal(rendered.type,'NativeGroup');const row=rendered.props.children[0];assert.equal(row.type,'NativeRow');assert.equal(row.props.icon.props.style.width,36);assert.equal(row.props.subLabel.props.selectable,true);assert.equal(row.props.subLabel.props.children,'Be respectful');
-    assert.equal(walkElements(row.props.label,n=>n.type==='Image')[0].props.accessibilityLabel,'Donor');assert.equal(card.props.actions,null);
-    review.type=0;review.timestamp=1700000000;const dated=card.type(card.props);assert.equal(walkElements(dated,n=>n.type===b.RN.Text && n.props.style.fontSize===12).length,1);
+    assert.equal(rendered.type,'NativeCard');
+    const texts=walkElements(rendered,n=>n.type==='NativeText');
+    assert.ok(texts.every(n=>/^(text|heading)-/.test(n.props.variant)&&/^text-/.test(n.props.color)));
+    const comment=texts.find(n=>n.props.children==='Be respectful');assert.equal(comment.props.selectable,true);
+    assert.equal(walkElements(rendered,n=>n.type==='Image'&&n.props.style.width===40).length,1);
+    assert.equal(walkElements(rendered,n=>n.type==='Image'&&n.props.accessibilityLabel==='Donor').length,1);
+    assert.equal(walkElements(rendered,n=>n.type==='NativeButton').length,0);
+    // Native hex colors are gone; theming comes from tokens.
+    assert.doesNotMatch(JSON.stringify(tree)+JSON.stringify(rendered),/#[0-9a-f]{6}/i);
+    review.type=0;review.timestamp=1700000000;const dated=card.type(card.props);
+    assert.equal(walkElements(dated,n=>n.type==='NativeText'&&n.props.variant==='text-xs/medium'&&/2023/.test(n.props.children)).length,1);
+    const header=walkElements(tree,n=>n.type==='NativeRow')[0];assert.equal(header.props.subLabel,'1 review from ReviewDB');
 });
 
 
@@ -1537,7 +1551,7 @@ test('ReviewDB native callback-then-dismiss retains the exchange and sign-in acr
     for(let repeat=0;repeat<3;repeat++) {
         const profile=b.profile.default({user:{id:'222222222222222222'}}),panel=b.getPanel(profile);
         const states=[0,true,[],'',false,'',0];let index=0;b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];
-        const rendered=panel.type(panel.props);assert.equal(walkElements(rendered,n=>n.type==='TextInput')[0].props.editable,true);
+        const rendered=panel.type(panel.props);assert.equal(walkElements(rendered,n=>n.type==='NativeTextArea')[0].props.disabled,false);
         assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
         assert.equal(b.original.props.children.length,2);assert.equal(profile.props.children[0],b.original.props.children[0]);
         assert.equal(profile.props.children[1].props.children[0],b.original.props.children[1]);
@@ -1545,7 +1559,7 @@ test('ReviewDB native callback-then-dismiss retains the exchange and sign-in acr
     const guild=b.load({default:()=>null},null,14273).default({guild:{id:'333333333333333333'}});
     const panel=guild.props.children[1];assert.equal(panel.props.userId,'333333333333333333');assert.equal(panel.props.server,true);
     let index=0;const states=[0,true,[],'',false,'',0];b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];
-    const rendered=panel.type(panel.props);assert.equal(walkElements(rendered,n=>n.type==='TextInput')[0].props.editable,true);
+    const rendered=panel.type(panel.props);assert.equal(walkElements(rendered,n=>n.type==='NativeTextArea')[0].props.label,'Add a review');
     assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
 });
 test('ReviewDB real cancellation before redirect ignores late callback with no exchange or false success',async()=>{
@@ -1583,9 +1597,13 @@ test('ReviewDB server lists and mutations use the guild ID and preserve native g
     b.React.useEffect=fn=>effects.push(fn);
     let rendered=panel.type(panel.props);effects.forEach(fn=>fn());await flush();
     assert.equal(b.requests.at(-1)[0],'https://manti.vendicated.dev/api/reviewdb/users/333333333333333333/reviews');
-    index=0;effects.length=0;rendered=panel.type(panel.props);walkElements(rendered,n=>n.props.label==='Post / update review')[0].props.onPress();await flush();
+    index=0;effects.length=0;rendered=panel.type(panel.props);
+    assert.equal(walkElements(rendered,n=>n.type==='NativeRow')[0].props.label,'Server reviews');
+    walkElements(rendered,n=>n.type==='NativeButton'&&n.props.text==='Post review')[0].props.onPress();await flush();
     const [url,options]=b.requests.at(-1);assert.equal(url,'https://manti.vendicated.dev/api/reviewdb/users/333333333333333333/reviews');assert.equal(options.method,'PUT');
-    assert.deepEqual(JSON.parse(options.body),{comment:'server review',token:'review-only-token'});
+    // Credentials travel in the Authorization header, never in the JSON body.
+    assert.deepEqual(JSON.parse(options.body),{comment:'server review'});assert.equal(options.headers.authorization,'review-only-token');
+    assert.equal(b.toasts.at(-1).content,'Review posted');
     assert.equal(walkElements(rendered,n=>/Authenticate|Log out/.test(n.props.label || '')).length,0);
     assert.equal(component({guild:{id:'bad-id'}}),progress);b.api.setSetting('reviewDB',false);assert.equal(component({guild:{id:'333333333333333333'}}),progress);
 });
@@ -1672,4 +1690,50 @@ test('Hidden Channels READY cache belongs to the incoming account before UserSto
     dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'222222222222222222'},guilds:[{id:'g',channels:[{id:'hidden',name:'second-staff'}]}]});
     assert.equal(b.label(b.channels.hidden),'second staff');
     account={id:'333333333333333333'};assert.match(b.label(b.channels.hidden),/name unavailable/);
+});
+test('ReviewDB actions follow Vencord permissions, confirm with native AlertModal and never send tokens on reads',async()=>{
+    const b=reviewHarness(),{props}=openReviewAuth(b);await props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=valid'});
+    const me=b.account.id;
+    const reviews=[
+        {id:0,type:3,timestamp:0,comment:'System notice',sender:{discordID:'1',username:'Warning'}},
+        {id:10,type:0,timestamp:1700000000,comment:'mine',sender:{discordID:me,username:'Me'}},
+        {id:11,type:0,timestamp:1700000000,comment:'theirs',sender:{discordID:'555555555555555555',username:'Other'}}];
+    function render(userId){
+        const states=[0,true,reviews,'',false,'',0,2];let index=0;
+        b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,()=>{}];};b.React.useEffect=()=>{};
+        const panel=b.React.createElement(b.panel.type,{userId});
+        const tree=panel.type(panel.props),scroll=walkElements(tree,n=>n.type==='ScrollView')[0];
+        return {tree,cards:scroll.props.children.map(card=>card.type(card.props))};
+    }
+    const buttons=card=>walkElements(card,n=>n.type==='NativeButton').map(n=>n.props.text);
+    // Someone else's profile: delete only own review, report only others, nothing on system notices.
+    let {tree,cards}=render('222222222222222222');
+    assert.deepEqual(cards.map(buttons),[[],['Delete'],['Report']]);
+    assert.equal(walkElements(tree,n=>n.type==='NativeTextArea')[0].props.label,'Your review');
+    assert.ok(walkElements(tree,n=>n.type==='NativeButton'&&n.props.text==='Update review').length===1);
+    // Own profile: owner may also delete reviews written about them.
+    ({cards}=render(me));assert.deepEqual(cards.map(buttons),[[],['Delete'],['Delete','Report']]);
+    // Destructive actions go through Discord's native AlertModal first.
+    const report=walkElements(cards[2],n=>n.type==='NativeButton'&&n.props.text==='Report')[0];
+    const before=b.requests.length;report.props.onPress();assert.equal(b.requests.length,before);
+    const confirm=b.confirms.at(-1);assert.equal(confirm.title,'Report review?');assert.equal(confirm.confirmText,'Report');assert.equal(typeof confirm.body,'string');
+    confirm.onConfirm();await flush();
+    const [url,options]=b.requests.at(-1);assert.equal(url,'https://manti.vendicated.dev/api/reviewdb/reports');assert.equal(options.method,'PUT');
+    assert.deepEqual(JSON.parse(options.body),{reviewid:11});assert.equal(options.headers.authorization,'review-only-token');
+    assert.equal(b.toasts.at(-1).content,'Review reported');
+    // Reading reviews never attaches the ReviewDB credential.
+    const effects=[];b.React.useEffect=fn=>effects.push(fn);const states=[0,true,[],'',false,'',1,null];let index=0;
+    b.React.useState=initial=>{const i=index++;return [i<states.length?states[i]:initial,()=>{}];};
+    b.panel.type(b.panel.props);effects.forEach(fn=>fn());await flush();
+    const read=b.requests.at(-1);assert.equal(read[1].method,'GET');assert.equal(read[1].headers.authorization,undefined);assert.equal(read[1].body,undefined);
+});
+test('ReviewDB signed-out panel explains where to sign in and offers no write controls',()=>{
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);
+    const states=[0,true,[{id:5,type:0,timestamp:1700000000,comment:'hi',sender:{discordID:'9',username:'X'}}],'',false,'',0,1];let index=0;
+    b.React.useState=initial=>[index<states.length?states[index++]:initial,()=>{}];b.React.useEffect=()=>{};
+    const tree=b.panel.type(b.panel.props);
+    assert.equal(walkElements(tree,n=>n.type==='NativeTextArea').length,0);
+    assert.ok(walkElements(tree,n=>n.type==='NativeText'&&/Settings → Venus → Plugins → ReviewDB/.test(n.props.children)).length===1);
+    const cards=walkElements(tree,n=>n.type==='ScrollView')[0].props.children.map(card=>card.type(card.props));
+    assert.equal(walkElements(cards,n=>n.type==='NativeButton').length,0);
 });
