@@ -9,13 +9,14 @@ import com.android.tools.smali.dexlib2.iface.Method
 
 /** Native entry-point guards; interfaces, constructors, cleanup and operational network APIs stay intact. */
 internal object NativePrivacy {
-    enum class Result { VOID, TRUE, FALSE, NULL, SELF, EMPTY_STRING, PROMISE_NULL, PROMISE_TRUE, PROMISE_FALSE, AF_SUCCESS }
+    enum class Result { VOID, TRUE, FALSE, NULL, SELF, EMPTY_STRING, PROMISE_NULL, PROMISE_TRUE, PROMISE_FALSE, AF_SUCCESS, EMPTY_MAP, PROFILE_START, AD_ID_MAP, CALLBACK_NULL, CALLBACK_FALSE, CALLBACK_EMPTY_STRING, BOXED_FALSE, THROWABLE_STRING }
     data class Target(val owner: String, val name: String, val parameters: List<String>, val returns: String, val result: Result) {
         fun matches(method: Method) = method.definingClass == owner && method.name == name &&
             method.parameterTypes.map { it.toString() } == parameters && method.returnType == returns
         fun prefix(method: Method): String {
             require(matches(method) && method.implementation != null) { "Native privacy ABI changed: $owner->$name" }
             val registers = method.implementation!!.registerCount
+            require(result == Result.VOID || registers >= 1)
             val isStatic = method.accessFlags and 8 != 0
             fun lastParameter(): Int = parameters.sumOf { if (it == "J" || it == "D") 2 else 1 } - if (isStatic) 1 else 0
             return when (result) {
@@ -25,6 +26,25 @@ internal object NativePrivacy {
                     "const/4 v0, ${if (result == Result.TRUE) "0x1" else "0x0"}\nreturn v0"
                 }
                 Result.NULL -> { require(returns.startsWith("L")); "const/4 v0, 0x0\nreturn-object v0" }
+                Result.BOXED_FALSE -> {
+                    require(returns == "Ljava/lang/Boolean;")
+                    "sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;\nreturn-object v0"
+                }
+                Result.THROWABLE_STRING -> {
+                    require(isStatic && parameters == listOf("Ljava/lang/Throwable;") && returns == "Ljava/lang/String;")
+                    "invoke-virtual {p0}, Ljava/lang/Throwable;->toString()Ljava/lang/String;\nmove-result-object v0\nreturn-object v0"
+                }
+                Result.CALLBACK_NULL, Result.CALLBACK_FALSE, Result.CALLBACK_EMPTY_STRING -> {
+                    require(returns == "V" && parameters.last() == "Lcom/facebook/react/bridge/Callback;" && registers >= 2)
+                    val value = when (result) {
+                        Result.CALLBACK_FALSE -> "sget-object v1, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;"
+                        Result.CALLBACK_EMPTY_STRING -> "const-string v1, \"\""
+                        else -> "const/4 v1, 0x0"
+                    }
+                    "move-object/from16 v0, p${lastParameter()}\n$value\n" +
+                        "filled-new-array {v1}, [Ljava/lang/Object;\nmove-result-object v1\n" +
+                        "invoke-interface {v0, v1}, Lcom/facebook/react/bridge/Callback;->invoke([Ljava/lang/Object;)V\nreturn-void"
+                }
                 Result.SELF -> { require(!isStatic && returns == "Lcom/appsflyer/AppsFlyerLib;"); "return-object p0" }
                 Result.EMPTY_STRING -> { require(returns == "Ljava/lang/String;"); "const-string v0, \"\"\nreturn-object v0" }
                 Result.PROMISE_NULL, Result.PROMISE_TRUE, Result.PROMISE_FALSE -> {
@@ -38,6 +58,29 @@ internal object NativePrivacy {
                     "move-object/from16 v0, p${lastParameter()}\n$value\n" +
                         "invoke-interface {v0, v1}, Lcom/facebook/react/bridge/Promise;->resolve(Ljava/lang/Object;)V\nreturn-void"
                 }
+                Result.EMPTY_MAP, Result.PROFILE_START, Result.AD_ID_MAP -> {
+                    require(returns == "Lcom/facebook/react/bridge/WritableMap;" ||
+                        (result == Result.AD_ID_MAP && returns == "V" && parameters == listOf("Lcom/facebook/react/bridge/Promise;")))
+                    val create = "invoke-static {}, Lcom/facebook/react/bridge/Arguments;->createMap()Lcom/facebook/react/bridge/WritableMap;\nmove-result-object v0\n"
+                    when (result) {
+                        Result.EMPTY_MAP -> create + "return-object v0"
+                        Result.PROFILE_START -> {
+                            require(registers >= 3)
+                            create + "const-string v1, \"started\"\nconst/4 v2, 0x0\n" +
+                                "invoke-interface {v0, v1, v2}, Lcom/facebook/react/bridge/WritableMap;->putBoolean(Ljava/lang/String;Z)V\nreturn-object v0"
+                        }
+                        else -> {
+                            require(registers >= 4 && !isStatic)
+                            // Preserve the Ads bridge's limited-tracking response schema, not Promise.resolve(null).
+                            "move-object/from16 v3, p1\n" + create +
+                                "const-string v1, \"googleAdvertisingId\"\n" +
+                                "invoke-interface {v0, v1}, Lcom/facebook/react/bridge/WritableMap;->putNull(Ljava/lang/String;)V\n" +
+                                "const-string v1, \"isLimitAdTrackingEnabled\"\nconst/4 v2, 0x1\n" +
+                                "invoke-interface {v0, v1, v2}, Lcom/facebook/react/bridge/WritableMap;->putBoolean(Ljava/lang/String;Z)V\n" +
+                                "invoke-interface {v3, v0}, Lcom/facebook/react/bridge/Promise;->resolve(Ljava/lang/Object;)V\nreturn-void"
+                        }
+                    }
+                }
                 Result.AF_SUCCESS -> {
                     require(returns == "V" && parameters.last() == "Lcom/appsflyer/attribution/AppsFlyerRequestListener;")
                     "move-object/from16 v0, p${lastParameter()}\nif-eqz v0, :venus_privacy_done\n" +
@@ -49,6 +92,22 @@ internal object NativePrivacy {
         fun install(method: MutableMethod) { method.addInstructions(0, prefix(method)) }
     }
     val crash = listOf(
+        Target("Lcom/discord/crash_reporting/CrashReportingModule;", "initializeManager", listOf(), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/CrashReportingModule;", "getDidCrashDuringPreviousExecution", listOf("Lcom/facebook/react/bridge/Callback;"), "V", Result.CALLBACK_FALSE),
+        Target("Lcom/discord/crash_reporting/CrashReportingModule;", "getLastCrashReport", listOf("Lcom/facebook/react/bridge/Callback;"), "V", Result.CALLBACK_NULL),
+        Target("Lcom/discord/crash_reporting/CrashReportingModule;", "getSystemLog", listOf("Lcom/facebook/react/bridge/Callback;"), "V", Result.CALLBACK_EMPTY_STRING),
+        Target("Lcom/discord/crash_reporting/CrashReporting;", "isCrashedLastRun", listOf(), "Ljava/lang/Boolean;", Result.BOXED_FALSE),
+        Target("Lcom/discord/crash_reporting/system_logs/SystemLogUtils;", "initSystemLogCapture", listOf("Landroid/content/Context;"), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/system_logs/SystemLogCapture;", "startThread", listOf("Landroid/content/Context;"), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/CrashPersistence;", "getLastCrashInfo", listOf(), "Lcom/discord/crash_reporting/CrashPersistence\$LastCrashInfo;", Result.NULL),
+        Target("Lcom/discord/crash_reporting/CrashPersistence;", "setLastCrashInfo", listOf("Lcom/discord/crash_reporting/CrashPersistence\$LastCrashInfo;"), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/WebrtcCrashReporting;", "reportWebrtcException", listOf("Ljava/lang/Throwable;"), "Ljava/lang/String;", Result.THROWABLE_STRING),
+        Target("Lcom/discord/crash_reporting/CrashReporting;", "addBreadcrumb", listOf("Ljava/lang/String;", "Ljava/util/Map;", "Ljava/lang/String;", "Lcom/discord/crash_reporting/CrashReporting\$BreadcrumbLevel;", "Z"), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/CrashReporting;", "addBreadcrumbBatchBinary", listOf("Ljava/nio/ByteBuffer;"), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/CrashReporting;", "captureException", listOf("Ljava/lang/Throwable;", "Z"), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/CrashReporting;", "captureMessage", listOf("Ljava/lang/String;", "Ljava/lang/Exception;"), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/CrashReporting;", "captureMessage", listOf("Ljava/lang/String;", "Ljava/lang/String;", "Lcom/discord/crash_reporting/CrashReporting\$ErrorLevel;"), "V", Result.VOID),
+        Target("Lcom/discord/crash_reporting/CrashReporting;", "libdiscoreAddBreadcrumb", listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;"), "V", Result.VOID),
         Target("Lcom/discord/crash_reporting/CrashReporting;", "isDisabled", listOf(), "Z", Result.TRUE),
         Target("Lio/sentry/android/core/c1;", "b", listOf("Landroid/content/Context;", "Lio/sentry/android/core/l0;", "Lio/sentry/b4;"), "V", Result.VOID),
         Target("Lio/sentry/android/core/SentryInitProvider;", "onCreate", listOf(), "Z", Result.TRUE),
@@ -69,13 +128,15 @@ internal object NativePrivacy {
         Target("Lio/sentry/react/RNSentryModule;", "setTag", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "V", Result.VOID),
         Target("Lio/sentry/react/RNSentryModule;", "setUser", listOf("Lcom/facebook/react/bridge/ReadableMap;", "Lcom/facebook/react/bridge/ReadableMap;"), "V", Result.VOID),
         Target("Lio/sentry/react/RNSentryModule;", "enableNativeFramesTracking", listOf(), "V", Result.VOID),
-        Target("Lio/sentry/react/RNSentryModule;", "startProfiling", listOf("Z"), "Lcom/facebook/react/bridge/WritableMap;", Result.NULL),
-        Target("Lio/sentry/react/RNSentryModule;", "stopProfiling", listOf(), "Lcom/facebook/react/bridge/WritableMap;", Result.NULL),
+        Target("Lio/sentry/react/RNSentryModule;", "startProfiling", listOf("Z"), "Lcom/facebook/react/bridge/WritableMap;", Result.PROFILE_START),
+        Target("Lio/sentry/react/RNSentryModule;", "stopProfiling", listOf(), "Lcom/facebook/react/bridge/WritableMap;", Result.EMPTY_MAP),
         Target("Lio/sentry/react/RNSentryModule;", "getCurrentReplayId", listOf(), "Ljava/lang/String;", Result.NULL),
         Target("Lio/sentry/react/RNSentryModule;", "setActiveSpanId", listOf("Ljava/lang/String;"), "Z", Result.FALSE),
         Target("Lcom/discord/crash_reporting/PerformanceTracing;", "start", listOf(), "V", Result.VOID),
     )
     val telemetry = listOf(
+        Target("Lcom/discord/metric_monitor/MonitoringAgent;", "increment", listOf("Lcom/discord/metric_monitor/MetricEvent;"), "V", Result.VOID),
+        Target("Lcom/discord/metric_monitor/MonitoringAgent;", "setMetricLogger\$metric_monitor_release", listOf("Lkotlin/jvm/functions/Function1;"), "V", Result.VOID),
         Target("Lcom/discord/analytics/touch/TouchEventAnalyticsModule;", "enableTouchLogging", listOf(), "V", Result.VOID),
         Target("Lcom/discord/analytics/touch/TouchEventAnalyticsModule;", "onEventRecognized", listOf("Lcom/discord/analytics/touch/TouchEventDetails;"), "V", Result.VOID),
         Target("Lcom/discord/analytics/touch/TouchLogger;", "enable", listOf("Landroid/app/Activity;"), "V", Result.VOID),
@@ -85,6 +146,9 @@ internal object NativePrivacy {
         Target("Lcom/discord/crash_reporting/TelemetryRing;", "append", listOf("Ljava/lang/String;", "J", "Ljava/lang/String;", "Ljava/util/Map;", "Ljava/util/List;"), "V", Result.VOID),
         Target("Lcom/discord/crash_reporting/TelemetryRing;", "enqueueWrite", listOf("Lcom/discord/crash_reporting/TelemetryRingSqliteStore\$EntryPayload;"), "V", Result.VOID),
         Target("Lcom/discord/crash_reporting/TelemetryRingModule;", "append", listOf("Ljava/lang/String;", "D", "Ljava/lang/String;", "Lcom/facebook/react/bridge/ReadableMap;", "Lcom/facebook/react/bridge/ReadableArray;"), "V", Result.VOID),
+    )
+    val advertising = listOf(
+        Target("Lcom/discord/ads/AdsModule;", "getGoogleAdvertisingId", listOf("Lcom/facebook/react/bridge/Promise;"), "V", Result.AD_ID_MAP),
     )
     val attribution = listOf(
         Target("Lcom/discord/analytics/InstallReferrerModule;", "get", listOf("Lcom/facebook/react/bridge/Promise;"), "V", Result.PROMISE_NULL),
@@ -120,26 +184,26 @@ internal object NativePrivacy {
 @Suppress("unused")
 val disableAnalytics = rawResourcePatch(
     name = "Disable analytics",
-    description = "APK-level Hermes bytecode guards disable Discord analytics recording, tracking, queue draining, immediate event uploads and CLIENT_TELEMETRY. No in-app switch."
+    description = "APK-level Hermes bytecode guards disable Discord analytics recording, tracking, MonitoringAgent metrics-v2 collection/uploads, queue draining, immediate event uploads and CLIENT_TELEMETRY. No in-app switch."
 ) {
     compatibleWith(discord)
-    dependsOn(discordBundleGuard)
+    dependsOn(packagedDiscordBundle)
     execute { HbcPrivacy.apply(get("assets/index.android.bundle"), HbcPrivacy.analytics) }
 }
 
 private val crashTransport = rawResourcePatch {
-    dependsOn(discordBundleGuard)
+    dependsOn(packagedDiscordBundle)
     execute { HbcPrivacy.apply(get("assets/index.android.bundle"), HbcPrivacy.crash) }
 }
 private val telemetryProducers = rawResourcePatch {
-    dependsOn(discordBundleGuard)
+    dependsOn(packagedDiscordBundle)
     execute { HbcPrivacy.apply(get("assets/index.android.bundle"), HbcPrivacy.telemetry) }
 }
 
 @Suppress("unused")
 val disableCrashReporting = bytecodePatch(
     name = "Disable crash reporting",
-    description = "APK-level guards disable Discord/Sentry native initialization, Rust reporter installation, JavaScript Sentry transports, envelopes, breadcrumbs, replay, screenshots, profiling and device-context collection. No in-app switch."
+    description = "APK-level guards disable Discord/Sentry native initialization, Rust reporter installation, JavaScript Sentry transports, envelopes, breadcrumbs, replay, screenshots, profiling, device contexts, independent system-log capture and cached-crash callbacks. No in-app switch."
 ) {
     compatibleWith(discord)
     dependsOn(crashTransport)
@@ -153,7 +217,7 @@ val disableCrashReporting = bytecodePatch(
 @Suppress("unused")
 val disableTelemetry = bytecodePatch(
     name = "Disable telemetry and touch logging",
-    description = "APK-level guards stop touch/view-hierarchy logging and JavaScript/native telemetry-ring collection, initialization and writes. No in-app switch; existing local files are not erased."
+    description = "APK-level guards stop touch/view-hierarchy logging and JavaScript/native telemetry-ring collection, initialization, writes, native metric monitoring and WebSocket telemetry instrumentation. No in-app switch; existing local files are not erased."
 ) {
     compatibleWith(discord)
     dependsOn(telemetryProducers)
@@ -173,6 +237,20 @@ val disableAttribution = bytecodePatch(
     dependsOn(discordBundleGuard)
     execute {
         for (target in NativePrivacy.attribution) target.install(Fingerprint(
+            definingClass = target.owner, name = target.name, parameters = target.parameters, returnType = target.returns
+        ).method)
+    }
+}
+
+@Suppress("unused")
+val disableAdvertisingIdentifiers = bytecodePatch(
+    name = "Disable advertising identifiers",
+    description = "Disables Discord's independent Google advertising-ID lookup before contacting Play services. Returns a null ID with limited tracking enabled, preserving the bridge Promise/map schema. No in-app switch. Select install-attribution protection separately for AppsFlyer."
+) {
+    compatibleWith(discord)
+    dependsOn(discordBundleGuard)
+    execute {
+        for (target in NativePrivacy.advertising) target.install(Fingerprint(
             definingClass = target.owner, name = target.name, parameters = target.parameters, returnType = target.returns
         ).method)
     }

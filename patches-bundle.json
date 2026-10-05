@@ -1,8 +1,8 @@
 {
-  "created_at": "2026-10-05T18:28:43.915322+00:00",
-  "description": "Discord 347.12: independent APK-level Morphe patches for analytics, Sentry crash reporting, telemetry/touch logging and install attribution. No in-app privacy switches.",
-  "download_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/download/v1.2.7/patches-1.2.7.mpp",
-  "page_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/tag/v1.2.7",
+  "created_at": "2026-10-05T20:18:17.626632+00:00",
+  "description": "Discord 347.12: deeper privacy audit fixes cached-bundle bypass, metrics-v2 reporting and profiling return shapes; adds independent Google advertising-ID protection. No in-app privacy switches.",
+  "download_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/download/v1.2.8/patches-1.2.8.mpp",
+  "page_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/tag/v1.2.8",
   "signature_download_url": "",
-  "version": "1.2.7"
+  "version": "1.2.8"
 }

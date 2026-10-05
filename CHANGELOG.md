@@ -2,6 +2,18 @@
 
 All releases target **Discord 347.12 - Stable (347012)**. Patch the original APKM each time.
 
+## 1.2.8 — Deeper privacy audit
+
+- **Fixed a cached/OTA bundle bypass:** analytics, crash-reporting and telemetry patches now independently pin Discord's packaged Hermes bundle. They still do not require Venus settings. A shared dependency prevents duplicate loader hooks when settings and privacy are combined.
+- **Closed an independent metrics path:** Disable analytics now also disables MonitoringAgent increment/distribution collection and its `/metrics/v2` uploader, preventing an unbounded queue when uploads are blocked.
+- **Fixed native profiling return contracts:** disabled Sentry start/stop profiling return safe maps (`started: false` / empty map), rather than null objects that JavaScript immediately dereferences.
+- Added **Disable advertising identifiers**, an independent default-on Morphe patch for Discord's separate Google advertising-ID bridge. It skips Play-services lookup and resolves the existing limited-tracking map schema. AppsFlyer remains covered by Disable install attribution.
+- Closed independent system-log capture and cached crash-report collection paths. Disabled crash-history/system-log callbacks complete exactly once with `false`, `null` or an empty string instead of hanging or reading old diagnostics. Direct native exception/breadcrumb and WebRTC-reporting guards preserve operational error-string behavior.
+- Stops native metric-monitor events, libdiscore metrics collection and WebSocket telemetry instrumentation without replacing operational WebSocket connections.
+- Also disables independent system-log capture, crash persistence/read callbacks, native metric monitoring and WebSocket telemetry instrumentation while completing disabled callbacks safely. Existing diagnostic files are not erased.
+- Strengthened HBC expanded-header/footer checks, all 64 privacy/settings dependency selections, native stub result-shape and host-ABI tests, and combined privacy/prelude tests. The audit covers 17 pinned Hermes bodies and 80 native targets.
+- No Morphe Patcher run or patched APK. Device/network testing remains required; server-side logging and all possible collection are not claimed to be eliminated.
+
 ## 1.2.7 — APK-level privacy patches
 
 - Added four independently selectable Morphe patches: **Disable analytics**, **Disable crash reporting**, **Disable telemetry and touch logging**, and **Disable install attribution**. They default on in Morphe, have no Discord/Venus settings switch and work without Venus settings.
