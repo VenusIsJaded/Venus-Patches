@@ -19,11 +19,11 @@ Small, bundled Discord tools for **[Morphe](https://morphe.software)**. They're 
 | **FreeNitro** | Sends unavailable emojis and stickers as CDN links | On |
 | **No typing** | Stops sending your typing indicator | On |
 | **QuickDelete** | Skips the delete confirmation for messages and embeds | Off |
-| **NoDelete** | Keeps deleted messages from your cache, with optional local saving | Off |
+| **NoDelete** | Keeps deleted messages (yours too) with a red outline; session-only or permanent saving with a typed maximum | Off |
 | **JumpToTop** | Adds a jump-to-first-message control to chats | On |
 | **Hidden Channels** | Lists locked channels with a lock icon and a native details dialog | Off |
 | **Pastelize** | Gives names and mentions stable pastel colors | On |
-| **PlatformIndicators** | Shows desktop, mobile, web and console status icons | On |
+| **PlatformIndicators** | Shows the original desktop, mobile, web, console and VR status icons | On |
 | **ReviewDB** | Read, write and report user and server reviews, laid out like the original plugin (opt-in) | Off |
 
 You can turn the bundled plugin switches on and off in **Discord Settings → Venus → Plugins** without reinstalling.
@@ -59,7 +59,7 @@ To use a local copy instead, download `patches-<version>.mpp` from [Releases](ht
 
 - **Hidden Channels** only shows metadata your client already received: name, creation date, last message and last pin. It can't read hidden messages or join locked voice channels. Names the server redacted appear as *name unavailable*.
 - **Voice messages** need Android 10+ and an Opus encoder. If conversion fails, Discord uploads the original file as a normal attachment.
-- **NoDelete** keeps at most 512 messages that *other people* deleted, and its optional archive is capped at 8 MiB. Your own deletions, failed sends and "Only you can see this" messages still disappear normally. It only retains content that was already cached on your device.
+- **NoDelete** keeps deleted messages, including ones *you* delete, with a red outline. In **Settings → Venus → Plugins → NoDelete**, turn on **Save permanently** to keep them across restarts (stored locally for your account), or leave it off to keep them until Discord restarts. Type the **maximum saved messages** (1–5000, default 512); the oldest is dropped when full. Deleting a kept message again dismisses it locally. Failed sends and "Only you can see this" messages still disappear normally. It only keeps content already cached on your device.
 - **ReviewDB** shows a **Reviews** card under the profile note, a **Reviews** row in the server sheet and a **Reviews** entry in the user long-press menu, like the original plugin. It contacts `manti.vendicated.dev` when a profile with reviews is shown. Sign in from **Settings → Venus → Plugins → ReviewDB** to post, delete or report (long-press a review). The ReviewDB sign-in is saved until you log out and never uses your Discord token.
 - **FreeNitro** sends links, not real Nitro emojis or stickers. It doesn't convert Lottie stickers.
 - The patches check the bundle hash and refuse to run on any other Discord JavaScript bundle: `834bb2c88a7d8e508039e11be90a2a09f9f87017fdceef1999cf099933a6be35`.

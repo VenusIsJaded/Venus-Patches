@@ -97,7 +97,7 @@ context.Terser.minify(source, {compress:false, mangle:false,
     result = subprocess.run(["node", "-e", script, str(TOOLS / "terser.js"), str(source)],
                             cwd=ROOT, check=True, capture_output=True, text=True)
     content = result.stdout
-    if content.count("/*__FEATURES__*/") != 1 or len(content) > 99000:
+    if content.count("/*__FEATURES__*/") != 1 or len(content) > 118000:
         raise SystemExit("Invalid or oversized compact runtime")
     BUILD.mkdir(parents=True, exist_ok=True)
     output = BUILD / "bootstrap.js"
@@ -206,7 +206,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: deeper privacy audit fixes cached-bundle bypass, metrics-v2 reporting and profiling return shapes; adds independent Google advertising-ID protection. No in-app privacy switches.",
+        "description": "Discord 347.12: NoDelete keeps your own deletions in red, with permanent/session saving and a typed maximum; original PlatformIndicators icons, settings and placements; server ReviewDB Reviews opens again.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

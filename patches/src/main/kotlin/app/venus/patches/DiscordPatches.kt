@@ -224,7 +224,7 @@ val noTyping = bundledPlugin("noTyping", "No typing", "Hides outgoing typing ind
 val quickDelete = bundledPlugin("quickDelete", "QuickDelete", "Opt-in removal of message and embed confirmations, matched using Discord's localized strings.")
 
 @Suppress("unused")
-val noDelete = bundledPlugin("noDelete", "NoDelete", "Keeps up to 512 messages others deleted with original content and red-only styling; your own deletions, failed sends and ephemeral messages are removed normally. Opt-in local saving.")
+val noDelete = bundledPlugin("noDelete", "NoDelete", "Keeps deleted messages, including your own, with a red outline. Choose session-only or permanent local saving and type a maximum (default 512). Failed sends and ephemeral messages are removed normally.")
 
 @Suppress("unused")
 val jumpToTop = bundledPlugin("jumpToTop", "JumpToTop", "Adds a jump-to-start control to the native chat without replacing Jump to Present.")
@@ -236,7 +236,7 @@ val hiddenChannels = bundledPlugin("hiddenChannels", "Hidden Channels", "Opt-in 
 val pastelize = bundledPlugin("pastelize", "Pastelize", "Stable pastel chat names and mentions, preserving role colors by default. Optional webhook/name and content controls.")
 
 @Suppress("unused")
-val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators", "Status-colored monitor, phone, web and console icons on profiles, DM headers/lists, friend and voice-member rows.")
+val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators", "Original PlatformIndicators icons (desktop, mobile, web, console, VR) on profiles, DM top bar, DM/member/friend lists and voice users, with the original settings.")
 
 @Suppress("unused")
 val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Opt-in user and server reviews matching the original plugin: a Reviews card under the profile note, a server Reviews sheet and a user menu entry. Uses manti.vendicated.dev.")

@@ -1147,14 +1147,15 @@ test('Pastelize preserves role colors and immutable mentions, supports webhook a
 test('PlatformIndicators uses real client status, hides unknown/offline clients and preserves immutable profiles',()=>{
     const b=boot(allFeatures),{React}=reactHarness(b);const clients={desktop:'online',mobile:'idle',web:'offline',unknown:'dnd'};
     b.load({default:{getClientStatus:()=>clients,addChangeListener(){},removeChangeListener(){}}},null,4828);
-    b.load({ScreenIcon:'ScreenIcon'},null,9193);b.load({MobilePhoneIcon:'MobilePhoneIcon'},null,7235);
     function DisplayName(props){return Object.freeze(React.createElement('Name',{children:props.user.id}));}
     const profile=Object.freeze(React.createElement('View',{children:React.createElement(DisplayName,{user:{id:'u'}})}));
     const exports=b.load({DisplayName,default:()=>profile},null,11448);
     const tree=exports.default({});assert.notEqual(tree,profile);const named=tree.props.children.type(tree.props.children.props);
-    const badges=named.props.children[1];const rendered=badges.type(badges.props);assert.deepEqual(Array.from(rendered.props.children,c=>typeof c.props.children.type==='function'?c.props.children.type.name:c.props.children.type),['DesktopIndicator','MobilePhoneIcon']);
+    const badges=named.props.children[1];const rendered=badges.type(badges.props);
+    assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children.props.platform),['desktop','mobile']);
     assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children.props.color),['#23a55a','#f0b232']);
     assert.deepEqual(Array.from(rendered.props.children,c=>c.props.accessibilityLabel),['Desktop: online','Mobile: idle']);
+    b.api.setSetting('piProfile',false);assert.equal(exports.DisplayName({user:{id:'u'}}).type,'Name');b.api.setSetting('piProfile',true);
     b.api.setSetting('platformIndicators',false);assert.equal(badges.type(badges.props),null);
 });
 function reviewHarness() {
@@ -1167,7 +1168,7 @@ function reviewHarness() {
     const native={5854:{TableRow:'NativeRow'},5936:{TableRowGroup:'RowGroup'},7477:{TableSwitchRow:'SwitchRow'},5216:{Stack:'Stack'},7484:{default:'UserProfileCard'},
         8903:{FormRow:'FormRow',FormLabel:'FormLabel',FormSubLabel:'FormSubLabel'},6880:{TextInput:'NativeTextInput'},4732:{SendMessageIcon:'SendIcon'},
         7474:{ActionSheet:'ActionSheet'},7426:{BottomSheetTitleHeader:'SheetHeader'},7475:{ActionSheetCloseButton:'SheetClose'},
-        4755:{default:{openLazy:(promise,key,props)=>sheets.push({promise,key,props}),hideActionSheet(){}}},7472:{showSimpleActionSheet:value=>simple.push(value)},
+        4755:{default:{openLazy:(promise,key,props,options)=>sheets.push({promise,key,props,options}),hideActionSheet(){}}},7472:{showSimpleActionSheet:value=>simple.push(value)},
         7469:{Clipboard:{setString:value=>copied.push(value)}},5141:{default:{show:value=>confirms.push(value)}},4486:{default:{open:value=>toasts.push(value)}},
         4645:{pushModal:value=>pushed.push(value),popModal:key=>popped.push(key)},9358:{default:'OAuth2AuthorizeModal'},4505:{useThemeContext:()=>({primaryColor:'#123456'})}};
     b.context.__r=id=>native[id]||null;
@@ -1262,17 +1263,17 @@ function platformFixture() {
     const tree=profile.default({}),name=tree.props.children.type(tree.props.children.props);
     return {...b,React,badges:name.props.children[1]};
 }
-test('PlatformIndicators demand-loads native icon components, uses own sessions and cleans up both subscriptions',()=>{
+test('PlatformIndicators uses own sessions and cleans up both subscriptions',()=>{
     const b=platformFixture(),listeners=new Set(),removals=[];let sessions={one:{clientInfo:{client:'mobile'},status:'idle'},two:{clientInfo:{client:'web'},status:'dnd'},unknown:{clientInfo:{client:'unknown'},status:'online'}};
     const presence={getClientStatus:()=>({desktop:'online'}),addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>{removals.push('presence');listeners.delete(fn);}};
     const store={getSessions:()=>sessions,addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>{removals.push('sessions');listeners.delete(fn);}};
     b.load({default:presence},null,4828);b.load({default:{getCurrentUser:()=>({id:'self'})}},null,1372);
-    const imported=[];b.context.__r=id=>{imported.push(id);return {4806:{default:store},7235:{MobilePhoneIcon:'Phone'},9200:{GlobeEarthIcon:'Globe'},9380:{GameControllerIcon:'Console'}}[id];};
+    b.context.__r=id=>({4806:{default:store}}[id]);
     let cleanup;b.React.useEffect=fn=>cleanup=fn();
-    let tree=b.badges.type(b.badges.props);assert.deepEqual(Array.from(tree.props.children,c=>c.props.children.type),['Phone','Globe']);
-    assert.equal(imported.includes(9193),false);assert.equal(listeners.size,1);cleanup();assert.deepEqual(removals,['presence','sessions']);
+    let tree=b.badges.type(b.badges.props);assert.deepEqual(Array.from(tree.props.children,c=>c.props.children.props.platform),['mobile','web']);
+    cleanup();assert.deepEqual(removals,['presence','sessions']);
     sessions={one:{clientInfo:{client:'embedded'},status:'online'}};tree=b.badges.type(b.badges.props);
-    assert.equal(tree.props.children[0].props.children.type,'Console');assert.equal(tree.props.children[0].props.children.props.style.width,16);cleanup();
+    assert.equal(tree.props.children[0].props.children.props.platform,'embedded');cleanup();
     b.api.setSetting('platformIndicators',false);assert.equal(b.badges.type(b.badges.props),null);cleanup();
 });
 function openReviewAuth(b) {
@@ -1344,8 +1345,9 @@ test('ReviewDB server sheet shows a single Reviews row that opens the reviews ac
     const b=reviewHarness();const off=b.guild({guild:{id:'444444444444444444'}});assert.equal(off.props.guild.id,'444444444444444444');
     b.api.setSetting('reviewDB',true);const row=b.guild({guild:{id:'444444444444444444'}});
     assert.equal(row.type,'RowGroup');assert.equal(row.props.children.props.label,'Reviews');row.props.children.props.onPress();
-    assert.equal(b.sheets[0].key,'ActionSheet');assert.equal(b.sheets[0].props.userId,'444444444444444444');
-    const sheet=(await b.sheets[0].promise).default({userId:'444444444444444444'});assert.equal(sheet.type,'ActionSheet');assert.equal(sheet.props.header.props.title,'Reviews');
+    assert.equal(b.sheets[0].key,'VenusReviews:444444444444444444');assert.equal(b.sheets[0].props.userId,'444444444444444444');
+    assert.equal(typeof b.sheets[0].promise,'function');assert.equal(b.sheets[0].options,'stack');
+    const sheet=(await b.sheets[0].promise())({userId:'444444444444444444'});assert.equal(sheet.type,'ActionSheet');assert.equal(sheet.props.header.props.title,'Reviews');
 });
 test('ReviewDB user context menu gains a Reviews entry and signed-in actions follow the original permissions',async()=>{
     const b=reviewHarness();b.api.setSetting('reviewDB',true);
@@ -1361,14 +1363,15 @@ test('ReviewDB user context menu gains a Reviews entry and signed-in actions fol
     const del=b.requests.find(([,o])=>o&&o.method==='DELETE');assert.equal(del[1].headers.authorization,'review-only-token');assert.deepEqual(JSON.parse(del[1].body),{reviewid:1});
     rows[0].type(rows[0].props).props.children.props.onLongPress();assert.equal(b.simple.at(-1).header.title,'ReviewDB System Message');assert.deepEqual(Array.from(b.simple.at(-1).options,o=>o.label),['Copy Text']);
 });
-test('NoDelete never retains your own deletions, unsent messages or ephemeral messages, and returns a thenable',async()=>{
+test('NoDelete keeps your own deletions in red but never unsent or ephemeral messages, and returns a thenable',async()=>{
     const b=deletionHarness();b.api.setSetting('noDelete',true);
-    b.messages.set('c:1',{content:'mine'});b.actions.deleteMessage('c','1');b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});assert.equal(b.messages.has('c:1'),false);assert.equal(b.network.length,1);
+    b.messages.set('c:1',{content:'mine'});b.actions.deleteMessage('c','1');b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});assert.equal(b.messages.get('c:1').content,'mine');assert.equal(b.network.length,1);
     b.messages.set('c:2',{content:'failed',state:'SEND_FAILED'});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'2'});assert.equal(b.messages.has('c:2'),false);
     b.messages.set('c:3',{content:'only you',flags:64});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'3'});assert.equal(b.messages.has('c:3'),false);
-    b.messages.set('c:4',{content:'local'});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'4',local:true});assert.equal(b.messages.has('c:4'),false);
     b.messages.set('c:5',{content:'theirs'});const result=b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'5'});
     assert.notEqual(result,undefined);await result;assert.equal(b.messages.get('c:5').content,'theirs');
+    b.api.setSetting('noDeleteLimit','1');assert.equal(b.api.settings.noDeleteLimit,1);assert.equal(b.messages.has('c:1'),false);assert.equal(b.messages.get('c:5').content,'theirs');
+    b.api.setSetting('noDeleteLimit','99999');assert.equal(b.api.settings.noDeleteLimit,5000);b.api.setSetting('noDeleteLimit','abc');assert.equal(b.api.settings.noDeleteLimit,512);
 });
 test('NoDelete reorders restored native records exactly without sharing the stock array',()=>{
     const b=deletionHarness();
@@ -1501,11 +1504,11 @@ test('Hidden Channels uses a native lock icon and preserves frozen ChannelInfo a
     const tree=info({channel:b.channels.hidden});assert.equal(tree.props.children[0].type,'NativeLock');assert.equal(tree.props.children[1],original);assert.match(tree.props.accessibilityLabel,/locked/);
     b.api.setSetting('hiddenChannels',false);assert.equal(info({channel:b.channels.hidden}),original);
 });
-test('PlatformIndicators desktop is an outlined monitor with stem and foot while mobile stays native',()=>{
-    const b=platformFixture();b.load({default:{getClientStatus:()=>({desktop:'online',mobile:'idle'})}},null,4828);b.load({MobilePhoneIcon:'Phone'},null,7235);
-    const icons=b.badges.type({userId:'other'}).props.children;const desktop=icons[0].props.children;const monitor=desktop.type(desktop.props);
-    assert.equal(monitor.props.children.length,3);assert.equal(monitor.props.children[0].props.style.borderColor,'#23a55a');assert.equal(monitor.props.children[1].props.style.backgroundColor,'#23a55a');assert.equal(monitor.props.children[2].props.style.width,8);
-    assert.equal(icons[1].props.children.type,'Phone');assert.equal(icons[1].props.children.props.color,'#f0b232');
+test('PlatformIndicators uses the original tinted PNG glyphs for desktop and mobile',()=>{
+    const b=platformFixture();b.load({default:{getClientStatus:()=>({desktop:'online',mobile:'idle'})}},null,4828);
+    const icons=b.badges.type({userId:'other'}).props.children;const desktop=icons[0].props.children;const image=desktop.type(desktop.props);
+    assert.match(image.props.source.uri,/^data:image\/png;base64,/);assert.equal(image.props.style.tintColor,'#23a55a');assert.equal(image.props.style.width,16);
+    const mobile=icons[1].props.children;assert.equal(mobile.type(mobile.props).props.style.tintColor,'#f0b232');
 });
 test('PlatformIndicators covers memoized DM headers, DM content, friend labels and voice member titles without mutating props',()=>{
     const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4828);
@@ -1587,4 +1590,24 @@ test('Hidden Channels READY cache belongs to the incoming account before UserSto
     dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'222222222222222222'},guilds:[{id:'g',channels:[{id:'hidden',name:'second-staff'}]}]});
     assert.equal(b.label(b.channels.hidden),'second staff');
     account={id:'333333333333333333'};assert.match(b.label(b.channels.hidden),/name unavailable/);
+});
+test('PlatformIndicators hides the stock mobile badge and exposes the original settings',()=>{
+    const b=boot({platformIndicators:true});reactHarness(b);
+    const seen=[];const status=b.load({default:props=>{seen.push(props.isMobileOnline);return null;},StatusWithTyping:props=>{seen.push(props.isMobileOnline);return null;}},null,14405);
+    status.default({status:'online',isMobileOnline:true});status.StatusWithTyping({status:'online',isMobileOnline:true});
+    b.api.setSetting('piHideMobile',false);status.default({status:'online',isMobileOnline:true});
+    assert.deepEqual(seen,[false,false,true]);
+    for (const key of ['piDmHeader','piUserList','piProfile']) assert.equal(b.api.settings[key],true);
+});
+
+test('PlatformIndicators adds badges to profile voice-channel user rows',()=>{
+    const b=boot({platformIndicators:true}),{React}=reactHarness(b);
+    b.load({default:{getClientStatus:()=>({desktop:'online'}),addChangeListener(){},removeChangeListener(){}}},null,4828);
+    function Row(props){return React.createElement('TableRow',{user:props.user,label:React.createElement('Name',{children:props.user.id})});}
+    const list=React.createElement('List',{data:[{id:'u'}],renderItem:({item})=>React.createElement(Row,{user:item})});
+    const exports=b.load({default:()=>React.createElement('Sheet',{children:list})},null,13348);
+    const renderItem=exports.default({}).props.children.props.renderItem;
+    const row=renderItem({item:{id:'u'}});const tree=row.type(row.props);
+    assert.equal(tree.props.label.props.children[1].props.userId,'u');
+    b.api.setSetting('piUserList',false);assert.equal(row.type(row.props).props.label.props.children,'u');
 });

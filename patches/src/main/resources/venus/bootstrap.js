@@ -18,16 +18,16 @@
     if (features.jumpToTop) selectModules([12549, 12550, 12551, 9686, 10518, 11207, 7730, 2041]);
     if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4428, 4941, 7730, 573, 1372, 16569, 5345]);
     if (features.pastelize) selectModules([8222, 1240, 2105]);
-    if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 7235, 9200, 9380, 11159, 13603, 16377, 9970]);
+    if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 11159, 13603, 16377, 9970, 14405, 13348]);
     if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
-    const revision = "1.2.6";
+    const revision = "1.2.9";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
     const deferred = new Map();
     const settings = { picker: true, voice: false, copyBios: true, dashless: true, favouriteAnything: true, emojis: true, stickers: true, hyperlinks: true, forceLinks: false,
-        noTyping: true, quickDelete: false, quickDeleteEmbeds: false, noDelete: false, noDeleteSave: false,
-        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, reviewDB:false, reviewThemedSend:true, reviewWarning:true };
+        noTyping: true, quickDelete: false, quickDeleteEmbeds: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 512,
+        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewThemedSend:true, reviewWarning:true };
     const status = { picker: false, attachment: false, request: false, menu: false, conversion: false, audioError: "", storage: "waiting" };
     const listeners = new Set();
     const dirty = new Set();
@@ -43,6 +43,7 @@
     const activeJobs = new Map();
     let jobCounter = 0;
     const PREFS = "venus-patches.json";
+    const MAX_DELETED = 5000, ARCHIVE_BYTES = 32 * 1024 * 1024;
     const notify = key => listeners.forEach(entry => {
         if (!entry.key || key === "*" || entry.key === key) entry.fn();
     });
@@ -73,8 +74,12 @@
         }
         Promise.resolve().then(persist);
     }
+    function deleteLimit(value) { const n = Math.floor(Number(value)); return Number.isFinite(n) && n > 0 ? Math.min(MAX_DELETED, n) : 512; }
     function setSetting(key, value) {
         if (!owns(settings, key) || !features[featureFor(key)]) return false;
+        if (key === "noDeleteLimit") {
+            settings.noDeleteLimit = deleteLimit(value); dirty.add(key); trimDeleted(); save(); notify(key); return true;
+        }
         if (settings[key] === !!value && status.storage !== "loading" && status.storage !== "waiting") return true;
         value = !!value;
         if (key === "reviewDB" && !value) { reviewAuthAttempt++; reviewCache.clear(); }
@@ -113,7 +118,7 @@
                 const loaded = JSON.parse(text);
                 if (!loaded || typeof loaded !== "object" || Array.isArray(loaded)) throw new Error("Invalid preferences");
                 for (const key of Object.keys(settings))
-                    if (!dirty.has(key) && typeof loaded[key] === "boolean") settings[key] = loaded[key];
+                    if (!dirty.has(key) && typeof loaded[key] === typeof settings[key]) settings[key] = key === "noDeleteLimit" ? deleteLimit(loaded[key]) : loaded[key];
                 const auth = loaded.reviewAuth;
                 // Restore a saved ReviewDB sign-in (a ReviewDB token, never the Discord token).
                 if (features.reviewDB && !reviewToken && auth && typeof auth.token === "string" && auth.token.length <= 8192 &&
@@ -375,7 +380,7 @@
 
     // Native setting nodes use Discord's own themed rows, navigation and back stack.
     let SettingsList;
-    const featureFor = key => key === "reviewThemedSend" || key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" ? "noDelete" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key;
+    const featureFor = key => key === "reviewThemedSend" || key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" || key === "noDeleteLimit" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key;
     function section(label, keys) { return { label, settings: keys }; }
     function settingsPage(sections) {
         const node = { type: "list", sections };
@@ -409,8 +414,11 @@
         plugin("picker", "FileSizeOnPicker", "Show cached local file sizes on media-picker thumbnails.");
         plugin("voice", "Custom voice messages", "Convert one audio attachment to Ogg/Opus. Android 10+; no accompanying text.");
         plugin("noTyping", "No typing", "Hide your outgoing typing status. Incoming indicators remain unchanged.");
-        plugin("noDelete", "NoDelete", "Retain deleted messages independently of chat updates until app restart. Maximum 512; disabling clears them.");
-        plugin("noDeleteSave", "Save deleted messages", "Opt-in local archive across restarts, scoped to your account. Turning this off erases the archive. Attachments are links, not downloaded files.");
+        if (features.noDelete) {
+            plugins.push("VENUS_NODELETE");
+            route("VENUS_NODELETE", "NoDelete", [section("NoDelete", [])], "VENUS_PLUGINS");
+            next.VENUS_NODELETE.screen.getComponent = () => NoDeleteSettings;
+        }
         plugin("jumpToTop", "JumpToTop", "Add a button to jump to the start of the current chat.");
         plugin("hiddenChannels", "Hidden Channels", "Show received channel/category names with native locks. Server-redacted names are unavailable; never grants message or voice access.");
         if (features.quickDelete) {
@@ -423,7 +431,16 @@
         plugin("pastelAll", "Pastelize all names", "Override role name colors with pastel colors.");
         plugin("pastelWebhookName", "Pastelize webhooks by name", "Use the display name instead of the webhook ID.");
         plugin("pastelContent", "Pastelize message content", "Color rendered text as well as the author name.");
-        plugin("platformIndicators", "PlatformIndicators", "Status-colored monitor, phone, web and console icons on profiles, DM headers/lists, friends and voice-member rows. Uses sessions for your own profile.");
+        if (features.platformIndicators) {
+            const P = "VENUS_PLATFORMINDICATORS"; plugins.push(P);
+            route(P, "PlatformIndicators", [section("PlatformIndicators", ["VENUS_PI_ENABLED"]),
+                section("Show icons", ["VENUS_PI_DM", "VENUS_PI_LIST", "VENUS_PI_PROFILE"]), section("Options", ["VENUS_PI_MOBILE"])], "VENUS_PLUGINS");
+            next.VENUS_PI_ENABLED = settingNode("platformIndicators", "Enable PlatformIndicators", "Desktop, mobile, web, console and VR status icons, like the original plugin.", P);
+            next.VENUS_PI_DM = settingNode("piDmHeader", "Show icons on the DM top bar", "", P);
+            next.VENUS_PI_LIST = settingNode("piUserList", "Show icons on the users and DMs list", "Members, friends, DMs and voice users.", P);
+            next.VENUS_PI_PROFILE = settingNode("piProfile", "Show icons on user profiles", "", P);
+            next.VENUS_PI_MOBILE = settingNode("piHideMobile", "Hide mobile status from the normal indicator", "Plain status dot instead of Discord's phone badge on avatars.", P);
+        }
         if (features.reviewDB) {
             plugins.push("VENUS_REVIEWDB");
             route("VENUS_REVIEWDB", "ReviewDB", [section("ReviewDB", ["VENUS_REVIEWDB_ENABLED"])], "VENUS_PLUGINS");
@@ -762,7 +779,8 @@
         // Only messages someone else removed from the server. Your own deletions, unsent or
         // failed local messages and dismissed ephemeral ("Only you can see this") messages
         // must disappear exactly like stock Discord.
-        if (!message || event.local === true || ownDeletes.has(deletedKey(event.channelId, event.id))) return false;
+        // Your own sent messages are kept too (red outline), like the original NoDelete.
+        if (!message) return false;
         if (message.state != null && message.state !== "SENT") return false;
         return !((Number(message.flags) || 0) & 64);
     }
@@ -780,7 +798,7 @@
         try {
             archivePending = JSON.stringify({version:1, accountId:settings.noDeleteSave && user ? user.id : null,
                 messages:settings.noDeleteSave ? Array.from(deleted.values()).map(entry => ({channelId:entry.channelId,id:entry.id,message:entry.raw})) : []});
-            if (archivePending.length > 8 * 1024 * 1024) throw new Error("Deleted message archive exceeds 8 MiB");
+            if (archivePending.length > ARCHIVE_BYTES) throw new Error("Deleted message archive exceeds 8 MiB");
         } catch (_) { status.archive = "save failed"; notify(); return; }
         if (archiveWriting) return;
         archiveWriting = true;
@@ -803,13 +821,13 @@
             const current = userStore.getCurrentUser();
             if (!enabled("noDeleteSave") || !current || current.id !== accountId) return;
             if (text) {
-                if (text.length > 8 * 1024 * 1024) throw new Error("Archive too large");
+                if (text.length > ARCHIVE_BYTES) throw new Error("Archive too large");
                 const saved = JSON.parse(text);
-                if (saved.version !== 1 || !Array.isArray(saved.messages) || saved.messages.length > 512) throw new Error("Invalid archive");
+                if (saved.version !== 1 || !Array.isArray(saved.messages) || saved.messages.length > MAX_DELETED) throw new Error("Invalid archive");
                 if (saved.accountId === accountId) saved.messages.forEach(entry => {
                     if (!entry || typeof entry.id !== "string" || typeof entry.channelId !== "string" || !entry.message || entry.message.id !== entry.id || entry.message.channel_id !== entry.channelId || !entry.message.author) return;
                     const key = deletedKey(entry.channelId,entry.id);
-                    if (deleted.size < 512 && !deleted.has(key)) {
+                    if (deleted.size < settings.noDeleteLimit && !deleted.has(key)) {
                         try { entry.message = Object.assign({},entry.message); keepDeleted(key,{type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id,raw:entry.message,message:markDeleted(messageRecords.createMessageRecord(entry.message))}); }
                         catch (_) { /* Invalid individual records do not poison the archive. */ }
                     }
@@ -831,6 +849,16 @@
             type:message.type || 0,flags:message.flags || 0,attachments:message.attachments || [],embeds:message.embeds || [],
             mentions:message.mentions || [],mention_roles:message.mentionRoles || [],referenced_message:null};
         return JSON.parse(JSON.stringify(raw));
+    }
+    function trimDeleted() {
+        let changed = false;
+        while (deleted.size > settings.noDeleteLimit) {
+            const pending = dropDeleted(deleted.keys().next().value);
+            if (!pending) break;
+            changed = true;
+            if (dispatcher) dispatcher({type:"MESSAGE_DELETE",channelId:pending.channelId,id:pending.id});
+        }
+        if (changed) { invalidateDeleted(); persistDeleted(); }
     }
     function clearDeleted(remove) {
         const events = Array.from(deleted.values());
@@ -886,9 +914,10 @@
         if (deleted.has(key)) return true;
         const message = msgStore && msgStore.getMessage(event.channelId,event.id);
         if (!retainable(message, event)) return false;
-        if (deleted.size >= 512) {
+        while (deleted.size >= settings.noDeleteLimit) {
             const pending = dropDeleted(deleted.keys().next().value);
-            if (pending) orig.call(self,{type:"MESSAGE_DELETE",channelId:pending.channelId,id:pending.id});
+            if (!pending) break;
+            orig.call(self,{type:"MESSAGE_DELETE",channelId:pending.channelId,id:pending.id});
         }
         let raw;
         try { raw = rawDeleted(message,event); } catch (_) { raw = null; }
@@ -915,7 +944,6 @@
         if (event.type === "MESSAGE_DELETE" && event.channelId && event.id) {
             const key = deletedKey(event.channelId, event.id);
             // Your own deletion of a message we were already showing: remove it for real.
-            if ((event.local === true || ownDeletes.has(key)) && dropDeleted(key)) { invalidateDeleted(); persistDeleted(); return orig.apply(self, args); }
             const kept = rememberDeleted(event, orig, self);
             // Discord's deleteMessage chains .then() on dispatch(); always hand back a thenable.
             if (kept) return kept === true ? Promise.resolve() : kept;
@@ -1275,15 +1303,12 @@
         return type === tree.type ? tree : el(type, tree.props);
     }
     let pastelHash, guildMembers, presenceStore, sessionsStore, displayNameType, nativeRowGroup, nativeSwitchRow, nativeLock, oauthModal;
-    const platformIcons = {}, platformIconModules = {mobile:[7235,"MobilePhoneIcon"],web:[9200,"GlobeEarthIcon"],embedded:[9380,"GameControllerIcon"]};
-    function DesktopIndicator(props) {
-        // Independent monitor silhouette: screen, centered stem and foot, matching
-        // upstream PlatformIndicators rather than Discord's filled ScreenIcon.
-        const color = props.color;
-        return el(RN.View,{pointerEvents:"none",style:{width:16,height:16,alignItems:"center",justifyContent:"center"}},
-            el(RN.View,{style:{width:15,height:10,borderWidth:1.5,borderColor:color,borderRadius:1}}),
-            el(RN.View,{style:{width:2,height:2,backgroundColor:color}}),
-            el(RN.View,{style:{width:8,height:1.5,backgroundColor:color,borderRadius:1}}));
+    // The original PlatformIndicators plugin's themable PNG glyphs, tinted by status.
+    const platformPngs = {"desktop": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAAVFBMVEUAAACvv7+3u7+5u7+2ub+4u726vL65u765vL65vMG5u723ub23v7+3t7+6vL+4ur+6u765u764vL+4ur23t7+7vb+3ur25ur64ur+7u766ur6vr7/+1nXbAAAAHHRSTlMAEEB/UHDv/99fgIAgQJ+f7++fnyB/YN9vTz8QSaZf3QAAAI1JREFUeAHt1tUBwkAURNEXHZzg1n+d2Fc8u4OTOQXcyKqJ3ARh5C22qiQFYTC0khFIYyuYgDYthGagzQuhDLRFIYS7yBPuakLmSaF2CimkkEIKKfT8I5un0MdCT7v6LUFbFUIhaGsr2IAUWcl2B0K2t6pDVKttGR5P3BJvpxCnfdTMHVo9NaRQ1MpKRC5jHSw3VFQzIwAAAABJRU5ErkJggg==", "web": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAQAAAD/5HvMAAADgklEQVR42u3a32vVdRzH8VdOv2NzGzM7bkp0E9F9RQSbOmK6groQpeugOzXJfnCW3YwgC4IyHCldrBmFELtQRxfK2MHp1sjVZRfBMSJFYu6cMUnOOZPz9Gb45uyc79fv5/tDvDiPv+DJh/fn8+HL56umpqbHFZsZ4hjjzJOnQJkyBfLMM87H7GWzHh16OcoVKgQpM8N79Cht7GaSVcJa5QK7lBZe5SpRzDCgpLGdH6gS3SRPKzm8xTJxFTmgJNDKtyRllFbFQxfTRLVCvSk6FR3b+J3onuRTlllvgUzk1YmVsyJJdPMN1bqkzmizM00cc1rDIP9SawpPrjhFPAf1AN1cotZJ940ezwKb1q33BLX2Kzx2sBwzZ7vWoYXvAVOkV2FxlqjuMMtBNqkBNpIDzI/h7ywnTsfIP5gquxUGV3EiB7zMPcxlPRwDOJITTgNmpx6GyZSDnqKAOa9g9LKKIzniA0yFbQrC+5B6UDf/Y44oCFdwdUPOGMfkgr8kyrg6Lmf0YUq0yw9DuLnBcTw5YwNFzB754RhmkYaUCH7BDMsPZzDDZFMM+gQzJj/8inlTYiS1oNcws/LD35jnJUtKPOgFzHX5YQmzdmCRTSXoGcyi/FDGtEqWlHhQG6YULsjTA4zg5iZf4CkAXrig25gtUowk+FwB2IpZDDfUz8pEWiUF4DnM9XDbfkiKl6QAvB5u248H38KMJBZ0FDMW7uo4qwbIJhQ0gcnKD3sxN3lCirNKgZfrf5hB+aGdEuYVNUQ2dtAuTIk2+WMG87V8MBIzaBQzrdDDVqBDPuIE0cUy5rCC0MMq5lAqQR9hKmRcPoNu0ZF0EN0sYs7JBAyc+UwNsUJYd7nGO2zUGr4CTL9MqMGu8KIaYB43C2yVJPq4h8kpDAaoYv6kS3U4jKvfaGELeUyVfoXDT4C5wAatg8cfuHqbS4A54/K8UgTMd/WnNjuckyqAKdCj8DhArdO0NFilQ8xxhyiq7JMbRqk1GXAEuDshV3hMUesvXkoo6CKe3NHJArUqfEln7KBrdCgaMnVJcIsPa6OcczKKjk6mqFfkFH20RAi6SIfiweMkjS0xwTBvEFaVE3hKAvspEleBfUoOvTGfOH+mJ40X6ctEkaNfaWEn56kQVoVz9CltZDhCjhJBSuR4l4weHdrZwzBjzJFniTJlbpNnljGyDNLW/BmlqelxdR++AoGbDB4jjAAAAABJRU5ErkJggg==", "mobile": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAAXVBMVEUAAAAwMDgwMDUwMDUuMDYwMDYvMTcvMTYvMTYwMDYwMDUvMTYwMjUvMTUvMjYvMTUuMDUuMDQvMDUtMTUwMDgvMDUwMDAtMDYuMDYwMDAtMDUvMDYuMDUtMDcpMTo5aAq8AAAAH3RSTlMAIGBvf1C//89fMN9g75+/j3+fP0C/IFBfMGDPb08fcZ9WCgAAAMNJREFUeAHt2YWNxQAMg2EX/fiVud1/zBuhSaRjfwv8UsQx5J9L0iw/VySIyUoaXa7wu93pcE/g9KDTFS4F+amF5Em3ZwK7FwPeMEsYcoNVxZAaViX5uTd6MuQJKwY5A01u9goFWph1fyKggAIKKKCAAgoooIACCiiggAIKKKCAAgoooIACn/l9d/t3gU/fcEqG9LDKGVLB6saQAZ97owZ2w5NuzwEOKd1G4FMLE5wG36Y/w29ZadRviBn2/Nw2HfjTPgD3/UVA1TCAGgAAAABJRU5ErkJggg==", "embedded": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAAk1BMVEUAAAC3u7+4ur+5vL+5u765u7+6vL+2ub+3v7+6u7+5vL66v7+6vL65u761ur+4u765vL+3t7+6u765u7+9vb23t7+7vb+6u766ur+5ur6/v7+vv7+9vcW1tb+5u727u763ur25vL+6vL+3ub24ur+5u7+4vL+5ur66ur64ur25vL+6u764ur24u722uby5u76vr7/eehxsAAAAMXRSTlMAQJ/f/8+fUCC/3zDv7zC/UEDvfx8gf88w3xAQHzCAT2Bfb4Bvj5/PP6+vv59wUM8QEONx+AAAAWZJREFUeAHt1dWa6zAMBOA5PSqzs2Vmhvd/uWWcVFHqr5f+r+3JRqtJ8UhBEAT/Mv8lpWwuD02hKHcpFXBTuSJ3qtZwQ0HPUVULiCuJhzpiGuKlCZaTL3gnxEVPaLWdkAxYJznIdfGmy0k9MEkOivChLQSkbwS18KElZEBBLSMIX4QMuRxaEJ0vCBndCkJMbEZjIRO6MTWCqjWlRjO6MTeCpLoooDWuCFvSjcgK0pYzohsrM0hZzhXdWJtBynJyR4rGv19dzrp3EC3nhoJKZpCynNxalzqIlrPKU7WDlOXUym8H0XIOufy+htxZX9tHBU24/L5mXH5fSy6/r4jL/8sOidYJv2x7fu0k84SgIn/Qmb50dT2oB6YXk+tf4hElWuuPdeaIlCFx/fkLeM+Q1Ferw3RQZ9SmP8jQlR9H/NZ3tKmG08+sW/SMnrxzZ6Qy/TrfBWkdL+Lq0RUptaYHJyU+HwRB4O0FjTMnvIkvoBQAAAAASUVORK5CYII=", "vr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAANlBMVEVMaXHv7/Hv7/Hv7/Hv7/Hv7/Hv7/Hv7/Hv7/Hs7PTu7vHv7/Hv7/Hv7/Hv7/Hv7/Hv7/Hv7/EEUZf/AAAAEXRSTlMAzGV4UNr78OcJFDufKb6ri3Gd0SEAAAHQSURBVFjD7VbHdsQgDDRNiOby/z+bjY0N2LRk95C8xxwNHo0KkqZpYGBg4PMwbBa4ZYFiZqaPRVGxNSCoavPwJs0ujLbk2K0TtipKz1s3Zl3RE/PILGKmsqbLL8JcwZ5y9LJmi3E+k8Ib1UH8xcI95Utnaeb2TAnmbzLP01NsnilfBEcBCW9FVXWpwzvxrGYiE785ASC1p2DO3M5xlWty5ZREyrEmKlQK0Tedweu1npUdNPxDVBrlHe5bIHQQue1m/YVIEKjIGKmGG7ZbPKYpqnsMnsGqqxUQNSzpP8WdJoSaNUop7nwFInZF600ijT0F3kE06dXS6RNEXfh7ROI/EMG7RPAM2++I8D48wqefZe0cJy74Bo+HaixBJPbRLXX0k5ueDenWgtzVYojLz670edNL55y2wSgPQPOtFhPbirPlKYlDPOyBPwUtjD8auzr6GwYXDKRrA4RAucMFmR0PvuXjeZ3K+wIiT++MD8Wa32n8KSxc67ArSOYcOzln6rTmi5eKhWbMIbMGyV2gkZkjKE4ZVr6cM1Lp6qxslN6ZoDodeLoVi6igTbqlYmOJ0muIBrIku4oFK7Ix9I7atAQ2SWym1F5HEjB3NDAwMPAuvgCPRUw2yKsaYwAAAABJRU5ErkJggg=="};
+    function PlatformPng(props) {
+        const uri = platformPngs[props.platform];
+        if (!uri) return el(RN.View,{style:{width:16,height:16,borderRadius:8,backgroundColor:props.color}});
+        return el(RN.Image,{source:{uri,width:16,height:16},style:{width:16,height:16,tintColor:props.color}});
     }
     let reviewToken = "", reviewAccount = null, reviewAuthAttempt = 0, reviewAuthState = "idle", reviewAuthError = "";
     const reviewCache = new Map(), platformWrappers = new WeakMap();
@@ -1389,27 +1414,23 @@
         }
         if (!clients) return null;
         const colors = {online:"#23a55a",idle:"#f0b232",dnd:"#f23f43"};
-        const labels = {desktop:"Desktop",mobile:"Mobile",web:"Web",embedded:"Console"};
-        const icons = Object.keys(labels).filter(key => colors[clients[key]]).map(key => {
-            const spec = platformIconModules[key];
-            const icon = key === "desktop" ? DesktopIndicator : platformIcons[key] || inspectedExport(spec[0],spec[1]);
-            if (!icon) return null;
-            platformIcons[key] = icon;
-            return el(RN.View,{key,accessible:true,accessibilityRole:"image",accessibilityLabel:labels[key]+": "+clients[key]},
-                el(icon,{color:colors[clients[key]],style:{width:16,height:16}}));
-        }).filter(Boolean);
-        return icons.length ? el(RN.View,{key:"venus-platforms",style:{flexDirection:"row",gap:6,alignItems:"center"}},icons) : null;
+        const labels = {desktop:"Desktop",mobile:"Mobile",web:"Web",embedded:"Console",vr:"VR"};
+        // Like the original: one icon per reported client, in presence order.
+        const icons = Object.keys(clients).filter(key => key !== "unknown" && colors[clients[key]]).map(key =>
+            el(RN.View,{key,accessible:true,accessibilityRole:"image",accessibilityLabel:(labels[key] || key)+": "+clients[key]},
+                el(PlatformPng,{platform:key,color:colors[clients[key]]})));
+        return icons.length ? el(RN.View,{key:"venus-platforms",style:{flexDirection:"row",gap:2,alignItems:"center"}},icons) : null;
     }
     function platformName(orig, self, args) {
         if (React) useSettings("platformIndicators");
         const tree = orig.apply(self,args), user = args[0] && args[0].user;
-        if (!enabled("platformIndicators") || !React || !RN || !tree || !user) return tree;
+        if (!enabled("platformIndicators") || !settings.piProfile || !React || !RN || !tree || !user) return tree;
         return el(RN.View,{style:{flexDirection:"row",flexWrap:"wrap",gap:6,alignItems:"center"}},tree,el(PlatformBadges,{userId:user.id}));
     }
-    function platformPlacement(orig,self,args) {
+    function platformPlacement(orig,self,args,option) {
         if (React) useSettings("platformIndicators");
         const tree = orig.apply(self,args), props = args[0] || {};
-        if (!enabled("platformIndicators") || !React || !RN || !tree) return tree;
+        if (!enabled("platformIndicators") || (option && !settings[option]) || !React || !RN || !tree) return tree;
         const channel = props.channel || channelStore && props.channelId && channelStore.getChannel(props.channelId);
         const userId = props.user && props.user.id || props.userId || channel && channel.type === 1 && channel.recipients && channel.recipients.length === 1 && channel.recipients[0];
         if (!userId) return tree;
@@ -1430,6 +1451,14 @@
             added = true;
             return Object.assign({},p,{children:children.map(child => child !== title ? child : el(RN.View,{key:"venus-platform-title",style:{flexDirection:"row",alignItems:"center",gap:6,flexShrink:1}},child,el(PlatformBadges,{userId})))});
         },0);
+    }
+    const platformRowTypes = new WeakMap();
+    function platformRow(row) {
+        // Swap a list row's private UserRow for a cached wrapper adding badges after its label.
+        if (!row || typeof row !== "object" || typeof row.type !== "function" || !React) return row;
+        let type = platformRowTypes.get(row.type);
+        if (!type) { const orig = row.type; type = function () { return platformPlacement(orig,this,arguments,"piUserList"); }; platformRowTypes.set(orig,type); }
+        return el(type,Object.assign({},row.props,{key:row.key}));
     }
     function wrapProfileTree(tree, target, operation, cache) {
         if (!tree || !target || !React) return tree;
@@ -1582,6 +1611,28 @@
         const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
             el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
         return RN.ScrollView ? el(RN.ScrollView,null,body) : body;
+    }
+    function NoDeleteSettings() {
+        useSettings();
+        const ui=reviewUI();
+        const [draft,setDraft]=React.useState(String(settings.noDeleteLimit));
+        if (!React || !RN) return null;
+        const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
+        const toggle=(key,label,subLabel) => Switch ? el(Switch,{key,label,subLabel,value:settings[key],onValueChange:value=>setSetting(key,value)}) : null;
+        const commit=() => { setSetting("noDeleteLimit",draft); setDraft(String(settings.noDeleteLimit)); };
+        const onText=text => setDraft(String(text).replace(/[^0-9]/g,"").slice(0,4));
+        const inputProps={value:draft,keyboardType:"number-pad",maxLength:4,placeholder:"512",onBlur:commit,onSubmitEditing:commit,returnKeyType:"done"};
+        // Discord's TextInput reports text via onChange(text); RN's via onChangeText.
+        const input=ui.TextInput ? el(ui.TextInput,Object.assign({label:"Maximum saved messages",onChange:onText},inputProps)) :
+            el(RN.TextInput,Object.assign({onChangeText:onText,style:{fontSize:16,padding:12}},inputProps));
+        const groups=[
+            el(Group,{key:"plugin",title:"NoDelete"},toggle("noDelete","Enable NoDelete","Keep deleted messages, including your own, with a red outline until you dismiss them.")),
+            el(Group,{key:"save",title:"Saving"},toggle("noDeleteSave","Save permanently","On: kept messages survive restarts, stored locally for your account. Off: kept until Discord restarts; the saved archive is erased.")),
+            el(Group,{key:"limit",title:"Maximum saved messages"},el(RN.View,{style:{padding:12,gap:8}},input,
+                el(RN.Text,{style:{color:"#949ba4",fontSize:12}},"Type 1 to "+MAX_DELETED+", then press done. Current: "+settings.noDeleteLimit+". When full, the oldest is removed.")))];
+        const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
+            el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
+        return RN.ScrollView ? el(RN.ScrollView,{keyboardShouldPersistTaps:"handled"},body) : body;
     }
     function authenticateReviews() {
         if (!enabled("reviewDB") || reviewAuthState==="exchanging") return;
@@ -1744,8 +1795,14 @@
     }
     function openReviewSheet(userId) {
         const ui=reviewUI();
-        if (!ui.ActionSheet || !ui.sheets || typeof ui.sheets.openLazy!=="function") return;
-        ui.sheets.openLazy(Promise.resolve({default:ReviewSheet}),"ActionSheet",{userId});
+        if (!ui.ActionSheet || !ui.sheets || typeof ui.sheets.openLazy!=="function") { reviewToast(ui,"Reviews are unavailable"); return; }
+        // Traced 347.12 openLazy(importer,key,props,stackingBehavior) (fn32122/79901): a host
+        // Promise is awaited and `.default` used; anything else is CALLED and its resolved
+        // value used as the component. Our prelude promise failed the instanceof check, so
+        // it was called as a function and threw inside onPress: nothing opened. Pass an
+        // importer resolving to the component and stack above the server sheet.
+        try { ui.sheets.openLazy(() => Promise.resolve(ReviewSheet),"VenusReviews:"+userId,{userId},"stack"); }
+        catch (error) { reviewToast(ui,"Couldn't open reviews: "+String(error && error.message || error)); }
     }
     // Profiles: the original appends ReviewSection as the LAST card of the profile card stack
     // (after the note). In 347.12 UserProfileNote (13373) is that last card in the normal, bot,
@@ -1818,15 +1875,35 @@
         if ((features.pastelize || features.noDelete) && id === 8222 && exports.default && exports.default.prototype) hookExport(exports.default.prototype,"generate",messageRow);
         if (features.platformIndicators && id === 4828) presenceStore = exports.default;
         if (features.platformIndicators && id === 4806) sessionsStore = exports.default;
-        if (features.platformIndicators) Object.keys(platformIconModules).forEach(key => {
-            const spec = platformIconModules[key];if (id === spec[0]) platformIcons[key] = exports[spec[1]];
-        });
         if (features.platformIndicators && id === 11448) {
             displayNameType=exports.DisplayName;
             exports=hookExport(exports,"DisplayName",platformName);
             return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),displayNameType,platformName,platformWrappers));
         }
-        if (features.platformIndicators && [11159,13603,16377,9970].includes(id)) return hookComponent(exports,platformPlacement);
+        if (features.platformIndicators && [11159,13603,16377,9970].includes(id)) {
+            const option = id === 13603 ? "piDmHeader" : "piUserList";
+            return hookComponent(exports,(orig,self,args)=>platformPlacement(orig,self,args,option));
+        }
+        // Profile "in voice" users (UserProfileActivityVoiceChannelUsers): private UserRow rows.
+        if (features.platformIndicators && id === 13348) return hookComponent(exports,(orig,self,args)=>{
+            const tree=orig.apply(self,args);
+            if (!enabled("platformIndicators") || !settings.piUserList || !React || !tree) return tree;
+            return cloneTree(tree,(node,p)=>{
+                if (typeof p.renderItem!=="function" || p.__venusPlatforms) return p;
+                const render=p.renderItem;
+                return Object.assign({},p,{__venusPlatforms:true,renderItem:function(){return platformRow(render.apply(this,arguments));}});
+            },0);
+        });
+        // Original "Hide mobile status from the normal indicator": avatar Status (design/void/Status,
+        // 14405) draws a phone badge when isMobileOnline; show the plain dot instead.
+        if (features.platformIndicators && id === 14405) {
+            const plain = (orig,self,args) => {
+                const props = args[0];
+                if (!enabled("platformIndicators") || !settings.piHideMobile || !props || !props.isMobileOnline) return orig.apply(self,args);
+                const next = Array.from(args); next[0] = Object.assign({},props,{isMobileOnline:false}); return orig.apply(self,next);
+            };
+            return hookExport(hookExport(exports,"default",plain),"StatusWithTyping",plain);
+        }
         if (features.reviewDB && id === 9358) oauthModal=exports.default;
         if (features.reviewDB && id === 5936) nativeRowGroup=exports.TableRowGroup;
         if (features.reviewDB && id === 7477) nativeSwitchRow=exports.TableSwitchRow;
