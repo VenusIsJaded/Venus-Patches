@@ -45,7 +45,6 @@ private val runtimeAssets = rawResourcePatch {
         dashlessSelected = false
         favouriteAnythingSelected = false
         freeNitroSelected = false
-
     }
     finalize {
         val bootstrap = object {}.javaClass.getResourceAsStream("/venus/bootstrap.js")
@@ -78,13 +77,8 @@ private object BundleLoader : Fingerprint(
     parameters = listOf("Lcom/facebook/react/bridge/JSBundleLoader;")
 )
 
-@Suppress("unused")
-val venusSettings = bytecodePatch(
-    name = "Venus settings",
-    description = "Adds a native Venus section in Discord settings with General, Plugins and persistent controls."
-) {
-    compatibleWith(discord)
-    dependsOn(runtimeAssets)
+internal val packagedDiscordBundle = bytecodePatch {
+    dependsOn(discordBundleGuard)
     execute {
         val method = BundleLoader.method
         val owner = BundleLoader.originalClassDef
@@ -98,18 +92,32 @@ val venusSettings = bytecodePatch(
         ).originalMethod
         if (loader.returnType != "Lcom/facebook/react/bridge/JSBundleLoader;")
             throw PatchException("Asset loader factory ABI changed")
-        // Pin JS execution to the inspected packaged bundle, avoiding incompatible OTA cache bundles.
-        // 347.12 has two scratch locals; p1 is deliberately replaced with an asset loader.
-        if ((method.implementation?.registerCount ?: 0) - 2 < 2)
-            throw PatchException("Bundle loader no longer has two safe scratch registers")
-        method.addInstructions(0, """
-            iget-object v0, p0, $INSTANCE->context:Lcom/facebook/react/runtime/BridgelessReactContext;
-            const-string v1, "assets://index.android.bundle"
-            const/4 p1, 0x0
-            invoke-static {v0, v1, p1}, Lcom/facebook/react/bridge/JSBundleLoader;->createAssetLoader(Landroid/content/Context;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
-            move-result-object p1
-        """)
+        pinPackagedDiscordBundle(method)
     }
+}
+
+
+internal fun pinPackagedDiscordBundle(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    // Pin JS execution to the inspected packaged bundle, avoiding incompatible OTA cache bundles.
+    // 347.12 has two scratch locals; p1 is deliberately replaced with an asset loader.
+    if ((method.implementation?.registerCount ?: 0) - 2 < 2)
+        throw PatchException("Bundle loader no longer has two safe scratch registers")
+    method.addInstructions(0, """
+        iget-object v0, p0, $INSTANCE->context:Lcom/facebook/react/runtime/BridgelessReactContext;
+        const-string v1, "assets://index.android.bundle"
+        const/4 p1, 0x0
+        invoke-static {v0, v1, p1}, Lcom/facebook/react/bridge/JSBundleLoader;->createAssetLoader(Landroid/content/Context;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
+        move-result-object p1
+    """)
+}
+
+@Suppress("unused")
+val venusSettings = bytecodePatch(
+    name = "Venus settings",
+    description = "Adds a native Venus section in Discord settings with General, Plugins and persistent controls."
+) {
+    compatibleWith(discord)
+    dependsOn(runtimeAssets, packagedDiscordBundle)
 }
 
 @Suppress("unused")

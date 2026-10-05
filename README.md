@@ -30,13 +30,14 @@ You can turn the bundled plugin switches on and off in **Discord Settings → Ve
 
 ### APK-level privacy patches
 
-These are **independent Morphe patch selections**, enabled by default in Morphe, **not Discord/Venus settings**. They do not depend on Venus settings or the bundled JavaScript plugin runtime. Select them before patching the original APKM; changing the selection requires patching/installing again.
+These are **independent Morphe patch selections**, enabled by default in Morphe, **not Discord/Venus settings**. They do not depend on Venus settings or the bundled JavaScript plugin runtime. Hermes privacy selections independently pin loading to the packaged bundle, so cached/OTA JavaScript cannot bypass them; the shared loader guard is installed only once when combining selections. Select them before patching the original APKM; changing the selection requires patching/installing again.
 
 | Morphe patch | Bytecode-level behavior |
 | --- | --- |
 | **Disable analytics** | Replaces inspected Hermes analytics track, recording, drain, immediate-upload, flush and CLIENT_TELEMETRY producers with safe return bodies. Promise callers still receive resolved Promises. |
-| **Disable crash reporting** | Disables native Discord/Sentry initialization (including the Rust reporter), Sentry JavaScript transport send functions, envelopes, breadcrumbs, replay, screenshots, profiling and device-context collection. |
-| **Disable telemetry and touch logging** | Stops touch/view-hierarchy logging and JavaScript/native telemetry-ring initialization, collection and writes. |
+| **Disable crash reporting** | Disables native Discord/Sentry initialization (including the Rust reporter), Sentry JavaScript transport send functions, envelopes, breadcrumbs, replay, screenshots, profiling, device-context collection, independent system-log capture and cached-crash read/write paths. |
+| **Disable telemetry and touch logging** | Stops touch/view-hierarchy logging and JavaScript/native telemetry-ring initialization, collection and writes, native metric monitoring and WebSocket telemetry instrumentation. |
+| **Disable advertising identifiers** | Stops Discord's separate Google advertising-ID lookup before Play services are contacted; returns the existing limited-tracking map shape. Select install-attribution protection separately for AppsFlyer. |
 | **Disable install attribution** | Disables Play install-referrer lookup and inspected AppsFlyer initialization/start, event/location reporting, personal-data setters and attribution identifiers. |
 
 **Scope:** these target the identified client reporting paths in the pinned 347.12 APKM, not every possible form of data collection. Discord still receives ordinary API/gateway traffic, account activity, messages and voice traffic; server-side logging is not preventable by these patches. Operational networking, authentication, push notifications and audio/video device selection are deliberately left alone. Existing telemetry/crash files are not erased. Attribution/deferred deep links may stop working. These patches are not a network firewall, anonymity guarantee or removal of all SDK binaries.
@@ -72,7 +73,7 @@ node --test tests/runtime.test.cjs
 VENUS_ORIGINAL_APK=/path/to/base.apk python3 scripts/build.py
 ```
 
-Automated tests cover the JavaScript runtime and PCM audio conversion. They don't replace testing on a real device.
+Automated tests cover the JavaScript runtime, PCM audio conversion, privacy dependency graphs and (with the original APK) exact bytecode ABIs, native result-map shapes, bundle pinning and prelude compatibility. They don't replace testing on a real device.
 
 ## License
 

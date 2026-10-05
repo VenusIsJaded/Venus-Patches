@@ -157,7 +157,7 @@ def build():
         "-cp", f"{classes}:{TOOLS / 'morphe.jar'}", ROOT / "tests/native/PrivacyTest.kt", "-d", privacy_tests)
     original_apk = os.environ.get("VENUS_ORIGINAL_APK")
     run("java", "-Xmx384m", "-cp", f"{privacy_tests}:{classes}:{TOOLS / 'morphe.jar'}",
-        "app.venus.patches.PrivacyTestKt", *([original_apk] if original_apk else []))
+        "app.venus.patches.PrivacyTestKt", *([original_apk, str(BUILD / "privacy-fixtures")] if original_apk else []))
     dex = BUILD / "dex"
     dex.mkdir(exist_ok=True)
     for stale in dex.glob("classes*.dex"):
@@ -169,7 +169,7 @@ def build():
     # Same JVM classes + classes.dex layout and manifest keys as the official plugin.
     manifest = "\r\n".join([
         "Manifest-Version: 1.0", "Name: Venus Patches",
-        "Description: Native Discord settings and bundled Venus plugins.",
+        "Description: Native Discord tools and independently selectable APK-level privacy protections.",
         f"Version: {VERSION}", "Patcher-Version: 1.15.0",
         "Source: https://github.com/VenusIsJaded/Venus-Patches",
         "Author: VenusIsJaded", "License: GPL-3.0", "", "",
@@ -206,7 +206,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: independent APK-level Morphe patches for analytics, Sentry crash reporting, telemetry/touch logging and install attribution. No in-app privacy switches.",
+        "description": "Discord 347.12: deeper privacy audit fixes cached-bundle bypass, metrics-v2 reporting and profiling return shapes; adds independent Google advertising-ID protection. No in-app privacy switches.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",
