@@ -151,6 +151,13 @@ def build():
     run(TOOLS / "kotlinc/bin/kotlinc", "-no-stdlib", "-no-reflect",
         "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'morphe.jar'}:{TOOLS / 'gson.jar'}",
         *sources, "-d", classes)
+    # Static privacy ABI checks and detached assembler fixtures, never the APK patching engine.
+    privacy_tests = BUILD / "privacy-tests.jar"
+    run(compiler, "-no-stdlib", "-no-reflect", "-Xfriend-paths=" + str(classes),
+        "-cp", f"{classes}:{TOOLS / 'morphe.jar'}", ROOT / "tests/native/PrivacyTest.kt", "-d", privacy_tests)
+    original_apk = os.environ.get("VENUS_ORIGINAL_APK")
+    run("java", "-Xmx384m", "-cp", f"{privacy_tests}:{classes}:{TOOLS / 'morphe.jar'}",
+        "app.venus.patches.PrivacyTestKt", *([original_apk] if original_apk else []))
     dex = BUILD / "dex"
     dex.mkdir(exist_ok=True)
     for stale in dex.glob("classes*.dex"):
@@ -199,7 +206,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: ReviewDB sign-in fixed (no more Authorize loop) and UI/placement matched to the original plugin; NoDelete retention bugs fixed and faster.",
+        "description": "Discord 347.12: independent APK-level Morphe patches for analytics, Sentry crash reporting, telemetry/touch logging and install attribution. No in-app privacy switches.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

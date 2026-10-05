@@ -8,10 +8,9 @@ import app.morphe.patcher.patch.Compatibility
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.PatchException
-import java.security.MessageDigest
 
 private const val INSTANCE = "Lcom/facebook/react/runtime/ReactInstance;"
-private val discord = Compatibility(
+internal val discord = Compatibility(
     packageName = "com.discord",
     name = "Discord",
     apkFileType = ApkFileType.APKM,
@@ -32,7 +31,12 @@ private var dashlessSelected = false
 private var favouriteAnythingSelected = false
 private var freeNitroSelected = false
 private val additionalSelections = mutableSetOf<String>()
+internal val discordBundleGuard = rawResourcePatch {
+    execute { HbcPrivacy.verifyOriginal(get("assets/index.android.bundle").readBytes()) }
+}
+
 private val runtimeAssets = rawResourcePatch {
+    dependsOn(discordBundleGuard)
     execute {
         additionalSelections.clear()
         pickerSelected = false
@@ -41,19 +45,7 @@ private val runtimeAssets = rawResourcePatch {
         dashlessSelected = false
         favouriteAnythingSelected = false
         freeNitroSelected = false
-        // Module IDs are inspected against this exact embedded Hermes bundle, not guessed.
-        val hash = MessageDigest.getInstance("SHA-256")
-        get("assets/index.android.bundle").inputStream().use { stream ->
-            val buffer = ByteArray(65536)
-            var count = stream.read(buffer)
-            while (count >= 0) {
-                hash.update(buffer, 0, count)
-                count = stream.read(buffer)
-            }
-        }
-        val digest = hash.digest().joinToString("") { "%02x".format(it) }
-        if (digest != "834bb2c88a7d8e508039e11be90a2a09f9f87017fdceef1999cf099933a6be35")
-            throw PatchException("Unsupported Discord JavaScript bundle; use the original 347.12 - Stable APKM")
+
     }
     finalize {
         val bootstrap = object {}.javaClass.getResourceAsStream("/venus/bootstrap.js")

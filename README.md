@@ -26,7 +26,22 @@ Small, bundled Discord tools for **[Morphe](https://morphe.software)**. They're 
 | **PlatformIndicators** | Shows desktop, mobile, web and console status icons | On |
 | **ReviewDB** | Read, write and report user and server reviews, laid out like the original plugin (opt-in) | Off |
 
-You can turn switches on and off in **Discord Settings → Venus → Plugins** without reinstalling.
+You can turn the bundled plugin switches on and off in **Discord Settings → Venus → Plugins** without reinstalling.
+
+### APK-level privacy patches
+
+These are **independent Morphe patch selections**, enabled by default in Morphe, **not Discord/Venus settings**. They do not depend on Venus settings or the bundled JavaScript plugin runtime. Select them before patching the original APKM; changing the selection requires patching/installing again.
+
+| Morphe patch | Bytecode-level behavior |
+| --- | --- |
+| **Disable analytics** | Replaces inspected Hermes analytics track, recording, drain, immediate-upload, flush and CLIENT_TELEMETRY producers with safe return bodies. Promise callers still receive resolved Promises. |
+| **Disable crash reporting** | Disables native Discord/Sentry initialization (including the Rust reporter), Sentry JavaScript transport send functions, envelopes, breadcrumbs, replay, screenshots, profiling and device-context collection. |
+| **Disable telemetry and touch logging** | Stops touch/view-hierarchy logging and JavaScript/native telemetry-ring initialization, collection and writes. |
+| **Disable install attribution** | Disables Play install-referrer lookup and inspected AppsFlyer initialization/start, event/location reporting, personal-data setters and attribution identifiers. |
+
+**Scope:** these target the identified client reporting paths in the pinned 347.12 APKM, not every possible form of data collection. Discord still receives ordinary API/gateway traffic, account activity, messages and voice traffic; server-side logging is not preventable by these patches. Operational networking, authentication, push notifications and audio/video device selection are deliberately left alone. Existing telemetry/crash files are not erased. Attribution/deferred deep links may stop working. These patches are not a network firewall, anonymity guarantee or removal of all SDK binaries.
+
+**Validation:** the release is compiled and checked against the supplied original APK's exact ABIs and bundle hashes. No Morphe Patcher run or patched APK is needed to build it. Device behavior and traffic capture still need validation; no zero-telemetry claim is made.
 
 ## Install
 
@@ -53,6 +68,8 @@ To use a local copy instead, download `patches-<version>.mpp` from [Releases](ht
 ```bash
 python3 scripts/build.py      # downloads pinned toolchains, runs tests, outputs patches/build/libs/*.mpp
 node --test tests/runtime.test.cjs
+# Optional read-only ABI validation during compilation (an extracted original base.apk):
+VENUS_ORIGINAL_APK=/path/to/base.apk python3 scripts/build.py
 ```
 
 Automated tests cover the JavaScript runtime and PCM audio conversion. They don't replace testing on a real device.
