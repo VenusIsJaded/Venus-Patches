@@ -2,6 +2,14 @@
 
 All releases target **Discord 347.12 - Stable (347012)**. Patch the original APKM each time.
 
+## 1.2.7 — APK-level privacy patches
+
+- Added four independently selectable Morphe patches: **Disable analytics**, **Disable crash reporting**, **Disable telemetry and touch logging**, and **Disable install attribution**. They default on in Morphe, have no Discord/Venus settings switch and work without Venus settings.
+- Analytics and JavaScript Sentry/telemetry guards replace 12 inspected, hash-pinned Hermes function bodies. Native guards target 61 exact concrete method signatures, preserving safe return values, resolving bridge Promises and completing nullable AppsFlyer request callbacks.
+- Blocks the identified analytics upload/queue paths, Sentry initialization and transport sends, touch/view-hierarchy logging, telemetry-ring writes, install referrer and AppsFlyer reporting/identifier paths.
+- Existing plugins are unchanged. Normal Discord networking, authentication, push and voice/video device APIs are not globally disabled. Existing local diagnostic files are not erased; attribution/deferred deep links may stop working.
+- Added in-memory HBC selection-combination tests and detached native stub assembly/ABI checks against the original base APK. Compiled the `.mpp` without invoking Morphe Patcher or producing a patched Discord APK. Device/network testing is still required; server-side activity logging cannot be blocked.
+
 ## 1.2.6 — ReviewDB sign-in and NoDelete fixes
 
 ### ReviewDB
