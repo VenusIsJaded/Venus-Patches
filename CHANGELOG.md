@@ -2,6 +2,22 @@
 
 All releases target **Discord 347.12 - Stable (347012)**. Patch the original APKM each time.
 
+## 1.3.1 — PlatformIndicators hook stability and native server Reviews
+
+### PlatformIndicators
+- Fixes both **Rendered fewer hooks than expected** and **Rendered more hooks than during the previous render** when opening or switching chats. DM header and DM row fallback placement is now hook-free; settings subscriptions run once regardless of the layout.
+- Keeps the DM-list and header icon placements added in 1.3.0, including immutable props and memoized components.
+
+### ReviewDB
+- Opens bundled server and user-menu Reviews through Discord 347.12's named native `showActionSheet` helper, rather than a detached lazy-import Promise chain. Reviews stack above the existing server sheet.
+- Retries missing UI exports instead of caching an incomplete lookup permanently. Unavailable/opening failures provide feedback, and a stale button does nothing after ReviewDB is disabled.
+- Closing Reviews targets its own sheet key instead of an unspecified sheet. Late theme availability cannot add hooks to an already-mounted review input.
+
+### Validation
+- Reproduced both reported hook errors with a real React renderer on the old runtime; the fixed plain and memoized DM components survive primary/fallback/loading transitions and settings toggles.
+- Added server sheet opening, review fetching, keyed close, missing-export retry and error regressions. Source and packaged compact runtime are tested, with read-only native ABI/privacy validation against the supplied original APK.
+- Built for the original **347.12 APKM**. These automated checks do not replace Android device testing.
+
 ## 1.3.0 — PlatformIndicators in DMs and instant NoDelete outline
 
 ### PlatformIndicators

@@ -1165,10 +1165,14 @@ function reviewHarness() {
         url.endsWith('/admins')?['999999999999999999']:{success:true,reviews:[{id:0,type:3,comment:'Be nice',sender:{discordID:'1',username:'Warning',badges:[]}},
             {id:1,comment:'hello',timestamp:1700000000,sender:{discordID:'333333333333333333',username:'Other',profilePhoto:'https://cdn.discordapp.com/a.png',badges:[{name:'Donor',icon:'https://cdn.discordapp.com/b.webp'}]}}]}};};
     const account={id:'111111111111111111'};const toasts=[],confirms=[],sheets=[],simple=[],pushed=[],popped=[],copied=[];
+    // 4755 exports showActionSheet by NAME, not on its default action creators.
+    // Execute the show/close boundary instead of only recording lazy-loader inputs.
+    const sheetEvents=[],hiddenSheets=[];
+    const showActionSheet=config=>{sheets.push(config);sheetEvents.push({type:'SHOW_ACTION_SHEET',...config});};
     const native={5854:{TableRow:'NativeRow'},5936:{TableRowGroup:'RowGroup'},7477:{TableSwitchRow:'SwitchRow'},5216:{Stack:'Stack'},7484:{default:'UserProfileCard'},
         8903:{FormRow:'FormRow',FormLabel:'FormLabel',FormSubLabel:'FormSubLabel'},6880:{TextInput:'NativeTextInput'},4732:{SendMessageIcon:'SendIcon'},
         7474:{ActionSheet:'ActionSheet'},7426:{BottomSheetTitleHeader:'SheetHeader'},7475:{ActionSheetCloseButton:'SheetClose'},
-        4755:{default:{openLazy:(promise,key,props,options)=>sheets.push({promise,key,props,options}),hideActionSheet(){}}},7472:{showSimpleActionSheet:value=>simple.push(value)},
+        4755:{showActionSheet,default:{openLazy(){throw new Error('Bundled reviews must not use a lazy importer');},hideActionSheet:key=>hiddenSheets.push(key)}},7472:{showSimpleActionSheet:value=>simple.push(value)},
         7469:{Clipboard:{setString:value=>copied.push(value)}},5141:{default:{show:value=>confirms.push(value)}},4486:{default:{open:value=>toasts.push(value)}},
         4645:{pushModal:value=>pushed.push(value),popModal:key=>popped.push(key)},9358:{default:'OAuth2AuthorizeModal'},4505:{useThemeContext:()=>({primaryColor:'#123456'})}};
     b.context.__r=id=>native[id]||null;
@@ -1180,7 +1184,7 @@ function reviewHarness() {
     const menuCalls=[];const menu=b.load({ContextMenuPopout:props=>{menuCalls.push(props);return 'menu';}},null,14479);
     const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14892).SETTING_RENDERER_CONFIG;
     const Settings=registry.VENUS_REVIEWDB.screen.getComponent();
-    return {...b,React,RN,requests,alerts,account,toasts,confirms,sheets,simple,pushed,popped,copied,note,noteOriginal,guild,progressOriginal,menu,menuCalls,Settings,native};
+    return {...b,React,RN,requests,alerts,account,toasts,confirms,sheets,simple,pushed,popped,copied,note,noteOriginal,guild,progressOriginal,menu,menuCalls,Settings,native,sheetEvents,hiddenSheets};
 }
 // Schemas below reflect the inspected 347.12 boundaries; the older clone()-only
 // mock hid a real native integration failure. These are not Android device tests.
@@ -1345,14 +1349,18 @@ test('ReviewDB server sheet shows a single Reviews row that opens the reviews ac
     const b=reviewHarness();const off=b.guild({guild:{id:'444444444444444444'}});assert.equal(off.props.guild.id,'444444444444444444');
     b.api.setSetting('reviewDB',true);const row=b.guild({guild:{id:'444444444444444444'}});
     assert.equal(row.type,'RowGroup');assert.equal(row.props.children.props.label,'Reviews');row.props.children.props.onPress();
-    assert.equal(b.sheets[0].key,'VenusReviews:444444444444444444');assert.equal(b.sheets[0].props.userId,'444444444444444444');
-    assert.equal(typeof b.sheets[0].promise,'function');assert.equal(b.sheets[0].options,'stack');
-    const sheet=(await b.sheets[0].promise())({userId:'444444444444444444'});assert.equal(sheet.type,'ActionSheet');assert.equal(sheet.props.header.props.title,'Reviews');
+    assert.equal(b.sheets[0].key,'VenusReviews:444444444444444444');assert.equal(b.sheets[0].content.props.userId,'444444444444444444');
+    assert.equal(b.sheets[0].stackingBehavior,'stack');assert.equal(b.sheetEvents[0].type,'SHOW_ACTION_SHEET');
+    const content=b.sheets[0].content,sheet=content.type(content.props);assert.equal(sheet.type,'ActionSheet');assert.equal(sheet.props.header.props.title,'Reviews');
+    sheet.props.header.props.trailing.props.onPress();assert.deepEqual(b.hiddenSheets,['VenusReviews:444444444444444444']);
+    const section=walkElements(sheet,n=>n.type&&n.type.name==='ReviewSection')[0];
+    const effects=[];b.React.useEffect=fn=>effects.push(fn);section.type(section.props);effects.forEach(fn=>fn());
+    await flush();await flush();assert.equal(b.requests.some(([url])=>url.endsWith('/users/444444444444444444/reviews')),true);
 });
 test('ReviewDB user context menu gains a Reviews entry and signed-in actions follow the original permissions',async()=>{
     const b=reviewHarness();b.api.setSetting('reviewDB',true);
     b.menu.ContextMenuPopout({menu:{key:'222222222222222222',items:[1,2,3]}});const items=b.menuCalls.at(-1).menu.items;assert.equal(items.at(-1).label,'Reviews');
-    items.at(-1).action();assert.equal(b.sheets.at(-1).props.userId,'222222222222222222');
+    items.at(-1).action();assert.equal(b.sheets.at(-1).content.props.userId,'222222222222222222');
     b.menu.ContextMenuPopout({menu:{key:'x',items:[1,2,3]}});assert.equal(b.menuCalls.at(-1).menu.items.length,3);
     const props=openReviewAuth(b);props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});await flush();await flush();
     const m=await loadedReviews(b,'111111111111111111');
@@ -1628,4 +1636,100 @@ test('NoDelete retained records differ from the live record so the native row re
     b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
     const kept=b.load({default:{getMessage:()=>live}},null,5008).default.getMessage('c','1');
     assert.notEqual(kept,live);assert.equal(kept.content,'x');assert.equal(kept.venusDeleted,true);assert.notDeepEqual(Object.keys(kept),Object.keys(live));
+});
+
+// Every call here represents a re-render of the SAME React fiber. The old static
+// element mocks never checked the sequence and missed both reported crashes.
+function hookSequenceProbe(React, component) {
+    let sequence=[];
+    React.useState=initial=>{sequence.push('state');return [initial,()=>{}];};
+    React.useEffect=()=>{sequence.push('effect');};
+    return props=>{sequence=[];const tree=component(props);return {tree,sequence:Array.from(sequence)};};
+}
+test('PlatformIndicators DM header hook order survives title, fallback, null and setting transitions',()=>{
+    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);
+    let mode='fallback',calls=0;
+    function ChannelTitle(){React.useState(0);return React.createElement(RN.View,{children:React.createElement(RN.Text,{children:'Name'})});}
+    const native=()=>{calls++;React.useState(0);React.useEffect(()=>{},[]);
+        if(mode==='empty')return null;
+        return React.createElement(RN.View,{children:mode==='title'?React.createElement(ChannelTitle,{title:'Name',accessibleTitle:'Name',userId:'friend'}):React.createElement(RN.Text,{children:'Name'})});};
+    const header=b.load({default:{$$typeof:Symbol.for('react.memo'),type:native}},null,13603).default.type;
+    const render=hookSequenceProbe(React,header),expected=['state','effect','state','effect'];
+    for(const next of ['fallback','title','fallback','empty','title']){mode=next;assert.deepEqual(render({userId:'friend'}).sequence,expected,next);}
+    for(const key of ['piDmHeader','platformIndicators']){b.api.setSetting(key,false);assert.deepEqual(render({userId:'friend'}).sequence,expected);b.api.setSetting(key,true);assert.deepEqual(render({userId:'friend'}).sequence,expected);}
+    assert.equal(calls,9,'Each native component must render exactly once');
+});
+test('PlatformIndicators DM row hook order survives loading, icon, fallback, group and setting transitions',()=>{
+    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);let mode='fallback';
+    const native=()=>{React.useState(0);React.useEffect(()=>{},[]);if(mode==='empty')return null;
+        const child=mode==='icon'?React.createElement('ChannelIcon',{muted:false,selected:false,blocked:false}):React.createElement(RN.Text,{children:'Name'});
+        return React.createElement(RN.View,{children:child});};
+    const row=b.load({default:native},null,16377).default,render=hookSequenceProbe(React,row),expected=['state','effect','state','effect'];
+    const dm={type:1,recipients:['friend']};
+    for(const next of ['fallback','icon','empty','fallback','icon']){mode=next;assert.deepEqual(render({channel:dm}).sequence,expected,next);}
+    for(const channel of [null,{type:3,recipients:['a','b']},{type:0,recipients:[]},dm])assert.deepEqual(render({channel}).sequence,expected);
+    for(const key of ['piUserList','platformIndicators']){b.api.setSetting(key,false);assert.deepEqual(render({channel:dm}).sequence,expected);b.api.setSetting(key,true);assert.deepEqual(render({channel:dm}).sequence,expected);}
+});
+test('ReviewDB retries unavailable sheet exports after an earlier profile/settings UI lookup',()=>{
+    const b=reviewHarness(),sheetModule=b.native[4755];delete b.native[4755];
+    b.api.setSetting('reviewDB',true);b.Settings();
+    b.guild({guild:{id:'444444444444444444'}}).props.children.props.onPress();
+    assert.equal(b.sheets.length,0);assert.match(b.toasts.at(-1).content,/unavailable/);
+    b.native[4755]=sheetModule;
+    b.guild({guild:{id:'444444444444444444'}}).props.children.props.onPress();
+    assert.equal(b.sheetEvents.length,1);assert.equal(b.sheetEvents[0].content.props.userId,'444444444444444444');
+});
+test('ReviewDB reports synchronous opening failures and ignores stale disabled button presses',()=>{
+    const b=reviewHarness();b.native[4755].showActionSheet=()=>{throw new Error('native opener failed');};
+    b.api.setSetting('reviewDB',true);const press=b.guild({guild:{id:'444444444444444444'}}).props.children.props.onPress;
+    press();assert.match(b.toasts.at(-1).content,/native opener failed/);
+    b.api.setSetting('reviewDB',false);const count=b.toasts.length;press();assert.equal(b.toasts.length,count);assert.equal(b.sheets.length,0);
+});
+
+// Optional real React reconciliation, not just the lightweight element harness.
+// VENUS_REACT_PATH points to node_modules containing react + react-test-renderer.
+test('PlatformIndicators reconciles repeated DM transitions with real React without hook errors',
+    {skip:!process.env.VENUS_REACT_PATH},async()=>{
+        const path=require('node:path'),directory=path.resolve(process.env.VENUS_REACT_PATH);
+        const React=require(path.join(directory,'react')),Renderer=require(path.join(directory,'react-test-renderer'));
+        const previous=global.IS_REACT_ACT_ENVIRONMENT;global.IS_REACT_ACT_ENVIRONMENT=true;
+        try {
+            for(const id of [13603,16377])for(const memoized of [false,true]){
+                const b=boot({platformIndicators:true});b.load(React,null,19);
+                b.load({View:'View',Text:'Text',Image:'Image',Modal:'Modal'},null,17);
+                b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4828);
+                function ChannelTitle(){React.useState(0);return React.createElement('View',null,React.createElement('Text',null,'Name'));}
+                function Native(props){
+                    React.useState(0);React.useEffect(()=>{},[]);
+                    if(props.mode==='empty')return null;
+                    let child=React.createElement('Text',null,'Name');
+                    if(props.mode==='title')child=React.createElement(ChannelTitle,{title:'Name',accessibleTitle:'Name',userId:'friend'});
+                    if(props.mode==='icon')child=React.createElement('ChannelIcon',{muted:false,selected:false,blocked:false});
+                    return React.createElement('View',null,child);
+                }
+                const Component=b.load({default:memoized?React.memo(Native):Native},null,id).default;
+                let root;
+                const element=mode=>React.createElement(Component,{mode,userId:'friend',channel:{type:1,recipients:['friend']}});
+                try {
+                    await Renderer.act(()=>{root=Renderer.create(element('fallback'));});
+                    for(const mode of ['title','fallback','icon','fallback','empty','title','icon','fallback'])
+                        await Renderer.act(()=>{root.update(element(mode));});
+                    for(const key of [id===13603?'piDmHeader':'piUserList','platformIndicators']){
+                        await Renderer.act(()=>{b.api.setSetting(key,false);root.update(element('fallback'));});
+                        await Renderer.act(()=>{b.api.setSetting(key,true);root.update(element('fallback'));});
+                    }
+                    assert.ok(root.toJSON());
+                } finally {if(root)await Renderer.act(()=>root.unmount());}
+            }
+        } finally {if(previous===undefined)delete global.IS_REACT_ACT_ENVIRONMENT;else global.IS_REACT_ACT_ENVIRONMENT=previous;}
+    });
+
+test('ReviewDB late theme availability never adds hooks to an already-mounted review input',()=>{
+    const b=reviewHarness();delete b.native[4505];b.api.setSetting('reviewDB',true);
+    const m=mountReviews(b,'444444444444444444');
+    const input=walkElements(m.render(),n=>n.type&&n.type.name==='ReviewInput')[0];
+    const render=hookSequenceProbe(b.React,input.type);
+    assert.deepEqual(render(input.props).sequence,['state','state']);
+    const theme=()=>{b.React.useState(0);return {primaryColor:'#123456'};};
+    assert.deepEqual(render({...input.props,ui:{...input.props.ui,theme}}).sequence,['state','state']);
 });

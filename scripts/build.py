@@ -206,7 +206,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: PlatformIndicators now show on the DM list (beside the mute icon, above the time) and the DM top bar (right after the name); the NoDelete red outline appears immediately.",
+        "description": "Discord 347.12: fixes PlatformIndicators DM hook-order crashes and opens bundled ReviewDB server reviews through the native sheet helper, with retryable UI lookups.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

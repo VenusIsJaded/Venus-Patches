@@ -20,7 +20,7 @@
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 11159, 13603, 16377, 9970, 14405, 13348]);
     if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
-    const revision = "1.2.9";
+    const revision = "1.3.1";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -1457,7 +1457,7 @@
             return child === p.children ? node : React.cloneElement(node,{children:child});
         }
         const next = visit(tree,0);
-        return swapped ? next : platformPlacement(() => tree,self,args,"piDmHeader");
+        return swapped ? next : placePlatformTree(tree,args[0] || {},"piDmHeader");
     }
     // DM list rows (MessagesItemChannelContent, fn65485): the name shares its line with the
     // server tag, so icons go in the right-side channelIcons row beside the muted/favorite
@@ -1477,11 +1477,16 @@
             added = true;
             return Object.assign({},p,{children:children.concat(el(RN.View,{key:"venus-platform-dm",style:{marginRight:4}},el(PlatformBadges,{userId})))});
         },0);
-        return added ? next : platformPlacement(() => tree,self,args,"piUserList");
+        return added ? next : placePlatformTree(tree,args[0] || {},"piUserList");
     }
     function platformPlacement(orig,self,args,option) {
         if (React) useSettings("platformIndicators");
-        const tree = orig.apply(self,args), props = args[0] || {};
+        return placePlatformTree(orig.apply(self,args),args[0] || {},option);
+    }
+    // Pure tree transform: header/DM fallbacks MUST NOT subscribe a second time.
+    // Their chosen placement changes while loading, changing channels or toggling
+    // settings; putting hooks here changes the parent fiber's hook count.
+    function placePlatformTree(tree,props,option) {
         if (!enabled("platformIndicators") || (option && !settings[option]) || !React || !RN || !tree) return tree;
         const channel = props.channel || channelStore && props.channelId && channelStore.getChannel(props.channelId);
         const userId = props.user && props.user.id || props.userId || channel && channel.type === 1 && channel.recipients && channel.recipients.length === 1 && channel.recipients[0];
@@ -1607,25 +1612,31 @@
     function currentId() { const user=userStore && userStore.getCurrentUser(); return user && user.id; }
     // Discord design-system parts traced in the pinned HBC98 bundle. Demand-loaded at
     // render/action time only; no extra Metro factories are wrapped for them.
-    let reviewParts;
+    const reviewExports=new Map();
     function reviewUI() {
-        if (reviewParts) return reviewParts;
-        const x=inspectedExport;
+        // Keep successful exports, never a partially initialized UI snapshot.
+        // Missing exports must be retried when Metro finishes initializing them.
+        const x=(id,key) => {
+            const slot=id+":"+key;
+            if (reviewExports.has(slot)) return reviewExports.get(slot);
+            const value=inspectedExport(id,key);
+            if (value != null) reviewExports.set(slot,value);
+            return value;
+        };
         let tokens=null;
         try { const t=typeof global.__r==="function" && global.__r(576); tokens=t && (t.default || t); } catch (_) {}
         const parts={TableRow:x(5854,"TableRow"),TableRowGroup:nativeRowGroup || x(5936,"TableRowGroup"),TableSwitchRow:nativeSwitchRow || x(7477,"TableSwitchRow"),
             Stack:x(5216,"Stack"),Card:x(7484,"default"),FormRow:x(8903,"FormRow"),FormLabel:x(8903,"FormLabel"),FormSubLabel:x(8903,"FormSubLabel"),
             TextInput:x(6880,"TextInput"),Send:x(4732,"SendMessageIcon"),ActionSheet:x(7474,"ActionSheet"),Header:x(7426,"BottomSheetTitleHeader"),
-            Close:x(7475,"ActionSheetCloseButton"),sheets:x(4755,"default"),simpleSheet:x(7472,"showSimpleActionSheet"),clipboard:x(7469,"Clipboard"),
+            Close:x(7475,"ActionSheetCloseButton"),sheets:x(4755,"default"),showSheet:x(4755,"showActionSheet"),simpleSheet:x(7472,"showSimpleActionSheet"),clipboard:x(7469,"Clipboard"),
             alerts:x(5141,"default"),toasts:x(4486,"default"),pushModal:x(4645,"pushModal"),popModal:x(4645,"popModal"),OAuth:oauthModal || x(9358,"default"),
             createStyles:x(4788,"createStyles"),theme:x(4505,"useThemeContext"),colors:tokens && tokens.colors};
-        if (parts.TableRow && parts.FormRow && parts.Card) reviewParts=parts;
         return parts;
     }
     function reviewToast(ui,content) {
         try { if (ui.toasts && typeof ui.toasts.open==="function") ui.toasts.open({key:"venus-reviewdb",content}); } catch (_) {}
     }
-    function hideReviewSheet(ui) { try { if (ui.sheets && typeof ui.sheets.hideActionSheet==="function") ui.sheets.hideActionSheet(); } catch (_) {} }
+    function hideReviewSheet(ui,key) { try { if (ui.sheets && typeof ui.sheets.hideActionSheet==="function") ui.sheets.hideActionSheet(key); } catch (_) {} }
     // Styles from Discord's createStyles, as the original plugin: semantic tokens resolve
     // per theme. Decided once so a mounted card never changes its hook count.
     let reviewStyleHook, reviewStylesTried=false;
@@ -1794,10 +1805,14 @@
                 leading:reviewImage(sender.profilePhoto) ? el(RN.Image,{style:{height:36,width:36,borderRadius:18},source:{uri:sender.profilePhoto}}) : undefined,
                 onLongPress:() => reviewActions(review,props.owner,ui,props.refetch)}));
     }
+    let reviewThemeHook, reviewThemeTried=false;
     function ReviewInput(props) {
         const ui=props.ui, styles=props.styles;
         const [text,setText]=React.useState(""), [busy,setBusy]=React.useState(false);
-        const theme=typeof ui.theme==="function" ? ui.theme() : null;
+        // Like the style hook, choose once. Retrying missing UI exports must not
+        // add a theme hook to an input which already mounted without one.
+        if (!reviewThemeTried) {reviewThemeTried=true;reviewThemeHook=typeof ui.theme==="function" ? ui.theme : null;}
+        const theme=reviewThemeHook ? reviewThemeHook() : null;
         const authenticated=!!reviewAuth(), canSend=authenticated && !busy && text.length>0;
         const placeholder=!authenticated ? "You must be authenticated to add a review." : "Tap to "+(props.shouldEdit ? "edit your" : "add a")+" review";
         function send() {
@@ -1842,18 +1857,19 @@
     }
     function ReviewSheet(props) {
         const ui=reviewUI();
-        return el(ui.ActionSheet,{header:ui.Header ? el(ui.Header,{title:"Reviews",trailing:ui.Close ? el(ui.Close,{onPress:() => hideReviewSheet(ui)}) : undefined}) : undefined},
+        return el(ui.ActionSheet,{header:ui.Header ? el(ui.Header,{title:"Reviews",trailing:ui.Close ? el(ui.Close,{onPress:() => hideReviewSheet(ui,props.sheetKey)}) : undefined}) : undefined},
             el(RN.View,null,el(RN.ScrollView,{style:{gap:12,marginBottom:12}},el(ReviewSection,{userId:props.userId}))));
     }
     function openReviewSheet(userId) {
+        if (!enabled("reviewDB") || !React || !RN || typeof userId!=="string" || !/^\d{17,20}$/.test(userId)) return;
         const ui=reviewUI();
-        if (!ui.ActionSheet || !ui.sheets || typeof ui.sheets.openLazy!=="function") { reviewToast(ui,"Reviews are unavailable"); return; }
-        // Traced 347.12 openLazy(importer,key,props,stackingBehavior) (fn32122/79901): a host
-        // Promise is awaited and `.default` used; anything else is CALLED and its resolved
-        // value used as the component. Our prelude promise failed the instanceof check, so
-        // it was called as a function and threw inside onPress: nothing opened. Pass an
-        // importer resolving to the component and stack above the server sheet.
-        try { ui.sheets.openLazy(() => Promise.resolve(ReviewSheet),"VenusReviews:"+userId,{userId},"stack"); }
+        if (!ui.ActionSheet || typeof ui.showSheet!=="function") { reviewToast(ui,"Reviews are unavailable. Reopen the server menu and try again."); return; }
+        // 4755's NAMED showActionSheet (HBC fn32121) takes an already-created
+        // element, then schedules SHOW_ACTION_SHEET through Dispatcher.wait.
+        // Reviews are bundled, not lazy imports: avoid openLazy's detached Promise
+        // chain entirely. The inspected store (fn31181) accepts "stack".
+        const key="VenusReviews:"+userId;
+        try { ui.showSheet({key,content:el(ReviewSheet,{userId,sheetKey:key}),stackingBehavior:"stack"}); }
         catch (error) { reviewToast(ui,"Couldn't open reviews: "+String(error && error.message || error)); }
     }
     // Profiles: the original appends ReviewSection as the LAST card of the profile card stack
