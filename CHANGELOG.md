@@ -2,6 +2,15 @@
 
 All releases target **Discord 347.12 - Stable (347012)**. Patch the original APKM each time.
 
+## 1.3.0 — PlatformIndicators in DMs and instant NoDelete outline
+
+### PlatformIndicators
+- **DM list icons show up.** Discord 347.12's DM list row puts the name inside `UsernameWithEffects`, next to the server tag, so icons never appeared. They now sit on the right of the row, next to the muted/favorite icon and above the timestamp, away from the server tag.
+- **DM top bar icons show up.** The DM header draws its title in a separate `ChannelTitle` component. Icons now appear right after the name, before the arrow.
+
+### NoDelete
+- **The red outline appears right away.** Discord's chat renderer (`ChatManager.determineChangeType`) deep-compares message records and skips rows that look unchanged. Because of that, a deleted message only turned red after you left the chat and came back. Kept records now carry a hidden marker, so the row redraws immediately for anyone's deletions. Message content is untouched.
+
 ## 1.2.9 — NoDelete, PlatformIndicators and ReviewDB fixes
 
 ### NoDelete
