@@ -1345,17 +1345,30 @@ test('ReviewDB profile section renders directly after the profile note card with
     b.api.setSetting('reviewWarning',false);assert.equal(m.render().props.children.props.children[0].props.children.length,1);
     assert.equal(b.requests.filter(([u])=>u.includes('/reviews')).every(([,o])=>!o.headers.authorization),true);
 });
-test('ReviewDB server sheet shows a single Reviews row that opens the reviews action sheet',async()=>{
+function mountReviewElement(b,element) {
+    const states=[],effects=[];let i=0;
+    return {effects,render(){
+        i=0;b.React.useState=initial=>{const index=i++;if(!(index in states))states[index]=typeof initial==='function'?initial():initial;
+            return [states[index],value=>{states[index]=typeof value==='function'?value(states[index]):value;}];};
+        b.React.useEffect=fn=>effects.push(fn);
+        return element.type(element.props);
+    }};
+}
+test('ReviewDB server Reviews expands in the existing guild sheet, fetches the guild ID and collapses',async()=>{
     const b=reviewHarness();const off=b.guild({guild:{id:'444444444444444444'}});assert.equal(off.props.guild.id,'444444444444444444');
-    b.api.setSetting('reviewDB',true);const row=b.guild({guild:{id:'444444444444444444'}});
-    assert.equal(row.type,'RowGroup');assert.equal(row.props.children.props.label,'Reviews');row.props.children.props.onPress();
-    assert.equal(b.sheets[0].key,'VenusReviews:444444444444444444');assert.equal(b.sheets[0].content.props.userId,'444444444444444444');
-    assert.equal(b.sheets[0].stackingBehavior,'stack');assert.equal(b.sheetEvents[0].type,'SHOW_ACTION_SHEET');
-    const content=b.sheets[0].content,sheet=content.type(content.props);assert.equal(sheet.type,'ActionSheet');assert.equal(sheet.props.header.props.title,'Reviews');
-    sheet.props.header.props.trailing.props.onPress();assert.deepEqual(b.hiddenSheets,['VenusReviews:444444444444444444']);
-    const section=walkElements(sheet,n=>n.type&&n.type.name==='ReviewSection')[0];
-    const effects=[];b.React.useEffect=fn=>effects.push(fn);section.type(section.props);effects.forEach(fn=>fn());
-    await flush();await flush();assert.equal(b.requests.some(([url])=>url.endsWith('/users/444444444444444444/reviews')),true);
+    b.api.setSetting('reviewDB',true);const element=b.guild({guild:{id:'444444444444444444'}});
+    assert.equal(element.type.name,'ServerReviews');
+    const m=mountReviewElement(b,element);let tree=m.render();m.effects.splice(0).forEach(fn=>fn());
+    assert.equal(walkElements(tree,n=>n.type&&n.type.name==='ReviewSection').length,0);
+    const row=walkElements(tree,n=>n.props.label==='Reviews')[0];row.props.onPress();tree=m.render();
+    const section=walkElements(tree,n=>n.type&&n.type.name==='ReviewSection')[0];
+    assert.equal(section.props.userId,'444444444444444444');assert.equal(section.props.standalone,true);
+    const mounted=mountReviewElement(b,section);assert.match(JSON.stringify(mounted.render()),/Loading reviews/);
+    mounted.effects.splice(0).forEach(fn=>fn());await flush();await flush();
+    assert.match(JSON.stringify(mounted.render()),/hello/);assert.equal(b.requests.some(([url])=>url.endsWith('/users/444444444444444444/reviews')),true);
+    assert.equal(b.sheets.length,0);assert.equal(b.pushed.length,0);
+    walkElements(m.render(),n=>n.props.label==='Reviews')[0].props.onPress();
+    assert.equal(walkElements(m.render(),n=>n.type&&n.type.name==='ReviewSection').length,0);
 });
 test('ReviewDB user context menu gains a Reviews entry and signed-in actions follow the original permissions',async()=>{
     const b=reviewHarness();b.api.setSetting('reviewDB',true);
@@ -1670,18 +1683,18 @@ test('PlatformIndicators DM row hook order survives loading, icon, fallback, gro
     for(const channel of [null,{type:3,recipients:['a','b']},{type:0,recipients:[]},dm])assert.deepEqual(render({channel}).sequence,expected);
     for(const key of ['piUserList','platformIndicators']){b.api.setSetting(key,false);assert.deepEqual(render({channel:dm}).sequence,expected);b.api.setSetting(key,true);assert.deepEqual(render({channel:dm}).sequence,expected);}
 });
-test('ReviewDB retries unavailable sheet exports after an earlier profile/settings UI lookup',()=>{
+test('ReviewDB user-menu sheet retries unavailable exports after an earlier UI lookup',()=>{
     const b=reviewHarness(),sheetModule=b.native[4755];delete b.native[4755];
     b.api.setSetting('reviewDB',true);b.Settings();
-    b.guild({guild:{id:'444444444444444444'}}).props.children.props.onPress();
+    b.menu.ContextMenuPopout({menu:{key:'444444444444444444',items:[1,2,3]}});b.menuCalls.at(-1).menu.items.at(-1).action();
     assert.equal(b.sheets.length,0);assert.match(b.toasts.at(-1).content,/unavailable/);
     b.native[4755]=sheetModule;
-    b.guild({guild:{id:'444444444444444444'}}).props.children.props.onPress();
+    b.menu.ContextMenuPopout({menu:{key:'444444444444444444',items:[1,2,3]}});b.menuCalls.at(-1).menu.items.at(-1).action();
     assert.equal(b.sheetEvents.length,1);assert.equal(b.sheetEvents[0].content.props.userId,'444444444444444444');
 });
-test('ReviewDB reports synchronous opening failures and ignores stale disabled button presses',()=>{
+test('ReviewDB user-menu sheet reports opening failures and ignores stale disabled presses',()=>{
     const b=reviewHarness();b.native[4755].showActionSheet=()=>{throw new Error('native opener failed');};
-    b.api.setSetting('reviewDB',true);const press=b.guild({guild:{id:'444444444444444444'}}).props.children.props.onPress;
+    b.api.setSetting('reviewDB',true);b.menu.ContextMenuPopout({menu:{key:'444444444444444444',items:[1,2,3]}});const press=b.menuCalls.at(-1).menu.items.at(-1).action;
     press();assert.match(b.toasts.at(-1).content,/native opener failed/);
     b.api.setSetting('reviewDB',false);const count=b.toasts.length;press();assert.equal(b.toasts.length,count);assert.equal(b.sheets.length,0);
 });
@@ -1733,3 +1746,73 @@ test('ReviewDB late theme availability never adds hooks to an already-mounted re
     const theme=()=>{b.React.useState(0);return {primaryColor:'#123456'};};
     assert.deepEqual(render({...input.props,ui:{...input.props.ui,theme}}).sequence,['state','state']);
 });
+
+test('ReviewDB server button works without any overlay helper and ignores stale disabled presses',()=>{
+    const b=reviewHarness();delete b.native[4755];delete b.native[7474];delete b.native[4645];
+    b.api.setSetting('reviewDB',true);const element=b.guild({guild:{id:'444444444444444444'}}),m=mountReviewElement(b,element);
+    const press=walkElements(m.render(),n=>n.props.label==='Reviews')[0].props.onPress;
+    press();assert.equal(walkElements(m.render(),n=>n.type&&n.type.name==='ReviewSection').length,1);
+    b.api.setSetting('reviewDB',false);press();assert.equal(m.render(),null);assert.equal(b.sheets.length,0);
+});
+test('ReviewDB input tolerates the native missing ThemeContext.Provider error without changing hook calls',()=>{
+    const b=reviewHarness();b.native[4505].useThemeContext=()=>{b.React.useState(0);throw Error('useThemeContext must be used within a ThemeContext.Provider');};
+    b.api.setSetting('reviewDB',true);const m=mountReviews(b,'444444444444444444');
+    const input=walkElements(m.render(),n=>n.type&&n.type.name==='ReviewInput')[0],render=hookSequenceProbe(b.React,input.type);
+    assert.deepEqual(render(input.props).sequence,['state','state','state']);assert.deepEqual(render(input.props).sequence,['state','state','state']);
+});
+test('ReviewDB server fetch errors are visible and retry can recover to an empty result',async()=>{
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);
+    const element=b.note({userId:'444444444444444444'}).props.children[1];element.props.standalone=true;
+    const m=mountReviewElement(b,element);b.context.fetch=async()=>({ok:false,status:503,json:async()=>({message:'Service unavailable'})});
+    m.render();m.effects.splice(0).forEach(fn=>fn());await flush();await flush();
+    let tree=m.render();assert.match(JSON.stringify(tree),/Service unavailable/);
+    const retry=walkElements(tree,n=>n.props.accessibilityLabel==='Retry reviews')[0];assert.ok(retry);
+    b.context.fetch=async()=>({ok:true,json:async()=>({reviews:[]})});retry.props.onPress();m.render();m.effects.splice(0).forEach(fn=>fn());await flush();await flush();
+    assert.match(JSON.stringify(m.render()),/No reviews yet/);
+});
+
+test('ReviewDB real React server press expands, loads, retries, collapses and resets on guild changes',
+    {skip:!process.env.VENUS_REACT_PATH},async()=>{
+        const path=require('node:path'),directory=path.resolve(process.env.VENUS_REACT_PATH);
+        const React=require(path.join(directory,'react')),Renderer=require(path.join(directory,'react-test-renderer'));
+        const previous=global.IS_REACT_ACT_ENVIRONMENT;global.IS_REACT_ACT_ENVIRONMENT=true;
+        const b=reviewHarness(),ThemeContext=React.createContext(null);b.load(React,null,19);
+        // fn31267's actual contract, omitted by the old successful theme mock.
+        b.native[4505].useThemeContext=()=>{const theme=React.useContext(ThemeContext);
+            if(theme==null)throw Error('useThemeContext must be used within a ThemeContext.Provider');return theme;};
+        b.native[7484].default=()=>{throw Error('Server reviews must not render a profile-only Card');};
+        b.native[5854].TableRow=props=>React.createElement('ServerReviewButton',props,props.label);
+        b.native[8903].FormRow=props=>React.createElement('FormRow',{onLongPress:props.onLongPress},props.label,props.subLabel,props.leading);
+        delete b.native[4755];delete b.native[7474];delete b.native[4645];
+        b.api.setSetting('reviewDB',true);
+        let fail=false;const requests=[],pending=[];
+        b.context.fetch=url=>{requests.push(url);
+            if(url.endsWith('/admins'))return Promise.resolve({ok:true,json:async()=>[]});
+            return new Promise(resolve=>pending.push(()=>resolve({ok:!fail,status:fail?503:200,json:async()=>fail?{message:'Service unavailable'}:
+                {reviews:[{id:1,comment:'Actual server content',sender:{discordID:'111111111111111111',username:'Reviewer',badges:[]}}]}})));
+        };
+        const Guild=b.load({default:()=>React.createElement('Progress')},null,14273).default;
+        let root;const element=id=>React.createElement(Guild,{guild:{id}});
+        const button=()=>root.root.findByType('ServerReviewButton');
+        const text=()=>JSON.stringify(root.toJSON());
+        const press=async()=>Renderer.act(async()=>{button().props.onPress();await flush();});
+        const resolve=async()=>Renderer.act(async()=>{assert.equal(pending.length,1);pending.shift()();await flush();});
+        try {
+            await Renderer.act(()=>{root=Renderer.create(element('444444444444444444'));});
+            assert.equal(requests.length,0);assert.equal(button().props.accessibilityState.expanded,false);
+            await press();assert.equal(button().props.accessibilityState.expanded,true);assert.match(text(),/Loading reviews/);
+            await resolve();assert.match(text(),/Actual server content/);assert.match(requests.at(-1),/users\/444444444444444444\/reviews$/);
+            await press();assert.doesNotMatch(text(),/Actual server content/);
+            await press();assert.match(text(),/Actual server content/);assert.equal(pending.length,0,'Reopening uses the valid cache');
+            await Renderer.act(()=>{root.update(element('555555555555555555'));});
+            assert.equal(button().props.accessibilityState.expanded,false);assert.doesNotMatch(text(),/Actual server content/);
+            fail=true;await press();await resolve();assert.match(text(),/Service unavailable/);
+            fail=false;await Renderer.act(()=>root.root.findByProps({accessibilityLabel:'Retry reviews'}).props.onPress());
+            assert.match(text(),/Loading reviews/);await resolve();assert.match(text(),/Actual server content/);
+            await Renderer.act(()=>b.api.setSetting('reviewDB',false));assert.equal(root.root.findAllByType('ServerReviewButton').length,0);
+            assert.equal(b.sheets.length,0);assert.equal(b.pushed.length,0);
+        } finally {
+            if(root)await Renderer.act(()=>root.unmount());
+            if(previous===undefined)delete global.IS_REACT_ACT_ENVIRONMENT;else global.IS_REACT_ACT_ENVIRONMENT=previous;
+        }
+    });
