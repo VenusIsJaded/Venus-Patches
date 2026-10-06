@@ -20,7 +20,7 @@
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 11159, 13603, 16377, 9970, 14405, 13348]);
     if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
-    const revision = "1.3.1";
+    const revision = "1.3.2";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -1812,7 +1812,11 @@
         // Like the style hook, choose once. Retrying missing UI exports must not
         // add a theme hook to an input which already mounted without one.
         if (!reviewThemeTried) {reviewThemeTried=true;reviewThemeHook=typeof ui.theme==="function" ? ui.theme : null;}
-        const theme=reviewThemeHook ? reviewThemeHook() : null;
+        // 347.12 useThemeContext (fn31267) throws outside its Provider. Reviews
+        // on a server are not a user profile; keep the hook call but use the
+        // standard send color when that optional context is absent.
+        let theme=null;
+        if (reviewThemeHook) try {theme=reviewThemeHook();} catch (_) {}
         const authenticated=!!reviewAuth(), canSend=authenticated && !busy && text.length>0;
         const placeholder=!authenticated ? "You must be authenticated to add a review." : "Tap to "+(props.shouldEdit ? "edit your" : "add a")+" review";
         function send() {
@@ -1837,28 +1841,37 @@
     function ReviewSection(props) {
         useReviews();
         const ui=reviewUI(), styles=useReviewStyles(ui), userId=props.userId;
-        const [reviews,setReviews]=React.useState(null), [generation,reload]=React.useState(0);
+        const [reviews,setReviews]=React.useState(null), [generation,reload]=React.useState(0), [error,setError]=React.useState("");
         const valid=typeof userId==="string" && /^\d{17,20}$/.test(userId);
         React.useEffect(() => {
             let live=true;
             if (!enabled("reviewDB") || !valid) return;
-            loadReviewAdmins();
-            reviewsFor(userId,generation>0).then(list => {if (live) setReviews(list);},() => {if (live) setReviews(null);});
+            setReviews(null);setError("");loadReviewAdmins();
+            reviewsFor(userId,generation>0).then(list => {if (live) setReviews(list);},failure => {
+                if (live) {setReviews(null);setError(String(failure && failure.message || failure).slice(0,512));}
+            });
             return () => {live=false;};
         },[userId,generation,settings.reviewDB]);
-        if (!enabled("reviewDB") || !valid || !RN || !ui.Card || !ui.FormRow) return null;
+        const Card=props.standalone ? RN && RN.View : ui.Card;
+        if (!enabled("reviewDB") || !valid || !RN || !Card || !ui.FormRow) return null;
         const list=reviews || [], me=currentId();
         const shown=settings.reviewWarning ? list : list.filter(review => review.type!==3);
         const refetch=() => {reviewCache.delete(userId);reload(n => n+1);};
+        const rows=error ? el(RN.View,{style:{gap:8}},
+            el(RN.Text,{accessibilityRole:"alert",style:styles.text},"Couldn't load reviews: "+error),
+            el(RN.Pressable,{accessibilityRole:"button",accessibilityLabel:"Retry reviews",onPress:refetch,style:{padding:12}},el(RN.Text,{style:styles.text},"Retry"))) :
+            reviews===null ? el(RN.Text,{accessibilityLiveRegion:"polite",style:styles.muted},"Loading reviews...") :
+            !shown.length ? el(RN.Text,{style:styles.muted},"No reviews yet.") :
+            shown.map((review,index) => el(ReviewRow,{key:(review.id==null ? "" : String(review.id))+":"+index,review,owner:userId,ui,styles,refetch}));
         return el(RN.View,{style:[styles.card]},
-            el(ui.Card,{title:"Reviews"},
-                el(RN.View,{style:{gap:8}},shown.map((review,index) => el(ReviewRow,{key:(review.id==null ? "" : String(review.id))+":"+index,review,owner:userId,ui,styles,refetch}))),
+            el(Card,props.standalone ? {accessibilityLabel:"Reviews"} : {title:"Reviews"},
+                el(RN.View,{style:{gap:8}},rows),
                 el(ReviewInput,{userId,ui,styles,refetch,shouldEdit:list.some(review => review.type!==3 && review.sender.discordID===me)})));
     }
     function ReviewSheet(props) {
         const ui=reviewUI();
         return el(ui.ActionSheet,{header:ui.Header ? el(ui.Header,{title:"Reviews",trailing:ui.Close ? el(ui.Close,{onPress:() => hideReviewSheet(ui,props.sheetKey)}) : undefined}) : undefined},
-            el(RN.View,null,el(RN.ScrollView,{style:{gap:12,marginBottom:12}},el(ReviewSection,{userId:props.userId}))));
+            el(RN.View,null,el(RN.ScrollView,{style:{gap:12,marginBottom:12}},el(ReviewSection,{userId:props.userId,standalone:true}))));
     }
     function openReviewSheet(userId) {
         if (!enabled("reviewDB") || !React || !RN || typeof userId!=="string" || !/^\d{17,20}$/.test(userId)) return;
@@ -1880,13 +1893,25 @@
         if (!React || !RN || !features.reviewDB || typeof userId!=="string") return tree;
         return el(React.Fragment,null,tree,el(ReviewSection,{key:"venus-reviews:"+userId,userId}));
     }
-    // Servers: like the original, the guild sheet's progress slot becomes a single "Reviews"
-    // row that opens the reviews in an action sheet. Rendered as a child so hook order is stable.
+    // The server sheet already supplies its native scrolling/presentation context
+    // (GuildActionSheet fn60681). Expand content there instead of spawning a second
+    // dialog. No detached dispatcher callback, new portal or nested RN ScrollView.
+    function ServerReviews(props) {
+        useReviews();
+        const [open,setOpen]=React.useState(false), ui=reviewUI();
+        React.useEffect(() => {setOpen(false);},[props.guildId]);
+        if (!enabled("reviewDB") || !RN || !ui.TableRow) return null;
+        return el(RN.View,null,
+            el(ui.TableRowGroup || RN.View,null,el(ui.TableRow,{label:"Reviews",arrow:!open,
+                subLabel:open ? "Tap to close server reviews." : "Read and write community reviews for this server.",
+                accessibilityState:{expanded:open},onPress:() => {if (enabled("reviewDB")) setOpen(value => !value);}})),
+            open ? el(ReviewSection,{key:props.guildId,userId:props.guildId,standalone:true}) : null);
+    }
     function reviewGuild(orig,self,args) {
         if (React) useSettings("reviewDB");
         const props=args[0] || {}, guild=props.guild, ui=reviewUI();
         if (!enabled("reviewDB") || !React || !RN || !guild || !/^\d{17,20}$/.test(guild.id) || !ui.TableRow) return React ? el(orig,props) : orig.apply(self,args);
-        return el(ui.TableRowGroup || RN.View,null,el(ui.TableRow,{label:"Reviews",onPress:() => openReviewSheet(guild.id)}));
+        return el(ServerReviews,{key:guild.id,guildId:guild.id});
     }
     // User long-press context menu gets a "Reviews" item, as in the original plugin.
     function reviewMenu(orig,self,args) {

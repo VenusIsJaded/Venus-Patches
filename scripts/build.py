@@ -206,7 +206,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: fixes PlatformIndicators DM hook-order crashes and opens bundled ReviewDB server reviews through the native sheet helper, with retryable UI lookups.",
+        "description": "Discord 347.12: server Reviews expands inside the existing guild sheet, with visible loading/error/retry feedback and safe handling of missing theme context. PlatformIndicators fixes retained.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

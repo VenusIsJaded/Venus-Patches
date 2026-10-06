@@ -2,6 +2,19 @@
 
 All releases target **Discord 347.12 - Stable (347012)**. Patch the original APKM each time.
 
+## 1.3.2 — Server Reviews in the existing server sheet
+
+### ReviewDB
+- **Changed the still-inert server Reviews path.** Hold a server, tap **Reviews**, and reviews expand below that row inside the server sheet you already opened. Tap it again to close them. The server path no longer creates a second action-sheet/dialog or nested scroll view.
+- Standalone reviews use a neutral container rather than a user-profile card. If Discord's theme hook has no `ThemeContext.Provider`, the input keeps a standard send-button color rather than throwing. Hook calls stay stable.
+- Shows **Loading reviews**, **No reviews yet**, or an error with **Retry**, instead of silently rendering an empty review list after a failed request.
+- Expansion resets when changing servers. Disabling ReviewDB blocks stale button presses and restores the original server progress component.
+
+### Validation
+- Added real React server interaction tests: button press, loading, server-ID fetch, content, collapse/reopen, cached reopening, guild changes, error/retry and disable. These run with overlay APIs absent and with the native theme-provider throw reproduced.
+- Source and packaged-runtime tests, Hermes native eval and original-APK ABI/privacy validation are run for the release. Native UI/network stand-ins are not Android device verification.
+- **PlatformIndicators is unchanged:** retains the 1.3.1 hook-order fix confirmed by the user.
+
 ## 1.3.1 — PlatformIndicators hook stability and native server Reviews
 
 ### PlatformIndicators
