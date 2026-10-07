@@ -2,6 +2,36 @@
 
 All releases target **Discord 347.12 - Stable (347012)**. Patch the original APKM each time.
 
+## 1.3.3 — Discord's own voice-message waveform
+
+### Custom voice messages
+- **The waveform is now generated exactly the way Discord generates it.** Traced from the 347.12 bundle (`VoiceMessageUtils`, `VoiceMessageConstants`, `downsampleWaveform`): one level per 100 ms, `255 × (dBFS + 100) / 100`, up to 256 levels, longer clips bucket-averaged with Discord's own rounding, then clamped to a byte. Converted files now look like voice messages recorded in the app instead of a 64-bar, per-file normalised peak graph. Quiet audio looks quiet and loud audio looks loud, the same as on desktop, iOS and Android.
+- **Bar count follows the length,** as in the app: a 3-second clip has 30 bars, and anything over 25.6 seconds uses all 256.
+- **More formats convert:**
+  - WAV/AIFF-C **A-law and µ-law** (call recorders, VoIP, old phones) are decoded locally.
+  - **RF64/BW64** and **streamed WAVs** with 0 or `0xFFFFFFFF` sizes are read to the end of the file.
+  - **ADPCM, GSM, MP3-in-WAV**, vendor `WAVE_FORMAT_EXTENSIBLE` subtypes and compressed AIFF-C (for example `ima4`) are handed to Android's decoder instead of being rejected.
+- **Bug fixes:**
+  - **Cut-off WAV/AIFF files** (an interrupted recording or a partial download) convert up to the cut instead of failing with *Truncated audio container*.
+  - **AIFF frame-count mismatches** from writers that pad SSND no longer fail.
+  - **Malformed PCM headers** fall back to Android's extractor.
+  - **Mid-stream decoder format changes** (HE-AAC/SBR 22.05 → 44.1 kHz, some Opus/Vorbis and vendor decoders) used to abort with *Audio format changed during decoding*. Conversion now continues on the same 48 kHz clock with no gap or duration drift.
+  - **Decoders that output audio before announcing their format** no longer fail with *Decoder output missing format*.
+  - **Waveform size check:** the length limit allowed 258 levels. It now checks Discord's exact 256-level limit.
+  - **Audio detection:** uppercase or parameterised MIME types (`AUDIO/OGG`, `audio/mpeg; …`), `application/x-wav` and audio-only files labelled `video/*` (`.m4a`, `.3ga`, `.opus`, …) were sent as plain attachments. They now convert. Real videos (`.mp4`, `.3gp`) are still left alone.
+
+### Validation
+- Native PCM/waveform checks cover:
+  - Discord's dB mapping (full-scale sine = 247, −40 dBFS = 153, −60 dBFS = 102).
+  - Bar-count rules.
+  - A comparison of the downsampler against a direct transcription of Discord's `downsampleWaveform`.
+  - G.711 ITU reference points.
+  - RF64, unsized and truncated WAV.
+  - Mid-stream reconfiguration.
+- ffmpeg-generated s16/s24/s32/f32/f64/u8/A-law/µ-law WAV, RF64, streamed WAV, big-endian AIFF and stereo fixtures produce matching waveforms.
+- Every host Kotlin reference in the voice extension is link-checked against the original APK.
+- These checks don't replace Android device testing.
+
 ## 1.3.2 — Server Reviews in the existing server sheet
 
 ### ReviewDB

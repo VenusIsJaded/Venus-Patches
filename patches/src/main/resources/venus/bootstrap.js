@@ -20,7 +20,7 @@
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 11159, 13603, 16377, 9970, 14405, 13348]);
     if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
-    const revision = "1.3.2";
+    const revision = "1.3.3";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -254,13 +254,20 @@
         if (!files) return Promise.reject(new Error("Discord file bridge has not loaded"));
         return files.getSize("venus-voice-v1:" + JSON.stringify({ action, id, uri }));
     }
+    // Decoded byte count of a validated base64 string; Discord accepts at most 256 waveform levels.
+    function waveformLength(text) { return text.length / 4 * 3 - (text.endsWith("==") ? 2 : text.endsWith("=") ? 1 : 0); }
+    const audioName = /\.(mp3|mp2|mpga|m4a|m4b|aac|wav|wave|flac|ogg|oga|opus|amr|awb|3ga|3gp|3gpp|aif|aiff|aifc|wma|ac3|eac3|caf|weba|alac)$/i;
+    // Audio-only extensions: some providers label these voice notes video/mp4, video/3gpp or video/webm.
+    const audioOnlyName = /\.(mp3|m4a|m4b|aac|wav|flac|oga|opus|amr|awb|3ga|weba|aif|aiff|aifc|caf)$/i;
     function isAudio(upload) {
         if (!upload || upload.spoiler) return false;
         const item = upload.item || {};
-        const mime = upload.mimeType || item.mimeType || "";
-        if (mime.startsWith("audio/") || ["application/ogg","application/x-ogg","application/x-flac"].includes(mime.toLowerCase())) return true;
-        if (mime && mime !== "application/octet-stream") return false;
-        return /\.(mp3|mp2|mpga|m4a|m4b|aac|wav|wave|flac|ogg|oga|opus|amr|awb|3ga|3gp|3gpp|aif|aiff|aifc|wma|ac3|eac3|caf|weba|alac)$/i.test(upload.filename || item.filename || "");
+        const mime = String(upload.mimeType || item.mimeType || "").toLowerCase().split(";")[0].trim();
+        const name = String(upload.filename || item.filename || "");
+        if (mime.startsWith("audio/") || ["application/ogg","application/x-ogg","application/x-flac","application/x-wav","application/x-opus"].includes(mime)) return true;
+        if (mime.startsWith("video/")) return audioOnlyName.test(name);
+        if (mime && mime !== "application/octet-stream" && mime !== "binary/octet-stream") return false;
+        return audioName.test(name);
     }
     function prepareUpload(orig, upload, args) {
         if (!enabled("voice") || !isAudio(upload)) return orig.apply(upload, args);
@@ -279,7 +286,7 @@
             const result = JSON.parse(text);
             if (!result || typeof result.uri !== "string" || !result.uri.startsWith("file://") ||
                 result.mimeType !== "audio/ogg" || !Number.isFinite(result.durationSecs) || !(result.durationSecs > 0) || result.durationSecs > 1200 ||
-                !Number.isSafeInteger(result.size) || !(result.size > 0) || typeof result.waveform !== "string" || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(result.waveform) || !result.waveform || result.waveform.length > 344)
+                !Number.isSafeInteger(result.size) || !(result.size > 0) || typeof result.waveform !== "string" || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(result.waveform) || !result.waveform || waveformLength(result.waveform) > 256)
                 throw new Error("Native audio conversion returned invalid metadata");
             if (job.cancelled || !enabled("voice") || (typeof upload.isCancelled === "function" && upload.isCancelled())) {
                 nativeVoice("release", job.id).catch(() => {});

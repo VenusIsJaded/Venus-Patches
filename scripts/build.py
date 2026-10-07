@@ -206,7 +206,7 @@ def build():
 def release_metadata():
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: server Reviews expands inside the existing guild sheet, with visible loading/error/retry feedback and safe handling of missing theme context. PlatformIndicators fixes retained.",
+        "description": "Discord 347.12: custom voice messages use Discord's own waveform algorithm (100 ms dBFS levels, up to 256 bars), accept more WAV/AIFF variants (A-law, mu-law, RF64, streamed, truncated), detect more audio MIME types and survive mid-stream decoder format changes.",
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",

@@ -1816,3 +1816,32 @@ test('ReviewDB real React server press expands, loads, retries, collapses and re
             if(previous===undefined)delete global.IS_REACT_ACT_ENVIRONMENT;else global.IS_REACT_ACT_ENVIRONMENT=previous;
         }
     });
+test('Discord-sized voice waveforms (up to 256 levels) are accepted and oversize ones fall back', async () => {
+    for (const [levels, accepted] of [[1, true], [73, true], [255, true], [256, true], [257, false], [258, false]]) {
+        const b = boot(); b.api.setSetting('voice', true);
+        const waveform = Buffer.from(Array.from({length: levels}, (_, i) => (i * 37) & 255)).toString('base64');
+        const result = {uri:'file:///cache/v.ogg', filename:'voice-message.ogg', mimeType:'audio/ogg', size:10, durationSecs:levels / 10, waveform};
+        b.load(native({getSize:async request => JSON.parse(request.slice('venus-voice-v1:'.length)).action === 'prepare' ? JSON.stringify(result) : 'ok'}));
+        class CloudUpload {
+            constructor() { this.item = {uri:'content://audio', mimeType:'audio/mp4', filename:'a.m4a'}; this.calls = 0; }
+            reactNativeCompressAndExtractData() { this.calls++; return Promise.resolve(this); }
+        }
+        b.load({CloudUpload}); const upload = new CloudUpload();
+        await upload.reactNativeCompressAndExtractData();
+        assert.equal(upload.waveform === waveform, accepted, `levels ${levels}`);
+        assert.equal(upload.calls, accepted ? 0 : 1);
+    }
+});
+test('voice audio detection tolerates MIME case/parameters and audio-only files mislabelled as video', async () => {
+    const cases = [['AUDIO/OGG','x.ogg',true],['audio/mpeg; charset=binary','x.mp3',true],['video/mp4','note.m4a',true],
+        ['video/3gpp','rec.3ga',true],['video/mp4','clip.mp4',false],['video/3gpp','clip.3gp',false],['image/png','x.png',false],
+        ['application/x-wav','x.wav',true],['','x.opus',true],['application/octet-stream','x.txt',false]];
+    for (const [mimeType, filename, expected] of cases) {
+        const b = boot(); b.api.setSetting('voice', true); let prepared = false;
+        b.load(native({getSize:async request => { if (JSON.parse(request.slice('venus-voice-v1:'.length)).action === 'prepare') prepared = true; return 'not json'; }}));
+        class CloudUpload { constructor() { this.item = {uri:'content://a', mimeType, filename}; this.mimeType = mimeType; this.filename = filename; }
+            reactNativeCompressAndExtractData() { return Promise.resolve(this); } }
+        b.load({CloudUpload}); await new CloudUpload().reactNativeCompressAndExtractData();
+        assert.equal(prepared, expected, `${mimeType} ${filename}`);
+    }
+});
