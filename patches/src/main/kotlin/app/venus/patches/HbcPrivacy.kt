@@ -1,6 +1,7 @@
 package app.venus.patches
 
 import java.io.File
+import java.io.RandomAccessFile
 import java.security.MessageDigest
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -17,6 +18,26 @@ internal object HbcPrivacy {
         require(digest(bytes) == ORIGINAL_SHA256) {
             "Unsupported Discord JavaScript bundle; use the original 347.12 - Stable APKM"
         }
+    }
+    /** Same check, streamed: never holds the 55 MB bundle in memory on the patching device. */
+    fun verifyOriginal(file: File) {
+        require(streamDigest(file, "SHA-256", file.length()) == ORIGINAL_SHA256) {
+            "Unsupported Discord JavaScript bundle; use the original 347.12 - Stable APKM"
+        }
+    }
+    private fun streamDigest(file: File, algorithm: String, length: Long): String {
+        val digest = MessageDigest.getInstance(algorithm)
+        file.inputStream().use { input ->
+            val buffer = ByteArray(1 shl 20)
+            var left = length
+            while (left > 0) {
+                val read = input.read(buffer, 0, minOf(buffer.size.toLong(), left).toInt())
+                if (read < 0) break
+                digest.update(buffer, 0, read)
+                left -= read
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
     }
 
     // HBC98: GetGlobalObject r6; TryGetById r7,r6,cache0,Promise;
@@ -88,5 +109,45 @@ internal object HbcPrivacy {
         footer.copyInto(result, result.size - 20)
         return result
     }
-    fun apply(file: File, targets: List<Target>) { file.writeBytes(rewrite(file.readBytes(), targets)) }
+    /**
+     * Identical result to [rewrite], applied in place: validates every target first, then only
+     * the selected function bodies and the SHA-1 footer are written. Streams the footer hashes
+     * instead of loading and copying the whole bundle once per selected privacy group.
+     */
+    fun apply(file: File, targets: List<Target>) {
+        RandomAccessFile(file, "rw").use { raf ->
+            val length = raf.length()
+            require(length >= 148) { "Truncated Hermes asset" }
+            fun read(offset: Long, size: Int) = ByteArray(size).also { raf.seek(offset); raf.readFully(it) }
+            val header = ByteBuffer.wrap(read(0, 128)).order(ByteOrder.LITTLE_ENDIAN)
+            require(header.getInt(8) == 98 && header.getInt(32).toLong() == length) { "Invalid HBC98 file header" }
+            require(streamDigest(file, "SHA-1", length - 20) == read(length - 20, 20).joinToString("") { "%02x".format(it) }) {
+                "Invalid HBC footer"
+            }
+            for (target in targets) {
+                val compact = read(128L + target.id * 12L, 12)
+                require(compact.contentEquals(hex(target.header))) { "HBC header changed: ${target.name} #${target.id}" }
+                val words = ByteBuffer.wrap(compact).order(ByteOrder.LITTLE_ENDIAN)
+                val expanded = (((words.getInt(4) ushr 14) and 255) shl 24) or (words.getInt(0) and 0x1ffffff)
+                require(digest(read(expanded.toLong(), 40)) == target.expandedHeaderHash) {
+                    "HBC expanded header changed: ${target.name} #${target.id}"
+                }
+                require(digest(read(target.offset.toLong(), target.size)) == target.sha256) {
+                    "HBC body changed: ${target.name} #${target.id}"
+                }
+            }
+            for (target in targets) {
+                val stub = stub(target)
+                require(stub.size <= target.size)
+                val body = ByteArray(target.size)
+                stub.copyInto(body)
+                raf.seek(target.offset.toLong())
+                raf.write(body)
+            }
+            // Same-process writes are visible to the streamed read; no flush to disk needed.
+            val footer = hex(streamDigest(file, "SHA-1", length - 20))
+            raf.seek(length - 20)
+            raf.write(footer)
+        }
+    }
 }

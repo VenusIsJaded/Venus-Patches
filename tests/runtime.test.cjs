@@ -1845,3 +1845,33 @@ test('voice audio detection tolerates MIME case/parameters and audio-only files 
         assert.equal(prepared, expected, `${mimeType} ${filename}`);
     }
 });
+test('Pastelize color cache returns identical colors and follows a replaced hash helper',()=>{
+    const b=boot(allFeatures),{RN}=reactHarness(b);let processed=0;RN.processColor=hex=>{processed++;return hex;};
+    b.load(seed=>seed.length*23,null,1240);
+    b.load({default:{getMember:()=>({})}},null,2105);
+    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,8222);const rows=new Rows();
+    const row={rowType:1,message:{},result:{message:{authorId:'author',guildId:'g',username:'Name',roleColor:null,content:[]}}};
+    const first=rows.generate(row).message.roleColor;const count=processed;
+    for (let i=0;i<20;i++) assert.equal(rows.generate(row).message.roleColor,first);
+    assert.equal(processed,count,'repeat renders reuse the cached color');
+    b.load(seed=>seed.length*97,null,1240);
+    assert.notEqual(rows.generate(row).message.roleColor,first,'a new hash helper is not served stale colors');
+    b.api.setSetting('pastelize',false);assert.equal(rows.generate(row),row.result);
+});
+test('NoDelete outline colors are computed once and still follow a replaced processColor',()=>{
+    const b=deletionHarness(),{RN}=reactHarness(b);let calls=0;RN.processColor=color=>{calls++;return color;};
+    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,8222);const rows=new Rows();
+    b.api.setSetting('pastelize',false);b.api.setSetting('noDelete',true);
+    b.messages.set('c:1',{id:'1',content:'original',state:'SENT'});
+    b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
+    const row={rowType:1,message:{id:'1',channel_id:'c'},result:{message:{id:'1',channelId:'c'}}};
+    const first=rows.generate(row).backgroundHighlight;assert.equal(first.backgroundColor,'#f23f431a');assert.equal(first.gutterColor,'#f23f43');
+    const count=calls;rows.generate(row);rows.generate(row);assert.equal(calls,count);
+    RN.processColor=color=>'p'+color;assert.equal(rows.generate(row).backgroundHighlight.gutterColor,'p#f23f43');
+});
+test('enabled() feature lookup stays correct for every setting',()=>{
+    const b=boot({freeNitro:true,pastelize:true,quickDelete:true,noDelete:true,platformIndicators:true,reviewDB:true});
+    for (const key of ['emojis','stickers','hyperlinks','forceLinks','pastelAll','quickDeleteEmbeds','noDeleteSave','piDmHeader','reviewWarning'])
+        assert.equal(b.api.setSetting(key,!b.api.settings[key]),true,key);
+    for (const key of ['picker','voice','dashless','hiddenChannels']) assert.equal(b.api.setSetting(key,true),false,key);
+});

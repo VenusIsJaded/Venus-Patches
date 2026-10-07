@@ -253,9 +253,27 @@ private fun checkHermesCorruption(original: ByteArray, case: Int) {
     val before = HbcPrivacy.digest(bytes)
     check(runCatching { HbcPrivacy.rewrite(bytes, HbcPrivacy.analytics) }.isFailure)
     check(HbcPrivacy.digest(bytes) == before) { "Rejected fixture was partially changed" }
+    // The in-place patch path must reject the same input without touching the file.
+    val file = File.createTempFile("venus-corrupt", ".hbc").apply { deleteOnExit(); writeBytes(bytes) }
+    try {
+        check(runCatching { HbcPrivacy.apply(file, HbcPrivacy.analytics) }.isFailure)
+        check(HbcPrivacy.digest(file.readBytes()) == before) { "Rejected file was partially changed" }
+        if (case == 0) check(runCatching { HbcPrivacy.verifyOriginal(file) }.isFailure)
+    } finally { file.delete() }
 }
 
 private fun checkHermesComposition(original: ByteArray, groups: List<List<HbcPrivacy.Target>>, fixtureDirectory: String?) {
+    // The streamed in-place path used while patching must equal the in-memory reference rewrite.
+    val streamed = File.createTempFile("venus-streamed", ".hbc").apply { deleteOnExit() }
+    try {
+        streamed.writeBytes(original)
+        HbcPrivacy.verifyOriginal(streamed)
+        for (group in groups) HbcPrivacy.apply(streamed, group)
+        check(streamed.readBytes().contentEquals(HbcPrivacy.rewrite(original, groups.flatten()))) {
+            "In-place privacy rewrite differs from the reference rewrite"
+        }
+        check(runCatching { HbcPrivacy.verifyOriginal(streamed) }.isFailure)
+    } finally { streamed.delete() }
     // Optional combined prelude fixture is written only within the build directory, never as an APK.
     if (fixtureDirectory != null) {
         val fixture = File(fixtureDirectory, "privacy-prelude.hbc").apply { parentFile.mkdirs() }
