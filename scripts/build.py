@@ -203,20 +203,45 @@ def build():
     print(f"Bundle: {bundle.relative_to(ROOT)}", flush=True)
 
 
+RELEASE_SUMMARY = (
+    "Fixes adding Venus Patches as a remote source in Morphe, and makes the plugins do less work "
+    "while you chat. Patch the original Discord 347.12 APKM."
+)
+
+
+def check_metadata(metadata):
+    """Reject a manifest Morphe Manager cannot read before it is ever published."""
+    import re
+    for key in ("created_at", "description", "download_url", "version"):
+        if not isinstance(metadata.get(key), str) or not metadata[key]:
+            raise SystemExit(f"patches-bundle.json: missing {key}")
+    # Morphe Manager parses created_at as a kotlinx LocalDateTime: no UTC offset or "Z".
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,9})?)?", metadata["created_at"]):
+        raise SystemExit("patches-bundle.json: created_at must be a LocalDateTime without a UTC offset")
+    if not metadata["download_url"].startswith("https://github.com/VenusIsJaded/Venus-Patches/releases/download/"):
+        raise SystemExit("patches-bundle.json: unexpected download_url")
+
+
 def release_metadata():
+    # An offset such as "+00:00" makes Morphe reject the whole remote source.
+    created_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     metadata = {
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Discord 347.12: custom voice messages use Discord's own waveform algorithm (100 ms dBFS levels, up to 256 bars), accept more WAV/AIFF variants (A-law, mu-law, RF64, streamed, truncated), detect more audio MIME types and survive mid-stream decoder format changes.",
+        "created_at": created_at,
+        "description": RELEASE_SUMMARY,
         "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
         "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",
         "version": VERSION,
     }
+    check_metadata(metadata)
     (ROOT / "patches-bundle.json").write_text(json.dumps(metadata, indent=2) + "\n")
 
 
 if __name__ == "__main__":
     if "--metadata-only" in sys.argv:
         release_metadata()
+    elif "--check-metadata" in sys.argv:
+        check_metadata(json.loads((ROOT / "patches-bundle.json").read_text()))
+        print("patches-bundle.json is readable by Morphe Manager")
     else:
         build()

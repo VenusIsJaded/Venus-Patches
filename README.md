@@ -1,80 +1,71 @@
 # Venus Patches
 
-Small, bundled Discord tools for **[Morphe](https://morphe.software)**. They're built into the patched APK: there's no remote plugin loader, downloaded JavaScript or analytics.
+Extra features and privacy options for Discord on Android, built into the app with **[Morphe](https://morphe.software)**. Everything works offline. Nothing is downloaded from the internet to run, and nothing is tracked.
 
-[**Add to Morphe**](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [Changelog](CHANGELOG.md) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
+[**Add to Morphe**](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [What's new](CHANGELOG.md) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-**Target:** Discord **347.12 - Stable** (version code `347012`), original **APKM**.
-
-## Features
-
-| Feature | What it does | Default |
-| --- | --- | --- |
-| **Venus settings** | Native **Settings → Venus** section with General and Plugins pages | Always on |
-| **File size on picker** | Shows file sizes on media-picker thumbnails | On |
-| **Custom voice messages** | Sends one audio file as a real Ogg/Opus voice message with Discord's own waveform (same algorithm as the in-app recorder) | Off |
-| **CopyBios** | Lets you select and copy profile bio text | On |
-| **Dashless** | Shows spaces instead of dashes in channel names | On |
-| **FavouriteAnything** | Lets you favourite images and videos from the media viewer | On |
-| **FreeNitro** | Sends unavailable emojis and stickers as CDN links | On |
-| **No typing** | Stops sending your typing indicator | On |
-| **QuickDelete** | Skips the delete confirmation for messages and embeds | Off |
-| **NoDelete** | Keeps deleted messages (yours too) with a red outline; session-only or permanent saving with a typed maximum | Off |
-| **JumpToTop** | Adds a jump-to-first-message control to chats | On |
-| **Hidden Channels** | Lists locked channels with a lock icon and a native details dialog | Off |
-| **Pastelize** | Gives names and mentions stable pastel colors | On |
-| **PlatformIndicators** | Shows the original desktop, mobile, web, console and VR status icons | On |
-| **ReviewDB** | Read, write and report user and server reviews, laid out like the original plugin (opt-in) | Off |
-
-You can turn the bundled plugin switches on and off in **Discord Settings → Venus → Plugins** without reinstalling.
-
-### APK-level privacy patches
-
-These are **independent Morphe patch selections**, enabled by default in Morphe, **not Discord/Venus settings**. They do not depend on Venus settings or the bundled JavaScript plugin runtime. Hermes privacy selections independently pin loading to the packaged bundle, so cached/OTA JavaScript cannot bypass them; the shared loader guard is installed only once when combining selections. Select them before patching the original APKM; changing the selection requires patching/installing again.
-
-| Morphe patch | Bytecode-level behavior |
-| --- | --- |
-| **Disable analytics** | Replaces inspected Hermes analytics track, recording, drain, immediate-upload, flush and CLIENT_TELEMETRY producers with safe return bodies. Promise callers still receive resolved Promises. |
-| **Disable crash reporting** | Disables native Discord/Sentry initialization (including the Rust reporter), Sentry JavaScript transport send functions, envelopes, breadcrumbs, replay, screenshots, profiling, device-context collection, independent system-log capture and cached-crash read/write paths. |
-| **Disable telemetry and touch logging** | Stops touch/view-hierarchy logging and JavaScript/native telemetry-ring initialization, collection and writes, native metric monitoring and WebSocket telemetry instrumentation. |
-| **Disable advertising identifiers** | Stops Discord's separate Google advertising-ID lookup before Play services are contacted; returns the existing limited-tracking map shape. Select install-attribution protection separately for AppsFlyer. |
-| **Disable install attribution** | Disables Play install-referrer lookup and inspected AppsFlyer initialization/start, event/location reporting, personal-data setters and attribution identifiers. |
-
-**Scope:** these target the identified client reporting paths in the pinned 347.12 APKM, not every possible form of data collection. Discord still receives ordinary API/gateway traffic, account activity, messages and voice traffic; server-side logging is not preventable by these patches. Operational networking, authentication, push notifications and audio/video device selection are deliberately left alone. Existing telemetry/crash files are not erased. Attribution/deferred deep links may stop working. These patches are not a network firewall, anonymity guarantee or removal of all SDK binaries.
-
-**Validation:** the release is compiled and checked against the supplied original APK's exact ABIs and bundle hashes. No Morphe Patcher run or patched APK is needed to build it. Device behavior and traffic capture still need validation; no zero-telemetry claim is made.
+**Works with:** Discord **347.12 - Stable** (the original APKM).
 
 ## Install
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager/releases).
-2. Tap **[Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches)**, or add `https://github.com/VenusIsJaded/Venus-Patches` as a remote source.
-3. Select the **original** Discord 347.12 APKM. Don't use an APK you've already patched.
-4. Choose your features, keep **Venus settings** on, then patch and install.
+2. Tap **[Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches)**. You can also add `https://github.com/VenusIsJaded/Venus-Patches` as a source.
+3. Choose the **original** Discord 347.12 APKM. Don't pick an APK you've already patched.
+4. Pick the features you want, leave **Venus settings** on, then patch and install.
 
-To use a local copy instead, download `patches-<version>.mpp` from [Releases](https://github.com/VenusIsJaded/Venus-Patches/releases) and import it with **Sources → + → Local**.
+You can also download `patches-<version>.mpp` from [Releases](https://github.com/VenusIsJaded/Venus-Patches/releases) and import it under **Sources → + → Local**.
 
-> **Signing:** a patched APK isn't signed with Discord's key. You may need to uninstall official Discord first, which deletes its local data. Keep using the same Morphe signing key so future updates install over the top.
+> **Heads up:** the patched app is signed with your key, not Discord's, so you may need to uninstall official Discord first. Uninstalling deletes Discord's local data. Keep the same Morphe signing key so later updates install over the top.
 
-## Notes
+## Features
 
-- **Hidden Channels** only shows metadata your client already received: name, creation date, last message and last pin. It can't read hidden messages or join locked voice channels. Names the server redacted appear as *name unavailable*.
-- **Voice messages** need Android 10+ and an Opus encoder. Any Android-decodable audio (MP3, AAC/M4A, FLAC, Ogg, Opus, AMR, 3GP…) plus WAV/AIFF PCM, float, A-law/µ-law, RF64 and streamed WAVs are converted. The waveform uses Discord's own recorder algorithm (100 ms dBFS levels, up to 256 bars). If conversion fails, Discord uploads the original file as a normal attachment.
-- **NoDelete** keeps deleted messages, including ones *you* delete, with a red outline. In **Settings → Venus → Plugins → NoDelete**, turn on **Save permanently** to keep them across restarts (stored locally for your account), or leave it off to keep them until Discord restarts. Type the **maximum saved messages** (1–5000, default 512); the oldest is dropped when full. Deleting a kept message again dismisses it locally. Failed sends and "Only you can see this" messages still disappear normally. It only keeps content already cached on your device.
-- **ReviewDB** shows a **Reviews** card under the profile note, a **Reviews** row that expands/collapses reviews inside the server sheet and a **Reviews** entry in the user long-press menu, like the original plugin. It contacts `manti.vendicated.dev` when a profile with reviews is shown. Sign in from **Settings → Venus → Plugins → ReviewDB** to post, delete or report (long-press a review). The ReviewDB sign-in is saved until you log out and never uses your Discord token.
-- **FreeNitro** sends links, not real Nitro emojis or stickers. It doesn't convert Lottie stickers.
-- The patches check the bundle hash and refuse to run on any other Discord JavaScript bundle: `834bb2c88a7d8e508039e11be90a2a09f9f87017fdceef1999cf099933a6be35`.
+To turn plugins on or off at any time, open **Discord Settings → Venus → Plugins**.
 
-## Build
+| Feature | What it does | Starts |
+| --- | --- | --- |
+| **File size on picker** | Shows file sizes on photos and videos when you attach them | On |
+| **Custom voice messages** | Sends an audio file as a real voice message, waveform included | Off |
+| **CopyBios** | Lets you select and copy profile bios | On |
+| **Dashless** | Shows spaces instead of dashes in channel names | On |
+| **FavouriteAnything** | Lets you favourite any image or video | On |
+| **FreeNitro** | Sends emojis and stickers you can't use as links | On |
+| **No typing** | Hides that you're typing | On |
+| **QuickDelete** | Skips the "are you sure?" when deleting | Off |
+| **NoDelete** | Keeps deleted messages visible, outlined in red | Off |
+| **JumpToTop** | Adds a button to jump to the first message | On |
+| **Hidden Channels** | Shows channels you can't open, with a lock | Off |
+| **Pastelize** | Gives names and mentions soft pastel colors | On |
+| **PlatformIndicators** | Shows whether people are on desktop, mobile, web, console or VR | On |
+| **ReviewDB** | Read and write reviews of users and servers | Off |
+
+### Privacy options
+
+You choose these in Morphe before you patch, not in Discord. To change them, patch again. They're all on by default.
+
+| Option | What it stops |
+| --- | --- |
+| **Disable analytics** | Discord's usage tracking |
+| **Disable crash reporting** | Crash reports and logs sent to Sentry |
+| **Disable telemetry and touch logging** | Performance tracking and records of what you tap |
+| **Disable advertising identifiers** | Reading your Google advertising ID |
+| **Disable install attribution** | Tracking of how you installed the app (AppsFlyer) |
+
+Discord can still see what any client needs to work, like your messages, calls and activity on its servers.
+
+## Good to know
+
+- **Voice messages** need Android 10 or newer. Most audio files work. If a file can't be converted, it's sent as a normal attachment.
+- **NoDelete** keeps messages until Discord restarts. To keep them for good, turn on **Save permanently** in its settings. Delete a kept message again to hide it.
+- **Hidden Channels** only shows a channel's name and dates. It can't show messages or let you join locked voice channels.
+- **ReviewDB** loads reviews from `manti.vendicated.dev`. To post or report reviews, sign in from its settings page. Signing in never uses your Discord token.
+- **FreeNitro** sends links, not real Nitro emojis or stickers.
+
+## For developers
 
 ```bash
-python3 scripts/build.py      # downloads pinned toolchains, runs tests, outputs patches/build/libs/*.mpp
-node --test tests/runtime.test.cjs
-# Optional read-only ABI validation during compilation (an extracted original base.apk):
-VENUS_ORIGINAL_APK=/path/to/base.apk python3 scripts/build.py
+python3 scripts/build.py    # builds and tests patches/build/libs/*.mpp
 ```
-
-Automated tests cover the JavaScript runtime, PCM audio conversion, privacy dependency graphs and (with the original APK) exact bytecode ABIs, native result-map shapes, bundle pinning and prelude compatibility. They don't replace testing on a real device.
 
 ## License
 
-[GPL-3.0](LICENSE). See [NOTICE](NOTICE) for attributions.
+[GPL-3.0](LICENSE). Credits are in [NOTICE](NOTICE).

@@ -32,7 +32,7 @@ private var favouriteAnythingSelected = false
 private var freeNitroSelected = false
 private val additionalSelections = mutableSetOf<String>()
 internal val discordBundleGuard = rawResourcePatch {
-    execute { HbcPrivacy.verifyOriginal(get("assets/index.android.bundle").readBytes()) }
+    execute { HbcPrivacy.verifyOriginal(get("assets/index.android.bundle")) }
 }
 
 private val runtimeAssets = rawResourcePatch {

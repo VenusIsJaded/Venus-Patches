@@ -20,7 +20,7 @@
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 11159, 13603, 16377, 9970, 14405, 13348]);
     if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
-    const revision = "1.3.3";
+    const revision = "1.3.4";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -52,7 +52,13 @@
         return descriptor && "value" in descriptor ? descriptor.value : undefined;
     };
     const owns = (obj, key) => obj != null && Object.prototype.hasOwnProperty.call(obj, key);
-    const enabled = key => features[featureFor(key)] && settings[key];
+    // enabled() runs inside nearly every hook: resolve setting -> feature once, not per call.
+    const featureTable = new Map();
+    const enabled = key => {
+        let feature = featureTable.get(key);
+        if (feature === undefined) featureTable.set(key, feature = featureFor(key));
+        return features[feature] && settings[key];
+    };
 
     function save() {
         if (!files || status.storage === "loading") return;
@@ -710,6 +716,9 @@
         const cached = hiddenNames.get(channel.id);
         return cached && cached.guild === channel.guild_id ? cached.name : channel.type === 4 ? "Hidden category (name unavailable)" : "Hidden channel (name unavailable)";
     }
+    const CHANNEL_EVENTS = new Set(["CHANNEL_CREATE","CHANNEL_UPDATE"]), GUILD_EVENTS = new Set(["GUILD_CREATE","GUILD_UPDATE"]);
+    const READY_EVENTS = new Set(["CONNECTION_OPEN","CONNECTION_OPEN_SUPPLEMENTAL"]), BATCH_EVENTS = new Set(["CHANNEL_UPDATES","THREAD_LIST_SYNC"]);
+    const MESSAGE_EVENTS = new Set(["MESSAGE_CREATE","MESSAGE_UPDATE"]), RESTORE_EVENTS = new Set(["CONNECTION_OPEN","CACHE_LOADED"]);
     function channelMetadataEvent(event) {
         const current = userStore && userStore.getCurrentUser();
         // This hook runs BEFORE UserStore handles READY. Scope its metadata to
@@ -726,21 +735,21 @@
         }
         if (!features.hiddenChannels) return;
         // Cache even while the toggle is off so enabling later still has READY names.
-        if (["CHANNEL_CREATE","CHANNEL_UPDATE"].includes(event.type)) rememberChannelName(event.channel,owner);
+        if (CHANNEL_EVENTS.has(event.type)) rememberChannelName(event.channel,owner);
         function rememberGuild(guild) {
             if (!guild || !guild.id) return;
             for (const key of ["channels","threads"]) if (Array.isArray(guild[key]))
                 guild[key].forEach(channel => rememberChannelName(Object.assign({guild_id:guild.id},channel),owner));
         }
-        if (["GUILD_CREATE","GUILD_UPDATE"].includes(event.type)) rememberGuild(event.guild);
-        if (["CONNECTION_OPEN","CONNECTION_OPEN_SUPPLEMENTAL"].includes(event.type) && Array.isArray(event.guilds)) event.guilds.forEach(rememberGuild);
-        if (["CHANNEL_UPDATES","THREAD_LIST_SYNC"].includes(event.type)) {
+        if (GUILD_EVENTS.has(event.type)) rememberGuild(event.guild);
+        if (READY_EVENTS.has(event.type) && Array.isArray(event.guilds)) event.guilds.forEach(rememberGuild);
+        if (BATCH_EVENTS.has(event.type)) {
             for (const key of ["channels","threads"]) if (Array.isArray(event[key]))
                 event[key].forEach(channel => rememberChannelName(Object.assign({guild_id:event.guildId},channel),owner));
         }
         // Real unobfuscated names arrive inside message mention_channels (fn34524/fn35281):
         // harvest them so mentioned hidden channels resolve even when stores are redacted.
-        if (["MESSAGE_CREATE","MESSAGE_UPDATE"].includes(event.type)) {
+        if (MESSAGE_EVENTS.has(event.type)) {
             const msg = event.message || event;
             const mentions = msg && Array.isArray(msg.mention_channels) && msg.mention_channels;
             if (mentions) mentions.forEach(channel => rememberChannelName(channel, owner));
@@ -946,7 +955,7 @@
         if (!event) return orig.apply(self, args);
         if (features.hiddenChannels) channelMetadataEvent(event);
         if (event.type === "LOGOUT") { clearDeleted(false); archiveRestored = false; clearReviewAuth(); }
-        if (["CONNECTION_OPEN", "CACHE_LOADED"].includes(event.type)) Promise.resolve().then(restoreDeleted);
+        if (RESTORE_EVENTS.has(event.type)) Promise.resolve().then(restoreDeleted);
         // Views are keyed by the store's own ChannelMessages identity, so unrelated events
         // (typing, presence, reactions) no longer force a re-merge and re-sort of every chat.
         if (event.type === "CHANNEL_DELETE") {
@@ -1014,7 +1023,7 @@
         // Original plugin's escape hatch: realCheck asks for the true result.
         if (channel && channel.realCheck) return orig.apply(self, args);
         // Loose equality: VIEW_CHANNEL can be BigInt/object across module copies.
-        if (viewPermission != null && bit == viewPermission && channel && channel.guild_id && ![1,3].includes(channel.type)) {
+        if (viewPermission != null && bit == viewPermission && channel && channel.guild_id && channel.type !== 1 && channel.type !== 3) {
             let hidden = false;
             try { hidden = !realCan(bit, channel); } catch (_) { hidden = false; }
             if (hidden) return true;
@@ -1079,7 +1088,7 @@
     function hiddenMetadata(value) {
         if (!enabled("hiddenChannels")) return false;
         const channel = typeof value === "string" ? receivedChannel(value) : value;
-        return !!(channel && channel.guild_id && ![1,3].includes(channel.type) &&
+        return !!(channel && channel.guild_id && channel.type !== 1 && channel.type !== 3 &&
             permissions && viewPermission != null && !realCan(viewPermission, channel));
     }
     function hiddenChannel(value) {
@@ -1095,27 +1104,32 @@
         const result = orig.apply(self, args), guild = args[0];
         // Always cache names from the current store even while the toggle is off,
         // so enabling later still resolves. This read-only scan never changes permissions.
+        // One read of both caches per lookup; the remembered names are reused below.
+        let full, basic, source;
         try {
             if (guild && channelStore && typeof channelStore.getMutableGuildChannelsForGuild === "function") {
-                const fullCache = channelStore.getMutableGuildChannelsForGuild(guild);
-                if (fullCache) {
-                    const basicCache = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
-                    const src = basicCache ? Object.assign({},basicCache,fullCache) : fullCache;
-                    if (basicCache) Object.values(basicCache).forEach(rememberChannelName);
-                    Object.values(src).forEach(rememberChannelName);
+                full = channelStore.getMutableGuildChannelsForGuild(guild);
+                if (full) {
+                    basic = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
+                    // Native lazy caching keeps basic metadata for channels with no full record.
+                    // Merge by ID, with full records retaining their richer native prototype.
+                    source = basic ? Object.assign({},basic,full) : full;
+                    if (basic) Object.values(basic).forEach(rememberChannelName);
+                    Object.values(source).forEach(rememberChannelName);
                 }
             }
-        } catch (_) {}
+        } catch (_) { source = undefined; }
         if (!enabled("hiddenChannels") || !result || !guild || !channelStore || !permissions ||
             typeof channelStore.getMutableGuildChannelsForGuild !== "function") return result;
-        const full = channelStore.getMutableGuildChannelsForGuild(guild);
-        if (!full) return result;
-        const basic = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
-        // Native lazy caching keeps basic metadata for channels with no full record.
-        // Merge by ID, with full records retaining their richer native prototype.
-        const source = basic ? Object.assign({},basic,full) : full;
-        if (basic) Object.values(basic).forEach(rememberChannelName);
-        Object.values(source).forEach(rememberChannelName);
+        if (!source) {
+            // The read above threw part-way: fall back to the original two-step lookup.
+            full = channelStore.getMutableGuildChannelsForGuild(guild);
+            if (!full) return result;
+            basic = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
+            source = basic ? Object.assign({},basic,full) : full;
+            if (basic) Object.values(basic).forEach(rememberChannelName);
+            Object.values(source).forEach(rememberChannelName);
+        }
         const extra = Object.values(source).filter(channel => hiddenMetadata(channel));
         // Recheck permissions and metadata on each directory lookup; retain stable
         // array identity for unchanged inputs and bound the cache to 16 guilds.
@@ -1326,8 +1340,23 @@
     let reviewToken = "", reviewAccount = null, reviewAuthAttempt = 0, reviewAuthState = "idle", reviewAuthError = "";
     const reviewCache = new Map(), platformWrappers = new WeakMap();
     const REVIEW_API = "https://manti.vendicated.dev/api/reviewdb";
+    const pastelCache = new Map();
+    let pastelCacheColor, pastelCacheHash;
     function pastelColor(seed, saturation, lightness) {
         if (!pastelHash || !RN || typeof RN.processColor !== "function") return null;
+        // Rows re-render constantly; the color only depends on these inputs and the active helpers.
+        if (pastelCacheColor !== RN.processColor || pastelCacheHash !== pastelHash) {
+            pastelCache.clear(); pastelCacheColor = RN.processColor; pastelCacheHash = pastelHash;
+        }
+        const cacheKey = saturation + ":" + lightness + ":" + seed;
+        const known = pastelCache.get(cacheKey);
+        if (known) return known;
+        const color = computePastel(seed, saturation, lightness);
+        if (pastelCache.size >= 1024) pastelCache.delete(pastelCache.keys().next().value);
+        pastelCache.set(cacheKey, color);
+        return color;
+    }
+    function computePastel(seed, saturation, lightness) {
         const hue = ((pastelHash(String(seed)) >>> 0) % 360) / 360;
         function component(offset) {
             const k = (offset + hue * 12) % 12;
@@ -1371,6 +1400,7 @@
                 usernameOnClick:{action:"0",userId:"0",messageChannelId:"0",linkColor:pastelColor(seed,0.85,0.75).value}}}]});
         return next;
     }
+    const deletedHighlight = {};
     function messageRow(orig, self, args) {
         const result = orig.apply(self,args), row = args[0];
         if (!result || !row || row.rowType !== 1 || !result.message) return result;
@@ -1387,8 +1417,12 @@
         if (enabled("noDelete") && deleted.has(deletedKey(channelId,id)) && RN && typeof RN.processColor === "function") {
             // Native row highlight schema from 8227. No injected notice, altered
             // message content, or AutoMod state. Only retained local rows are tinted.
-            const red = RN.processColor("#f23f43");
-            next = Object.assign({},next,{backgroundHighlight:{backgroundColor:RN.processColor("#f23f431a"),gutterColor:red}});
+            if (deletedHighlight.owner !== RN.processColor) {
+                deletedHighlight.owner = RN.processColor;
+                deletedHighlight.gutter = RN.processColor("#f23f43");
+                deletedHighlight.background = RN.processColor("#f23f431a");
+            }
+            next = Object.assign({},next,{backgroundHighlight:{backgroundColor:deletedHighlight.background,gutterColor:deletedHighlight.gutter}});
         }
         return next;
     }
@@ -1400,6 +1434,8 @@
         if (typeof global.__r !== "function") return null;
         try { const exports = global.__r(id); return exports && exports[key]; } catch (_) { return null; }
     }
+    const PLATFORM_COLORS = {online:"#23a55a",idle:"#f0b232",dnd:"#f23f43"};
+    const PLATFORM_LABELS = {desktop:"Desktop",mobile:"Mobile",web:"Web",embedded:"Console",vr:"VR"};
     function PlatformBadges(props) {
         useSettings("platformIndicators");
         const [,update] = React.useState(0);
@@ -1426,8 +1462,7 @@
             });
         }
         if (!clients) return null;
-        const colors = {online:"#23a55a",idle:"#f0b232",dnd:"#f23f43"};
-        const labels = {desktop:"Desktop",mobile:"Mobile",web:"Web",embedded:"Console",vr:"VR"};
+        const colors = PLATFORM_COLORS, labels = PLATFORM_LABELS;
         // Like the original: one icon per reported client, in presence order.
         const icons = Object.keys(clients).filter(key => key !== "unknown" && colors[clients[key]]).map(key =>
             el(RN.View,{key,accessible:true,accessibilityRole:"image",accessibilityLabel:(labels[key] || key)+": "+clients[key]},
@@ -2220,7 +2255,7 @@
     function decorateDefine(define) {
         if (typeof define !== "function") return define;
         return function (factory, id, dependencies) {
-            if (typeof factory !== "function" || (!targetModules.has(id) && id !== 120)) return define.apply(this, arguments);
+            if ((id !== 120 && !targetModules.has(id)) || typeof factory !== "function") return define.apply(this, arguments);
             const args = Array.from(arguments);
             args[0] = function () {
                 const factoryArgs = Array.from(arguments);
