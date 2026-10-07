@@ -12,7 +12,7 @@ Small, bundled Discord tools for **[Morphe](https://morphe.software)**. They're 
 | --- | --- | --- |
 | **Venus settings** | Native **Settings → Venus** section with General and Plugins pages | Always on |
 | **File size on picker** | Shows file sizes on media-picker thumbnails | On |
-| **Custom voice messages** | Sends one audio file as a real Ogg/Opus voice message with a measured waveform | Off |
+| **Custom voice messages** | Sends one audio file as a real Ogg/Opus voice message with Discord's own waveform (same algorithm as the in-app recorder) | Off |
 | **CopyBios** | Lets you select and copy profile bio text | On |
 | **Dashless** | Shows spaces instead of dashes in channel names | On |
 | **FavouriteAnything** | Lets you favourite images and videos from the media viewer | On |
@@ -58,7 +58,7 @@ To use a local copy instead, download `patches-<version>.mpp` from [Releases](ht
 ## Notes
 
 - **Hidden Channels** only shows metadata your client already received: name, creation date, last message and last pin. It can't read hidden messages or join locked voice channels. Names the server redacted appear as *name unavailable*.
-- **Voice messages** need Android 10+ and an Opus encoder. If conversion fails, Discord uploads the original file as a normal attachment.
+- **Voice messages** need Android 10+ and an Opus encoder. Any Android-decodable audio (MP3, AAC/M4A, FLAC, Ogg, Opus, AMR, 3GP…) plus WAV/AIFF PCM, float, A-law/µ-law, RF64 and streamed WAVs are converted. The waveform uses Discord's own recorder algorithm (100 ms dBFS levels, up to 256 bars). If conversion fails, Discord uploads the original file as a normal attachment.
 - **NoDelete** keeps deleted messages, including ones *you* delete, with a red outline. In **Settings → Venus → Plugins → NoDelete**, turn on **Save permanently** to keep them across restarts (stored locally for your account), or leave it off to keep them until Discord restarts. Type the **maximum saved messages** (1–5000, default 512); the oldest is dropped when full. Deleting a kept message again dismisses it locally. Failed sends and "Only you can see this" messages still disappear normally. It only keeps content already cached on your device.
 - **ReviewDB** shows a **Reviews** card under the profile note, a **Reviews** row that expands/collapses reviews inside the server sheet and a **Reviews** entry in the user long-press menu, like the original plugin. It contacts `manti.vendicated.dev` when a profile with reviews is shown. Sign in from **Settings → Venus → Plugins → ReviewDB** to post, delete or report (long-press a review). The ReviewDB sign-in is saved until you log out and never uses your Discord token.
 - **FreeNitro** sends links, not real Nitro emojis or stickers. It doesn't convert Lottie stickers.

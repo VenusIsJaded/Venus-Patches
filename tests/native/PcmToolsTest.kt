@@ -102,14 +102,99 @@ private fun pcmFileChecks(): Int {
         check(source.rate==48000);val pcm=source.readFrames()!!;for(value in listOf(-0.5f,0f,0.5f))check(pcm.float==value);checks++
     }
     check(PcmFileInput.open(ByteArrayInputStream("not a pcm container".toByteArray()))==null);checks++
+    // A cut-off file keeps every complete frame (here 2 of 3) instead of failing.
     val truncated=wav(16,false,true).dropLast(1).toByteArray()
-    val reader=PcmFileInput.open(ByteArrayInputStream(truncated))!!;check(runCatching{reader.readFrames()}.isFailure);checks++
+    val reader=PcmFileInput.open(ByteArrayInputStream(truncated))!!;check(reader.readFrames()!!.remaining()==8);check(reader.readFrames()==null);checks++
+    // Streaming writers leave RIFF/data sizes at 0 or 0xFFFFFFFF; RF64 uses a ds64 chunk. Read to EOF.
+    for(kind in listOf("zero","max","rf64")){
+        val unsized=wav(16,false,true)
+        if(kind=="rf64"){"RF64".toByteArray().copyInto(unsized,0);ByteBuffer.wrap(unsized).order(ByteOrder.LITTLE_ENDIAN).putInt(4,-1)}
+        val dataAt=unsized.size-6-4;ByteBuffer.wrap(unsized).order(ByteOrder.LITTLE_ENDIAN).putInt(dataAt,if(kind=="zero")0 else -1)
+        if(kind!="rf64")ByteBuffer.wrap(unsized).order(ByteOrder.LITTLE_ENDIAN).putInt(4,if(kind=="zero")0 else -1)
+        val streamed=checkNotNull(PcmFileInput.open(ByteArrayInputStream(unsized)))
+        val pcm=streamed.readFrames()!!;check(pcm.remaining()==12){"unsized $kind"};for(value in listOf(-0.5f,0f,0.5f))check(abs(pcm.float-value)<0.0001f)
+        check(streamed.readFrames()==null);checks++
+    }
+    // G.711: ITU reference points and WAV format tags 6/7.
+    check(PcmFileInput.mulaw(0xff)==0&&PcmFileInput.mulaw(0x7f)==0&&PcmFileInput.mulaw(0x00)==-32124&&PcmFileInput.mulaw(0x80)==32124);checks++
+    check(PcmFileInput.alaw(0xd5)==8&&PcmFileInput.alaw(0x55)==-8&&PcmFileInput.alaw(0xaa)==32256&&PcmFileInput.alaw(0x2a)==-32256);checks++
+    for((tag,code,expected) in listOf(Triple(7,0x80,32124),Triple(6,0xaa,32256))){
+        val g=wav(16,false,true);val o=ByteBuffer.wrap(g).order(ByteOrder.LITTLE_ENDIAN)
+        val fmtAt=String(g,Charsets.ISO_8859_1).indexOf("fmt ")+8
+        o.putShort(fmtAt,tag.toShort());o.putInt(fmtAt+8,48000);o.putShort(fmtAt+12,1);o.putShort(fmtAt+14,8)
+        val dataAt=String(g,Charsets.ISO_8859_1).indexOf("data")+4;o.putInt(dataAt,6);g[dataAt+4]=code.toByte()
+        val src=checkNotNull(PcmFileInput.open(ByteArrayInputStream(g)));check(abs(src.readFrames()!!.float-expected/32768f)<0.00001f);checks++
+    }
+    // ADPCM/GSM/MP3-in-WAV are not rejected: they are handed to Android's MediaExtractor (null).
+    val adpcm=wav(16,false,true);ByteBuffer.wrap(adpcm).order(ByteOrder.LITTLE_ENDIAN).putShort(String(adpcm,Charsets.ISO_8859_1).indexOf("fmt ")+8,2)
+    check(PcmFileInput.open(ByteArrayInputStream(adpcm))==null);checks++
     val nan=wav(32,true,true);ByteBuffer.wrap(nan).order(ByteOrder.LITTLE_ENDIAN).putFloat(nan.size-12,Float.NaN)
     check(runCatching{PcmFileInput.open(ByteArrayInputStream(nan))!!.readFrames()}.isFailure);checks++
     val invalid=wav(16,false,true);ByteBuffer.wrap(invalid).order(ByteOrder.LITTLE_ENDIAN).putInt(4,8)
     check(runCatching{PcmFileInput.open(ByteArrayInputStream(invalid))}.isFailure);checks++
-    check(runCatching{PcmFileInput.open(ByteArrayInputStream(aiff("ulaw")))}.isFailure);checks++
+    // AIFF-C G.711 is decoded locally; other compressed AIFF-C (ima4, ...) goes to Android.
+    check(PcmFileInput.open(ByteArrayInputStream(aiff("ulaw")))!!.readFrames()!=null);checks++
+    check(PcmFileInput.open(ByteArrayInputStream(aiff("ima4")))==null);checks++
     return checks
+}
+/** Direct transcription of Discord 347.12 downsampleWaveform (HBC function 56095). */
+private fun discordDownsample(w: List<Double>, samples: Int): List<Double> {
+    if (w.size == samples) return w
+    val ratio = w.size.toDouble() / samples
+    val out = ArrayList<Double>(); var start = 0
+    while (out.size < samples) {
+        val end = Math.round((out.size + 1) * ratio).toDouble().toInt()
+        var sum = 0.0; var n = 0; var i = start
+        while (i < end && i < w.size) { sum += w[i]; n++; i++ }
+        out.add(sum / n); start = end
+    }
+    return out
+}
+private fun tone(amplitude: Double, frames: Int): Waveform {
+    val w = Waveform(); for (i in 0 until frames) w.add(Math.round(Math.sin(2 * Math.PI * 440 * i / 48000) * amplitude * 32767).toInt()); return w
+}
+private fun discordWaveformChecks(): Int {
+    var checks = 0
+    // Discord constants: MIN_DB -100, MAX_DB 0, WAVE_MAX 255, MAX_SAMPLES 256, one level per 100 ms.
+    check(Waveform.level(1.0) == 255.0 && Math.abs(Waveform.level(0.1) - 204.0) < 1e-9 && Math.abs(Waveform.level(0.01) - 153.0) < 1e-9 && Math.abs(Waveform.level(0.001) - 102.0) < 1e-9); checks++
+    check(Waveform.level(0.0) == 0.0 && Waveform.level(1e-7) == 0.0 && Waveform.level(Double.NaN) == 0.0); checks++
+    // Full-scale sine RMS = -3.01 dBFS -> 255 * 0.9699 = 247.3 -> byte 247 (absolute, not normalised).
+    val full = tone(1.0, 48000).bytes(); check(full.size == 10 && full.all { (it.toInt() and 255) == 247 }) { full.joinToString() }; checks++
+    // -40 dBFS RMS tone -> 153.
+    val quiet = tone(0.01 * Math.sqrt(2.0), 48000).bytes(); check(quiet.all { Math.abs((it.toInt() and 255) - 153) <= 1 }); checks++
+    // Duration -> sample count exactly like Discord: one per started 100 ms, capped at 256.
+    for ((frames, expected) in listOf(1 to 1, 4800 to 1, 4801 to 2, 48000 * 3 to 30, 48000 * 25 + 2400 to 251, 48000 * 26 to 256, 48000 * 600 to 256)) {
+        val w = Waveform(); repeat(frames) { w.add(1000) }; check(w.bytes().size == expected) { "$frames -> ${w.bytes().size}" }; checks++
+    }
+    check(Waveform().bytes().contentEquals(ByteArray(1))); checks++
+    // Downsampling port is identical to Discord's for awkward ratios.
+    val rnd = java.util.Random(7)
+    for (len in listOf(257, 300, 511, 1000, 4097, 12000)) {
+        val data = DoubleArray(len) { rnd.nextDouble() * 255 }
+        val ours = Waveform.downsample(data, len, 256).toList()
+        val theirs = discordDownsample(data.toList(), 256)
+        check(ours.size == 256 && ours.indices.all { Math.abs(ours[it] - theirs[it]) < 1e-9 }) { "downsample $len" }; checks++
+    }
+    // Shape survives: loud second half is visibly higher than quiet first half.
+    val w = Waveform(); repeat(48000) { w.add(if (it % 2 == 0) 300 else -300) }; repeat(48000) { w.add(if (it % 2 == 0) 20000 else -20000) }
+    val b = w.bytes(); check((b[0].toInt() and 255) + 40 < (b[19].toInt() and 255)); checks++
+    check(Base64.getDecoder().decode(w.base64()).contentEquals(b)); checks++
+    return checks
+}
+private fun reconfigureChecks(): Int {
+    // HE-AAC style mid-stream switch 22.05 kHz stereo -> 44.1 kHz stereo keeps the output clock continuous.
+    val r = PcmResampler(22050, 2, false)
+    val out = ByteArrayOutputStream()
+    out.write(r.convert(ByteBuffer.wrap(input(22050, 22050, 2))))
+    check(!r.matches(44100, 2, false) && r.matches(22050, 2, false))
+    out.write(r.reconfigure(44100, 2, false))
+    out.write(r.convert(ByteBuffer.wrap(input(44100, 44100, 2))))
+    out.write(r.finish())
+    check(Math.abs(r.outputFrames - 96000) <= 2) { "reconfigured duration ${r.outputFrames}" }
+    check(out.size().toLong() == r.outputFrames * 2)
+    val n = Base64.getDecoder().decode(r.waveform.base64()).size
+    check(n == ((r.outputFrames + 4799) / 4800).toInt() && n in 20..21) { "levels $n frames ${r.outputFrames}" }
+    return 1
 }
 fun main(args: Array<String>) {
     if (args.contains("--benchmark")) { benchmark(); return }
@@ -142,6 +227,7 @@ fun main(args: Array<String>) {
     repeat(4800) { changing.add(100) }; repeat(4800) { changing.add(20000) }
     val bins = Base64.getDecoder().decode(changing.base64())
     check((bins[0].toInt() and 255) < (bins[1].toInt() and 255)); passed++
+    passed += discordWaveformChecks()
     check(runCatching { PcmResampler(48000, 1, false).convert(ByteBuffer.wrap(byteArrayOf(0))) }.isFailure); passed++
     check(runCatching { PcmResampler(1000, 1, false) }.isFailure); passed++
     val extrema = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
@@ -166,5 +252,6 @@ fun main(args: Array<String>) {
         check(runCatching { PcmResampler(48000, 1, true).convert(ByteBuffer.wrap(bytes)) }.isFailure)
         passed++
     }
+    passed += reconfigureChecks()
     println("PASS: $passed PCM/waveform checks (real signal, rate conversion, duration, silence, chunk invariance)")
 }

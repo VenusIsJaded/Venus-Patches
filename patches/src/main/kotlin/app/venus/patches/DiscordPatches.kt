@@ -173,7 +173,7 @@ val freeNitro = rawResourcePatch(
 @Suppress("unused")
 val customVoiceMessages = bytecodePatch(
     name = "Custom voice messages",
-    description = "Converts supported local audio to Ogg/Opus with real waveform and duration, off the UI thread. Android 10+."
+    description = "Converts local audio to Ogg/Opus with Discord's own waveform algorithm and real duration, off the UI thread. Android 10+."
 ) {
     compatibleWith(discord)
     dependsOn(venusSettings)

@@ -114,7 +114,9 @@ object VoiceProcessor {
         try {
             checkActive()
             pcmStream = BufferedInputStream(checkNotNull(context.contentResolver.openInputStream(uri)) { "Audio source is inaccessible" })
-            pcmSource = PcmFileInput.open(pcmStream)
+            // A damaged or exotic WAV/AIFF header is retried with Android's extractor instead of failing.
+            pcmSource = try { PcmFileInput.open(pcmStream) } catch (_: IllegalArgumentException) { null }
+                catch (_: java.io.EOFException) { null }
             if (pcmSource == null) {
                 pcmStream.close()
                 pcmStream = null
@@ -243,13 +245,21 @@ object VoiceProcessor {
                 }
                 val index = activeDecoder.dequeueOutputBuffer(decodedInfo, 10000)
                 if (index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    // HE-AAC/SBR, some Opus/Vorbis and vendor decoders announce a provisional layout and
+                    // then the real one. Continue on the same 48 kHz output clock instead of failing.
                     val format = activeDecoder.outputFormat
                     val pcm = if (format.containsKey(MediaFormat.KEY_PCM_ENCODING))
                         format.getInteger(MediaFormat.KEY_PCM_ENCODING) else AudioFormat.ENCODING_PCM_16BIT
                     require(pcm == AudioFormat.ENCODING_PCM_16BIT || pcm == AudioFormat.ENCODING_PCM_FLOAT) { "Unsupported PCM encoding" }
-                    check(resampler == null) { "Audio format changed during decoding" }
-                    resampler = PcmResampler(format.getInteger(MediaFormat.KEY_SAMPLE_RATE),
-                        format.getInteger(MediaFormat.KEY_CHANNEL_COUNT), pcm == AudioFormat.ENCODING_PCM_FLOAT)
+                    val rate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                    val count = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                    val floatPcm = pcm == AudioFormat.ENCODING_PCM_FLOAT
+                    val current = resampler
+                    if (current == null) resampler = PcmResampler(rate, count, floatPcm)
+                    else if (!current.matches(rate, count, floatPcm)) {
+                        val flushed = current.reconfigure(rate, count, floatPcm)
+                        if (flushed.isNotEmpty()) queuePcm(flushed)
+                    }
                 } else if (index >= 0) {
                     var pcmBytes: ByteArray? = null
                     try {
@@ -257,6 +267,15 @@ object VoiceProcessor {
                             val buffer = activeDecoder.getOutputBuffer(index)!!.duplicate()
                             buffer.position(decodedInfo.offset)
                             buffer.limit(decodedInfo.offset + decodedInfo.size)
+                            if (resampler == null) {
+                                // Some decoders deliver the first buffer before INFO_OUTPUT_FORMAT_CHANGED.
+                                val format = activeDecoder.outputFormat
+                                val pcm = if (format.containsKey(MediaFormat.KEY_PCM_ENCODING))
+                                    format.getInteger(MediaFormat.KEY_PCM_ENCODING) else AudioFormat.ENCODING_PCM_16BIT
+                                require(pcm == AudioFormat.ENCODING_PCM_16BIT || pcm == AudioFormat.ENCODING_PCM_FLOAT) { "Unsupported PCM encoding" }
+                                resampler = PcmResampler(format.getInteger(MediaFormat.KEY_SAMPLE_RATE),
+                                    format.getInteger(MediaFormat.KEY_CHANNEL_COUNT), pcm == AudioFormat.ENCODING_PCM_FLOAT)
+                            }
                             pcmBytes = checkNotNull(resampler) { "Decoder output missing format" }.convert(buffer.slice())
                         }
                         decodedDone = decodedInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0

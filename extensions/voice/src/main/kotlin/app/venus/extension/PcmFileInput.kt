@@ -5,30 +5,52 @@ import java.io.EOFException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-/** Bounded streaming PCM container reader. No Android/vendor extractor dependency. */
+/**
+ * Bounded streaming PCM container reader for WAV/RIFX/RF64/BW64 and AIFF/AIFF-C. Plain PCM, IEEE
+ * float and G.711 A-law/mu-law are decoded here; any other codec makes [open] return null so the
+ * caller falls back to Android's MediaExtractor (ADPCM, GSM, MP3-in-WAV, ima4, ...).
+ */
 class PcmFileInput private constructor(
     private val input: InputStream, val rate: Int, val channels: Int,
     private val bits: Int, private val floating: Boolean, private val little: Boolean,
-    private val unsigned8: Boolean, private var remaining: Long
+    private val unsigned8: Boolean, private var remaining: Long, private val law: Int
 ) {
     init {
         require(rate in 8000..192000 && channels in 1..8) { "Unsupported PCM layout" }
         require(bits == 8 || bits == 16 || bits == 24 || bits == 32 || floating && bits == 64) { "Unsupported PCM bit depth" }
         require(!floating || bits == 32 || bits == 64) { "Unsupported floating PCM" }
-        require(remaining > 0 && remaining % (channels * (bits / 8)) == 0L) { "Empty or incomplete PCM data" }
-        require(remaining / (channels * (bits / 8)) <= rate.toLong() * 1200) { "Audio exceeds 20 minutes" }
+        require(law == LAW_NONE || bits == 8 && !floating) { "Invalid G.711 layout" }
+        // Damaged/cut recordings: drop a trailing partial frame instead of rejecting the file.
+        if (remaining > 0) remaining -= remaining % (channels * (bits / 8))
+        require(remaining != 0L) { "Empty PCM data" }
+        require(remaining < 0 || remaining / (channels * (bits / 8)) <= rate.toLong() * 1200) { "Audio exceeds 20 minutes" }
     }
 
+    /** Next block as little-endian float samples, or null at the end. remaining < 0 streams to EOF. */
     fun readFrames(): ByteBuffer? {
         if (remaining == 0L) return null
         val frameBytes = channels * (bits / 8)
-        val size = Math.min(remaining, frameBytes * 1024L).toInt()
-        val bytes = read(input, size)
-        remaining -= size
-        val source = ByteBuffer.wrap(bytes).order(if (little) ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN)
+        // Sized data reads exactly its chunk; unsized (streamed/RF64) data reads to EOF. A file cut
+        // short (interrupted recorder/download) keeps every complete frame instead of failing.
+        val want = if (remaining > 0) Math.min(remaining, frameBytes * 1024L).toInt() else frameBytes * 1024
+        val bytes = ByteArray(want)
+        var size = 0
+        while (size < want) {
+            val n = input.read(bytes, size, want - size)
+            if (n < 0) break
+            if (n == 0) { val one = input.read(); if (one < 0) break; bytes[size++] = one.toByte() } else size += n
+        }
+        val complete = size == want
+        size -= size % frameBytes
+        if (remaining > 0) remaining -= want
+        if (!complete) remaining = 0L
+        if (size == 0) { remaining = 0L; return null }
+        val source = ByteBuffer.wrap(bytes, 0, size).order(if (little) ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN)
         val result = ByteBuffer.allocate(size / (bits / 8) * 4).order(ByteOrder.LITTLE_ENDIAN)
         while (source.hasRemaining()) {
-            val value = if (floating) {
+            val value = if (law == LAW_MU) mulaw(source.get().toInt() and 255) / 32768.0
+            else if (law == LAW_A) alaw(source.get().toInt() and 255) / 32768.0
+            else if (floating) {
                 if (bits == 64) source.double else source.float.toDouble()
             } else when (bits) {
                 8 -> if (unsigned8) ((source.get().toInt() and 255) - 128) / 128.0 else source.get().toInt() / 128.0
@@ -50,6 +72,27 @@ class PcmFileInput private constructor(
     }
 
     companion object {
+        private const val LAW_NONE = 0
+        private const val LAW_A = 1
+        private const val LAW_MU = 2
+
+        /** ITU-T G.711 mu-law to linear PCM16. */
+        @JvmStatic
+        fun mulaw(code: Int): Int {
+            val u = code.inv() and 255
+            val magnitude = ((((u and 15) shl 3) + 0x84) shl ((u shr 4) and 7)) - 0x84
+            return if (u and 128 != 0) -magnitude else magnitude
+        }
+        /** ITU-T G.711 A-law to linear PCM16. */
+        @JvmStatic
+        fun alaw(code: Int): Int {
+            val a = code xor 0x55
+            val segment = (a shr 4) and 7
+            var magnitude = (a and 15) shl 4
+            magnitude = if (segment == 0) magnitude + 8 else (magnitude + 0x108) shl (segment - 1)
+            return if (a and 128 != 0) magnitude else -magnitude
+        }
+
         private fun read(input: InputStream, count: Int): ByteArray {
             val result = ByteArray(count)
             var offset = 0
@@ -82,12 +125,16 @@ class PcmFileInput private constructor(
         fun open(input: InputStream): PcmFileInput? {
             val header = try { read(input, 12) } catch (_: EOFException) { return null }
             val kind = tag(header, 0)
-            val wave = (kind == "RIFF" || kind == "RIFX") && tag(header, 8) == "WAVE"
+            val wave = (kind == "RIFF" || kind == "RIFX" || kind == "RF64" || kind == "BW64") && tag(header, 8) == "WAVE"
             val aiff = kind == "FORM" && (tag(header, 8) == "AIFF" || tag(header, 8) == "AIFC")
             if (!wave && !aiff) return null
-            var little = wave && kind == "RIFF"
+            var little = wave && kind != "RIFX"
             val order = if (little) ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN
-            var budget = (ByteBuffer.wrap(header).order(order).getInt(4).toLong() and 0xffffffffL) - 4
+            val declared = ByteBuffer.wrap(header).order(order).getInt(4).toLong() and 0xffffffffL
+            // RF64/BW64 or streaming writers (0 / 0xFFFFFFFF): sizes are unreliable, stream the data chunk.
+            val unsized = wave && (kind == "RF64" || kind == "BW64" || declared == 0L || declared == 0xffffffffL)
+            var budget = if (unsized) Long.MAX_VALUE / 4 else declared - 4
+            var law = LAW_NONE
             var channels = 0
             var rate = 0
             var bits = 0
@@ -99,10 +146,11 @@ class PcmFileInput private constructor(
                 val name = tag(chunk, 0)
                 val size = ByteBuffer.wrap(chunk).order(order).getInt(4).toLong() and 0xffffffffL
                 budget -= 8
-                require(size <= budget) { "Audio chunk exceeds container bounds" }
+                val streamData = wave && name == "data" && (unsized || size == 0L || size == 0xffffffffL || size > budget)
+                if (!streamData) require(size <= budget) { "Audio chunk exceeds container bounds" }
                 if (wave && name == "data" || aiff && name == "SSND") {
                     require(channels > 0 && rate > 0) { "Audio data precedes format metadata" }
-                    var dataSize = size
+                    var dataSize = if (streamData) -1L else size
                     if (aiff) {
                         require(size >= 8) { "Invalid AIFF sound chunk" }
                         val sound = ByteBuffer.wrap(read(input, 8)).order(ByteOrder.BIG_ENDIAN)
@@ -110,9 +158,11 @@ class PcmFileInput private constructor(
                         require(offset <= size - 8) { "Invalid AIFF data offset" }
                         skip(input, offset)
                         dataSize = size - 8 - offset
-                        require(declaredFrames >= 0 && declaredFrames * channels * (bits / 8) == dataSize) { "AIFF frame count mismatch" }
+                        require(declaredFrames >= 0) { "AIFF frame count missing" }
+                        // Trust the smaller of COMM frames and SSND bytes (some writers pad or truncate).
+                        dataSize = Math.min(dataSize, declaredFrames * channels * (bits / 8))
                     }
-                    return PcmFileInput(input, rate, channels, bits, floating, little, wave, dataSize)
+                    return PcmFileInput(input, rate, channels, bits, floating, little, wave && law == LAW_NONE, dataSize, law)
                 }
                 metadata += size + 8
                 require(metadata <= 16 * 1024 * 1024) { "Audio metadata exceeds safety limit" }
@@ -132,11 +182,14 @@ class PcmFileInput private constructor(
                         require(validBits in 1..bits) { "Invalid WAV valid bit count" }
                         codec = fmt.getInt(24)
                         val guid = byteArrayOf(0, 0, 16, 0, -128, 0, 0, -86, 0, 56, -101, 113)
-                        for (i in guid.indices) require(bytes[28 + i] == guid[i]) { "Unsupported WAV subtype GUID" }
+                        for (i in guid.indices) if (bytes[28 + i] != guid[i]) return null // vendor subtype: Android decoder
                     }
-                    require(codec == 1 || codec == 3) { "Unsupported compressed WAV; use an Android-decodable audio file" }
+                    // Other codecs (ADPCM, GSM, MPEG, ...): let Android's extractor/decoder handle them.
+                    if (codec != 1 && codec != 3 && codec != 6 && codec != 7) return null
                     floating = codec == 3
-                    require(alignment == channels * (bits / 8)) { "Invalid WAV block alignment" }
+                    law = if (codec == 6) LAW_A else if (codec == 7) LAW_MU else LAW_NONE
+                    if (law != LAW_NONE) require(bits == 8) { "Invalid G.711 WAV bit depth" }
+                    require(bits > 0 && bits % 8 == 0 && alignment == channels * (bits / 8)) { "Invalid WAV block alignment" }
                 } else if (aiff && name == "COMM") {
                     require(size in 18..1024) { "Invalid AIFF format chunk" }
                     val bytes = read(input, size.toInt())
@@ -154,9 +207,14 @@ class PcmFileInput private constructor(
                     if (tag(header, 8) == "AIFC") {
                         require(size >= 22) { "Missing AIFF-C codec" }
                         val codec = tag(bytes, 18)
-                        require(codec == "NONE" || codec == "twos" || codec == "sowt" || codec == "fl32" || codec == "FL32" || codec == "fl64" || codec == "FL64") { "Unsupported compressed AIFF-C" }
+                        val lawCodec = codec == "ulaw" || codec == "ULAW" || codec == "alaw" || codec == "ALAW"
+                        if (!lawCodec && codec != "NONE" && codec != "twos" && codec != "sowt" && codec != "fl32" && codec != "FL32" && codec != "fl64" && codec != "FL64") return null
                         little = codec == "sowt"
                         floating = codec == "fl32" || codec == "FL32" || codec == "fl64" || codec == "FL64"
+                        if (lawCodec) {
+                            law = if (codec == "ulaw" || codec == "ULAW") LAW_MU else LAW_A
+                            bits = 8 // COMM reports 16 for decoded G.711 in many writers
+                        }
                         require(!floating || bits == if (codec == "fl64" || codec == "FL64") 64 else 32) { "AIFF-C float bit depth mismatch" }
                     }
                 } else skip(input, size)
