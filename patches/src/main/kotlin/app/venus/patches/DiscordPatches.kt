@@ -71,7 +71,7 @@ private val runtimeAssets = rawResourcePatch {
             "/*__FEATURES__*/",
             "{picker:$pickerSelected,voice:$voiceSelected,copyBios:$copyBiosSelected," +
                 "dashless:$dashlessSelected,favouriteAnything:$favouriteAnythingSelected,freeNitro:$freeNitroSelected," +
-                listOf("noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels", "pastelize", "platformIndicators", "reviewDB")
+                listOf("noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels", "pastelize", "platformIndicators", "reviewDB", "readAll")
                     .joinToString(",") { "$it:${it in additionalSelections}" } + "}"
         )
         asset.writeText(selected)
@@ -263,3 +263,6 @@ val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators
 
 @Suppress("unused")
 val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Read and write reviews of users and servers, using ReviewDB (manti.vendicated.dev). Turn it on in Venus settings.")
+
+@Suppress("unused")
+val readAll = bundledPlugin("readAll", "Read All", "Adds a Read all button to the server list, under the Direct Messages button. Choose whether it clears servers, DMs or both.")

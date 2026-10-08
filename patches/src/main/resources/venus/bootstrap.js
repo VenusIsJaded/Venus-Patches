@@ -20,14 +20,15 @@
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 11159, 13603, 16377, 9970, 14405, 13348]);
     if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
-    const revision = "1.3.5";
+    if (features.readAll) selectModules([16634]);
+    const revision = "1.3.6";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
     const deferred = new Map();
     const settings = { picker: true, voice: false, copyBios: true, dashless: true, favouriteAnything: true, emojis: true, stickers: true, hyperlinks: true, forceLinks: false,
         noTyping: true, quickDelete: false, quickDeleteEmbeds: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 512,
-        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewThemedSend:true, reviewWarning:true };
+        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewThemedSend:true, reviewWarning:true, readAll:true, readAllMode:"guilds" };
     const status = { picker: false, attachment: false, request: false, menu: false, conversion: false, audioError: "", storage: "waiting" };
     const listeners = new Set();
     const dirty = new Set();
@@ -44,6 +45,8 @@
     let jobCounter = 0;
     const PREFS = "venus-patches.json";
     const MAX_DELETED = 5000, ARCHIVE_BYTES = 32 * 1024 * 1024;
+    // What the Read all button clears: servers, DMs, or both.
+    const READ_ALL_MODES = ["guilds", "dms", "both"];
     // A sub-option (piProfile, reviewWarning, pastelAll...) must also wake components that
     // subscribed to its plugin: those pages and badges read several of its settings at once.
     const notify = key => {
@@ -88,6 +91,11 @@
     function deleteLimit(value) { const n = Math.floor(Number(value)); return Number.isFinite(n) && n > 0 ? Math.min(MAX_DELETED, n) : 512; }
     function setSetting(key, value) {
         if (!owns(settings, key) || !features[featureFor(key)]) return false;
+        if (key === "readAllMode") {
+            if (!READ_ALL_MODES.includes(value)) return false;
+            if (settings.readAllMode === value && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.readAllMode = value; dirty.add(key); save(); notify(key); return true;
+        }
         if (key === "noDeleteLimit") {
             settings.noDeleteLimit = deleteLimit(value); dirty.add(key); trimDeleted(); save(); notify(key); return true;
         }
@@ -129,7 +137,8 @@
                 const loaded = JSON.parse(text);
                 if (!loaded || typeof loaded !== "object" || Array.isArray(loaded)) throw new Error("Invalid preferences");
                 for (const key of Object.keys(settings))
-                    if (!dirty.has(key) && typeof loaded[key] === typeof settings[key]) settings[key] = key === "noDeleteLimit" ? deleteLimit(loaded[key]) : loaded[key];
+                    if (!dirty.has(key) && typeof loaded[key] === typeof settings[key] && (key !== "readAllMode" || READ_ALL_MODES.includes(loaded[key])))
+                        settings[key] = key === "noDeleteLimit" ? deleteLimit(loaded[key]) : loaded[key];
                 const auth = loaded.reviewAuth;
                 // Restore a saved ReviewDB sign-in (a ReviewDB token, never the Discord token).
                 if (features.reviewDB && !reviewToken && auth && typeof auth.token === "string" && auth.token.length <= 8192 &&
@@ -402,7 +411,7 @@
 
     // Native setting nodes use Discord's own themed rows, navigation and back stack.
     let SettingsList;
-    const featureFor = key => key === "reviewThemedSend" || key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" || key === "noDeleteLimit" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key;
+    const featureFor = key => key === "reviewThemedSend" || key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" || key === "noDeleteLimit" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key === "readAllMode" ? "readAll" : key;
     function section(label, keys) { return { label, settings: keys }; }
     // Plain-language status for General -> About; the raw values stay in status for diagnostics.
     function aboutText() {
@@ -488,6 +497,11 @@
             next.VENUS_PI_LIST = settingNode("piUserList", "In lists", "Members, friends, DMs and people in voice.", P);
             next.VENUS_PI_PROFILE = settingNode("piProfile", "On profiles", "Next to the name on a profile.", P);
             next.VENUS_PI_MOBILE = settingNode("piHideMobile", "Plain status dot on avatars", "Hide Discord's phone badge, since the icons already show mobile.", P);
+        }
+        if (features.readAll) {
+            plugins.push("VENUS_READALL");
+            route("VENUS_READALL", "Read All", [section("Read All", [])], "VENUS_PLUGINS");
+            next.VENUS_READALL.screen.getComponent = () => ReadAllSettings;
         }
         if (features.quickDelete) {
             plugins.push("VENUS_QUICKDELETE");
@@ -1429,10 +1443,139 @@
         if (color) next = Object.assign({},message,{roleColor:color.value,usernameColor:color.value,colorString:color.value,shouldShowRoleOnName:true});
         const content = pastelMentions(message.content,message.guildId);
         if (content !== message.content) next = Object.assign({},next,{content});
-        if (color && settings.pastelContent && Array.isArray(next.content)) next = Object.assign({},next,{content:[{
-            type:"link",target:"usernameOnClick",content:next.content,context:{username:1,medium:true,
-                usernameOnClick:{action:"0",userId:"0",messageChannelId:"0",linkColor:pastelColor(seed,0.85,0.75).value}}}]});
+        // Native MessageView applies Message.textColor via TextView.setTextColor (347.12 bridge field).
+        // Never wrap content in a link node: that made the text blue, tappable and show "usernameOnClick".
+        if (color && settings.pastelContent) {
+            const text = pastelColor(seed,0.85,0.75);
+            if (text) next = Object.assign({},next,{textColor:text.value});
+        }
         return next;
+    }
+    // Read All: a ReadAllNotificationsButton port for the mobile server bar (GuildsBar 16625,
+    // useGuildsBarProps 16634). The button lives in the SEPARATOR row, below the DM button and
+    // unread DMs and above the line, so the native FastList's sections, anchors and recycler
+    // keys stay stock. Only that row's height grows, through the list's own itemSize.
+    const READ_ALL_HEIGHT = 36;
+    const readAllViews = new WeakMap();
+    // ReadStateActionCreators (7387) exports ack/bulkAck by name, with no default object.
+    function readActionsExport() {
+        if (typeof global.__r !== "function") return null;
+        try { const m=global.__r(7387); return m && typeof m.bulkAck==="function" ? m : m && m.default; } catch (_) { return null; }
+    }
+    function readAllExports() {
+        const x=(id,key) => inspectedExport(id,key);
+        return {sorted:x(5687,"default"), guildReads:x(7904,"default"), markGuilds:x(14259,"default"), sections:x(1074,"AnalyticsSections"),
+            privateReads:x(14051,"default"), reads:x(4803,"default"), readActions:readActionsExport(), readTypes:x(4970,"ReadStateTypes"),
+            renderSections:x(16624,"FastListRenderSections")};
+    }
+    function unreadGuildIds(api) {
+        if (!api.sorted || typeof api.sorted.getFlattenedGuildIds!=="function" || !api.guildReads) return [];
+        return Array.from(api.sorted.getFlattenedGuildIds() || []).filter(id => typeof id==="string" &&
+            (api.guildReads.hasUnread(id) || api.guildReads.getMentionCount(id) > 0));
+    }
+    function unreadDmIds(api) {
+        if (!api.privateReads || typeof api.privateReads.getUnreadPrivateChannelIds!=="function") return [];
+        return Array.from(api.privateReads.getUnreadPrivateChannelIds() || []).filter(id => typeof id==="string");
+    }
+    function readAllToast(ui,content) {
+        try { if (ui.toasts && typeof ui.toasts.open==="function") ui.toasts.open({key:"venus-read-all",content}); } catch (_) {}
+    }
+    // Same native paths as Discord: the server menu's markGuildsAsRead (14259) with the
+    // GUILD_LIST source, and a single BULK_ACK for DMs at each channel's last message.
+    function readAll(mode) {
+        if (!enabled("readAll") || !READ_ALL_MODES.includes(mode)) return;
+        const api=readAllExports(), ui=reviewUI();
+        let guilds=0, dms=0;
+        try {
+            if (mode!=="dms") {
+                const ids=unreadGuildIds(api);
+                if (ids.length && typeof api.markGuilds==="function") { api.markGuilds(ids, api.sections && api.sections.GUILD_LIST); guilds=ids.length; }
+            }
+            if (mode!=="guilds") {
+                const ids=unreadDmIds(api);
+                if (ids.length && api.readActions && typeof api.readActions.bulkAck==="function" && api.reads) {
+                    const type=api.readTypes && api.readTypes.CHANNEL != null ? api.readTypes.CHANNEL : 0;
+                    api.readActions.bulkAck(ids.map(channelId => ({channelId, readStateType:type, messageId:api.reads.lastMessageId(channelId)})));
+                    dms=ids.length;
+                }
+            }
+        } catch (error) { readAllToast(ui,"Couldn't mark as read: "+error); return; }
+        const parts=[];
+        if (guilds) parts.push(guilds+(guilds===1 ? " server" : " servers"));
+        if (dms) parts.push(dms+(dms===1 ? " DM" : " DMs"));
+        readAllToast(ui, parts.length ? "Marked "+parts.join(" and ")+" as read" : "Nothing unread");
+    }
+    // Holding the button: Discord's own action sheet with the three one-time choices.
+    function readAllChooser() {
+        const ui=reviewUI();
+        const options=[["guilds","Mark servers as read"],["dms","Mark DMs as read"],["both","Mark servers and DMs as read"]]
+            .map(([mode,label]) => ({label, onPress:() => readAll(mode)}));
+        if (typeof ui.simpleSheet==="function") try { ui.simpleSheet({key:"VenusReadAll",header:{title:"Read all"},options}); return; } catch (_) {}
+        if (RN && RN.Alert) RN.Alert.alert("Read all",undefined,options.map(option => ({text:option.label,onPress:option.onPress})).concat([{text:"Cancel",style:"cancel"}]));
+    }
+    let readAllStyleHook, readAllStylesTried=false;
+    function ReadAllButton() {
+        useSettings("readAll");
+        const ui=reviewUI();
+        // Discord's semantic tokens, so the pill follows light, dark and custom themes.
+        if (!readAllStylesTried) {
+            readAllStylesTried=true;
+            const c=ui.colors;
+            if (typeof ui.createStyles==="function" && c) try {
+                readAllStyleHook=ui.createStyles({pill:{backgroundColor:c.BACKGROUND_MOD_NORMAL},pressed:{backgroundColor:c.BACKGROUND_MOD_STRONG},text:{color:c.TEXT_DEFAULT}});
+            } catch (_) { readAllStyleHook=null; }
+        }
+        let styles=null;
+        if (readAllStyleHook) try { styles=readAllStyleHook(); } catch (_) {}
+        styles=styles || {pill:{backgroundColor:"#4e505899"},pressed:{backgroundColor:"#4e5058"},text:{color:"#dbdee1"}};
+        return el(RN.View,{style:{height:READ_ALL_HEIGHT,alignItems:"center",justifyContent:"center"}},
+            el(RN.Pressable,{accessibilityRole:"button",accessibilityHint:"Hold to choose",
+                hitSlop:6,onPress:() => readAll(settings.readAllMode),onLongPress:readAllChooser,delayLongPress:350,
+                style:({pressed}) => [{height:26,minWidth:48,paddingHorizontal:8,borderRadius:13,alignItems:"center",justifyContent:"center"},styles.pill,
+                    pressed ? styles.pressed : null,pressed ? {transform:[{scale:0.96}]} : null]},
+                el(RN.Text,{numberOfLines:1,allowFontScaling:false,style:[{fontSize:11,fontWeight:"700",includeFontPadding:false},styles.text]},"Read all")));
+    }
+    function readAllBarProps(orig, self, args) {
+        const result=orig.apply(self,args);
+        if (React) useSettings("readAll");
+        const data=result && result.listDataProps;
+        if (!enabled("readAll") || !React || !RN || !data || typeof data.itemSize!=="function" || typeof data.renderItem!=="function") return result;
+        let view=readAllViews.get(data);
+        if (!view) {
+            const enums=readAllExports().renderSections, separator=enums && typeof enums.SEPARATOR==="number" ? enums.SEPARATOR : 6;
+            const itemSize=data.itemSize, renderItem=data.renderItem;
+            const listDataProps=Object.assign({},data,{
+                itemSize:function (section) { const size=itemSize.apply(this,arguments); return section===separator && enabled("readAll") ? size+READ_ALL_HEIGHT : size; },
+                renderItem:function (section) {
+                    const node=renderItem.apply(this,arguments);
+                    return section===separator && enabled("readAll") ? el(RN.View,{key:"venus-read-all",style:{width:"100%"}},el(ReadAllButton,null),node) : node;
+                }});
+            readAllViews.set(data, view=Object.assign({},result,{listDataProps}));
+        }
+        return view;
+    }
+    // Settings page: Discord's own radio list (TableRadioGroup 5934 / TableRadioRow 5937).
+    function ReadAllSettings() {
+        useSettings("readAll");
+        const ui=reviewUI();
+        if (!React || !RN) return null;
+        const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
+        const RadioGroup=inspectedExport(5934,"TableRadioGroup"), RadioRow=inspectedExport(5937,"TableRadioRow");
+        const choices=[["guilds","Servers","Mark every unread server as read."],["dms","Direct messages","Mark every unread DM and group DM as read."],
+            ["both","Servers and DMs","Mark everything as read in one tap."]];
+        const on=enabled("readAll");
+        const picker=RadioGroup && RadioRow ?
+            el(RadioGroup,{key:"mode",title:"When you tap Read all",value:settings.readAllMode,onChange:value => setSetting("readAllMode",value)},
+                choices.map(([value,label,subLabel]) => el(RadioRow,{key:value,value,label,subLabel,disabled:!on}))) :
+            el(Group,{key:"mode"},choices.map(([value,label]) => ui.TableRow &&
+                el(ui.TableRow,{key:value,label:(settings.readAllMode===value ? "\u2713 " : "")+label,disabled:!on,onPress:() => setSetting("readAllMode",value)})));
+        const groups=[
+            el(Group,{key:"plugin",title:"Read All"},Switch ? el(Switch,{label:"Show the Read all button",subLabel:"In the server list, under Direct Messages. Hold it for a one-time choice.",
+                value:settings.readAll,onValueChange:value => setSetting("readAll",value)}) : null),
+            picker];
+        const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
+            el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
+        return RN.ScrollView ? el(RN.ScrollView,null,body) : body;
     }
     const deletedHighlight = {};
     function messageRow(orig, self, args) {
@@ -2082,6 +2225,7 @@
             };
             return hookExport(hookExport(exports,"default",plain),"StatusWithTyping",plain);
         }
+        if (features.readAll && id === 16634) return hookExport(exports,"default",readAllBarProps);
         if (features.reviewDB && id === 9358) oauthModal=exports.default;
         if (features.reviewDB && id === 5936) nativeRowGroup=exports.TableRowGroup;
         if (features.reviewDB && id === 7477) nativeSwitchRow=exports.TableSwitchRow;

@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
         // The recorded revision must match the runtime that was actually injected.
         val revision = Regex("const revision\\s*=\\s*\"([^\"]+)\"").find(script)!!.groupValues[1]
         check("\"revision\":\"$revision\"" in metadata) { "injection.json revision does not match the runtime" }
-        for (feature in listOf("copyBios", "dashless", "favouriteAnything", "freeNitro", "noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels", "pastelize", "platformIndicators", "reviewDB"))
+        for (feature in listOf("copyBios", "dashless", "favouriteAnything", "freeNitro", "noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels", "pastelize", "platformIndicators", "reviewDB", "readAll"))
             check("$feature:true" in script) { "Missing selected feature: $feature" }
         check("VenusRoot" !in script && "RN.Modal" !in script && "registerRoot" !in script)
         check("SETTING_RENDERER_CONFIG" in script && "VENUS_FREENITRO" in script)

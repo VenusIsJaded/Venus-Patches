@@ -470,7 +470,7 @@ test('conversion disabled has no codec bridge calls for audio uploads', async ()
     await upload.reactNativeCompressAndExtractData();assert.equal(calls,0);
 });
 
-const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true, noTyping:true, quickDelete:true, noDelete:true, jumpToTop:true, hiddenChannels:true, pastelize:true, platformIndicators:true, reviewDB:true};
+const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true, noTyping:true, quickDelete:true, noDelete:true, jumpToTop:true, hiddenChannels:true, pastelize:true, platformIndicators:true, reviewDB:true, readAll:true};
 function reactHarness(b) {
     const React = {
         createElement(type, props, ...children) { return {type, props:{...props, ...(children.length ? {children:children.length === 1 ? children[0] : children} : {})}}; },
@@ -1141,7 +1141,9 @@ test('Pastelize preserves role colors and immutable mentions, supports webhook a
     assert.match(result.message.content[0].colorString,/^#/);assert.equal(rows.generate(row).message.colorString,result.message.colorString);
     const colored={...row,result:{message:{...message,roleColor:123,content:[]}}};assert.equal(rows.generate(colored).message.roleColor,123);
     b.api.setSetting('pastelAll',true);assert.notEqual(rows.generate(colored).message.roleColor,123);
-    b.api.setSetting('pastelContent',true);assert.equal(rows.generate(row).message.content[0].type,'link');
+    b.api.setSetting('pastelContent',true);const tinted=rows.generate(row).message;
+    assert.equal(typeof tinted.textColor,'number');assert.equal(tinted.content[0].type,'mention');
+    assert.equal(JSON.stringify(tinted).includes('usernameOnClick'),false);
     b.api.setSetting('pastelize',false);assert.equal(rows.generate(row),row.result);
 });
 test('PlatformIndicators uses real client status, hides unknown/offline clients and preserves immutable profiles',()=>{
@@ -1920,4 +1922,87 @@ test('logging out of Discord without a ReviewDB sign-in does not rewrite prefere
 });
 test('own deletions no longer schedule bookkeeping timers',()=>{
     assert.doesNotMatch(raw,/ownDeletes/);
+});
+function readAllHarness(state = {}) {
+    const b=boot(allFeatures);const {React,RN}=reactHarness(b);
+    const calls={guilds:[],acks:[],toasts:[]};
+    const unread=new Set(state.unreadGuilds||['g1','g3']), mentions={g2:state.mentionG2||0};
+    const native={
+        5687:{default:{getFlattenedGuildIds:()=>['g1','g2','g3','g4']}},
+        7904:{default:{hasUnread:id=>unread.has(id),getMentionCount:id=>mentions[id]||0}},
+        14259:{default:(ids,source)=>calls.guilds.push([ids,source])},
+        1074:{AnalyticsSections:{GUILD_LIST:'guild list'}},
+        14051:{default:{getUnreadPrivateChannelIds:()=>state.dms||['d1','d2']}},
+        4803:{default:{lastMessageId:id=>'m-'+id}},
+        7387:{bulkAck:entries=>calls.acks.push(entries)},
+        4970:{ReadStateTypes:{CHANNEL:0}},
+        16624:{FastListRenderSections:{SEPARATOR:6,GUILDS:7}},
+        4486:{default:{open:toast=>calls.toasts.push(toast.content)}},
+    };
+    b.context.__r=id=>native[id]||null;
+    const data={itemSize:section=>section===6?18:48,renderItem:section=>({type:'Native',props:{section}}),sections:[1,0,0,0,0,2,1,4]};
+    const result=Object.freeze({listProps:{},listDataProps:Object.freeze(data)});
+    const hook=b.load({default:()=>result},null,16634);
+    return {...b,React,RN,calls,data,result,props:()=>hook.default({})};
+}
+function findReadAll(node){
+    if (!node||typeof node!=='object') return null;
+    if (typeof node.type==='function'&&node.type.name==='ReadAllButton') return node;
+    for (const kid of [].concat(node.props&&node.props.children||[])){const found=findReadAll(kid);if(found)return found;}
+    return null;
+}
+function pressReadAll(b){const button=findReadAll(b.props().listDataProps.renderItem(6,0));button.type(button.props).props.children.props.onPress();}
+test('Read All sits in the separator row and grows only that row, keeping stock indexes',()=>{
+    const b=readAllHarness();const props=b.props();
+    assert.notEqual(props,b.result);assert.equal(props.listProps,b.result.listProps);
+    assert.equal(props.listDataProps.sections,b.data.sections,'section counts must stay stock');
+    assert.equal(props.listDataProps.itemSize(6,0),18+36);assert.equal(props.listDataProps.itemSize(7,0),48);
+    assert.equal(JSON.stringify(props.listDataProps.renderItem(7,0)),JSON.stringify({type:'Native',props:{section:7}}));
+    const row=props.listDataProps.renderItem(6,0);assert.ok(findReadAll(row),'button missing from separator row');
+    assert.equal(JSON.stringify(row.props.children[1]),JSON.stringify({type:'Native',props:{section:6}}),'native separator must still render below the button');
+    assert.equal(b.props(),props,'list data must be cached per native props');
+    b.api.setSetting('readAll',false);assert.equal(b.props(),b.result);
+});
+test('Read All marks only unread or mentioned servers through Discord\'s own markGuildsAsRead',()=>{
+    const b=readAllHarness({mentionG2:2});pressReadAll(b);
+    assert.equal(JSON.stringify(b.calls.guilds),JSON.stringify([[['g1','g2','g3'],'guild list']]));assert.equal(b.calls.acks.length,0);
+    assert.equal(b.calls.toasts.at(-1),'Marked 3 servers as read');
+});
+test('Read All DMs and both modes use one native BULK_ACK at each channel\'s last message',()=>{
+    const b=readAllHarness();
+    assert.equal(b.api.setSetting('readAllMode','dms'),true);pressReadAll(b);
+    assert.equal(b.calls.guilds.length,0);
+    assert.equal(JSON.stringify(b.calls.acks),JSON.stringify([[{channelId:'d1',readStateType:0,messageId:'m-d1'},{channelId:'d2',readStateType:0,messageId:'m-d2'}]]));
+    assert.equal(b.calls.toasts.at(-1),'Marked 2 DMs as read');
+    b.api.setSetting('readAllMode','both');pressReadAll(b);
+    assert.equal(b.calls.guilds.length,1);assert.equal(b.calls.acks.length,2);
+    assert.equal(b.calls.toasts.at(-1),'Marked 2 servers and 2 DMs as read');
+});
+test('Read All only accepts its three modes and says when nothing is unread',()=>{
+    const b=readAllHarness({unreadGuilds:[],dms:[]});
+    assert.equal(b.api.setSetting('readAllMode','muted'),false);assert.equal(b.api.settings.readAllMode,'guilds');
+    pressReadAll(b);assert.equal(b.calls.guilds.length,0);assert.equal(b.calls.toasts.at(-1),'Nothing unread');
+});
+test('Read All settings use Discord\'s native radio list with three choices',()=>{
+    const b=settingsHarness();
+    function TableRadioGroup(){} function TableRadioRow(){}
+    b.context.__r=id=>({5934:{TableRadioGroup},5937:{TableRadioRow}}[id]||null);
+    assert.equal(b.registry.VENUS_READALL.type,'route');assert.equal(b.registry.VENUS_READALL.parent,'VENUS_PLUGINS');
+    const page=b.registry.VENUS_READALL.screen.getComponent()();
+    const nodes=[];(function walk(n){if(!n||typeof n!=='object')return;if(Array.isArray(n))return n.forEach(walk);nodes.push(n);walk(n.props&&n.props.children);})(page);
+    const group=nodes.find(n=>n.type===TableRadioGroup);assert.ok(group);assert.equal(group.props.value,'guilds');
+    assert.equal(nodes.filter(n=>n.type===TableRadioRow).map(n=>n.props.label).join('|'),'Servers|Direct messages|Servers and DMs');
+    group.props.onChange('both');assert.equal(b.api.settings.readAllMode,'both');
+});
+test('Read All mode persists and an invalid saved mode falls back to Servers',async()=>{
+    const b=boot(allFeatures);
+    b.load({default:native({fileExists:async()=>true,readFile:async()=>JSON.stringify({readAllMode:'everything'})})});
+    await flush();await flush();assert.equal(b.api.settings.readAllMode,'guilds');
+    const c=boot(allFeatures);
+    c.load({default:native({fileExists:async()=>true,readFile:async()=>JSON.stringify({readAllMode:'dms'})})});
+    await flush();await flush();assert.equal(c.api.settings.readAllMode,'dms');
+});
+test('unselected Read All never wraps the server bar module',()=>{
+    const b=boot({picker:true});const original=()=>'stock';
+    assert.equal(b.load({default:original},null,16634).default,original);
 });
