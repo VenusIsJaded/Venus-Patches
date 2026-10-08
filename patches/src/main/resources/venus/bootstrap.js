@@ -20,7 +20,7 @@
     if (features.pastelize) selectModules([8222, 1240, 2105]);
     if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 11159, 13603, 16377, 9970, 14405, 13348]);
     if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
-    const revision = "1.3.4";
+    const revision = "1.3.5";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -44,9 +44,14 @@
     let jobCounter = 0;
     const PREFS = "venus-patches.json";
     const MAX_DELETED = 5000, ARCHIVE_BYTES = 32 * 1024 * 1024;
-    const notify = key => listeners.forEach(entry => {
-        if (!entry.key || key === "*" || entry.key === key) entry.fn();
-    });
+    // A sub-option (piProfile, reviewWarning, pastelAll...) must also wake components that
+    // subscribed to its plugin: those pages and badges read several of its settings at once.
+    const notify = key => {
+        const owner = key && key !== "*" ? featureFor(key) : null;
+        listeners.forEach(entry => {
+            if (!entry.key || key === "*" || entry.key === key || owner && entry.key === owner) entry.fn();
+        });
+    };
     const data = (obj, key) => {
         const descriptor = obj && Object.getOwnPropertyDescriptor(obj, key);
         return descriptor && "value" in descriptor ? descriptor.value : undefined;
@@ -142,9 +147,13 @@
     function formatSize(bytes) {
         if (!Number.isFinite(bytes) || bytes < 0) return "";
         if (bytes === 0) return "0 B";
-        const units = ["B", "KiB", "MiB", "GiB", "TiB"];
-        const unit = Math.max(0, Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1));
-        return Number((bytes / Math.pow(1024, unit)).toFixed(2)) + " " + units[unit];
+        // Binary units, labelled the way Android and Discord show them. Promote a value that
+        // would round to "1024 KB" (log rounding just below a boundary) to "1 MB".
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let unit = Math.max(0, Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1));
+        let value = Number((bytes / Math.pow(1024, unit)).toFixed(unit ? 2 : 0));
+        if (value >= 1024 && unit < units.length - 1) { unit++; value = Number((bytes / Math.pow(1024, unit)).toFixed(2)); }
+        return value + " " + units[unit];
     }
     // Hermes's native eval configuration can lower loop-local const/let to var.
     // Give asynchronous callbacks an invocation scope, not a loop capture.
@@ -318,8 +327,8 @@
             // Unsupported codecs/devices remain ordinary orig attachments, never spoofed voice files.
             status.audioError = String(error && error.message || error);
             notify();
-            if (!job.cancelled && RN && RN.Alert) RN.Alert.alert("Voice conversion unavailable",
-                status.audioError + "\nThis file will be uploaded normally instead.");
+            if (!job.cancelled && RN && RN.Alert) RN.Alert.alert("Couldn't make a voice message",
+                status.audioError + "\n\nIt will be sent as a normal file instead.");
             return orig.apply(upload, args);
         }).finally(() => { activeJobs.delete(upload); });
         job.promise = promise;
@@ -395,6 +404,19 @@
     let SettingsList;
     const featureFor = key => key === "reviewThemedSend" || key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" || key === "noDeleteLimit" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key;
     function section(label, keys) { return { label, settings: keys }; }
+    // Plain-language status for General -> About; the raw values stay in status for diagnostics.
+    function aboutText() {
+        const storage = status.storage;
+        const lines = [storage === "ready" || storage === "saved" ? "Your settings are saved on this phone." :
+            storage === "waiting" || storage === "loading" ? "Loading your settings..." :
+            /^read failed/.test(storage) ? "Your saved settings couldn't be read, so the defaults are in use." :
+            "Your settings can't be saved right now. Changes last until Discord restarts."];
+        const archive = {"saved locally":"Kept deleted messages are saved on this phone.", "save failed":"Kept deleted messages couldn't be saved.",
+            "restore failed":"Saved deleted messages couldn't be loaded."}[status.archive];
+        if (archive) lines.push(archive);
+        if (status.audioError) lines.push("Last problem: " + status.audioError);
+        return lines.join("\n");
+    }
     function settingsPage(sections) {
         const node = { type: "list", sections };
         return function VenusSettingsPage() {
@@ -415,64 +437,73 @@
             next[key] = { type: "route", parent, useTitle: () => title, IconComponent: icon,
                 screen: { route: key, getComponent: () => page } };
         }
-        next.VENUS_VERSION = { type: "static", parent: "VENUS_GENERAL", useTitle: () => "Venus " + revision,
-            useDescription: function () { useSettings(); return "Preferences: " + status.storage + (status.archive ? "\nDeleted archive: " + status.archive : "") + (status.audioError ? "\n" + status.audioError : ""); } };
+        next.VENUS_VERSION = { type: "static", parent: "VENUS_GENERAL", useTitle: () => "Venus Patches " + revision,
+            useDescription: function () { useSettings(); return aboutText(); } };
         route("VENUS_GENERAL", "General", [section("About", ["VENUS_VERSION"])]);
+        // Listed alphabetically, like Discord's own settings. Plugins with several
+        // options open their own page; simple ones are a single switch.
         const plugins = [];
         function plugin(key, title, hint) {
             if (!features[key]) return;
             const id = "VENUS_" + key.toUpperCase(); plugins.push(id);
             next[id] = settingNode(key, title, hint, "VENUS_PLUGINS");
         }
-        plugin("picker", "FileSizeOnPicker", "Show cached local file sizes on media-picker thumbnails.");
-        plugin("voice", "Custom voice messages", "Convert one audio attachment to Ogg/Opus. Android 10+; no accompanying text.");
-        plugin("noTyping", "No typing", "Hide your outgoing typing status. Incoming indicators remain unchanged.");
+        plugin("copyBios", "CopyBios", "Select and copy text in profile bios.");
+        plugin("voice", "Custom voice messages", "Send an audio file on its own as a real voice message. Needs Android 10 or newer.");
+        plugin("dashless", "Dashless", "Show spaces instead of dashes in channel names.");
+        plugin("favouriteAnything", "FavouriteAnything", "Favourite any image or video from the media viewer.");
+        plugin("picker", "File size on picker", "Show each file's size on photos and videos when you attach them.");
+        if (features.freeNitro) {
+            plugins.push("VENUS_FREENITRO");
+            route("VENUS_FREENITRO", "FreeNitro", [section("Sharing", ["VENUS_EMOJIS", "VENUS_STICKERS"]),
+                section("Options", ["VENUS_HYPERLINKS", "VENUS_FORCELINKS"])], "VENUS_PLUGINS");
+            next.VENUS_EMOJIS = settingNode("emojis", "Free emojis", "Send emojis you can't use as image links.", "VENUS_FREENITRO");
+            next.VENUS_STICKERS = settingNode("stickers", "Free stickers", "Send stickers you can't use as image links. Animated stickers may not move.", "VENUS_FREENITRO");
+            next.VENUS_HYPERLINKS = settingNode("hyperlinks", "Short links", "Show the emoji or sticker name instead of the full link.", "VENUS_FREENITRO");
+            next.VENUS_FORCELINKS = settingNode("forceLinks", "Always send links", "Use links even for emojis and stickers you can already use.", "VENUS_FREENITRO");
+        }
+        plugin("hiddenChannels", "Hidden Channels", "Show channels you can't open, with a lock. You still can't read them or join locked voice channels.");
+        plugin("jumpToTop", "JumpToTop", "Add a button to jump to the first message in a chat.");
+        plugin("noTyping", "No typing", "Hide that you're typing. You still see when others type.");
         if (features.noDelete) {
             plugins.push("VENUS_NODELETE");
             route("VENUS_NODELETE", "NoDelete", [section("NoDelete", [])], "VENUS_PLUGINS");
             next.VENUS_NODELETE.screen.getComponent = () => NoDeleteSettings;
         }
-        plugin("jumpToTop", "JumpToTop", "Add a button to jump to the start of the current chat.");
-        plugin("hiddenChannels", "Hidden Channels", "Show received channel/category names with native locks. Server-redacted names are unavailable; never grants message or voice access.");
-        if (features.quickDelete) {
-            plugins.push("VENUS_QUICKDELETE");
-            route("VENUS_QUICKDELETE", "QuickDelete", [section("Confirmation", ["VENUS_QUICKDELETE_MESSAGES", "VENUS_QUICKDELETE_EMBEDS"])], "VENUS_PLUGINS");
-            next.VENUS_QUICKDELETE_MESSAGES = settingNode("quickDelete", "Delete messages without confirmation", "Off by default. Deletion cannot be undone.", "VENUS_QUICKDELETE");
-            next.VENUS_QUICKDELETE_EMBEDS = settingNode("quickDeleteEmbeds", "Remove embeds without confirmation", "Only the embed-removal confirmation is skipped.", "VENUS_QUICKDELETE");
+        if (features.pastelize) {
+            const P = "VENUS_PASTELIZE"; plugins.push(P);
+            route(P, "Pastelize", [section("Pastelize", ["VENUS_PASTEL_ENABLED"]),
+                section("Options", ["VENUS_PASTELALL", "VENUS_PASTELWEBHOOKNAME", "VENUS_PASTELCONTENT"])], "VENUS_PLUGINS");
+            next.VENUS_PASTEL_ENABLED = settingNode("pastelize", "Enable Pastelize", "Give names and mentions without a role color a soft pastel color.", P);
+            next.VENUS_PASTELALL = settingNode("pastelAll", "Color every name", "Use pastel colors even for people with a role color.", P);
+            next.VENUS_PASTELWEBHOOKNAME = settingNode("pastelWebhookName", "Color webhooks by name", "Webhooks with the same name share a color.", P);
+            next.VENUS_PASTELCONTENT = settingNode("pastelContent", "Color message text", "Color the message as well as the name.", P);
         }
-        plugin("pastelize", "Pastelize", "Stable pastel colors for uncolored chat names and mentions. Existing role colors are preserved.");
-        plugin("pastelAll", "Pastelize all names", "Override role name colors with pastel colors.");
-        plugin("pastelWebhookName", "Pastelize webhooks by name", "Use the display name instead of the webhook ID.");
-        plugin("pastelContent", "Pastelize message content", "Color rendered text as well as the author name.");
         if (features.platformIndicators) {
             const P = "VENUS_PLATFORMINDICATORS"; plugins.push(P);
             route(P, "PlatformIndicators", [section("PlatformIndicators", ["VENUS_PI_ENABLED"]),
                 section("Show icons", ["VENUS_PI_DM", "VENUS_PI_LIST", "VENUS_PI_PROFILE"]), section("Options", ["VENUS_PI_MOBILE"])], "VENUS_PLUGINS");
-            next.VENUS_PI_ENABLED = settingNode("platformIndicators", "Enable PlatformIndicators", "Desktop, mobile, web, console and VR status icons, like the original plugin.", P);
-            next.VENUS_PI_DM = settingNode("piDmHeader", "Show icons on the DM top bar", "", P);
-            next.VENUS_PI_LIST = settingNode("piUserList", "Show icons on the users and DMs list", "Members, friends, DMs and voice users.", P);
-            next.VENUS_PI_PROFILE = settingNode("piProfile", "Show icons on user profiles", "", P);
-            next.VENUS_PI_MOBILE = settingNode("piHideMobile", "Hide mobile status from the normal indicator", "Plain status dot instead of Discord's phone badge on avatars.", P);
+            next.VENUS_PI_ENABLED = settingNode("platformIndicators", "Enable PlatformIndicators", "Show whether people are on desktop, mobile, web, console or VR.", P);
+            next.VENUS_PI_DM = settingNode("piDmHeader", "On the DM top bar", "Next to the name at the top of a DM.", P);
+            next.VENUS_PI_LIST = settingNode("piUserList", "In lists", "Members, friends, DMs and people in voice.", P);
+            next.VENUS_PI_PROFILE = settingNode("piProfile", "On profiles", "Next to the name on a profile.", P);
+            next.VENUS_PI_MOBILE = settingNode("piHideMobile", "Plain status dot on avatars", "Hide Discord's phone badge, since the icons already show mobile.", P);
+        }
+        if (features.quickDelete) {
+            plugins.push("VENUS_QUICKDELETE");
+            route("VENUS_QUICKDELETE", "QuickDelete", [section("Skip confirmation", ["VENUS_QUICKDELETE_MESSAGES", "VENUS_QUICKDELETE_EMBEDS"])], "VENUS_PLUGINS");
+            next.VENUS_QUICKDELETE_MESSAGES = settingNode("quickDelete", "Delete messages instantly", "Skip \"are you sure?\" when deleting a message. This can't be undone.", "VENUS_QUICKDELETE");
+            next.VENUS_QUICKDELETE_EMBEDS = settingNode("quickDeleteEmbeds", "Remove embeds instantly", "Skip \"are you sure?\" when removing a link preview.", "VENUS_QUICKDELETE");
         }
         if (features.reviewDB) {
             plugins.push("VENUS_REVIEWDB");
             route("VENUS_REVIEWDB", "ReviewDB", [section("ReviewDB", ["VENUS_REVIEWDB_ENABLED"])], "VENUS_PLUGINS");
-            next.VENUS_REVIEWDB_ENABLED = settingNode("reviewDB", "Enable ReviewDB", "Show community reviews on profiles and servers. Opening a list shares that ID with manti.vendicated.dev.", "VENUS_REVIEWDB");
+            next.VENUS_REVIEWDB_ENABLED = settingNode("reviewDB", "Enable ReviewDB", "Read and write reviews of users and servers.", "VENUS_REVIEWDB");
             next.VENUS_REVIEWDB.screen.getComponent = () => ReviewSettings;
         }
-        plugin("copyBios", "CopyBios", "Select and copy text from profile bios.");
-        plugin("dashless", "Dashless", "Display spaces instead of dashes in text channel names.");
-        plugin("favouriteAnything", "FavouriteAnything", "Favourite images and videos from the media viewer.");
-        if (features.freeNitro) {
-            plugins.push("VENUS_FREENITRO");
-            route("VENUS_FREENITRO", "FreeNitro", [section("Sharing", ["VENUS_EMOJIS", "VENUS_STICKERS"]),
-                section("Options", ["VENUS_HYPERLINKS", "VENUS_FORCELINKS"])], "VENUS_PLUGINS");
-            next.VENUS_EMOJIS = settingNode("emojis", "FreeMoji / Free emojis", "Share unavailable custom emojis as image links, not native emojis.", "VENUS_FREENITRO");
-            next.VENUS_STICKERS = settingNode("stickers", "Free stickers", "Share external PNG/APNG/GIF stickers as links. APNG previews may be static; Lottie is not converted.", "VENUS_FREENITRO");
-            next.VENUS_HYPERLINKS = settingNode("hyperlinks", "Compact links", "Use the emoji or sticker name as link text.", "VENUS_FREENITRO");
-            next.VENUS_FORCELINKS = settingNode("forceLinks", "Always use links", "Use links even when the item can be sent natively.", "VENUS_FREENITRO");
-        }
-        route("VENUS_PLUGINS", "Plugins", [section("Installed", plugins)]);
+        // Sorted by the title people see, so the list stays alphabetical as plugins are added.
+        plugins.sort((a, b) => next[a].useTitle().toLowerCase().localeCompare(next[b].useTitle().toLowerCase()));
+        route("VENUS_PLUGINS", "Plugins", [section("Plugins", plugins)]);
         status.menu = true;
         return next;
     }
@@ -680,7 +711,7 @@
     let deletedRevision = 0, archiveRestored = false, archiveLoading = false, archiveWriting = false, archivePending;
     const deletedViews = new Map();
     const ARCHIVE = "venus-deleted-messages.json";
-    const deleted = new Map(), deletedByChannel = new Map(), ownDeletes = new Map();
+    const deleted = new Map(), deletedByChannel = new Map();
     let archiveTimer;
     const hiddenViews = new Map(), hiddenNames = new Map();
     let hiddenAccount;
@@ -803,7 +834,10 @@
     function persistDeleted() {
         // Coalesce bursts (raids, purges) into one archive write instead of one full
         // serialization per deleted message.
-        if (!files || status.storage === "loading" || !(settings.noDeleteSave || archiveRestored || status.archive)) return;
+        // Once the archive is erased there is nothing on disk to update: don't rewrite the
+        // same empty file for every later deletion while saving is off.
+        if (!files || status.storage === "loading" ||
+            !(settings.noDeleteSave || archiveRestored || status.archive && status.archive !== "erased")) return;
         if (archiveTimer !== undefined) return;
         archiveTimer = later(() => { archiveTimer = undefined; writeArchive(); }, 750);
     }
@@ -814,7 +848,7 @@
         try {
             archivePending = JSON.stringify({version:1, accountId:settings.noDeleteSave && user ? user.id : null,
                 messages:settings.noDeleteSave ? Array.from(deleted.values()).map(entry => ({channelId:entry.channelId,id:entry.id,message:entry.raw})) : []});
-            if (archivePending.length > ARCHIVE_BYTES) throw new Error("Deleted message archive exceeds 8 MiB");
+            if (archivePending.length > ARCHIVE_BYTES) throw new Error("Deleted message archive exceeds 32 MB");
         } catch (_) { status.archive = "save failed"; notify(); return; }
         if (archiveWriting) return;
         archiveWriting = true;
@@ -984,14 +1018,8 @@
             dropDeleted(key); invalidateDeleted(); persistDeleted(); dispatcher({type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id});
             return Promise.resolve(); // Dismiss locally; never DELETE an already-deleted message on the server.
         }
-        // The gateway echo of your own deletion can arrive before the HTTP response.
-        if (ownDeletes.size >= 64) ownDeletes.delete(ownDeletes.keys().next().value);
-        ownDeletes.set(key, Date.now());
-        const forget = () => later(() => ownDeletes.delete(key), 30000, false); // bounded to 64 keys without timers
-        let result;
-        try { result = orig.apply(self, args); } catch (error) { ownDeletes.delete(key); throw error; }
-        if (result && typeof result.then === "function") result.then(forget, () => ownDeletes.delete(key)); else forget();
-        return result;
+        // Your own deletions are kept like anyone else's, so there is nothing to track here.
+        return orig.apply(self, args);
     }
     function jumpButton(orig, self, args) {
         if (React) useSettings("jumpToTop");
@@ -1106,6 +1134,14 @@
         // so enabling later still resolves. This read-only scan never changes permissions.
         // One read of both caches per lookup; the remembered names are reused below.
         let full, basic, source;
+        // Resolve the account once per lookup, not once per channel, and walk basic then full
+        // records: the same final cache as walking the merged map, without visiting basic twice.
+        function remember() {
+            const current = userStore && userStore.getCurrentUser(), owner = current && current.id;
+            const keep = channel => rememberChannelName(channel, owner);
+            if (basic) Object.values(basic).forEach(keep);
+            Object.values(full).forEach(keep);
+        }
         try {
             if (guild && channelStore && typeof channelStore.getMutableGuildChannelsForGuild === "function") {
                 full = channelStore.getMutableGuildChannelsForGuild(guild);
@@ -1114,8 +1150,7 @@
                     // Native lazy caching keeps basic metadata for channels with no full record.
                     // Merge by ID, with full records retaining their richer native prototype.
                     source = basic ? Object.assign({},basic,full) : full;
-                    if (basic) Object.values(basic).forEach(rememberChannelName);
-                    Object.values(source).forEach(rememberChannelName);
+                    remember();
                 }
             }
         } catch (_) { source = undefined; }
@@ -1127,8 +1162,7 @@
             if (!full) return result;
             basic = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
             source = basic ? Object.assign({},basic,full) : full;
-            if (basic) Object.values(basic).forEach(rememberChannelName);
-            Object.values(source).forEach(rememberChannelName);
+            remember();
         }
         const extra = Object.values(source).filter(channel => hiddenMetadata(channel));
         // Recheck permissions and metadata on each directory lookup; retain stable
@@ -1638,8 +1672,10 @@
         return reviewJson(REVIEW_API+path,{method:method || "GET",headers,...(body ? {body:JSON.stringify(body)} : {})});
     }
     function clearReviewAuth() {
+        // Every Discord logout lands here: only rewrite preferences when a sign-in was saved.
+        const saved=!!(reviewToken || reviewAccount);
         reviewAuthAttempt++;reviewToken="";reviewAccount=null;reviewAuthState="idle";reviewAuthError="";
-        reviewCache.clear();save();notify("reviewDB");
+        reviewCache.clear();if (saved) save();notify("reviewDB");
     }
     function useReviews() {
         useSettings("reviewDB");
@@ -1704,15 +1740,15 @@
         const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
         const toggle=(key,label,subLabel) => Switch ? el(Switch,{key,label,subLabel,value:settings[key],onValueChange:value=>setSetting(key,value)}) : null;
         const groups=[
-            el(Group,{key:"plugin",title:"ReviewDB"},toggle("reviewDB","Enable ReviewDB","Show community reviews on profiles and servers. Viewing one shares its ID with manti.vendicated.dev.")),
-            el(Group,{key:"auth",title:"Authentication"},
-                el(ui.TableRow,{key:"login",label:pending ? "Authenticating with ReviewDB..." : authenticated ? "Authenticated with ReviewDB" : "Authenticate with ReviewDB",
-                    arrow:true,disabled:!enabled("reviewDB") || authenticated || pending,onPress:authenticateReviews,subLabel:reviewAuthError || undefined}),
-                el(ui.TableRow,{key:"logout",label:"Log out of ReviewDB",variant:authenticated ? "danger" : undefined,disabled:!authenticated,onPress:clearReviewAuth,
-                    subLabel:"Note that this does not remove ReviewDB from your Authorized Apps page in Discord."})),
+            el(Group,{key:"plugin",title:"ReviewDB"},toggle("reviewDB","Enable ReviewDB","Read and write reviews of users and servers. Opening reviews shares that user or server ID with manti.vendicated.dev.")),
+            el(Group,{key:"auth",title:"Account"},
+                el(ui.TableRow,{key:"login",label:pending ? "Signing in..." : authenticated ? "Signed in to ReviewDB" : "Sign in to ReviewDB",
+                    arrow:true,disabled:!enabled("reviewDB") || authenticated || pending,onPress:authenticateReviews,subLabel:reviewAuthError || (authenticated ? undefined : "Needed to post, delete or report reviews. Your Discord token is never used.")}),
+                el(ui.TableRow,{key:"logout",label:"Sign out of ReviewDB",variant:authenticated ? "danger" : undefined,disabled:!authenticated,onPress:clearReviewAuth,
+                    subLabel:"ReviewDB stays in Discord's Authorized Apps until you remove it there."})),
             el(Group,{key:"settings",title:"Settings"},
-                toggle("reviewThemedSend","Use profile-themed send button","Controls whether the review send button should attempt to match the user's profile colors."),
-                toggle("reviewWarning","Show Warning","Show the warning to be respectful at the top of the reviews list."))];
+                toggle("reviewThemedSend","Profile-colored send button","Match the send button to the profile's theme colors."),
+                toggle("reviewWarning","Show the be-respectful note","Show ReviewDB's reminder at the top of reviews."))];
         const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
             el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
         return RN.ScrollView ? el(RN.ScrollView,null,body) : body;
@@ -1721,20 +1757,25 @@
         useSettings();
         const ui=reviewUI();
         const [draft,setDraft]=React.useState(String(settings.noDeleteLimit));
+        // Follow the saved value when preferences finish loading after the page opened.
+        React.useEffect(() => { setDraft(String(settings.noDeleteLimit)); },[settings.noDeleteLimit]);
         if (!React || !RN) return null;
         const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
         const toggle=(key,label,subLabel) => Switch ? el(Switch,{key,label,subLabel,value:settings[key],onValueChange:value=>setSetting(key,value)}) : null;
-        const commit=() => { setSetting("noDeleteLimit",draft); setDraft(String(settings.noDeleteLimit)); };
+        // An emptied field keeps the current maximum instead of silently resetting it to 512.
+        const commit=() => { if (draft) setSetting("noDeleteLimit",draft); setDraft(String(settings.noDeleteLimit)); };
+        const Text=inspectedExport(4784,"Text");
+        const hint="Type 1 to "+MAX_DELETED+", then tap done. Now: "+settings.noDeleteLimit+". When it's full, the oldest message is removed.";
         const onText=text => setDraft(String(text).replace(/[^0-9]/g,"").slice(0,4));
         const inputProps={value:draft,keyboardType:"number-pad",maxLength:4,placeholder:"512",onBlur:commit,onSubmitEditing:commit,returnKeyType:"done"};
         // Discord's TextInput reports text via onChange(text); RN's via onChangeText.
         const input=ui.TextInput ? el(ui.TextInput,Object.assign({label:"Maximum saved messages",onChange:onText},inputProps)) :
             el(RN.TextInput,Object.assign({onChangeText:onText,style:{fontSize:16,padding:12}},inputProps));
         const groups=[
-            el(Group,{key:"plugin",title:"NoDelete"},toggle("noDelete","Enable NoDelete","Keep deleted messages, including your own, with a red outline until you dismiss them.")),
-            el(Group,{key:"save",title:"Saving"},toggle("noDeleteSave","Save permanently","On: kept messages survive restarts, stored locally for your account. Off: kept until Discord restarts; the saved archive is erased.")),
+            el(Group,{key:"plugin",title:"NoDelete"},toggle("noDelete","Enable NoDelete","Keep deleted messages, including your own, outlined in red. Delete one again to hide it.")),
+            el(Group,{key:"save",title:"Saving"},toggle("noDeleteSave","Save permanently","Keep them after Discord restarts, saved only on this phone for your account. When off, they're cleared on restart.")),
             el(Group,{key:"limit",title:"Maximum saved messages"},el(RN.View,{style:{padding:12,gap:8}},input,
-                el(RN.Text,{style:{color:"#949ba4",fontSize:12}},"Type 1 to "+MAX_DELETED+", then press done. Current: "+settings.noDeleteLimit+". When full, the oldest is removed.")))];
+                Text ? el(Text,{variant:"text-xs/medium",color:"text-muted"},hint) : el(RN.Text,{style:{color:"#949ba4",fontSize:12}},hint)))];
         const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
             el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
         return RN.ScrollView ? el(RN.ScrollView,{keyboardShouldPersistTaps:"handled"},body) : body;
@@ -1859,7 +1900,7 @@
         // standard send color when that optional context is absent.
         let theme=null;
         if (reviewThemeHook) try {theme=reviewThemeHook();} catch (_) {}
-        const authenticated=!!reviewAuth(), canSend=authenticated && !busy && text.length>0;
+        const authenticated=!!reviewAuth(), canSend=authenticated && !busy && text.trim().length>0;
         const placeholder=!authenticated ? "You must be authenticated to add a review." : "Tap to "+(props.shouldEdit ? "edit your" : "add a")+" review";
         function send() {
             if (!canSend || !text.trim()) return;

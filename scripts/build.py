@@ -169,7 +169,7 @@ def build():
     # Same JVM classes + classes.dex layout and manifest keys as the official plugin.
     manifest = "\r\n".join([
         "Manifest-Version: 1.0", "Name: Venus Patches",
-        "Description: Native Discord tools and independently selectable APK-level privacy protections.",
+        "Description: Extra features and privacy options for Discord on Android.",
         f"Version: {VERSION}", "Patcher-Version: 1.15.0",
         "Source: https://github.com/VenusIsJaded/Venus-Patches",
         "Author: VenusIsJaded", "License: GPL-3.0", "", "",
@@ -204,8 +204,8 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "Fixes adding Venus Patches as a remote source in Morphe, and makes the plugins do less work "
-    "while you chat. Patch the original Discord 347.12 APKM."
+    "Clearer patch names and descriptions in Morphe, tidier Venus settings, and fixes for settings "
+    "that didn't update right away. Patch the original Discord 347.12 APKM."
 )
 
 
