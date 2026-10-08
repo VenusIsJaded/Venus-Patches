@@ -47,12 +47,22 @@ internal object HbcPrelude {
             val table = 128L + intAt(40).toLong() * 12 + intAt(44).toLong() * 4 + intAt(48).toLong() * 4
             val count = intAt(52)
             val storage = table + count.toLong() * 4 + intAt(56).toLong() * 8
+            // First one-character ASCII string for each character the prelude uses. Read the
+            // entry table in one go and stop once every needed character is found: the same IDs
+            // as a full scan (first match wins), without ~338k tiny seeks while patching on a phone.
+            val needed = HashSet<Char>().apply { source.forEach { add(it) } }
             val chars = HashMap<Char, Int>()
-            for (id in 0 until count) {
-                val entry = intAt(table + id.toLong() * 4)
-                if (entry ushr 24 != 1 || entry and 1 != 0) continue
-                raf.seek(storage + ((entry ushr 1) and 0x7fffff))
-                chars.putIfAbsent(raf.readUnsignedByte().toChar(), id)
+            val entries = ByteArray(count * 4).also { raf.seek(table); raf.readFully(it) }
+            val words = java.nio.ByteBuffer.wrap(entries).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+            var id = 0
+            while (id < count && chars.size < needed.size) {
+                val entry = words.getInt(id * 4)
+                if (entry ushr 24 == 1 && entry and 1 == 0) {
+                    raf.seek(storage + ((entry ushr 1) and 0x7fffff))
+                    val character = raf.readUnsignedByte().toChar()
+                    if (character in needed) chars.putIfAbsent(character, id)
+                }
+                id++
             }
             require(source.all { it in chars }) { "Bootstrap contains unsupported characters" }
             val prefix = ByteArrayOutputStream()

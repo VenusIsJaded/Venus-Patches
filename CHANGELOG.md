@@ -2,6 +2,17 @@
 
 Every release works with **Discord 347.12 - Stable**. Always patch the original APKM.
 
+## 1.3.5 — Clearer patches and tidier settings
+
+- **Patches are easier to read in Morphe.** They're grouped under **Plugins** and **Privacy**, and every description says what the patch does in plain words.
+- **Venus settings are tidier.** Plugins are listed A to Z, Pastelize has its own page, and the wording is clearer throughout.
+- **Settings update right away.** Changing a PlatformIndicators, ReviewDB or Pastelize option no longer needs you to leave and reopen the page or chat.
+- **File sizes read correctly.** A file just under 1 MB no longer shows as *1024 KB*, and sizes use KB and MB.
+- **NoDelete's maximum is safer to edit.** Clearing the box keeps your number instead of resetting it to 512, and the hint follows your theme.
+- The ReviewDB send button only lights up when there's something to send.
+- **Less background work.** NoDelete no longer rewrites its file for every deleted message when saving is off, logging out no longer rewrites your settings, and Hidden Channels does less work per channel.
+- **Patching is a little faster,** especially on phones.
+
 ## 1.3.4 — Morphe source fix and less background work
 
 - **Adding Venus Patches to Morphe works again.** Morphe showed *"The patch bundle could not be downloaded"* when you added this repository as a source. Importing the `.mpp` file manually wasn't affected.

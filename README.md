@@ -11,7 +11,7 @@ Extra features and privacy options for Discord on Android, built into the app wi
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager/releases).
 2. Tap **[Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches)**. You can also add `https://github.com/VenusIsJaded/Venus-Patches` as a source.
 3. Choose the **original** Discord 347.12 APKM. Don't pick an APK you've already patched.
-4. Pick the features you want, leave **Venus settings** on, then patch and install.
+4. Every patch is selected for you, under **Plugins** and **Privacy**. Leave **Venus settings** on, then patch and install.
 
 You can also download `patches-<version>.mpp` from [Releases](https://github.com/VenusIsJaded/Venus-Patches/releases) and import it under **Sources → + → Local**.
 
@@ -19,28 +19,28 @@ You can also download `patches-<version>.mpp` from [Releases](https://github.com
 
 ## Features
 
-To turn plugins on or off at any time, open **Discord Settings → Venus → Plugins**.
+To turn plugins on or off at any time, open **Discord Settings → Venus → Plugins**. The **Starts** column shows whether a plugin is on the first time you open Discord.
 
 | Feature | What it does | Starts |
 | --- | --- | --- |
-| **File size on picker** | Shows file sizes on photos and videos when you attach them | On |
-| **Custom voice messages** | Sends an audio file as a real voice message, waveform included | Off |
 | **CopyBios** | Lets you select and copy profile bios | On |
+| **Custom voice messages** | Sends an audio file as a real voice message, waveform included | Off |
 | **Dashless** | Shows spaces instead of dashes in channel names | On |
 | **FavouriteAnything** | Lets you favourite any image or video | On |
+| **File size on picker** | Shows file sizes on photos and videos when you attach them | On |
 | **FreeNitro** | Sends emojis and stickers you can't use as links | On |
-| **No typing** | Hides that you're typing | On |
-| **QuickDelete** | Skips the "are you sure?" when deleting | Off |
-| **NoDelete** | Keeps deleted messages visible, outlined in red | Off |
-| **JumpToTop** | Adds a button to jump to the first message | On |
 | **Hidden Channels** | Shows channels you can't open, with a lock | Off |
+| **JumpToTop** | Adds a button to jump to the first message | On |
+| **No typing** | Hides that you're typing | On |
+| **NoDelete** | Keeps deleted messages visible, outlined in red | Off |
 | **Pastelize** | Gives names and mentions soft pastel colors | On |
 | **PlatformIndicators** | Shows whether people are on desktop, mobile, web, console or VR | On |
+| **QuickDelete** | Skips the "are you sure?" when deleting | Off |
 | **ReviewDB** | Read and write reviews of users and servers | Off |
 
 ### Privacy options
 
-You choose these in Morphe before you patch, not in Discord. To change them, patch again. They're all on by default.
+These are listed under **Privacy** in Morphe and are all selected. They work once you patch, with nothing to turn on in Discord. To change them, patch again.
 
 | Option | What it stops |
 | --- | --- |

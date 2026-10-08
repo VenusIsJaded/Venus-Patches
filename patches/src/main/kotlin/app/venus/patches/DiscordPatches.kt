@@ -8,6 +8,7 @@ import app.morphe.patcher.patch.Compatibility
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.PatchBuilder
 
 private const val INSTANCE = "Lcom/facebook/react/runtime/ReactInstance;"
 internal val discord = Compatibility(
@@ -22,6 +23,20 @@ internal val discord = Compatibility(
         description = "Pinned Discord 347.12 bundle; Android device validation still required."
     ))
 )
+
+/** Section headings in Morphe's patch list. */
+internal const val PLUGINS = "Plugins"
+internal const val PRIVACY = "Privacy"
+
+/** Groups a patch under a heading in Morphe. A patcher without categories just shows a flat list. */
+internal fun PatchBuilder<*>.section(name: String) {
+    try { category(name) } catch (_: LinkageError) { }
+}
+
+/** The runtime version recorded next to the injected prelude, read from bootstrap.js itself. */
+private fun runtimeRevision(source: String): String =
+    Regex("""const revision\s*=\s*"([^"]+)"""").find(source)?.groupValues?.get(1)
+        ?: throw PatchException("Venus runtime revision missing")
 
 // Reset per run: Manager can reuse a loaded bundle for multiple selections.
 private var pickerSelected = false
@@ -64,7 +79,7 @@ private val runtimeAssets = rawResourcePatch {
         // so RN cannot mark a separate bootstrap bundle ready or flush native calls early.
         val injected = HbcPrelude.inject(get("assets/index.android.bundle"), selected)
         get("assets/venus/injection.json", false).writeText(
-            "{\"revision\":\"1.2.6\",\"prefixSize\":${injected.prefixSize}," +
+            "{\"revision\":\"${runtimeRevision(bootstrap)}\",\"prefixSize\":${injected.prefixSize}," +
                 "\"originalCodeSize\":${injected.originalCodeSize},\"codeOffset\":${injected.codeOffset}}"
         )
     }
@@ -114,18 +129,20 @@ internal fun pinPackagedDiscordBundle(method: app.morphe.patcher.util.proxy.muta
 @Suppress("unused")
 val venusSettings = bytecodePatch(
     name = "Venus settings",
-    description = "Adds a native Venus section in Discord settings with General, Plugins and persistent controls."
+    description = "Adds a Venus section to Discord's settings, where you can turn each plugin on or off. Needed by every plugin."
 ) {
     compatibleWith(discord)
+    section(PLUGINS)
     dependsOn(runtimeAssets, packagedDiscordBundle)
 }
 
 @Suppress("unused")
 val fileSizeOnPicker = rawResourcePatch(
     name = "File size on picker",
-    description = "Displays cached, asynchronously resolved file sizes on media picker tiles."
+    description = "Shows file sizes on photos and videos when you attach them."
 ) {
     compatibleWith(discord)
+    section(PLUGINS)
     dependsOn(venusSettings)
     execute { pickerSelected = true }
 }
@@ -133,9 +150,10 @@ val fileSizeOnPicker = rawResourcePatch(
 @Suppress("unused")
 val copyBios = rawResourcePatch(
     name = "CopyBios",
-    description = "Makes profile bio text selectable without changing links or the original React elements."
+    description = "Lets you select and copy profile bios. Links still work."
 ) {
     compatibleWith(discord)
+    section(PLUGINS)
     dependsOn(venusSettings)
     execute { copyBiosSelected = true }
 }
@@ -143,9 +161,10 @@ val copyBios = rawResourcePatch(
 @Suppress("unused")
 val dashless = rawResourcePatch(
     name = "Dashless",
-    description = "Displays spaces instead of dashes in text channel names without changing stored names."
+    description = "Shows spaces instead of dashes in channel names. Only changes how they look."
 ) {
     compatibleWith(discord)
+    section(PLUGINS)
     dependsOn(venusSettings)
     execute { dashlessSelected = true }
 }
@@ -153,9 +172,10 @@ val dashless = rawResourcePatch(
 @Suppress("unused")
 val favouriteAnything = rawResourcePatch(
     name = "FavouriteAnything",
-    description = "Adds image and video favourites in the media viewer with cached video previews."
+    description = "Lets you favourite any image or video from the media viewer."
 ) {
     compatibleWith(discord)
+    section(PLUGINS)
     dependsOn(venusSettings)
     execute { favouriteAnythingSelected = true }
 }
@@ -163,9 +183,10 @@ val favouriteAnything = rawResourcePatch(
 @Suppress("unused")
 val freeNitro = rawResourcePatch(
     name = "FreeNitro",
-    description = "Shares unavailable custom emojis and stickers as Discord CDN links, with separate switches. Does not grant Nitro."
+    description = "Sends emojis and stickers you can't use as image links. These are links, not real Nitro emojis or stickers."
 ) {
     compatibleWith(discord)
+    section(PLUGINS)
     dependsOn(venusSettings)
     execute { freeNitroSelected = true }
 }
@@ -173,9 +194,10 @@ val freeNitro = rawResourcePatch(
 @Suppress("unused")
 val customVoiceMessages = bytecodePatch(
     name = "Custom voice messages",
-    description = "Converts local audio to Ogg/Opus with Discord's own waveform algorithm and real duration, off the UI thread. Android 10+."
+    description = "Sends an audio file as a real voice message, with Discord's own waveform. Needs Android 10 or newer. Turn it on in Venus settings."
 ) {
     compatibleWith(discord)
+    section(PLUGINS)
     dependsOn(venusSettings)
     extendWith("extensions/voice.mpe")
     execute {
@@ -213,30 +235,31 @@ private fun bundledPlugin(key: String, title: String, summary: String) = rawReso
     description = summary
 ) {
     compatibleWith(discord)
+    section(PLUGINS)
     dependsOn(venusSettings)
     execute { additionalSelections += key }
 }
 
 @Suppress("unused")
-val noTyping = bundledPlugin("noTyping", "No typing", "Hides outgoing typing indicators without changing incoming typing events.")
+val noTyping = bundledPlugin("noTyping", "No typing", "Hides that you're typing. You still see when others type.")
 
 @Suppress("unused")
-val quickDelete = bundledPlugin("quickDelete", "QuickDelete", "Opt-in removal of message and embed confirmations, matched using Discord's localized strings.")
+val quickDelete = bundledPlugin("quickDelete", "QuickDelete", "Skips the \"are you sure?\" when deleting messages or embeds. Turn it on in Venus settings.")
 
 @Suppress("unused")
-val noDelete = bundledPlugin("noDelete", "NoDelete", "Keeps deleted messages, including your own, with a red outline. Choose session-only or permanent local saving and type a maximum (default 512). Failed sends and ephemeral messages are removed normally.")
+val noDelete = bundledPlugin("noDelete", "NoDelete", "Keeps deleted messages visible, outlined in red. You can save them for good and choose how many to keep. Turn it on in Venus settings.")
 
 @Suppress("unused")
-val jumpToTop = bundledPlugin("jumpToTop", "JumpToTop", "Adds a jump-to-start control to the native chat without replacing Jump to Present.")
+val jumpToTop = bundledPlugin("jumpToTop", "JumpToTop", "Adds a button to jump to the first message in a chat.")
 
 @Suppress("unused")
-val hiddenChannels = bundledPlugin("hiddenChannels", "Hidden Channels", "Opt-in names from received full/basic/gateway channel and category metadata. Never grants message or voice access; unsent names cannot be recovered.")
+val hiddenChannels = bundledPlugin("hiddenChannels", "Hidden Channels", "Shows channels you can't open, with a lock and when they were created and last used. It can't show their messages. Turn it on in Venus settings.")
 
 @Suppress("unused")
-val pastelize = bundledPlugin("pastelize", "Pastelize", "Stable pastel chat names and mentions, preserving role colors by default. Optional webhook/name and content controls.")
+val pastelize = bundledPlugin("pastelize", "Pastelize", "Gives names and mentions without a role color a soft pastel color.")
 
 @Suppress("unused")
-val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators", "Original PlatformIndicators icons (desktop, mobile, web, console, VR) on profiles, DM top bar, DM/member/friend lists and voice users, with the original settings.")
+val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators", "Shows whether people are on desktop, mobile, web, console or VR, on profiles, in lists and in DMs.")
 
 @Suppress("unused")
-val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Opt-in user and server reviews matching the original plugin: a Reviews card under the profile note, a server Reviews sheet and a user menu entry. Uses manti.vendicated.dev.")
+val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Read and write reviews of users and servers, using ReviewDB (manti.vendicated.dev). Turn it on in Venus settings.")

@@ -172,8 +172,8 @@ test('pre-existing Metro definition is decorated', () => {
 test('file-size formatter handles zero, units, invalid metadata', () => {
     const {api} = boot();
     assert.equal(api.formatSize(0), '0 B');
-    assert.equal(api.formatSize(1024), '1 KiB');
-    assert.equal(api.formatSize(1536), '1.5 KiB');
+    assert.equal(api.formatSize(1024), '1 KB');
+    assert.equal(api.formatSize(1536), '1.5 KB');
     assert.equal(api.formatSize(-1), '');
     assert.equal(api.formatSize(Infinity), '');
 });
@@ -1282,7 +1282,7 @@ test('PlatformIndicators uses own sessions and cleans up both subscriptions',()=
 });
 function openReviewAuth(b) {
     b.api.setSetting('reviewDB',true);
-    walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB')[0].props.onPress();
+    walkElements(b.Settings(),n=>n.props.label==='Sign in to ReviewDB')[0].props.onPress();
     return b.pushed.at(-1).modal.props;
 }
 function mountReviews(b,userId) {
@@ -1294,12 +1294,12 @@ function mountReviews(b,userId) {
 async function loadedReviews(b,userId) {
     const m=mountReviews(b,userId);m.render();m.effects.splice(0).forEach(fn=>fn());await flush();await flush();return m;
 }
-test('ReviewDB settings match the original: Authentication and Settings groups with native rows',()=>{
+test('ReviewDB settings: Account and Settings groups with native rows',()=>{
     const b=reviewHarness();b.api.setSetting('reviewDB',true);const tree=b.Settings();
-    assert.deepEqual(walkElements(tree,n=>n.type==='RowGroup').map(n=>n.props.title),['ReviewDB','Authentication','Settings']);
-    const login=walkElements(tree,n=>n.props.label==='Authenticate with ReviewDB')[0];assert.equal(login.type,'NativeRow');assert.equal(login.props.arrow,true);assert.equal(login.props.disabled,false);
-    const logout=walkElements(tree,n=>n.props.label==='Log out of ReviewDB')[0];assert.equal(logout.props.disabled,true);assert.match(logout.props.subLabel,/Authorized Apps/);
-    assert.deepEqual(walkElements(tree,n=>n.type==='SwitchRow').map(n=>n.props.label),['Enable ReviewDB','Use profile-themed send button','Show Warning']);
+    assert.deepEqual(walkElements(tree,n=>n.type==='RowGroup').map(n=>n.props.title),['ReviewDB','Account','Settings']);
+    const login=walkElements(tree,n=>n.props.label==='Sign in to ReviewDB')[0];assert.equal(login.type,'NativeRow');assert.equal(login.props.arrow,true);assert.equal(login.props.disabled,false);
+    const logout=walkElements(tree,n=>n.props.label==='Sign out of ReviewDB')[0];assert.equal(logout.props.disabled,true);assert.match(logout.props.subLabel,/Authorized Apps/);
+    assert.deepEqual(walkElements(tree,n=>n.type==='SwitchRow').map(n=>n.props.label),['Enable ReviewDB','Profile-colored send button','Show the be-respectful note']);
     assert.equal(walkElements(tree,n=>n.type==='Stack')[0].props.spacing,24);
 });
 test('ReviewDB OAuth follows the traced 347.12 order: dismissOAuthModal BEFORE callback still signs in',async()=>{
@@ -1309,25 +1309,25 @@ test('ReviewDB OAuth follows the traced 347.12 order: dismissOAuthModal BEFORE c
     props.dismissOAuthModal();assert.deepEqual(b.popped,['oauth2-authorize']);
     props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb'});await flush();await flush();
     assert.equal(b.requests[0][0],'https://manti.vendicated.dev/api/reviewdb/auth?code=a%2Bb&returnType=json&clientMod=vendetta');
-    assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
+    assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Signed in to ReviewDB').length,1);
     assert.equal(b.toasts.at(-1).content,'Successfully authenticated with ReviewDB');
 });
 test('ReviewDB sign-in survives disabling the plugin and logs out explicitly, like the original authToken',async()=>{
     const b=reviewHarness();const props=openReviewAuth(b);props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});await flush();await flush();
     b.api.setSetting('reviewDB',false);b.api.setSetting('reviewDB',true);
-    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,1);
-    walkElements(b.Settings(),n=>n.props.label==='Log out of ReviewDB')[0].props.onPress();
-    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Signed in to ReviewDB').length,1);
+    walkElements(b.Settings(),n=>n.props.label==='Sign out of ReviewDB')[0].props.onPress();
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Sign in to ReviewDB').length,1);
 });
 test('ReviewDB cancellation, malformed redirects and account switches never sign in',async()=>{
     const b=reviewHarness();let props=openReviewAuth(b);props.callback({canceled:true});await flush();
-    assert.equal(b.requests.length,0);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticate with ReviewDB').length,1);
+    assert.equal(b.requests.length,0);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Sign in to ReviewDB').length,1);
     for(const location of ['https://evil.example/api/reviewdb/auth?code=x','https://manti.vendicated.dev/api/reviewdb/auth?error=access_denied','not a URL']){props=openReviewAuth(b);props.callback({location});await flush();}
     assert.equal(b.requests.length,0);
     let resolve;b.context.fetch=()=>new Promise(done=>{resolve=done;});
     props=openReviewAuth(b);props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=late'});await flush();
     b.account.id='222222222222222222';resolve({ok:true,json:async()=>({success:true,token:'must-not-survive'})});await flush();await flush();
-    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Authenticated with ReviewDB').length,0);
+    assert.equal(walkElements(b.Settings(),n=>n.props.label==='Signed in to ReviewDB').length,0);
 });
 test('ReviewDB profile section renders directly after the profile note card with the original layout',async()=>{
     const b=reviewHarness();assert.equal(b.note({userId:'222222222222222222'}).props.children[0],b.noteOriginal);
@@ -1874,4 +1874,50 @@ test('enabled() feature lookup stays correct for every setting',()=>{
     for (const key of ['emojis','stickers','hyperlinks','forceLinks','pastelAll','quickDeleteEmbeds','noDeleteSave','piDmHeader','reviewWarning'])
         assert.equal(b.api.setSetting(key,!b.api.settings[key]),true,key);
     for (const key of ['picker','voice','dashless','hiddenChannels']) assert.equal(b.api.setSetting(key,true),false,key);
+});
+
+// ---- 1.3.5 regressions ----
+test('file sizes never show "1024 KB" just below a unit boundary',()=>{
+    const {api}=boot();
+    assert.equal(api.formatSize(1048575),'1 MB');assert.equal(api.formatSize(1048576),'1 MB');
+    assert.equal(api.formatSize(1073741823),'1 GB');assert.equal(api.formatSize(1000),'1000 B');
+    assert.equal(api.formatSize(5*1048576+524288),'5.5 MB');
+});
+test('a sub-option change wakes components subscribed to its plugin',()=>{
+    const b=boot(allFeatures);let renders=0;
+    const React={createElement(type,props,...children){return {type,props:{...props,children}};},cloneElement(n,p){return {...n,props:{...n.props,...p}};},
+        useState:v=>[v,()=>{renders++;}],useEffect(fn){fn();}};
+    b.load(React,null,19);b.load({View:'View',Text:'Text',Modal:'Modal'},null,17);
+    function SettingsList(){} b.load({SettingsList},null,14993);
+    const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14892).SETTING_RENDERER_CONFIG;
+    registry.VENUS_PI_ENABLED.useValue(); // subscribes to "platformIndicators"
+    b.api.setSetting('piProfile',false);assert.ok(renders>0,'PlatformIndicators did not re-render for piProfile');
+    const before=renders;b.api.setSetting('copyBios',false);assert.equal(renders,before,'unrelated plugin woke PlatformIndicators');
+});
+test('Venus plugins are alphabetical and Pastelize options have their own page',()=>{
+    const b=settingsHarness();
+    const node=b.registry.VENUS_PLUGINS.screen.getComponent()().props.node;
+    const titles=node.sections[0].settings.map(id=>b.registry[id].useTitle());
+    assert.equal(titles.join('|'),[...titles].sort((x,y)=>x.toLowerCase().localeCompare(y.toLowerCase())).join('|'));
+    assert.equal(b.registry.VENUS_PASTELALL.parent,'VENUS_PASTELIZE');assert.equal(b.registry.VENUS_PASTELIZE.type,'route');
+    assert.match(b.registry.VENUS_VERSION.useTitle(),/^Venus Patches \d/);
+});
+test('NoDelete does not rewrite an already erased archive for every deletion',async()=>{
+    const b=await archiveHarness(null);
+    b.api.setSetting('noDeleteSave',false);await flush();await flush();
+    const erased=b.writes.filter(([name])=>name==='venus-deleted-messages.json').length;
+    assert.equal(b.api.status.archive,'erased');
+    const flux={dispatch(){return 'ok';}};const dispatch=b.load({default:flux},null,573).default;
+    for (let i=0;i<5;i++) dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:String(i)});
+    await flush();await flush();
+    assert.equal(b.writes.filter(([name])=>name==='venus-deleted-messages.json').length,erased);
+});
+test('logging out of Discord without a ReviewDB sign-in does not rewrite preferences',async()=>{
+    const b=boot(allFeatures);let writes=0;
+    b.load({default:native({writeFile:async()=>{writes++;}})});await flush();await flush();
+    const dispatch=b.load({default:{dispatch(){return 'ok';}}},null,573).default;
+    writes=0;dispatch.dispatch({type:'LOGOUT'});await flush();await flush();assert.equal(writes,0);
+});
+test('own deletions no longer schedule bookkeeping timers',()=>{
+    assert.doesNotMatch(raw,/ownDeletes/);
 });
