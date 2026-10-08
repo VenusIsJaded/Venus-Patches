@@ -204,8 +204,8 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "Clearer patch names and descriptions in Morphe, tidier Venus settings, and fixes for settings "
-    "that didn't update right away. Patch the original Discord 347.12 APKM."
+    "New Read All button in the server list, and Pastelize's Color message text now colors the text "
+    "instead of turning it into a link. Patch the original Discord 347.12 APKM."
 )
 
 

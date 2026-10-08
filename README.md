@@ -36,6 +36,7 @@ To turn plugins on or off at any time, open **Discord Settings → Venus → Plu
 | **Pastelize** | Gives names and mentions soft pastel colors | On |
 | **PlatformIndicators** | Shows whether people are on desktop, mobile, web, console or VR | On |
 | **QuickDelete** | Skips the "are you sure?" when deleting | Off |
+| **Read All** | Adds a Read all button to the server list for servers, DMs or both | On |
 | **ReviewDB** | Read and write reviews of users and servers | Off |
 
 ### Privacy options
@@ -59,6 +60,7 @@ Discord can still see what any client needs to work, like your messages, calls a
 - **Hidden Channels** only shows a channel's name and dates. It can't show messages or let you join locked voice channels.
 - **ReviewDB** loads reviews from `manti.vendicated.dev`. To post or report reviews, sign in from its settings page. Signing in never uses your Discord token.
 - **FreeNitro** sends links, not real Nitro emojis or stickers.
+- **Read All** uses Discord's own "Mark as read". It clears servers by default. Switch it to DMs or both in its settings, or hold the button for a one-time choice.
 
 ## For developers
 

@@ -2,6 +2,12 @@
 
 Every release works with **Discord 347.12 - Stable**. Always patch the original APKM.
 
+## 1.3.6 — Read All button and a Pastelize fix
+
+- **New plugin: Read All.** A **Read all** button sits in the server list, under the Direct Messages button and above the line before your servers. One tap marks everything as read.
+- **Choose what it clears** in **Venus → Plugins → Read All**: **Servers**, **Direct messages**, or **Servers and DMs**. Hold the button to pick a one-time choice without changing the setting.
+- **Pastelize's "Color message text" works.** Messages show in the person's pastel color, instead of turning blue and showing *usernameOnClick* when tapped.
+
 ## 1.3.5 — Clearer patches and tidier settings
 
 - **Patches are easier to read in Morphe.** They're grouped under **Plugins** and **Privacy**, and every description says what the patch does in plain words.
