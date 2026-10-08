@@ -38,14 +38,14 @@ var registry = {
     post:function(value) { check(this === registry, 'post receiver changed'); return value; }
 };
 // Multiple operations in one export exercise independent per-iteration bindings.
-load(1271, registry);
+load(1283, registry);
 check(registry.registerComponent('Discord', function(){return function(){return 'root';};}) === 'Discord', 'registration result');
 check(providers[0]()({}) === 'root', 'root provider');
 var payload = {};
 check(registry.getAttachmentPayload(payload) === payload, 'serializer dispatch');
 check(registry.post(payload) === payload, 'HTTP dispatch');
 var seen = [];
-load(1151, {default:{
+load(1163, {default:{
     getConstants:function(){return {};}, readFile:function(){}, writeFile:function(){},
     getSize:function(uri){seen.push(uri);return Promise.resolve(Number(uri.slice(7)));}
 }});
@@ -82,9 +82,9 @@ function boot(features = {picker:true, voice:true}, ready = true) {
         const value = explicitId === undefined ? exports && exports.default || exports : exports;
         let id = explicitId;
         if (id === undefined) {
-            id = value.getSize ? 1151 : value.createElement ? 19 : value.View ? 17 :
-                value.registerComponent ? 245 : value.CloudUpload ? 5375 : value.getAttachmentPayload ? 5377 :
-                value.post ? 1271 : value.type || value.render || value.name === 'Pressable' ? 414 : 9999;
+            id = value.getSize ? 1163 : value.createElement ? 19 : value.View ? 17 :
+                value.registerComponent ? 245 : value.CloudUpload ? 5440 : value.getAttachmentPayload ? 5442 :
+                value.post ? 1283 : value.type || value.render || value.name === 'Pressable' ? 414 : 9999;
         }
         context.__d(factory || function(g, r, i, a, module) { module.exports = exports; }, id, []);
         const module = {exports:{}};
@@ -159,9 +159,9 @@ test('pre-existing Metro definition is decorated', () => {
     const factories = new Map();
     const context = vm.createContext({__d:(f,id) => factories.set(id,f), console});
     vm.runInContext(raw.replace('/*__FEATURES__*/', '{picker:true,voice:true}'), context);
-    context.__d((g,r,i,a,module) => { module.exports = {getAttachmentPayload:() => ({})}; }, 5377, []);
+    context.__d((g,r,i,a,module) => { module.exports = {getAttachmentPayload:() => ({})}; }, 5442, []);
     const module = {exports:{}};
-    factories.get(5377)(context,null,null,null,module,module.exports);
+    factories.get(5442)(context,null,null,null,module,module.exports);
     assert.equal(context.__venusPatches.status.attachment, false);
     context.__d((g,r,i,a,module) => { module.exports = {default(){}}; }, 120, []);
     const setup = {exports:{}};
@@ -355,7 +355,7 @@ test('native file HostObject-style accessors are supported at its verified ID', 
     const b=boot(); const implementation=native(); const host={};
     for (const key of Object.keys(implementation))
         Object.defineProperty(host,key,{get:() => implementation[key],enumerable:true});
-    b.load({default:host},undefined,1151);
+    b.load({default:host},undefined,1163);
     assert.equal(await b.api.getSize('content://host'),1024);
     await flush(); assert.equal(b.api.status.storage,'ready');
 });
@@ -424,8 +424,8 @@ test('RN environment initialization finishes before any feature hook reads nativ
     Object.defineProperty(nativeExport,'default',{get(){ assert.equal(initialized,true); return bridge; }});
     const registry={SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}};
     const setup=b.load({default(){
-        b.load(nativeExport,null,1151);
-        assert.equal(b.load(registry,null,14892),registry);
+        b.load(nativeExport,null,1163);
+        assert.equal(b.load(registry,null,14130),registry);
         assert.equal(b.api.status.menu,false);
         assert.equal(reads,0);
         initialized=true;
@@ -440,7 +440,7 @@ test('RN environment initialization finishes before any feature hook reads nativ
 test('failed or reentrant environment setup never activates hooks prematurely', () => {
     const b=boot({picker:true,voice:true},false);
     const registry={SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}};
-    b.load(registry,null,14892);
+    b.load(registry,null,14130);
     const failed=b.load({default(){throw Error('original RN setup failure');}},null,120);
     assert.throws(()=>failed.default(),/original RN setup failure/);
     assert.equal(b.api.status.menu,false);
@@ -484,10 +484,10 @@ function reactHarness(b) {
 function settingsHarness(features = allFeatures) {
     const b = boot(features); const {React}=reactHarness(b);
     function SettingsList() {}
-    b.load({SettingsList},null,14993);
+    b.load({SettingsList},null,14236);
     const original=Object.freeze({ACCOUNT:Object.freeze({type:'route',IconComponent:function Icon(){}})});
-    const exports=b.load({SETTING_RENDERER_CONFIG:original},null,14892);
-    const builder=b.load({createList(config,extra){ assert.equal(this,builder); return {...config,type:'list',extra};}},null,11754);
+    const exports=b.load({SETTING_RENDERER_CONFIG:original},null,14130);
+    const builder=b.load({createList(config,extra){ assert.equal(this,builder); return {...config,type:'list',extra};}},null,10874);
     return {...b,React,SettingsList,original,registry:exports.SETTING_RENDERER_CONFIG,builder};
 }
 function nitroHarness() {
@@ -501,20 +501,20 @@ function nitroHarness() {
         '40':{id:'40',guild_id:'other',format_type:3,name:'lottie',available:true},
         '50':{id:'50',guild_id:'other',format_type:2,name:'apng',available:true},
         '60':{id:'60',guild_id:'other',format_type:1,name:'disabled',available:false} };
-    b.load({default:{getCurrentUser:() => user}},null,1372);
-    b.load({default:{getChannel:id => id === 'channel' ? channel : undefined}},null,2041);
-    b.load({default:{getCustomEmojiById:id => emojis[id]}},null,5708);
-    b.load({default:{getStickerById:id => stickers[id]}},null,5751);
+    b.load({default:{getCurrentUser:() => user}},null,1378);
+    b.load({default:{getChannel:id => id === 'channel' ? channel : undefined}},null,2051);
+    b.load({default:{getCustomEmojiById:id => emojis[id]}},null,5772);
+    b.load({default:{getStickerById:id => stickers[id]}},null,5815);
     const premium=b.load({default:{canUseEmojisEverywhere:user => user.premiumType===2,
         canUseAnimatedEmojis:user => user.premiumType===2,
-        canUseCustomStickersEverywhere:user => user.premiumType===2}},null,4446).default;
+        canUseCustomStickersEverywhere:user => user.premiumType===2}},null,4491).default;
     const rules=b.load({StickerSendability:{SENDABLE:0,SENDABLE_WITH_PREMIUM:1,NONSENDABLE:2},
         getStickerSendability:sticker => !sticker || sticker.available === false ? 2 : sticker.guild_id==='home' || user.premiumType===2 ? 0 : 1,
-        isSendableSticker:sticker => !!sticker && (sticker.guild_id==='home' || user.premiumType===2)},null,7611);
+        isSendableSticker:sticker => !!sticker && (sticker.guild_id==='home' || user.premiumType===2)},null,6756);
     const sent=[];
     const actions=b.load({default:{sendMessage(...args){assert.equal(this,actions);sent.push(args);return 'sent';},
         _sendMessage(...args){assert.equal(this,actions);sent.push(args);return 'upload';},
-        sendStickers(...args){assert.equal(this,actions);sent.push(args);return 'stickers';}}},null,7730).default;
+        sendStickers(...args){assert.equal(this,actions);sent.push(args);return 'stickers';}}},null,6880).default;
     return {...b,user,channel,emojis,stickers,premium,rules,actions,sent};
 }
 test('native registry adds authorless General, Plugins and FreeNitro routes without changing stock config', () => {
@@ -563,7 +563,7 @@ test('new plugin preferences persist and late restores cannot overwrite edits', 
 });
 test('unselected plugin factories remain completely unwrapped', () => {
     const b=boot({picker:false,voice:false});const factory=()=>{};
-    for (const id of [245,414,1271,5375,5377,11503,4941,12662,13288,10661,10664,1372,2041,5708,5751,4446,7611,7730]) {
+    for (const id of [245,414,1283,5440,5442,10742,4990,12662,12524,9861,9864,1378,2051,5772,5815,4491,6756,6880]) {
         b.context.__d(factory,id,[]);assert.equal(b.factories.get(id),factory);
     }
 });
@@ -572,14 +572,14 @@ test('CopyBios clones frozen text nodes while preserving links, handlers and non
     const text=Object.freeze(React.createElement(RN.Text,Object.freeze({children:'bio',onPress})));
     const icon=React.createElement('Image',{uri:'x'});
     const tree=Object.freeze(React.createElement(RN.View,{children:Object.freeze([text,icon])}));
-    const bio=b.load({default:()=>tree},null,11503);
+    const bio=b.load({default:()=>tree},null,10742);
     const result=bio.default({});assert.notEqual(result,tree);
     assert.equal(text.props.selectable,undefined);assert.equal(result.props.children[0].props.selectable,true);
     assert.equal(result.props.children[0].props.onPress,onPress);assert.equal(result.props.children[1],icon);
     b.api.setSetting('copyBios',false);assert.equal(bio.default({}),tree);
 });
 test('Dashless changes only display labels and leaves messages, channel models and DM names untouched', () => {
-    const b=boot(allFeatures);const label=b.load({default:channel=>channel.name},null,4941);
+    const b=boot(allFeatures);const label=b.load({default:channel=>channel.name},null,4990);
     const channel=Object.freeze({type:0,name:'hello-world'});
     assert.equal(label.default(channel),'hello world');assert.equal(channel.name,'hello-world');
     assert.equal(label.default({type:1,name:'user-name'}),'user-name');
@@ -588,7 +588,7 @@ test('Dashless changes only display labels and leaves messages, channel models a
 });
 test('FavouriteAnything preserves memo metadata and original source objects', () => {
     const b=boot(allFeatures);const memo=Object.freeze({$$typeof:Symbol.for('react.memo'),type:props=>props,compare:()=>true});
-    const exports=b.load({default:memo},null,13288);
+    const exports=b.load({default:memo},null,12524);
     assert.equal(exports.default.compare,memo.compare);
     const source=Object.freeze({uri:'https://cdn.discordapp.com/image.png',width:10,height:20});
     const props=Object.freeze({source,extra:'keep'});const result=exports.default.type(props);
@@ -596,7 +596,7 @@ test('FavouriteAnything preserves memo metadata and original source objects', ()
     b.api.setSetting('favouriteAnything',false);assert.equal(exports.default.type(props),props);
 });
 test('favourite media format correction uses copies and handles signed URLs case-insensitively', () => {
-    const b=boot(allFeatures);const action=b.load({addFavoriteGIF:value=>value},null,10661);
+    const b=boot(allFeatures);const action=b.load({addFavoriteGIF:value=>value},null,9861);
     const item=Object.freeze({url:'https://cdn.discordapp.com/movie.MP4?ex=1',format:1});
     assert.equal(action.addFavoriteGIF(item).format,2);assert.equal(item.format,1);
     const image=Object.freeze({url:'https://example.com/photo.png',format:2});
@@ -607,12 +607,12 @@ test('video favourite previews cache weakly, preserve signed queries and update 
     const b=boot(allFeatures);
     const item=Object.freeze({url:'https://cdn.discordapp.com/a.MP4?ex=1&hm=signature',src:'https://cdn.discordapp.com/a.MP4?ex=1&hm=signature&format=webp#keep'});
     const favorites=Object.freeze([item]);const result=Object.freeze({favorites,favoritesCategory:{src:item.src},extra:'keep'});
-    const utils=b.load({useFavoriteGIFsMobile:()=>result},null,10664);
+    const utils=b.load({useFavoriteGIFsMobile:()=>result},null,9864);
     const a=utils.useFavoriteGIFsMobile(),c=utils.useFavoriteGIFsMobile();assert.equal(a.favorites,c.favorites);
     assert.match(a.favorites[0].src,/media\.discordapp\.net\/a.MP4\?ex=1&hm=signature&format=jpeg#keep$/);
     assert.equal(a.favoritesCategory.src,a.favorites[0].src);assert.equal(result.favorites[0],item);assert.equal(a.extra,'keep');
     const evil={url:'https://evil.test/a.mp4',src:'https://cdn.discordapp.com.evil.test/a.mp4'};
-    const external=b.load({useFavoriteGIFsMobile:()=>({favorites:[evil]})},null,10664).useFavoriteGIFsMobile();assert.equal(external.favorites[0],evil);
+    const external=b.load({useFavoriteGIFsMobile:()=>({favorites:[evil]})},null,9864).useFavoriteGIFsMobile();assert.equal(external.favorites[0],evil);
 });
 test('FreeNitro only overrides emoji eligibility for the current user and each switch is independent', () => {
     const b=nitroHarness();assert.equal(b.premium.canUseEmojisEverywhere(b.user),true);
@@ -687,14 +687,14 @@ test('shared native attachment send boundary converts emoji captions without cha
     assert.match(b.sent[0][1].content,/emojis\/2.webp/);assert.equal(b.sent[0][1].attachments,message.attachments);assert.equal(b.sent[0][2],options);
 });
 test('native opaque-provider video favourites retain their original format', () => {
-    const b=boot(allFeatures);const action=b.load({addFavoriteGIF:value=>value},null,10661);
+    const b=boot(allFeatures);const action=b.load({addFavoriteGIF:value=>value},null,9861);
     const item=Object.freeze({url:'https://tenor.com/view/provider-id',gifSrc:'https://media.tenor.com/opaque',format:2});
     assert.equal(action.addFavoriteGIF(item),item);
 });
 test('nested bio markup makes the outer Discord Text selectable without changing children or link presses', () => {
     const b=boot(allFeatures);const {React}=reactHarness(b);const link=React.createElement('Link',{children:'click',onPress:()=>{}});
     const tree=React.createElement('DiscordText',{children:[link]});
-    const bio=b.load({default:()=>tree},null,11503);const result=bio.default({});
+    const bio=b.load({default:()=>tree},null,10742);const result=bio.default({});
     assert.equal(result.props.selectable,true);assert.equal(result.props.children[0].props.onPress,link.props.onPress);assert.equal(tree.props.selectable,undefined);
 });
 test('double-backtick inline code and empty sticker sends remain unchanged', () => {
@@ -708,7 +708,7 @@ test('Metro default imports preserve non-enumerable module markers for media vie
     const b=boot(allFeatures);
     const memo={$$typeof:Symbol.for('react.memo'),type:props=>props,compare:null};
     const exports={default:memo};Object.defineProperty(exports,'__esModule',{value:true});
-    const patched=b.load(exports,null,13288);
+    const patched=b.load(exports,null,12524);
     const metroDefault=patched.__esModule ? patched.default : patched;
     assert.equal(patched,exports);assert.equal(patched.__esModule,true);
     assert.equal(metroDefault.$$typeof,Symbol.for('react.memo'));
@@ -721,7 +721,7 @@ test('frozen component exports preserve React tags, symbols and lazy getter desc
     Object.defineProperty(memo,'displayName',{get(){reads++;return 'GIFFavButton';}});
     memo[symbol]='preserved';Object.freeze(memo);
     const exports={default:memo};Object.defineProperty(exports,'__esModule',{value:true});Object.freeze(exports);
-    const patched=b.load(exports,null,13288);assert.equal(reads,0);
+    const patched=b.load(exports,null,12524);assert.equal(reads,0);
     assert.equal(patched.__esModule,true);assert.equal(patched.default.$$typeof,Symbol.for('react.memo'));
     assert.equal(patched.default[symbol],'preserved');assert.equal(patched.default.compare,memo.compare);
     assert.equal(Object.getOwnPropertyDescriptor(patched.default,'displayName').get,Object.getOwnPropertyDescriptor(memo,'displayName').get);
@@ -730,7 +730,7 @@ test('immutable function export hooks retain the Metro module marker and stock d
     const b=boot(allFeatures);const exports={};
     Object.defineProperty(exports,'__esModule',{value:true});
     Object.defineProperty(exports,'addFavoriteGIF',{value:item=>item});
-    const patched=b.load(exports,null,10661);assert.equal(patched.__esModule,true);
+    const patched=b.load(exports,null,9861);assert.equal(patched.__esModule,true);
     assert.equal(patched.addFavoriteGIF({url:'https://example.com/movie.mp4',format:1}).format,2);
 });
 
@@ -745,7 +745,7 @@ test('attachment tools and all five ports live in Plugins, never General', () =>
 });
 test('unselected new plugins do not wrap any optional factory or expose switches', () => {
     const b=boot({});const factory=()=>{};
-    for (const id of [12272,5141,1115,573,5008,7730,12549,10518,11207,2096,4427,14280,1074,1101]) {
+    for (const id of [11348,5205,1127,585,5057,6880,11642,9804,10418,4470,4472,13528,1086,1113]) {
         b.context.__d(factory,id,[]);assert.equal(b.factories.get(id),factory);
     }
     const settings=settingsHarness({});assert.equal(settings.registry.VENUS_NOTYPING,undefined);
@@ -754,7 +754,7 @@ test('No typing restores both original methods and receiver when switched off', 
     const b=boot(allFeatures);const calls=[];
     const actions={startTyping(...args){assert.equal(this,actions);calls.push(args);return 'start';},
         stopTyping(...args){assert.equal(this,actions);calls.push(args);return 'stop';}};
-    const patched=b.load({default:actions},null,12272).default;
+    const patched=b.load({default:actions},null,11348).default;
     patched.startTyping('123');patched.stopTyping('123');assert.equal(calls.length,0);
     b.api.setSetting('noTyping',false);
     assert.equal(patched.startTyping('123'),'start');assert.equal(patched.stopTyping('456'),'stop');
@@ -763,9 +763,9 @@ test('No typing restores both original methods and receiver when switched off', 
 test('QuickDelete uses exact localized strings, independent switches and stock fallback', () => {
     const b=boot(allFeatures);let shown=0,confirmed=0;
     const tokens={AMvpS4:'message', 'vXZ+Fo':'embed'};const translations={message:'Supprimer le message ?',embed:'Supprimer cet aperçu ?'};
-    b.load({t:tokens,intl:{string:key=>translations[key]}},null,1115);
+    b.load({t:tokens,intl:{string:key=>translations[key]}},null,1127);
     const popup={show(value){shown++;return value;}};
-    const action=b.load({default:popup},null,5141).default;
+    const action=b.load({default:popup},null,5205).default;
     const message={children:{props:{title:translations.message}},onConfirm(){confirmed++;return 'confirmed';}};
     assert.equal(action.show(message),message);b.api.setSetting('quickDelete',true);
     assert.equal(action.show(message),'confirmed');assert.equal(confirmed,1);
@@ -778,13 +778,13 @@ test('QuickDelete uses exact localized strings, independent switches and stock f
 });
 function deletionHarness() {
     const b=boot(allFeatures), messages=new Map(),events=[],network=[];
-    b.load({default:{getMessage:(channel,id)=>messages.get(channel+':'+id)}},null,5008);
+    b.load({default:{getMessage:(channel,id)=>messages.get(channel+':'+id)}},null,5057);
     const flux={dispatch(event){assert.equal(this,flux);events.push(event);
         if (event.type==='MESSAGE_DELETE') messages.delete(event.channelId+':'+event.id);
         if (event.type==='MESSAGE_DELETE_BULK') event.ids.forEach(id=>messages.delete(event.channelId+':'+id));
         return 'dispatched';}};
-    const dispatch=b.load({default:flux},null,573).default;
-    const actions=b.load({default:{deleteMessage(...args){network.push(args);return 'remote';}}},null,7730).default;
+    const dispatch=b.load({default:flux},null,585).default;
+    const actions=b.load({default:{deleteMessage(...args){network.push(args);return 'remote';}}},null,6880).default;
     return {...b,messages,events,network,dispatch,actions};
 }
 test('NoDelete retains only cached messages, marks once and dismisses locally without server traffic', async () => {
@@ -816,9 +816,9 @@ test('NoDelete clears session state at logout and lets unrelated events and argu
 test('real default-export capability hooks unlock emoji selection but preserve native conversion checks', () => {
     const b=nitroHarness();const animation={},everywhere={},unrelated={};
     const catalog=b.load({ANIMATED_EMOJIS:animation,EMOJIS_EVERYWHERE:everywhere,
-        canUserUse:(feature,user)=>user.premiumType===2},null,14280);
+        canUserUse:(feature,user)=>user.premiumType===2},null,13528);
     const premium=b.load({default:{canUseEmojisEverywhere:user=>catalog.canUserUse(everywhere,user),
-        canUseAnimatedEmojis:user=>catalog.canUserUse(animation,user),canUseCustomStickersEverywhere:()=>false}},null,4446).default;
+        canUseAnimatedEmojis:user=>catalog.canUserUse(animation,user),canUseCustomStickersEverywhere:()=>false}},null,4491).default;
     assert.equal(premium.canUseEmojisEverywhere(b.user),true);assert.equal(catalog.canUserUse(animation,b.user),true);
     assert.equal(catalog.canUserUse(unrelated,b.user),false);assert.equal(catalog.canUserUse(animation,{id:'other',premiumType:null}),false);
     b.actions.sendMessage('channel',{content:'<a:test:3> <:other:2>'});assert.match(b.sent[0][1].content,/3.gif/);assert.match(b.sent[0][1].content,/2.webp/);
@@ -827,10 +827,10 @@ test('real default-export capability hooks unlock emoji selection but preserve n
 });
 test('JumpToTop clones frozen controls, keeps Jump to Present and uses each current channel ID', () => {
     const b=boot(allFeatures);const {React}=reactHarness(b),jumps=[];let present=0;
-    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,7730);
+    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,6880);
     const child=Object.freeze(React.createElement('Button',{onPress:()=>present++,icon:'down'}));
     const result=Object.freeze(React.createElement('View',{children:child}));
-    const component=b.load({default:()=>result},null,12549).default;
+    const component=b.load({default:()=>result},null,11642).default;
     const first=component({channelId:'100'});const controls=first.props.children.props.children;
     controls[0].props.children.props.onPress();controls[1].props.onPress();
     assert.equal(present,1);assert.equal(jumps[0].channelId,'100');assert.equal(jumps[0].messageId,'100');assert.equal(result.props.children,child);
@@ -839,10 +839,10 @@ test('JumpToTop clones frozen controls, keeps Jump to Present and uses each curr
 });
 test('JumpToTop is available when Jump to Present is absent without wrapping unrelated voice controls', () => {
     const b=boot(allFeatures);reactHarness(b);const jumps=[];
-    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,7730);
-    b.load({default:'NativeFloatingButton'},null,12550);b.load({default:'NativeArrow'},null,12551);
-    b.load({useChatInputContainerHeight:()=>140,useSmallSuggestionBarHeight:()=>28},null,9686);
-    const component=b.load({default:()=>null},null,12549).default;
+    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,6880);
+    b.load({default:'NativeFloatingButton'},null,11643);b.load({default:'NativeArrow'},null,11644);
+    b.load({useChatInputContainerHeight:()=>140,useSmallSuggestionBarHeight:()=>28},null,8838);
+    const component=b.load({default:()=>null},null,11642).default;
     const result=component({channelId:'123',screenIndex:0});assert.equal(result.props.style.bottom,180);
     assert.equal(result.props.children.props.children.type,'NativeFloatingButton');
     result.props.children.props.children.props.onPress();assert.equal(jumps[0].messageId,'123');
@@ -856,15 +856,15 @@ function hiddenHarness() {
     const voice={id:'voice',type:2,guild_id:'g',name:'voice',position:1};
     const visible={id:'public',type:0,guild_id:'g',name:'public',position:0};
     const channels={cat:category,hidden:text,second:other,voice,public:visible};const allowed=new Set(['public']);
-    b.load({default:{getChannel:id=>channels[id],getMutableGuildChannelsForGuild:()=>channels}},null,2041);
+    b.load({default:{getChannel:id=>channels[id],getMutableGuildChannelsForGuild:()=>channels}},null,2051);
     const viewPermission={nativeBit:1024};
-    b.load({Permissions:{VIEW_CHANNEL:viewPermission}},null,1074);
+    b.load({Permissions:{VIEW_CHANNEL:viewPermission}},null,1086);
     const permission={can:(permission,channel)=>{assert.equal(permission,viewPermission);return allowed.has(channel.id);}};
-    b.load({default:permission},null,4427);
+    b.load({default:permission},null,4472);
     const result=Object.freeze({id:'g',SELECTABLE:Object.freeze([{channel:visible,comparator:0}]),VOCAL:Object.freeze([]),4:Object.freeze([])});
-    const store=b.load({default:{getChannels:()=>result}},null,2096).default;
-    const fetched=[];const actions=b.load({default:{fetchMessages:value=>fetched.push(value)}},null,7730).default;
-    const label=b.load({default:channel=>channel.name},null,4941).default;
+    const store=b.load({default:{getChannels:()=>result}},null,4470).default;
+    const fetched=[];const actions=b.load({default:{fetchMessages:value=>fetched.push(value)}},null,6880).default;
+    const label=b.load({default:channel=>channel.name},null,4990).default;
     return {...b,channels,allowed,permission,viewPermission,result,store,actions,fetched,alerts,label};
 }
 test('Hidden Channels adds cached metadata immutably, deduplicates categories and leaves permissions intact', () => {
@@ -881,8 +881,8 @@ test('Hidden Channels adds cached metadata immutably, deduplicates categories an
 test('Hidden Channels caches READY names while toggle is off so enabling later still resolves',()=>{
     const b=hiddenHarness();
     // Default toggle is off; READY arrives before the user enables.
-    const dispatch=b.load({default:{dispatch(){}}},null,573).default;
-    b.load({default:{getCurrentUser:()=>({id:'me'})}},null,1372);
+    const dispatch=b.load({default:{dispatch(){}}},null,585).default;
+    b.load({default:{getCurrentUser:()=>({id:'me'})}},null,1378);
     dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'me'},guilds:[{id:'g',channels:[{id:'hidden',name:'staff-chat',type:0},{id:'cat',name:'private',type:4}]}]});
     b.api.setSetting('hiddenChannels',true);
     // Store later redacts to server marker; cached gateway names must win.
@@ -900,7 +900,7 @@ test('Hidden Channels refuses message fetches for locked channels and preserves 
 
 test('Hidden Channels blocks only locked channel navigation, including voice, with real native flag objects', () => {
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);const calls=[];
-    const navigation=b.load({transitionTo:(...args)=>calls.push(args),replaceWith:(...args)=>calls.push(args),transitionToGuild:(...args)=>calls.push(args)},null,1101);
+    const navigation=b.load({transitionTo:(...args)=>calls.push(args),replaceWith:(...args)=>calls.push(args),transitionToGuild:(...args)=>calls.push(args)},null,1113);
     navigation.transitionTo('/channels/g/hidden');navigation.replaceWith('/channels/g/voice');navigation.transitionToGuild('g','hidden');
     // The still-open prompt for 'hidden' is not stacked a second time.
     assert.equal(calls.length,0);assert.equal(b.alerts.length,2);assert.equal(b.alerts[1][0],'Locked voice channel');
@@ -917,10 +917,10 @@ test('Hidden Channels cache refreshes replaced records and parent metadata witho
 });
 test('JumpToTop adds native-style action-sheet rows without mutating frozen trees and closes on press', () => {
     const b=boot(allFeatures);const {React}=reactHarness(b);const jumps=[];let closed=0;
-    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,7730);
+    b.load({default:{jumpToMessage:value=>jumps.push(value)}},null,6880);
     const row=Object.freeze(React.createElement('ActionSheetRow',{label:'Mute',onPress:()=>{},icon:'old'}));
     const group=Object.freeze(React.createElement('Group',{children:Object.freeze([row])}));
-    const sheet=b.load({default:()=>group},null,10518).default;
+    const sheet=b.load({default:()=>group},null,9804).default;
     const result=sheet({thread:{id:'99',type:11},onClose:()=>closed++});
     assert.equal(group.props.children.length,1);assert.equal(result.props.children.length,2);
     assert.equal(result.props.children[0].props.label,'Jump to top');result.props.children[0].props.onPress();
@@ -928,9 +928,9 @@ test('JumpToTop adds native-style action-sheet rows without mutating frozen tree
     b.api.setSetting('jumpToTop',false);assert.equal(sheet({thread:{id:'99',type:11}}),group);
 });
 test('connected channel action sheets preserve memo tags when injecting JumpToTop', () => {
-    const b=boot(allFeatures);const {React}=reactHarness(b);b.load({default:{jumpToMessage:()=>{}}},null,7730);
+    const b=boot(allFeatures);const {React}=reactHarness(b);b.load({default:{jumpToMessage:()=>{}}},null,6880);
     const memo=Object.freeze({$$typeof:Symbol.for('react.memo'),type:()=>React.createElement('Group',{children:[React.createElement('Row',{label:'Mute',onPress:()=>{}})]}),compare:null});
-    const wrapper=b.load({default:()=>React.createElement(memo,{channel:{id:'100',type:0}})},null,11207).default;
+    const wrapper=b.load({default:()=>React.createElement(memo,{channel:{id:'100',type:0}})},null,10418).default;
     const tree=wrapper({channel:{id:'100',type:0}});assert.equal(tree.type.$$typeof,Symbol.for('react.memo'));
     assert.equal(tree.type.type(tree.props).props.children[0].props.label,'Jump to top');assert.equal(tree.type.compare,null);
 });
@@ -942,7 +942,7 @@ test('prototype Flux methods are shadowed on the same live instance, preserving 
         dispatch(event){this.#dispatches++;calls++;return event;}
         count(){return this.#dispatches;}
     }
-    const flux=new Flux();const patched=b.load({default:flux},null,573).default;
+    const flux=new Flux();const patched=b.load({default:flux},null,585).default;
     assert.equal(patched,flux);const event={type:'OTHER'};assert.equal(patched.dispatch(event),event);
     assert.equal(flux.count(),1);assert.equal(calls,1);
 });
@@ -953,7 +953,7 @@ test('prototype channel-store hooks retain store identity and inherited subscrip
         getChannels(){return this.#result;}
         subscribe(){return this;}
     }
-    const store=new Store();const patched=b.load({default:store},null,2096).default;
+    const store=new Store();const patched=b.load({default:store},null,4470).default;
     assert.equal(patched,store);assert.equal(patched.subscribe(),store);assert.equal(patched.getChannels('g'),b.result);
     b.api.setSetting('hiddenChannels',true);assert.equal(patched.getChannels('g').SELECTABLE.length,3);
 });
@@ -1085,7 +1085,7 @@ class MessageCollection {
 }
 test('NoDelete snapshots survive incoming messages, cache replacement, reconnect and truncation',()=>{
     const b=deletionHarness();let collection=new MessageCollection([{id:'1',content:'original',author:{id:'u'}}]);
-    const store=b.load({default:{getMessage:(c,id)=>collection.toArray().find(m=>m.id===id),getMessages:()=>collection}},null,5008).default;
+    const store=b.load({default:{getMessage:(c,id)=>collection.toArray().find(m=>m.id===id),getMessages:()=>collection}},null,5057).default;
     b.api.setSetting('noDelete',true);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
     assert.equal(store.getMessage('c','1').content,'original');
     collection=new MessageCollection([{id:'2',content:'new'}]);b.dispatch.dispatch({type:'MESSAGE_CREATE',channelId:'c',message:{id:'2'}});
@@ -1096,8 +1096,8 @@ test('NoDelete snapshots survive incoming messages, cache replacement, reconnect
 });
 async function archiveHarness(saved,account='owner') {
     const b=boot(allFeatures);let disk=saved,writes=[];
-    const store=b.load({default:{getMessage:()=>undefined,getMessages:()=>new MessageCollection(),emitChange(){}}},null,5008).default;
-    b.load({createMessageRecord:raw=>({...raw})},null,5010);b.load({default:{getCurrentUser:()=>({id:account})}},null,1372);
+    const store=b.load({default:{getMessage:()=>undefined,getMessages:()=>new MessageCollection(),emitChange(){}}},null,5057).default;
+    b.load({createMessageRecord:raw=>({...raw})},null,5059);b.load({default:{getCurrentUser:()=>({id:account})}},null,1378);
     b.load({default:native({fileExists:async path=>path.endsWith('venus-deleted-messages.json')&&!!disk,
         readFile:async()=>disk,writeFile:async(dir,name,text)=>{writes.push([name,text]);if(name==='venus-deleted-messages.json')disk=text;}})});
     await flush();await flush();b.api.setSetting('noDelete',true);b.api.setSetting('noDeleteSave',true);await flush();await flush();
@@ -1116,25 +1116,25 @@ test('Hidden Channels mobile list facade handles named/default imports without c
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
     // boot's require mocks return nothing; load a realistic factory directly through __d instead.
     const real=b.permission;let captured;
-    b.context.__d(function(g,req,imp,all,m){captured=[req(4427).default,imp(4427),all(4427).default];m.exports={};},7802,[]);
-    b.factories.get(7802)(b.context,()=>({default:real}),()=>real,()=>({default:real}),{exports:{}},{},[]);
+    b.context.__d(function(g,req,imp,all,m){captured=[req(4472).default,imp(4472),all(4472).default];m.exports={};},6952,[]);
+    b.factories.get(6952)(b.context,()=>({default:real}),()=>real,()=>({default:real}),{exports:{}},{},[]);
     // Global bypass is active when enabled; realCheck reveals the true false.
     for(const facade of captured){assert.equal(facade.can(b.viewPermission,b.channels.hidden),true);assert.equal(real.can(b.viewPermission,b.channels.hidden),true);}
     assert.equal(real.can(b.viewPermission,Object.assign({},b.channels.hidden,{realCheck:true})),false);
     b.api.setSetting('hiddenChannels',false);for(const facade of captured)assert.equal(facade.can(b.viewPermission,b.channels.hidden),false);
 });
 test('Hidden Channels fills numeric native channel-type buckets and gets direct permission constants',()=>{
-    const b=hiddenHarness();b.load({Permissions:{VIEW_CHANNEL:b.viewPermission}},null,1085);b.load({},null,1074);
-    const original={0:[],2:[],4:[],SELECTABLE:[],VOCAL:[]};const store=b.load({default:{getChannels:()=>original}},null,2096).default;
+    const b=hiddenHarness();b.load({Permissions:{VIEW_CHANNEL:b.viewPermission}},null,1097);b.load({},null,1086);
+    const original={0:[],2:[],4:[],SELECTABLE:[],VOCAL:[]};const store=b.load({default:{getChannels:()=>original}},null,4470).default;
     b.api.setSetting('hiddenChannels',true);const value=store.getChannels('g');assert.equal(value[0].length,2);assert.equal(value[2].length,1);assert.equal(original[0].length,0);
 });
 
 test('Pastelize preserves role colors and immutable mentions, supports webhook and content controls',()=>{
     const b=boot(allFeatures);const {RN}=reactHarness(b);RN.processColor=hex=>parseInt(hex.slice(1),16)|0xff000000;
-    // Pinned module 1240 is CommonJS: a direct function, not {default:fn}.
-    b.load(seed=>Array.from(seed).reduce((a,c)=>a+c.charCodeAt(0),0),null,1240);
+    // Pinned module 1252 is CommonJS: a direct function, not {default:fn}.
+    b.load(seed=>Array.from(seed).reduce((a,c)=>a+c.charCodeAt(0),0),null,1252);
     class Rows {generate(row){return row.result;}}
-    b.load({default:Rows},null,8222);
+    b.load({default:Rows},null,7378);
     const message=Object.freeze({authorId:'123',username:'Test',roleColor:null,content:Object.freeze([Object.freeze({type:'mention',userId:'456',content:'test'})])});
     const row={rowType:1,message:{},result:Object.freeze({message})}, rows=new Rows();
     const result=rows.generate(row);assert.notEqual(result,row.result);assert.equal(message.roleColor,null);assert.equal(typeof result.message.colorString,'number');assert.equal(result.message.colorString,result.message.roleColor);assert.equal(message.content[0].colorString,undefined);
@@ -1148,10 +1148,10 @@ test('Pastelize preserves role colors and immutable mentions, supports webhook a
 });
 test('PlatformIndicators uses real client status, hides unknown/offline clients and preserves immutable profiles',()=>{
     const b=boot(allFeatures),{React}=reactHarness(b);const clients={desktop:'online',mobile:'idle',web:'offline',unknown:'dnd'};
-    b.load({default:{getClientStatus:()=>clients,addChangeListener(){},removeChangeListener(){}}},null,4828);
+    b.load({default:{getClientStatus:()=>clients,addChangeListener(){},removeChangeListener(){}}},null,4877);
     function DisplayName(props){return Object.freeze(React.createElement('Name',{children:props.user.id}));}
     const profile=Object.freeze(React.createElement('View',{children:React.createElement(DisplayName,{user:{id:'u'}})}));
-    const exports=b.load({DisplayName,default:()=>profile},null,11448);
+    const exports=b.load({DisplayName,default:()=>profile},null,10603);
     const tree=exports.default({});assert.notEqual(tree,profile);const named=tree.props.children.type(tree.props.children.props);
     const badges=named.props.children[1];const rendered=badges.type(badges.props);
     assert.deepEqual(Array.from(rendered.props.children,c=>c.props.children.props.platform),['desktop','mobile']);
@@ -1167,24 +1167,24 @@ function reviewHarness() {
         url.endsWith('/admins')?['999999999999999999']:{success:true,reviews:[{id:0,type:3,comment:'Be nice',sender:{discordID:'1',username:'Warning',badges:[]}},
             {id:1,comment:'hello',timestamp:1700000000,sender:{discordID:'333333333333333333',username:'Other',profilePhoto:'https://cdn.discordapp.com/a.png',badges:[{name:'Donor',icon:'https://cdn.discordapp.com/b.webp'}]}}]}};};
     const account={id:'111111111111111111'};const toasts=[],confirms=[],sheets=[],simple=[],pushed=[],popped=[],copied=[];
-    // 4755 exports showActionSheet by NAME, not on its default action creators.
+    // 4801 exports showActionSheet by NAME, not on its default action creators.
     // Execute the show/close boundary instead of only recording lazy-loader inputs.
     const sheetEvents=[],hiddenSheets=[];
     const showActionSheet=config=>{sheets.push(config);sheetEvents.push({type:'SHOW_ACTION_SHEET',...config});};
-    const native={5854:{TableRow:'NativeRow'},5936:{TableRowGroup:'RowGroup'},7477:{TableSwitchRow:'SwitchRow'},5216:{Stack:'Stack'},7484:{default:'UserProfileCard'},
-        8903:{FormRow:'FormRow',FormLabel:'FormLabel',FormSubLabel:'FormSubLabel'},6880:{TextInput:'NativeTextInput'},4732:{SendMessageIcon:'SendIcon'},
-        7474:{ActionSheet:'ActionSheet'},7426:{BottomSheetTitleHeader:'SheetHeader'},7475:{ActionSheetCloseButton:'SheetClose'},
-        4755:{showActionSheet,default:{openLazy(){throw new Error('Bundled reviews must not use a lazy importer');},hideActionSheet:key=>hiddenSheets.push(key)}},7472:{showSimpleActionSheet:value=>simple.push(value)},
-        7469:{Clipboard:{setString:value=>copied.push(value)}},5141:{default:{show:value=>confirms.push(value)}},4486:{default:{open:value=>toasts.push(value)}},
-        4645:{pushModal:value=>pushed.push(value),popModal:key=>popped.push(key)},9358:{default:'OAuth2AuthorizeModal'},4505:{useThemeContext:()=>({primaryColor:'#123456'})}};
+    const native={5916:{TableRow:'NativeRow'},5997:{TableRowGroup:'RowGroup'},6621:{TableSwitchRow:'SwitchRow'},5280:{Stack:'Stack'},5918:{Card:'UserProfileCard'},
+        8057:{FormRow:'FormRow',FormLabel:'FormLabel',FormSubLabel:'FormSubLabel'},6021:{TextInput:'NativeTextInput'},4778:{SendMessageIcon:'SendIcon'},
+        6624:{ActionSheet:'ActionSheet'},6571:{BottomSheetTitleHeader:'SheetHeader'},6619:{ActionSheetCloseButton:'SheetClose'},
+        4801:{showActionSheet,default:{openLazy(){throw new Error('Bundled reviews must not use a lazy importer');},hideActionSheet:key=>hiddenSheets.push(key)}},6616:{showSimpleActionSheet:value=>simple.push(value)},
+        6614:{Clipboard:{setString:value=>copied.push(value)}},5205:{default:{show:value=>confirms.push(value)}},4531:{default:{open:value=>toasts.push(value)}},
+        4694:{pushModal:value=>pushed.push(value),popModal:key=>popped.push(key)},8510:{default:'OAuth2AuthorizeModal'},4551:{useThemeContext:()=>({primaryColor:'#123456'})}};
     b.context.__r=id=>native[id]||null;
-    b.load({default:{getCurrentUser:()=>account}},null,1372);
+    b.load({default:{getCurrentUser:()=>account}},null,1378);
     const noteOriginal=React.createElement('Note',null);
-    const note=b.load({default:()=>noteOriginal},null,13373).default;
+    const note=b.load({default:()=>noteOriginal},null,12627).default;
     const progressOriginal=React.createElement('Progress',null);
-    const guild=b.load({default:()=>progressOriginal},null,14273).default;
-    const menuCalls=[];const menu=b.load({ContextMenuPopout:props=>{menuCalls.push(props);return 'menu';}},null,14479);
-    const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14892).SETTING_RENDERER_CONFIG;
+    const guild=b.load({default:()=>progressOriginal},null,13521).default;
+    const menuCalls=[];const menu=b.load({ContextMenuPopout:props=>{menuCalls.push(props);return 'menu';}},null,13987);
+    const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14130).SETTING_RENDERER_CONFIG;
     const Settings=registry.VENUS_REVIEWDB.screen.getComponent();
     return {...b,React,RN,requests,alerts,account,toasts,confirms,sheets,simple,pushed,popped,copied,note,noteOriginal,guild,progressOriginal,menu,menuCalls,Settings,native,sheetEvents,hiddenSheets};
 }
@@ -1201,7 +1201,7 @@ class NativeChannelMessages {
 }
 test('NoDelete supports immutable ChannelMessages and refreshes identity without changing content',()=>{
     const b=deletionHarness();let collection=new NativeChannelMessages([{id:'1',channel_id:'c',content:'kept',author:{id:'u'}}]);
-    const store=b.load({default:{getMessage:(c,id)=>collection.toArray().find(message=>message.id===id),getMessages:()=>collection}},null,5008).default;
+    const store=b.load({default:{getMessage:(c,id)=>collection.toArray().find(message=>message.id===id),getMessages:()=>collection}},null,5057).default;
     b.api.setSetting('noDelete',true);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
     assert.equal(b.events.at(-1).type,'MESSAGE_UPDATE');assert.equal(b.events.at(-1).message.content,'kept');
     assert.equal(typeof collection.clone,'undefined');assert.equal(collection.messages[0].content,'kept');
@@ -1214,7 +1214,7 @@ test('NoDelete independently renders a native red gutter without altering conten
     const b=deletionHarness(),{RN}=reactHarness(b);RN.processColor=color=>color;
     b.load({createAutomodBlockedMessageEmbed:({errorMessage,colors})=>Object.freeze({type:1,messageSendError:errorMessage,bodyTextColor:colors.automodBlockedBodyTextColor})},null,8455);
     class Rows {generate(row){return row.result;}}
-    b.load({default:Rows},null,8222);const rows=new Rows();
+    b.load({default:Rows},null,7378);const rows=new Rows();
     const message=Object.freeze({id:'1',channelId:'c',authorId:'u',content:[],embeds:Object.freeze([{type:'attachment'}])});
     const original=Object.freeze({message});const row={rowType:1,message:{id:'1',channel_id:'c'},result:original};
     assert.equal(rows.generate(row).message.embeds.length,1);
@@ -1231,7 +1231,7 @@ test('NoDelete independently renders a native red gutter without altering conten
 });
 test('Hidden Channels replaces obfuscated names in both native formatters, including empty locked sections',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
-    const names=b.load({default:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name,computeChannelName:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name},null,4941);
+    const names=b.load({default:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name,computeChannelName:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name},null,4990);
     const category={id:'empty',type:4,guild_id:'g',name:'PRIVATE STAFF',position:9};b.channels.empty=category;
     assert.equal(names.computeChannelName(b.channels.hidden),'staff chat');
     assert.equal(names.default(b.channels.hidden),'staff chat');assert.equal(names.computeChannelName(category),'PRIVATE STAFF');
@@ -1240,16 +1240,16 @@ test('Hidden Channels replaces obfuscated names in both native formatters, inclu
     assert.equal(b.permission.can(b.viewPermission,category),true);
     assert.equal(b.permission.can(b.viewPermission,Object.assign({},category,{realCheck:true})),false);
     b.permission.can=(bit,channel)=>bit===b.viewPermission && b.allowed.has(channel.id);
-    let facade;b.context.__d((g,r,i,a,m)=>{facade=i(4427);m.exports={};},7802,[]);
-    b.factories.get(7802)(b.context,()=>b.permission,()=>b.permission,()=>b.permission,{exports:{}},{},[]);
+    let facade;b.context.__d((g,r,i,a,m)=>{facade=i(4472);m.exports={};},6952,[]);
+    b.factories.get(6952)(b.context,()=>b.permission,()=>b.permission,()=>b.permission,{exports:{}},{},[]);
     assert.equal(facade.can(b.viewPermission,category),true);assert.equal(facade.can('CONNECT',category),false);
     category.isObfuscated=()=>true;b.api.setSetting('hiddenChannels',false);assert.equal(names.computeChannelName(category),'No Access');assert.equal(facade.can(b.viewPermission,category),false);
 });
 test('Pastelize respects source role colors and unknown members, and colors webhook names and nested reply mentions',()=>{
     const b=boot(allFeatures),{RN}=reactHarness(b);RN.processColor=color=>color;
-    const seeds=[];b.load(seed=>{seeds.push(seed);return seed.length*23;},null,1240);
-    b.load({default:{getMember:(guild,id)=>id==='missing'?null:{id}}},null,2105);
-    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,8222);const rows=new Rows();
+    const seeds=[];b.load(seed=>{seeds.push(seed);return seed.length*23;},null,1252);
+    b.load({default:{getMember:(guild,id)=>id==='missing'?null:{id}}},null,2111);
+    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,7378);const rows=new Rows();
     const message={authorId:'author',guildId:'g',username:'Name',roleColor:null,content:[{type:'strong',content:[{type:'mention',userId:'member'},{type:'mention',userId:'missing'}]}]};
     const row={rowType:1,message:{colorString:'#123456'},result:{message}};
     let result=rows.generate(row);assert.equal(result.message.roleColor,null);assert.equal(result.message.shouldShowRoleOnName,true);
@@ -1265,7 +1265,7 @@ test('Pastelize respects source role colors and unknown members, and colors webh
 function platformFixture() {
     const b=boot({platformIndicators:true}),{React}=reactHarness(b);
     function DisplayName(props){return React.createElement('Name',{children:props.user.id});}
-    const profile=b.load({DisplayName,default:()=>React.createElement('Profile',{children:React.createElement(DisplayName,{user:{id:'self'}})})},null,11448);
+    const profile=b.load({DisplayName,default:()=>React.createElement('Profile',{children:React.createElement(DisplayName,{user:{id:'self'}})})},null,10603);
     const tree=profile.default({}),name=tree.props.children.type(tree.props.children.props);
     return {...b,React,badges:name.props.children[1]};
 }
@@ -1273,8 +1273,8 @@ test('PlatformIndicators uses own sessions and cleans up both subscriptions',()=
     const b=platformFixture(),listeners=new Set(),removals=[];let sessions={one:{clientInfo:{client:'mobile'},status:'idle'},two:{clientInfo:{client:'web'},status:'dnd'},unknown:{clientInfo:{client:'unknown'},status:'online'}};
     const presence={getClientStatus:()=>({desktop:'online'}),addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>{removals.push('presence');listeners.delete(fn);}};
     const store={getSessions:()=>sessions,addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>{removals.push('sessions');listeners.delete(fn);}};
-    b.load({default:presence},null,4828);b.load({default:{getCurrentUser:()=>({id:'self'})}},null,1372);
-    b.context.__r=id=>({4806:{default:store}}[id]);
+    b.load({default:presence},null,4877);b.load({default:{getCurrentUser:()=>({id:'self'})}},null,1378);
+    b.context.__r=id=>({4855:{default:store}}[id]);
     let cleanup;b.React.useEffect=fn=>cleanup=fn();
     let tree=b.badges.type(b.badges.props);assert.deepEqual(Array.from(tree.props.children,c=>c.props.children.props.platform),['mobile','web']);
     cleanup();assert.deepEqual(removals,['presence','sessions']);
@@ -1405,7 +1405,7 @@ test('NoDelete reorders restored native records exactly without sharing the stoc
         mutate(callback,clone){assert.equal(clone,true);const next=Object.assign(Object.create(UnsortedNative.prototype),this);next._array=this._array.slice();callback(next);return next;}
     }
     let original=new UnsortedNative([{id:'999999999999999999',content:'old'}]);
-    const store=b.load({default:{getMessage:(channel,id)=>original.toArray().find(m=>m.id===id),getMessages:()=>original}},null,5008).default;
+    const store=b.load({default:{getMessage:(channel,id)=>original.toArray().find(m=>m.id===id),getMessages:()=>original}},null,5057).default;
     b.api.setSetting('noDelete',true);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'999999999999999999'});
     original=new UnsortedNative([{id:'1000000000000000000',content:'new'}]);b.dispatch.dispatch({type:'CACHE_LOADED'});
     const view=store.getMessages('c');assert.deepEqual(Array.from(view.toArray(),m=>m.id),['999999999999999999','1000000000000000000']);
@@ -1434,7 +1434,7 @@ test('NoDelete preserves literal deletion-like text, attachment-only content, li
         const b=deletionHarness();b.api.setSetting('noDelete',true);
         const message=Object.freeze({id:'x',channel_id:'c',content,attachments:Object.freeze([{id:'a'}])});
         b.messages.set('c:x',message);b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'x'});
-        const store=b.load({default:{getMessage:()=>message}},null,5008).default;
+        const store=b.load({default:{getMessage:()=>message}},null,5057).default;
         const kept=store.getMessage('c','x');assert.notEqual(kept,message);assert.equal(kept.content,content);assert.equal(kept.attachments,message.attachments);
         assert.equal(b.events.at(-1).message.content,content);
         b.api.setSetting('noDelete',false);b.api.setSetting('noDelete',true);
@@ -1444,11 +1444,11 @@ test('Hidden Channels resolves real basic record names and immutable numeric sec
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
     b.channels.hidden={...b.channels.hidden,name:'__hidden__'};b.channels.cat={...b.channels.cat,name:'__hidden__'};
     const basic={hidden:{...b.channels.hidden,name:'staff-chat'},cat:{...b.channels.cat,name:'PRIVATE STAFF'}};
-    b.load({default:{getChannel:id=>b.channels[id],getBasicChannel:id=>basic[id],getMutableGuildChannelsForGuild:()=>b.channels,getMutableBasicGuildChannelsForGuild:()=>basic}},null,2041);
-    const names=b.load({default:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name,computeChannelName:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name},null,4941);
+    b.load({default:{getChannel:id=>b.channels[id],getBasicChannel:id=>basic[id],getMutableGuildChannelsForGuild:()=>b.channels,getMutableBasicGuildChannelsForGuild:()=>basic}},null,2051);
+    const names=b.load({default:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name,computeChannelName:c=>c.isObfuscated && c.isObfuscated() ? 'No Access' : c.name},null,4990);
     assert.equal(names.default(b.channels.hidden),'staff chat');assert.equal(names.computeChannelName(b.channels.cat),'PRIVATE STAFF');
     const original=Object.freeze({0:Object.freeze([{channel:b.channels.hidden,comparator:3}]),4:Object.freeze([{channel:b.channels.cat,comparator:2}])});
-    const store=b.load({default:{getChannels:()=>original}},null,2096).default;const list=store.getChannels('g');
+    const store=b.load({default:{getChannels:()=>original}},null,4470).default;const list=store.getChannels('g');
     assert.equal(list[0][0].channel.name,'staff-chat');assert.equal(list[4][0].channel.name,'PRIVATE STAFF');assert.equal(original[0][0].channel.name,'__hidden__');
     assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),true);
     assert.equal(b.permission.can(b.viewPermission,Object.assign({},b.channels.hidden,{realCheck:true})),false);
@@ -1459,8 +1459,8 @@ test('Hidden Channels resolves real basic record names and immutable numeric sec
 test('Hidden Channels harvests real names from message mention_channels',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
     b.channels.hidden={...b.channels.hidden,name:'hidden'};
-    let account='me';b.load({default:{getCurrentUser:()=>({id:account})}},null,1372);
-    const dispatch=b.load({default:{dispatch(){}}},null,573).default;
+    let account='me';b.load({default:{getCurrentUser:()=>({id:account})}},null,1378);
+    const dispatch=b.load({default:{dispatch(){}}},null,585).default;
     assert.match(b.label(b.channels.hidden),/unavailable/);
     dispatch.dispatch({type:'MESSAGE_CREATE',message:{id:'m',channel_id:'public',mention_channels:[{id:'hidden',guild_id:'g',type:0,name:'staff-chat'}]}});
     assert.equal(b.label(b.channels.hidden),'staff chat');
@@ -1479,13 +1479,13 @@ test('Hidden Channels popup uses Discord\'s native AlertModal with themed Text t
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
     const shown=[];const required=[];
     function NativeText(){}
-    b.context.__r=id=>{required.push(id);return id===5141?{default:{show:value=>shown.push(value)}}:id===4784?{Text:NativeText}:null;};
+    b.context.__r=id=>{required.push(id);return id===5205?{default:{show:value=>shown.push(value)}}:id===4833?{Text:NativeText}:null;};
     const minute=60000, hour=60*minute, day=24*hour;
     const ago = 8*day + 7*hour + 7*minute;
     const id = String((BigInt(Date.now()-ago-1420070400000)<<22n)+1n);
     b.channels.timed={...b.channels.hidden,id,lastMessageId:id,lastPinTimestamp:new Date(Date.now()-ago).toISOString()};
     b.actions.fetchMessages({channelId:'timed'});
-    assert.equal(shown.length,1);assert.equal(b.alerts.length,0);assert.deepEqual(required.sort(),[4784,5141]);
+    assert.equal(shown.length,1);assert.equal(b.alerts.length,0);assert.deepEqual(required.sort(),[4833,5205]);
     const alert=shown[0];
     // Strings + element children select the modern AlertModal path in AlertActionCreators.show.
     assert.equal(alert.title,'Locked channel');assert.equal(typeof alert.body,'string');
@@ -1510,8 +1510,8 @@ test('Hidden Channels never presents a server redaction as a real name or fetche
 });
 test('Hidden Channels cached gateway names clear on logout, account switch and channel removal but survive disabling',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};
-    let account='first';b.load({default:{getCurrentUser:()=>({id:account})}},null,1372);
-    const dispatch=b.load({default:{dispatch(){}}},null,573).default;
+    let account='first';b.load({default:{getCurrentUser:()=>({id:account})}},null,1378);
+    const dispatch=b.load({default:{dispatch(){}}},null,585).default;
     function remember(){dispatch.dispatch({type:'CHANNEL_UPDATE',channel:{...b.channels.hidden,name:'received-name'}});assert.equal(b.label(b.channels.hidden),'received name');}
     remember();dispatch.dispatch({type:'LOGOUT'});assert.match(b.label(b.channels.hidden),/name unavailable/);
     remember();account='second';assert.match(b.label(b.channels.hidden),/name unavailable/);
@@ -1522,37 +1522,39 @@ test('Hidden Channels cached gateway names clear on logout, account switch and c
 });
 test('Hidden Channels uses a native lock icon and preserves frozen ChannelInfo and stock disabled output',()=>{
     const b=hiddenHarness(),{React}=reactHarness(b);b.api.setSetting('hiddenChannels',true);
-    b.load({LockIcon:'NativeLock'},null,5345);const original=Object.freeze(React.createElement('ChannelInfo',{children:'staff'}));
-    const info=b.load({default:()=>original},null,16569).default;
+    b.load({LockIcon:'NativeLock'},null,5410);const original=Object.freeze(React.createElement('ChannelInfo',{children:'staff'}));
+    const info=b.load({default:()=>original},null,15859).default;
     const tree=info({channel:b.channels.hidden});assert.equal(tree.props.children[0].type,'NativeLock');assert.equal(tree.props.children[1],original);assert.match(tree.props.accessibilityLabel,/locked/);
     b.api.setSetting('hiddenChannels',false);assert.equal(info({channel:b.channels.hidden}),original);
 });
 test('PlatformIndicators uses the original tinted PNG glyphs for desktop and mobile',()=>{
-    const b=platformFixture();b.load({default:{getClientStatus:()=>({desktop:'online',mobile:'idle'})}},null,4828);
+    const b=platformFixture();b.load({default:{getClientStatus:()=>({desktop:'online',mobile:'idle'})}},null,4877);
     const icons=b.badges.type({userId:'other'}).props.children;const desktop=icons[0].props.children;const image=desktop.type(desktop.props);
     assert.match(image.props.source.uri,/^data:image\/png;base64,/);assert.equal(image.props.style.tintColor,'#23a55a');assert.equal(image.props.style.width,16);
     const mobile=icons[1].props.children;assert.equal(mobile.type(mobile.props).props.style.tintColor,'#f0b232');
 });
 test('PlatformIndicators covers memoized DM headers, DM content, friend labels and voice member titles without mutating props',()=>{
-    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4828);
-    const channel={id:'dm',type:1,recipients:['recipient']};b.load({default:{getChannel:()=>channel}},null,2041);
+    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4877);
+    const channel={id:'dm',type:1,recipients:['recipient']};b.load({default:{getChannel:()=>channel}},null,2051);
     const onPress=()=>{},name=Object.freeze(React.createElement(RN.Text,{variant:'redesign/channel-title/semibold',children:'User'}));
-    for(const module of [13603,16377,9970]) {
+    for(const module of [12845,15667,9108]) {
         const original=Object.freeze(React.createElement(RN.View,{onPress,children:Object.freeze([name,React.createElement('Subtitle',{children:'Activity'})])}));
         const component=Object.freeze({$$typeof:Symbol.for('react.memo'),type:()=>original,compare:()=>false});
-        const exports=b.load({default:component},null,module);const props=module===13603?{channelId:'dm'}:module===16377?{channel}:{user:{id:'recipient'}};
-        const tree=exports.default.type(props),badges=walkElements(tree,n=>n.type && n.type.name==='PlatformBadges');
-        assert.equal(badges.length,1);assert.equal(badges[0].props.userId,'recipient');assert.equal(original.props.children[0],name);assert.equal(tree.props.onPress,onPress);assert.equal(exports.default.compare,component.compare);
+        // 348.10 voice panel rows are FormComponents' named MemberRowItem export, not a default.
+        const key=module===9108?'MemberRowItem':'default';
+        const exports=b.load({[key]:component},null,module);const props=module===12845?{channelId:'dm'}:module===15667?{channel}:{user:{id:'recipient'}};
+        const tree=exports[key].type(props),badges=walkElements(tree,n=>n.type && n.type.name==='PlatformBadges');
+        assert.equal(badges.length,1);assert.equal(badges[0].props.userId,'recipient');assert.equal(original.props.children[0],name);assert.equal(tree.props.onPress,onPress);assert.equal(exports[key].compare,component.compare);
         assert.equal(walkElements(tree,n=>n.type===RN.Text && walkElements(n,x=>x.type===RN.View).length).length,0);
-        b.api.setSetting('platformIndicators',false);assert.equal(exports.default.type(props),original);b.api.setSetting('platformIndicators',true);
+        b.api.setSetting('platformIndicators',false);assert.equal(exports[key].type(props),original);b.api.setSetting('platformIndicators',true);
     }
     const original=Object.freeze(React.createElement('NativeRow',{label:name,onPress,subLabel:'Playing'}));
-    const row=b.load({default:()=>original},null,11159).default;const tree=row({user:{id:'friend'}});
+    const row=b.load({default:()=>original},null,10371).default;const tree=row({user:{id:'friend'}});
     assert.equal(walkElements(tree,n=>n.type && n.type.name==='PlatformBadges')[0].props.userId,'friend');assert.equal(tree.props.subLabel,'Playing');assert.equal(tree.props.onPress,onPress);assert.equal(original.props.label,name);
 });
 test('PlatformIndicators excludes groups and guild channel lists from single-user DM placements',()=>{
     const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);const original=React.createElement(RN.View,{children:React.createElement(RN.Text,{children:'Group'})});
-    const content=b.load({default:()=>original},null,16377).default;
+    const content=b.load({default:()=>original},null,15667).default;
     for(const channel of [{type:3,recipients:['a','b']},{type:0,recipients:['a']},{type:1,recipients:[]}])assert.equal(content({channel}),original);
 });
 // HBC98 #124513: Call2(callback, result) at 0xf7, no Promise yield for that
@@ -1560,7 +1562,7 @@ test('PlatformIndicators excludes groups and guild channel lists from single-use
 // therefore could not reproduce the reported native close-before-auth race.
 test('Hidden Channels captures initial READY and supplemental names before native records are redacted',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};b.channels.cat={...b.channels.cat,name:'__hidden__'};
-    const dispatch=b.load({default:{dispatch(){}}},null,573).default;
+    const dispatch=b.load({default:{dispatch(){}}},null,585).default;
     dispatch.dispatch({type:'CONNECTION_OPEN',guilds:[{id:'g',channels:[{id:'hidden',name:'staff-chat'},{id:'cat',name:'PRIVATE STAFF'}]}]});
     assert.equal(b.label(b.channels.hidden),'staff chat');assert.equal(b.label(b.channels.cat),'PRIVATE STAFF');
     dispatch.dispatch({type:'CONNECTION_OPEN_SUPPLEMENTAL',guilds:[{id:'g',channels:[{id:'hidden',name:'renamed-staff'}]}]});assert.equal(b.label(b.channels.hidden),'renamed staff');
@@ -1571,10 +1573,10 @@ test('Hidden Channels includes basic-only native metadata and blocks its message
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);
     const extra={id:'basic-only',guild_id:'g',type:0,name:'private-basic',parent_id:'basic-cat',position:7};
     const parent={id:'basic-cat',guild_id:'g',type:4,name:'BASIC CATEGORY',position:6};const basic={'basic-only':extra,'basic-cat':parent};
-    b.load({default:{getChannel:id=>b.channels[id],getBasicChannel:id=>basic[id],getMutableGuildChannelsForGuild:()=>b.channels,getMutableBasicGuildChannelsForGuild:()=>basic}},null,2041);
+    b.load({default:{getChannel:id=>b.channels[id],getBasicChannel:id=>basic[id],getMutableGuildChannelsForGuild:()=>b.channels,getMutableBasicGuildChannelsForGuild:()=>basic}},null,2051);
     const list=b.store.getChannels('g');assert.equal(list.SELECTABLE.find(entry=>entry.channel.id===extra.id).channel.name,'private-basic');assert.equal(list[4].find(entry=>entry.channel.id===parent.id).channel.name,'BASIC CATEGORY');
     assert.equal(b.store.getChannels('g'),list);await b.actions.fetchMessages({channelId:extra.id});assert.equal(b.fetched.length,0);assert.match(b.alerts.at(-1)[1],/Created: Unavailable/);
-    const calls=[];const routes=b.load({transitionTo:r=>calls.push(r),transitionToGuild:(g,c)=>calls.push(c)},null,1101);
+    const calls=[];const routes=b.load({transitionTo:r=>calls.push(r),transitionToGuild:(g,c)=>calls.push(c)},null,1113);
     routes.transitionTo('/channels/g/basic-only');routes.transitionToGuild('g','basic-only');assert.equal(calls.length,0);
     assert.equal(b.permission.can(b.viewPermission,extra),true);
     assert.equal(b.permission.can(b.viewPermission,Object.assign({},extra,{realCheck:true})),false);
@@ -1587,9 +1589,9 @@ test('Hidden Channels renderer-scoped ChannelStore facade preserves real singlet
         getBasicChannel(){assert.equal(this.#value,'live-store');return basic;}
         subscribe(){return this.#value;}
     }
-    const real=new NativeStore();b.load({default:real},null,2041);const original=b.channels.hidden;
-    let imported;b.context.__d((g,r,i,a,m)=>{imported=i(2041).default;m.exports={};},7802,[]);
-    b.factories.get(7802)(b.context,()=>({default:real}),()=>({default:real}),()=>({default:real}),{exports:{}},{},[]);
+    const real=new NativeStore();b.load({default:real},null,2051);const original=b.channels.hidden;
+    let imported;b.context.__d((g,r,i,a,m)=>{imported=i(2051).default;m.exports={};},6952,[]);
+    b.factories.get(6952)(b.context,()=>({default:real}),()=>({default:real}),()=>({default:real}),{exports:{}},{},[]);
     assert.equal(imported.getChannel('hidden').name,'native-staff');assert.equal(imported.getChannel('hidden').flags,32768);assert.equal(imported.subscribe(),'live-store');assert.equal(real.getChannel('hidden'),original);assert.equal(original.name,'__hidden__');
     b.api.setSetting('hiddenChannels',false);assert.equal(imported.getChannel('hidden'),original);
 });
@@ -1598,7 +1600,7 @@ test('Hidden Channels respects native formatter escaping and uppercase categorie
     const channel=Object.freeze({...b.channels.hidden,name:'staff-\\"chat',flags:32768,isObfuscated:()=>true});
     const category=Object.freeze({...b.channels.cat,name:'private staff',flags:32768,isObfuscated:()=>true});
     function nativeFormatter(c,quoted){if(c.isObfuscated())return '__hidden__';const name=c.type===4?c.name.toUpperCase():c.name;return quoted?JSON.stringify(name):name;}
-    const names=b.load({default:nativeFormatter,computeChannelName:nativeFormatter},null,4941);
+    const names=b.load({default:nativeFormatter,computeChannelName:nativeFormatter},null,4990);
     assert.equal(names.computeChannelName(channel,true),JSON.stringify(channel.name));assert.equal(names.default(category),'PRIVATE STAFF');
     assert.equal(channel.isObfuscated(),true);assert.equal(channel.flags,32768);assert.equal(category.isObfuscated(),true);
     b.api.setSetting('hiddenChannels',false);assert.equal(names.default(category),'__hidden__');
@@ -1606,8 +1608,8 @@ test('Hidden Channels respects native formatter escaping and uppercase categorie
 
 test('Hidden Channels READY cache belongs to the incoming account before UserStore reducer runs',()=>{
     const b=hiddenHarness();b.api.setSetting('hiddenChannels',true);b.channels.hidden={...b.channels.hidden,name:'__hidden__'};
-    let account=null;b.load({default:{getCurrentUser:()=>account}},null,1372);
-    const dispatch=b.load({default:{dispatch(event){if(event.type==='CONNECTION_OPEN')account=event.user;}}},null,573).default;
+    let account=null;b.load({default:{getCurrentUser:()=>account}},null,1378);
+    const dispatch=b.load({default:{dispatch(event){if(event.type==='CONNECTION_OPEN')account=event.user;}}},null,585).default;
     dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'111111111111111111'},guilds:[{id:'g',channels:[{id:'hidden',name:'first-staff'}]}]});
     assert.equal(b.label(b.channels.hidden),'first staff');
     dispatch.dispatch({type:'CONNECTION_OPEN',user:{id:'222222222222222222'},guilds:[{id:'g',channels:[{id:'hidden',name:'second-staff'}]}]});
@@ -1616,7 +1618,7 @@ test('Hidden Channels READY cache belongs to the incoming account before UserSto
 });
 test('PlatformIndicators hides the stock mobile badge and exposes the original settings',()=>{
     const b=boot({platformIndicators:true});reactHarness(b);
-    const seen=[];const status=b.load({default:props=>{seen.push(props.isMobileOnline);return null;},StatusWithTyping:props=>{seen.push(props.isMobileOnline);return null;}},null,14405);
+    const seen=[];const status=b.load({default:props=>{seen.push(props.isMobileOnline);return null;},StatusWithTyping:props=>{seen.push(props.isMobileOnline);return null;}},null,13649);
     status.default({status:'online',isMobileOnline:true});status.StatusWithTyping({status:'online',isMobileOnline:true});
     b.api.setSetting('piHideMobile',false);status.default({status:'online',isMobileOnline:true});
     assert.deepEqual(seen,[false,false,true]);
@@ -1625,31 +1627,31 @@ test('PlatformIndicators hides the stock mobile badge and exposes the original s
 
 test('PlatformIndicators adds badges to profile voice-channel user rows',()=>{
     const b=boot({platformIndicators:true}),{React}=reactHarness(b);
-    b.load({default:{getClientStatus:()=>({desktop:'online'}),addChangeListener(){},removeChangeListener(){}}},null,4828);
+    b.load({default:{getClientStatus:()=>({desktop:'online'}),addChangeListener(){},removeChangeListener(){}}},null,4877);
     function Row(props){return React.createElement('TableRow',{user:props.user,label:React.createElement('Name',{children:props.user.id})});}
     const list=React.createElement('List',{data:[{id:'u'}],renderItem:({item})=>React.createElement(Row,{user:item})});
-    const exports=b.load({default:()=>React.createElement('Sheet',{children:list})},null,13348);
+    const exports=b.load({default:()=>React.createElement('Sheet',{children:list})},null,12602);
     const renderItem=exports.default({}).props.children.props.renderItem;
     const row=renderItem({item:{id:'u'}});const tree=row.type(row.props);
     assert.equal(tree.props.label.props.children[1].props.userId,'u');
     b.api.setSetting('piUserList',false);assert.equal(row.type(row.props).props.label.props.children,'u');
 });
 test('PlatformIndicators places DM list icons beside the mute icon and DM header icons inside ChannelTitle',()=>{
-    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4828);
+    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4877);
     const channel={id:'dm',type:1,recipients:['friend']};
     const icon=React.createElement('ChannelIcon',{muted:false,favorite:false,ignored:false,blocked:false,selected:false});
     const row=Object.freeze(React.createElement(RN.View,{children:[React.createElement(RN.View,{children:icon}),React.createElement(RN.Text,{children:'23h'})]}));
-    const content=b.load({default:()=>row},null,16377).default;const tree=content({channel});
+    const content=b.load({default:()=>row},null,15667).default;const tree=content({channel});
     const icons=tree.props.children[0].props.children;assert.equal(icons[0],icon);assert.equal(walkElements(icons[1],n=>n.type&&n.type.name==='PlatformBadges')[0].props.userId,'friend');
     function ChannelTitle(){return React.createElement(RN.View,{children:React.createElement(RN.Text,{variant:'redesign/heading-18/semibold',children:'User'})});}
-    const header=b.load({default:()=>React.createElement(RN.View,{children:React.createElement(ChannelTitle,{title:'User',accessibleTitle:'User',userId:'friend'})})},null,13603).default;
+    const header=b.load({default:()=>React.createElement(RN.View,{children:React.createElement(ChannelTitle,{title:'User',accessibleTitle:'User',userId:'friend'})})},null,12845).default;
     const title=header({channelId:'dm'}).props.children;assert.notEqual(title.type,ChannelTitle);
     const inner=title.type(title.props);assert.equal(walkElements(inner,n=>n.type&&n.type.name==='PlatformBadges')[0].props.userId,'friend');
 });
 test('NoDelete retained records differ from the live record so the native row re-renders immediately',()=>{
     const b=deletionHarness();b.api.setSetting('noDelete',true);const live={id:'1',content:'x'};b.messages.set('c:1',live);
     b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
-    const kept=b.load({default:{getMessage:()=>live}},null,5008).default.getMessage('c','1');
+    const kept=b.load({default:{getMessage:()=>live}},null,5057).default.getMessage('c','1');
     assert.notEqual(kept,live);assert.equal(kept.content,'x');assert.equal(kept.venusDeleted,true);assert.notDeepEqual(Object.keys(kept),Object.keys(live));
 });
 
@@ -1668,7 +1670,7 @@ test('PlatformIndicators DM header hook order survives title, fallback, null and
     const native=()=>{calls++;React.useState(0);React.useEffect(()=>{},[]);
         if(mode==='empty')return null;
         return React.createElement(RN.View,{children:mode==='title'?React.createElement(ChannelTitle,{title:'Name',accessibleTitle:'Name',userId:'friend'}):React.createElement(RN.Text,{children:'Name'})});};
-    const header=b.load({default:{$$typeof:Symbol.for('react.memo'),type:native}},null,13603).default.type;
+    const header=b.load({default:{$$typeof:Symbol.for('react.memo'),type:native}},null,12845).default.type;
     const render=hookSequenceProbe(React,header),expected=['state','effect','state','effect'];
     for(const next of ['fallback','title','fallback','empty','title']){mode=next;assert.deepEqual(render({userId:'friend'}).sequence,expected,next);}
     for(const key of ['piDmHeader','platformIndicators']){b.api.setSetting(key,false);assert.deepEqual(render({userId:'friend'}).sequence,expected);b.api.setSetting(key,true);assert.deepEqual(render({userId:'friend'}).sequence,expected);}
@@ -1679,23 +1681,23 @@ test('PlatformIndicators DM row hook order survives loading, icon, fallback, gro
     const native=()=>{React.useState(0);React.useEffect(()=>{},[]);if(mode==='empty')return null;
         const child=mode==='icon'?React.createElement('ChannelIcon',{muted:false,selected:false,blocked:false}):React.createElement(RN.Text,{children:'Name'});
         return React.createElement(RN.View,{children:child});};
-    const row=b.load({default:native},null,16377).default,render=hookSequenceProbe(React,row),expected=['state','effect','state','effect'];
+    const row=b.load({default:native},null,15667).default,render=hookSequenceProbe(React,row),expected=['state','effect','state','effect'];
     const dm={type:1,recipients:['friend']};
     for(const next of ['fallback','icon','empty','fallback','icon']){mode=next;assert.deepEqual(render({channel:dm}).sequence,expected,next);}
     for(const channel of [null,{type:3,recipients:['a','b']},{type:0,recipients:[]},dm])assert.deepEqual(render({channel}).sequence,expected);
     for(const key of ['piUserList','platformIndicators']){b.api.setSetting(key,false);assert.deepEqual(render({channel:dm}).sequence,expected);b.api.setSetting(key,true);assert.deepEqual(render({channel:dm}).sequence,expected);}
 });
 test('ReviewDB user-menu sheet retries unavailable exports after an earlier UI lookup',()=>{
-    const b=reviewHarness(),sheetModule=b.native[4755];delete b.native[4755];
+    const b=reviewHarness(),sheetModule=b.native[4801];delete b.native[4801];
     b.api.setSetting('reviewDB',true);b.Settings();
     b.menu.ContextMenuPopout({menu:{key:'444444444444444444',items:[1,2,3]}});b.menuCalls.at(-1).menu.items.at(-1).action();
     assert.equal(b.sheets.length,0);assert.match(b.toasts.at(-1).content,/unavailable/);
-    b.native[4755]=sheetModule;
+    b.native[4801]=sheetModule;
     b.menu.ContextMenuPopout({menu:{key:'444444444444444444',items:[1,2,3]}});b.menuCalls.at(-1).menu.items.at(-1).action();
     assert.equal(b.sheetEvents.length,1);assert.equal(b.sheetEvents[0].content.props.userId,'444444444444444444');
 });
 test('ReviewDB user-menu sheet reports opening failures and ignores stale disabled presses',()=>{
-    const b=reviewHarness();b.native[4755].showActionSheet=()=>{throw new Error('native opener failed');};
+    const b=reviewHarness();b.native[4801].showActionSheet=()=>{throw new Error('native opener failed');};
     b.api.setSetting('reviewDB',true);b.menu.ContextMenuPopout({menu:{key:'444444444444444444',items:[1,2,3]}});const press=b.menuCalls.at(-1).menu.items.at(-1).action;
     press();assert.match(b.toasts.at(-1).content,/native opener failed/);
     b.api.setSetting('reviewDB',false);const count=b.toasts.length;press();assert.equal(b.toasts.length,count);assert.equal(b.sheets.length,0);
@@ -1709,10 +1711,10 @@ test('PlatformIndicators reconciles repeated DM transitions with real React with
         const React=require(path.join(directory,'react')),Renderer=require(path.join(directory,'react-test-renderer'));
         const previous=global.IS_REACT_ACT_ENVIRONMENT;global.IS_REACT_ACT_ENVIRONMENT=true;
         try {
-            for(const id of [13603,16377])for(const memoized of [false,true]){
+            for(const id of [12845,15667])for(const memoized of [false,true]){
                 const b=boot({platformIndicators:true});b.load(React,null,19);
                 b.load({View:'View',Text:'Text',Image:'Image',Modal:'Modal'},null,17);
-                b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4828);
+                b.load({default:{getClientStatus:()=>({desktop:'online'})}},null,4877);
                 function ChannelTitle(){React.useState(0);return React.createElement('View',null,React.createElement('Text',null,'Name'));}
                 function Native(props){
                     React.useState(0);React.useEffect(()=>{},[]);
@@ -1729,7 +1731,7 @@ test('PlatformIndicators reconciles repeated DM transitions with real React with
                     await Renderer.act(()=>{root=Renderer.create(element('fallback'));});
                     for(const mode of ['title','fallback','icon','fallback','empty','title','icon','fallback'])
                         await Renderer.act(()=>{root.update(element(mode));});
-                    for(const key of [id===13603?'piDmHeader':'piUserList','platformIndicators']){
+                    for(const key of [id===12845?'piDmHeader':'piUserList','platformIndicators']){
                         await Renderer.act(()=>{b.api.setSetting(key,false);root.update(element('fallback'));});
                         await Renderer.act(()=>{b.api.setSetting(key,true);root.update(element('fallback'));});
                     }
@@ -1740,7 +1742,7 @@ test('PlatformIndicators reconciles repeated DM transitions with real React with
     });
 
 test('ReviewDB late theme availability never adds hooks to an already-mounted review input',()=>{
-    const b=reviewHarness();delete b.native[4505];b.api.setSetting('reviewDB',true);
+    const b=reviewHarness();delete b.native[4551];b.api.setSetting('reviewDB',true);
     const m=mountReviews(b,'444444444444444444');
     const input=walkElements(m.render(),n=>n.type&&n.type.name==='ReviewInput')[0];
     const render=hookSequenceProbe(b.React,input.type);
@@ -1750,14 +1752,14 @@ test('ReviewDB late theme availability never adds hooks to an already-mounted re
 });
 
 test('ReviewDB server button works without any overlay helper and ignores stale disabled presses',()=>{
-    const b=reviewHarness();delete b.native[4755];delete b.native[7474];delete b.native[4645];
+    const b=reviewHarness();delete b.native[4801];delete b.native[6624];delete b.native[4694];
     b.api.setSetting('reviewDB',true);const element=b.guild({guild:{id:'444444444444444444'}}),m=mountReviewElement(b,element);
     const press=walkElements(m.render(),n=>n.props.label==='Reviews')[0].props.onPress;
     press();assert.equal(walkElements(m.render(),n=>n.type&&n.type.name==='ReviewSection').length,1);
     b.api.setSetting('reviewDB',false);press();assert.equal(m.render(),null);assert.equal(b.sheets.length,0);
 });
 test('ReviewDB input tolerates the native missing ThemeContext.Provider error without changing hook calls',()=>{
-    const b=reviewHarness();b.native[4505].useThemeContext=()=>{b.React.useState(0);throw Error('useThemeContext must be used within a ThemeContext.Provider');};
+    const b=reviewHarness();b.native[4551].useThemeContext=()=>{b.React.useState(0);throw Error('useThemeContext must be used within a ThemeContext.Provider');};
     b.api.setSetting('reviewDB',true);const m=mountReviews(b,'444444444444444444');
     const input=walkElements(m.render(),n=>n.type&&n.type.name==='ReviewInput')[0],render=hookSequenceProbe(b.React,input.type);
     assert.deepEqual(render(input.props).sequence,['state','state','state']);assert.deepEqual(render(input.props).sequence,['state','state','state']);
@@ -1780,12 +1782,12 @@ test('ReviewDB real React server press expands, loads, retries, collapses and re
         const previous=global.IS_REACT_ACT_ENVIRONMENT;global.IS_REACT_ACT_ENVIRONMENT=true;
         const b=reviewHarness(),ThemeContext=React.createContext(null);b.load(React,null,19);
         // fn31267's actual contract, omitted by the old successful theme mock.
-        b.native[4505].useThemeContext=()=>{const theme=React.useContext(ThemeContext);
+        b.native[4551].useThemeContext=()=>{const theme=React.useContext(ThemeContext);
             if(theme==null)throw Error('useThemeContext must be used within a ThemeContext.Provider');return theme;};
-        b.native[7484].default=()=>{throw Error('Server reviews must not render a profile-only Card');};
-        b.native[5854].TableRow=props=>React.createElement('ServerReviewButton',props,props.label);
-        b.native[8903].FormRow=props=>React.createElement('FormRow',{onLongPress:props.onLongPress},props.label,props.subLabel,props.leading);
-        delete b.native[4755];delete b.native[7474];delete b.native[4645];
+        b.native[5918].Card=()=>{throw Error('Server reviews must not render a profile-only Card');};
+        b.native[5916].TableRow=props=>React.createElement('ServerReviewButton',props,props.label);
+        b.native[8057].FormRow=props=>React.createElement('FormRow',{onLongPress:props.onLongPress},props.label,props.subLabel,props.leading);
+        delete b.native[4801];delete b.native[6624];delete b.native[4694];
         b.api.setSetting('reviewDB',true);
         let fail=false;const requests=[],pending=[];
         b.context.fetch=url=>{requests.push(url);
@@ -1793,7 +1795,7 @@ test('ReviewDB real React server press expands, loads, retries, collapses and re
             return new Promise(resolve=>pending.push(()=>resolve({ok:!fail,status:fail?503:200,json:async()=>fail?{message:'Service unavailable'}:
                 {reviews:[{id:1,comment:'Actual server content',sender:{discordID:'111111111111111111',username:'Reviewer',badges:[]}}]}})));
         };
-        const Guild=b.load({default:()=>React.createElement('Progress')},null,14273).default;
+        const Guild=b.load({default:()=>React.createElement('Progress')},null,13521).default;
         let root;const element=id=>React.createElement(Guild,{guild:{id}});
         const button=()=>root.root.findByType('ServerReviewButton');
         const text=()=>JSON.stringify(root.toJSON());
@@ -1849,20 +1851,20 @@ test('voice audio detection tolerates MIME case/parameters and audio-only files 
 });
 test('Pastelize color cache returns identical colors and follows a replaced hash helper',()=>{
     const b=boot(allFeatures),{RN}=reactHarness(b);let processed=0;RN.processColor=hex=>{processed++;return hex;};
-    b.load(seed=>seed.length*23,null,1240);
-    b.load({default:{getMember:()=>({})}},null,2105);
-    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,8222);const rows=new Rows();
+    b.load(seed=>seed.length*23,null,1252);
+    b.load({default:{getMember:()=>({})}},null,2111);
+    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,7378);const rows=new Rows();
     const row={rowType:1,message:{},result:{message:{authorId:'author',guildId:'g',username:'Name',roleColor:null,content:[]}}};
     const first=rows.generate(row).message.roleColor;const count=processed;
     for (let i=0;i<20;i++) assert.equal(rows.generate(row).message.roleColor,first);
     assert.equal(processed,count,'repeat renders reuse the cached color');
-    b.load(seed=>seed.length*97,null,1240);
+    b.load(seed=>seed.length*97,null,1252);
     assert.notEqual(rows.generate(row).message.roleColor,first,'a new hash helper is not served stale colors');
     b.api.setSetting('pastelize',false);assert.equal(rows.generate(row),row.result);
 });
 test('NoDelete outline colors are computed once and still follow a replaced processColor',()=>{
     const b=deletionHarness(),{RN}=reactHarness(b);let calls=0;RN.processColor=color=>{calls++;return color;};
-    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,8222);const rows=new Rows();
+    class Rows{generate(row){return row.result;}}b.load({default:Rows},null,7378);const rows=new Rows();
     b.api.setSetting('pastelize',false);b.api.setSetting('noDelete',true);
     b.messages.set('c:1',{id:'1',content:'original',state:'SENT'});
     b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'1'});
@@ -1890,8 +1892,8 @@ test('a sub-option change wakes components subscribed to its plugin',()=>{
     const React={createElement(type,props,...children){return {type,props:{...props,children}};},cloneElement(n,p){return {...n,props:{...n.props,...p}};},
         useState:v=>[v,()=>{renders++;}],useEffect(fn){fn();}};
     b.load(React,null,19);b.load({View:'View',Text:'Text',Modal:'Modal'},null,17);
-    function SettingsList(){} b.load({SettingsList},null,14993);
-    const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14892).SETTING_RENDERER_CONFIG;
+    function SettingsList(){} b.load({SettingsList},null,14236);
+    const registry=b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}},null,14130).SETTING_RENDERER_CONFIG;
     registry.VENUS_PI_ENABLED.useValue(); // subscribes to "platformIndicators"
     b.api.setSetting('piProfile',false);assert.ok(renders>0,'PlatformIndicators did not re-render for piProfile');
     const before=renders;b.api.setSetting('copyBios',false);assert.equal(renders,before,'unrelated plugin woke PlatformIndicators');
@@ -1909,7 +1911,7 @@ test('NoDelete does not rewrite an already erased archive for every deletion',as
     b.api.setSetting('noDeleteSave',false);await flush();await flush();
     const erased=b.writes.filter(([name])=>name==='venus-deleted-messages.json').length;
     assert.equal(b.api.status.archive,'erased');
-    const flux={dispatch(){return 'ok';}};const dispatch=b.load({default:flux},null,573).default;
+    const flux={dispatch(){return 'ok';}};const dispatch=b.load({default:flux},null,585).default;
     for (let i=0;i<5;i++) dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:String(i)});
     await flush();await flush();
     assert.equal(b.writes.filter(([name])=>name==='venus-deleted-messages.json').length,erased);
@@ -1917,7 +1919,7 @@ test('NoDelete does not rewrite an already erased archive for every deletion',as
 test('logging out of Discord without a ReviewDB sign-in does not rewrite preferences',async()=>{
     const b=boot(allFeatures);let writes=0;
     b.load({default:native({writeFile:async()=>{writes++;}})});await flush();await flush();
-    const dispatch=b.load({default:{dispatch(){return 'ok';}}},null,573).default;
+    const dispatch=b.load({default:{dispatch(){return 'ok';}}},null,585).default;
     writes=0;dispatch.dispatch({type:'LOGOUT'});await flush();await flush();assert.equal(writes,0);
 });
 test('own deletions no longer schedule bookkeeping timers',()=>{
@@ -1928,21 +1930,21 @@ function readAllHarness(state = {}) {
     const calls={guilds:[],acks:[],toasts:[]};
     const unread=new Set(state.unreadGuilds||['g1','g3']), mentions={g2:state.mentionG2||0};
     const native={
-        5687:{default:{getFlattenedGuildIds:()=>['g1','g2','g3','g4']}},
-        7904:{default:{hasUnread:id=>unread.has(id),getMentionCount:id=>mentions[id]||0}},
-        14259:{default:(ids,source)=>calls.guilds.push([ids,source])},
-        1074:{AnalyticsSections:{GUILD_LIST:'guild list'}},
-        14051:{default:{getUnreadPrivateChannelIds:()=>state.dms||['d1','d2']}},
-        4803:{default:{lastMessageId:id=>'m-'+id}},
-        7387:{bulkAck:entries=>calls.acks.push(entries)},
-        4970:{ReadStateTypes:{CHANNEL:0}},
-        16624:{FastListRenderSections:{SEPARATOR:6,GUILDS:7}},
-        4486:{default:{open:toast=>calls.toasts.push(toast.content)}},
+        5751:{default:{getFlattenedGuildIds:()=>['g1','g2','g3','g4']}},
+        7054:{default:{hasUnread:id=>unread.has(id),getMentionCount:id=>mentions[id]||0}},
+        13507:{default:(ids,source)=>calls.guilds.push([ids,source])},
+        1086:{AnalyticsSections:{GUILD_LIST:'guild list'}},
+        13299:{default:{getUnreadPrivateChannelIds:()=>state.dms||['d1','d2']}},
+        4852:{default:{lastMessageId:id=>'m-'+id}},
+        6532:{bulkAck:entries=>calls.acks.push(entries)},
+        5019:{ReadStateTypes:{CHANNEL:0}},
+        15919:{FastListRenderSections:{SEPARATOR:6,GUILDS:7}},
+        4531:{default:{open:toast=>calls.toasts.push(toast.content)}},
     };
     b.context.__r=id=>native[id]||null;
     const data={itemSize:section=>section===6?18:48,renderItem:section=>({type:'Native',props:{section}}),sections:[1,0,0,0,0,2,1,4]};
     const result=Object.freeze({listProps:{},listDataProps:Object.freeze(data)});
-    const hook=b.load({default:()=>result},null,16634);
+    const hook=b.load({default:()=>result},null,15929);
     return {...b,React,RN,calls,data,result,props:()=>hook.default({})};
 }
 function findReadAll(node){
@@ -1986,7 +1988,7 @@ test('Read All only accepts its three modes and says when nothing is unread',()=
 test('Read All settings use Discord\'s native radio list with three choices',()=>{
     const b=settingsHarness();
     function TableRadioGroup(){} function TableRadioRow(){}
-    b.context.__r=id=>({5934:{TableRadioGroup},5937:{TableRadioRow}}[id]||null);
+    b.context.__r=id=>({5995:{TableRadioGroup},5994:{TableRadioRow}}[id]||null);
     assert.equal(b.registry.VENUS_READALL.type,'route');assert.equal(b.registry.VENUS_READALL.parent,'VENUS_PLUGINS');
     const page=b.registry.VENUS_READALL.screen.getComponent()();
     const nodes=[];(function walk(n){if(!n||typeof n!=='object')return;if(Array.isArray(n))return n.forEach(walk);nodes.push(n);walk(n.props&&n.props.children);})(page);
@@ -2004,5 +2006,29 @@ test('Read All mode persists and an invalid saved mode falls back to Servers',as
 });
 test('unselected Read All never wraps the server bar module',()=>{
     const b=boot({picker:true});const original=()=>'stock';
-    assert.equal(b.load({default:original},null,16634).default,original);
+    assert.equal(b.load({default:original},null,15929).default,original);
+});
+
+test('PlatformIndicators badges re-render only when that user\'s own clients change', () => {
+    const b = boot({platformIndicators:true}), {React, RN} = reactHarness(b);
+    const effects = []; let renders = 0;
+    React.useEffect = fn => effects.push(fn);
+    React.useState = () => [0, () => { renders++; }];
+    const listeners = new Set(); const status = {friend:{desktop:'online'}, other:{mobile:'idle'}};
+    b.load({default:{getClientStatus:id => status[id], addChangeListener:fn => listeners.add(fn), removeChangeListener:fn => listeners.delete(fn)}}, null, 4877);
+    b.load({default:{getCurrentUser:() => ({id:'me'})}}, null, 1378);
+    // Render a profile name so PlatformBadges mounts through the real placement path.
+    const name = React.createElement(RN.Text, {children:'Friend'});
+    const row = b.load({default:() => React.createElement('Row', {label:name})}, null, 10371).default;
+    const badge = walkElements(row({user:{id:'friend'}}), n => n.type && n.type.name === 'PlatformBadges')[0];
+    effects.length = 0; badge.type(badge.props);
+    const cleanup = effects.map(fn => fn()).filter(Boolean);
+    assert.equal(listeners.size, 1);
+    status.other = {mobile:'dnd'}; listeners.forEach(fn => fn());
+    assert.equal(renders, 0, 'another user\'s presence must not re-render this badge');
+    status.friend = {desktop:'idle'}; listeners.forEach(fn => fn());
+    assert.equal(renders, 1);
+    listeners.forEach(fn => fn());
+    assert.equal(renders, 1, 'an unchanged presence must not re-render');
+    cleanup.forEach(fn => fn()); assert.equal(listeners.size, 0);
 });

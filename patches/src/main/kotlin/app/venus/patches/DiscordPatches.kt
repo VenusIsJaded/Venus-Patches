@@ -17,10 +17,10 @@ internal val discord = Compatibility(
     apkFileType = ApkFileType.APKM,
     appIconColor = 0x5865F2,
     targets = listOf(AppTarget(
-        version = "347.12 - Stable",
-        versionCode = 347012,
+        version = "348.10 - Stable",
+        versionCode = 348010,
         minSdk = 26,
-        description = "Pinned Discord 347.12 bundle; Android device validation still required."
+        description = "Pinned Discord 348.10 bundle; Android device validation still required."
     ))
 )
 
@@ -114,7 +114,7 @@ internal val packagedDiscordBundle = bytecodePatch {
 
 internal fun pinPackagedDiscordBundle(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
     // Pin JS execution to the inspected packaged bundle, avoiding incompatible OTA cache bundles.
-    // 347.12 has two scratch locals; p1 is deliberately replaced with an asset loader.
+    // 348.10 has two scratch locals; p1 is deliberately replaced with an asset loader.
     if ((method.implementation?.registerCount ?: 0) - 2 < 2)
         throw PatchException("Bundle loader no longer has two safe scratch registers")
     method.addInstructions(0, """

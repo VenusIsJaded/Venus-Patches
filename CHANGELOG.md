@@ -1,6 +1,16 @@
 # What's new
 
-Every release works with **Discord 347.12 - Stable**. Always patch the original APKM.
+Every release works with **Discord 348.10 - Stable**. Always patch the original APKM. Releases up to 1.3.6 were for Discord 347.12.
+
+## 1.3.7 — Discord 348.10
+
+- **Works with Discord 348.10.** Patch the original **348.10 - Stable** APKM. Discord 347.12 is no longer supported, so update Discord before you patch again.
+- **Every plugin and privacy option was checked against 348.10.** All 21 patches apply, and the patched app passes the same checks as before.
+- **Crash reporting is blocked properly.** One of Discord's two crash-report senders was blocked in a way that could break, so reports could still get through. It's now turned off cleanly.
+- **JumpToTop works on threads.** Holding a thread now shows **Jump to top**, like channels and forum posts.
+- **PlatformIndicators shows in the voice panel again,** next to people in the call.
+- **ReviewDB's Copy Text and review cards work again.** Discord moved them in 348.10.
+- **Smoother lists with PlatformIndicators on.** Icons only update when that person's status changes, not every time anyone's does.
 
 ## 1.3.6 — Read All button and a Pastelize fix
 

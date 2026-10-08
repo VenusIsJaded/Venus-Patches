@@ -8,6 +8,13 @@ import java.security.MessageDigest
 
 /** Single-load prelude for the SHA-256-pinned HBC98 asset. No rebundling or native JNI hooks. */
 internal object HbcPrelude {
+    // Pinned Discord 348.10 - Stable HBC98 bundle: function count, global function body and string IDs.
+    const val FUNCTION_COUNT = 153899
+    const val GLOBAL_OFFSET = 14400340
+    const val GLOBAL_SIZE = 586719
+    const val GLOBAL_SHA256 = "2194f87abbb4382c4c4a8955501fe2d6db1f1d74702ff7b8fc87200d5196c74a"
+    const val JOIN_ID = 153
+    const val EVAL_ID = 34544
     data class Result(val prefixSize: Int, val originalCodeSize: Int, val codeOffset: Int)
     private fun hash(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes)
         .joinToString("") { "%02x".format(it) }
@@ -18,7 +25,7 @@ internal object HbcPrelude {
         RandomAccessFile(file, "rw").use { raf ->
             fun intAt(offset: Long): Int { raf.seek(offset); return Integer.reverseBytes(raf.readInt()) }
             fun putInt(offset: Long, value: Int) { raf.seek(offset); raf.writeInt(Integer.reverseBytes(value)) }
-            require(intAt(8) == 98 && intAt(36) == 0 && intAt(40) == 128714)
+            require(intAt(8) == 98 && intAt(36) == 0 && intAt(40) == FUNCTION_COUNT)
             val oldLength = raf.length().toInt()
             require(intAt(32) == oldLength)
             // HBC98 has a 128-byte aligned header and 12-byte compact function headers.
@@ -40,10 +47,10 @@ internal object HbcPrelude {
             require(frame == 30 && reads == 25 && flags and 8 == 0)
             // This APK uses Hermes V1's 40-byte expanded header (not the legacy 36-byte parser layout).
             // The relocated global's old PC debug map is invalid after prefixing; other functions keep theirs.
-            require(size == 607799 && offset == 13799420)
+            require(size == GLOBAL_SIZE && offset == GLOBAL_OFFSET)
             raf.seek(offset.toLong())
             val original = ByteArray(size).also { raf.readFully(it) }
-            require(hash(original) == "f392ecbf2de34d1960b89a97035d692edcd024f75e2e98e4328eba77d083e697")
+            require(hash(original) == GLOBAL_SHA256)
             val table = 128L + intAt(40).toLong() * 12 + intAt(44).toLong() * 4 + intAt(48).toLong() * 4
             val count = intAt(52)
             val storage = table + count.toLong() * 4 + intAt(56).toLong() * 8
@@ -82,10 +89,10 @@ internal object HbcPrelude {
                 else { emit(89, 11, 12); u32(index) }
             }
             // Cache slots are per function. Never reuse the original global's 0..24 caches.
-            emit(69, 12, 11, reads, 154, 0) // GetById join
+            emit(69, 12, 11, reads, JOIN_ID and 255, JOIN_ID ushr 8) // GetById join
             string(13, 255) // empty delimiter
             emit(110, 11, 12, 11, 13) // Call2 join -> r11
-            emit(69, 12, 10, reads + 1, 30161 and 255, 30161 ushr 8) // GetById eval
+            emit(69, 12, 10, reads + 1, EVAL_ID and 255, EVAL_ID ushr 8) // GetById eval
             emit(110, 13, 12, 10, 11) // indirect eval of the bundled IIFE
             val end = prefix.size()
             emit(175); u32(7) // normal path skips Catch and falls into the original global code
