@@ -97,7 +97,7 @@ context.Terser.minify(source, {compress:false, mangle:false,
     result = subprocess.run(["node", "-e", script, str(TOOLS / "terser.js"), str(source)],
                             cwd=ROOT, check=True, capture_output=True, text=True)
     content = result.stdout
-    if content.count("/*__FEATURES__*/") != 1 or len(content) > 118000:
+    if content.count("/*__FEATURES__*/") != 1 or len(content) > 119000:
         raise SystemExit("Invalid or oversized compact runtime")
     BUILD.mkdir(parents=True, exist_ok=True)
     output = BUILD / "bootstrap.js"
@@ -204,8 +204,8 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "New Read All button in the server list, and Pastelize's Color message text now colors the text "
-    "instead of turning it into a link. Patch the original Discord 347.12 APKM."
+    "Now works with Discord 348.10. Crash reporting is blocked properly, JumpToTop works on threads, "
+    "and PlatformIndicators is smoother. Patch the original Discord 348.10 APKM."
 )
 
 

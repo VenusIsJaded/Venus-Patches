@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
         check(headerBytes.getInt(expanded + 52) == result.prefixSize - 2)
         check(bytes.copyOfRange(result.codeOffset + result.prefixSize,
             result.codeOffset + result.prefixSize + result.originalCodeSize)
-            .contentEquals(original.copyOfRange(13799420, 13799420 + 607799)))
+            .contentEquals(original.copyOfRange(HbcPrelude.GLOBAL_OFFSET, HbcPrelude.GLOBAL_OFFSET + HbcPrelude.GLOBAL_SIZE)))
         val unchanged = bytes.copyOf(original.size - 20)
         for (range in listOf(32..35, 128..135)) for (index in range) unchanged[index] = original[index]
         check(unchanged.contentEquals(original.copyOf(original.size - 20))) { "Unrelated original HBC bytes changed" }

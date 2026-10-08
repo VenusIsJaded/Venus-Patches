@@ -22,7 +22,18 @@ fun main(args: Array<String>) {
     check(natives.size == 80 && natives.distinct().size == natives.size)
     check(groups.flatten().size == 17 && groups.flatten().map { it.offset }.distinct().size == 17)
     check(HbcPrivacy.resolvedPromise.last() == 6.toByte())
-    check(HbcPrivacy.resolvedEmptyObject.size == 22)
+    // Every stub must decode into whole HBC98 instructions (1.3.6 used NewFastArray by mistake and misdecoded).
+    fun hbcLength(op: Int) = when (op) {
+        HbcPrivacy.OP_GET_GLOBAL, HbcPrivacy.OP_NEW_OBJECT, HbcPrivacy.OP_RET, HbcPrivacy.OP_LOAD_UNDEFINED, HbcPrivacy.OP_LOAD_FALSE -> 2
+        HbcPrivacy.OP_CALL1 -> 4; HbcPrivacy.OP_CALL2 -> 5; HbcPrivacy.OP_GET_BY_ID, HbcPrivacy.OP_TRY_GET_BY_ID -> 6
+        else -> error("Unexpected opcode $op in privacy stub")
+    }
+    for (stub in listOf(HbcPrivacy.resolvedPromise, HbcPrivacy.resolvedEmptyObject, HbcPrivacy.returnUndefined)) {
+        var pc = 0; var last = -1
+        while (pc < stub.size) { last = stub[pc].toInt() and 255; pc += hbcLength(last) }
+        check(pc == stub.size && last == HbcPrivacy.OP_RET) { "Privacy stub does not decode to whole instructions" }
+    }
+    check(HbcPrivacy.resolvedEmptyObject.size == 23 && HbcPrivacy.resolvedEmptyObject[14].toInt() == HbcPrivacy.OP_NEW_OBJECT)
     check(HbcPrivacy.returnUndefined.contentEquals(byteArrayOf(147.toByte(), 6, 118, 6)))
     val privacy = listOf(disableAnalytics, disableCrashReporting, disableTelemetry, disableAttribution, disableAdvertisingIdentifiers)
     fun graph(selected: List<Patch<*>>): List<Patch<*>> {

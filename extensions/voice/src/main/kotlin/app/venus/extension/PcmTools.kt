@@ -6,7 +6,7 @@ import java.util.Base64
 // Use Java math/arrays: Discord obfuscates the corresponding Kotlin stdlib helpers.
 
 /**
- * Discord's own voice-message waveform, reproduced from the 347.12 bundle
+ * Discord's own voice-message waveform, reproduced from the 347.12 bundle (unchanged in 348.10)
  * (modules/voice_messages VoiceMessageUtils, VoiceMessageConstants, downsampleWaveform):
  *  - one level per 100 ms (Discord throttles VoiceActivity to 100 ms);
  *  - level = WAVEFORM_WAVE_MAX_VALUE * (dB - VOICE_RECORDING_MIN_DB) / (MAX_DB - MIN_DB)

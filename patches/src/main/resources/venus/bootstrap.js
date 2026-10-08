@@ -3,25 +3,25 @@
     "use strict";
     if (global.__venusPatches) return;
     const features = /*__FEATURES__*/;
-    // Inspected Metro IDs for the SHA-256-pinned 347.12 bundle; never scan or eagerly require modules.
-    const targetModules = new Set([17, 19, 1151, 11754, 14892, 14993]);
+    // Inspected Metro IDs for the SHA-256-pinned 348.10 bundle; never scan or eagerly require modules.
+    const targetModules = new Set([17, 19, 1163, 10874, 14130, 14236]);
     function selectModules(ids) { ids.forEach(id => targetModules.add(id)); }
     if (features.picker) selectModules([414]);
-    if (features.voice) selectModules([1271, 5375, 5377]);
-    if (features.copyBios) selectModules([11503]);
-    if (features.dashless) selectModules([4941]);
-    if (features.favouriteAnything) selectModules([13288, 10661, 10664]);
-    if (features.freeNitro) selectModules([1372, 2041, 5708, 5751, 4446, 14280, 7611, 7730]);
-    if (features.noTyping) selectModules([12272]);
-    if (features.quickDelete) selectModules([5141, 1115]);
-    if (features.noDelete) selectModules([573, 5008, 5010, 1372, 7730, 8222]);
-    if (features.jumpToTop) selectModules([12549, 12550, 12551, 9686, 10518, 11207, 7730, 2041]);
-    if (features.hiddenChannels) selectModules([1074, 1085, 1101, 2041, 2096, 7802, 4427, 4428, 4941, 7730, 573, 1372, 16569, 5345]);
-    if (features.pastelize) selectModules([8222, 1240, 2105]);
-    if (features.platformIndicators) selectModules([4828, 4806, 1372, 2041, 11448, 11159, 13603, 16377, 9970, 14405, 13348]);
-    if (features.reviewDB) selectModules([13373, 14273, 14479, 9358, 5936, 7477, 1372, 573]);
-    if (features.readAll) selectModules([16634]);
-    const revision = "1.3.6";
+    if (features.voice) selectModules([1283, 5440, 5442]);
+    if (features.copyBios) selectModules([10742]);
+    if (features.dashless) selectModules([4990]);
+    if (features.favouriteAnything) selectModules([12524, 9861, 9864]);
+    if (features.freeNitro) selectModules([1378, 2051, 5772, 5815, 4491, 13528, 6756, 6880]);
+    if (features.noTyping) selectModules([11348]);
+    if (features.quickDelete) selectModules([5205, 1127]);
+    if (features.noDelete) selectModules([585, 5057, 5059, 1378, 6880, 7378]);
+    if (features.jumpToTop) selectModules([11642, 11643, 11644, 8838, 9804, 10418, 15746, 6880, 2051]);
+    if (features.hiddenChannels) selectModules([1086, 1097, 1113, 2051, 4470, 6952, 4472, 4990, 6880, 585, 1378, 15859, 5410]);
+    if (features.pastelize) selectModules([7378, 1252, 2111]);
+    if (features.platformIndicators) selectModules([4877, 4855, 1378, 2051, 10603, 10371, 12845, 15667, 9108, 13649, 12602]);
+    if (features.reviewDB) selectModules([12627, 13521, 13987, 8510, 5997, 6621, 1378, 585]);
+    if (features.readAll) selectModules([15929]);
+    const revision = "1.3.7";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -721,7 +721,7 @@
         return code === stickerRules.StickerSendability.SENDABLE;
     }
     let msgStore, msgActions, permissions, viewPermission, locale, dispatcher, messageRecords, chatHeight, jumpPill, jumpIcon;
-    let permissionsCanOrig = null, permissionsCanBasicOrig = null;
+    let permissionsCanOrig = null;
     let deletedRevision = 0, archiveRestored = false, archiveLoading = false, archiveWriting = false, archivePending;
     const deletedViews = new Map();
     const ARCHIVE = "venus-deleted-messages.json";
@@ -1078,9 +1078,9 @@
         if (typeof importer !== "function") return importer;
         return function () {
             const result = importer.apply(this,arguments);
-            if (!result || ![2041,4427,4428].includes(arguments[0])) return result;
+            if (!result || ![2051,4472].includes(arguments[0])) return result;
             const real = result.default || result;
-            if (arguments[0] === 2041) {
+            if (arguments[0] === 2051) {
                 const methods=new Map();
                 const facade=new Proxy(real,{get(target,key) {
                     const value=Reflect.get(target,key,target);
@@ -1112,19 +1112,11 @@
     function realCan(bit, channel) {
         // Real permission result, bypassing our own global facade.
         // Supports the original plugin's realCheck escape hatch.
-        if (channel && channel.realCheck) {
-            const clone = Object.assign({}, channel);
-            delete clone.realCheck;
-            try {
-                if (permissionsCanOrig) return permissionsCanOrig(bit, clone);
-                if (permissions && typeof permissions.can === "function") return permissions.can.call(permissions, bit, clone);
-            } catch (_) { return false; }
-            return false;
-        }
+        if (channel && channel.realCheck) { channel = Object.assign({}, channel); delete channel.realCheck; }
         try {
             if (permissionsCanOrig) return permissionsCanOrig(bit, channel);
             if (permissions && typeof permissions.can === "function") return permissions.can.call(permissions, bit, channel);
-        } catch (_) { return false; }
+        } catch (_) {}
         return false;
     }
     function hiddenMetadata(value) {
@@ -1276,7 +1268,7 @@
         ];
     }
     function HiddenDetails(props) {
-        // Rendered inside Discord's own AlertModal (HBC98 module 5146) as extraContent:
+        // Rendered inside Discord's own AlertModal (HBC98 module 5210) as extraContent:
         // native Text tokens follow the active theme; no hardcoded colors or backdrop.
         const Text = props.Text;
         return el(RN.View, {style:{gap:14}}, props.rows.map(([label, stamp]) =>
@@ -1303,10 +1295,10 @@
         const body = "You don't have permission to view this channel. These details come from what Discord already sent your client.";
         // Discord's native alert (the "Delete Message" dialog): blurred backdrop,
         // themed card, Discord buttons. String title/body/confirmText + children
-        // selects the modern AlertModal path in AlertActionCreators.show (module 5141).
+        // selects the modern AlertModal path in AlertActionCreators.show (module 5205).
         // Demand-loaded at tap time: no extra Metro factories are wrapped at startup.
-        const alerts = inspectedExport(5141, "default");
-        const Text = inspectedExport(4784, "Text");
+        const alerts = inspectedExport(5205, "default");
+        const Text = inspectedExport(4833, "Text");
         if (React && alerts && typeof alerts.show === "function" && Text) {
             try {
                 alerts.show({title, body, children:el(HiddenDetails, {rows, Text}),
@@ -1443,7 +1435,7 @@
         if (color) next = Object.assign({},message,{roleColor:color.value,usernameColor:color.value,colorString:color.value,shouldShowRoleOnName:true});
         const content = pastelMentions(message.content,message.guildId);
         if (content !== message.content) next = Object.assign({},next,{content});
-        // Native MessageView applies Message.textColor via TextView.setTextColor (347.12 bridge field).
+        // Native MessageView applies Message.textColor via TextView.setTextColor (348.10 bridge field).
         // Never wrap content in a link node: that made the text blue, tappable and show "usernameOnClick".
         if (color && settings.pastelContent) {
             const text = pastelColor(seed,0.85,0.75);
@@ -1451,22 +1443,22 @@
         }
         return next;
     }
-    // Read All: a ReadAllNotificationsButton port for the mobile server bar (GuildsBar 16625,
-    // useGuildsBarProps 16634). The button lives in the SEPARATOR row, below the DM button and
+    // Read All: a ReadAllNotificationsButton port for the mobile server bar (GuildsBar 15920,
+    // useGuildsBarProps 15929). The button lives in the SEPARATOR row, below the DM button and
     // unread DMs and above the line, so the native FastList's sections, anchors and recycler
     // keys stay stock. Only that row's height grows, through the list's own itemSize.
     const READ_ALL_HEIGHT = 36;
     const readAllViews = new WeakMap();
-    // ReadStateActionCreators (7387) exports ack/bulkAck by name, with no default object.
+    // ReadStateActionCreators (6532) exports ack/bulkAck by name, with no default object.
     function readActionsExport() {
         if (typeof global.__r !== "function") return null;
-        try { const m=global.__r(7387); return m && typeof m.bulkAck==="function" ? m : m && m.default; } catch (_) { return null; }
+        try { const m=global.__r(6532); return m && typeof m.bulkAck==="function" ? m : m && m.default; } catch (_) { return null; }
     }
     function readAllExports() {
         const x=(id,key) => inspectedExport(id,key);
-        return {sorted:x(5687,"default"), guildReads:x(7904,"default"), markGuilds:x(14259,"default"), sections:x(1074,"AnalyticsSections"),
-            privateReads:x(14051,"default"), reads:x(4803,"default"), readActions:readActionsExport(), readTypes:x(4970,"ReadStateTypes"),
-            renderSections:x(16624,"FastListRenderSections")};
+        return {sorted:x(5751,"default"), guildReads:x(7054,"default"), markGuilds:x(13507,"default"), sections:x(1086,"AnalyticsSections"),
+            privateReads:x(13299,"default"), reads:x(4852,"default"), readActions:readActionsExport(), readTypes:x(5019,"ReadStateTypes"),
+            renderSections:x(15919,"FastListRenderSections")};
     }
     function unreadGuildIds(api) {
         if (!api.sorted || typeof api.sorted.getFlattenedGuildIds!=="function" || !api.guildReads) return [];
@@ -1480,7 +1472,7 @@
     function readAllToast(ui,content) {
         try { if (ui.toasts && typeof ui.toasts.open==="function") ui.toasts.open({key:"venus-read-all",content}); } catch (_) {}
     }
-    // Same native paths as Discord: the server menu's markGuildsAsRead (14259) with the
+    // Same native paths as Discord: the server menu's markGuildsAsRead (13507) with the
     // GUILD_LIST source, and a single BULK_ACK for DMs at each channel's last message.
     function readAll(mode) {
         if (!enabled("readAll") || !READ_ALL_MODES.includes(mode)) return;
@@ -1554,13 +1546,13 @@
         }
         return view;
     }
-    // Settings page: Discord's own radio list (TableRadioGroup 5934 / TableRadioRow 5937).
+    // Settings page: Discord's own radio list (TableRadioGroup 5995 / TableRadioRow 5994).
     function ReadAllSettings() {
         useSettings("readAll");
         const ui=reviewUI();
         if (!React || !RN) return null;
         const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
-        const RadioGroup=inspectedExport(5934,"TableRadioGroup"), RadioRow=inspectedExport(5937,"TableRadioRow");
+        const RadioGroup=inspectedExport(5995,"TableRadioGroup"), RadioRow=inspectedExport(5994,"TableRadioRow");
         const choices=[["guilds","Servers","Mark every unread server as read."],["dms","Direct messages","Mark every unread DM and group DM as read."],
             ["both","Servers and DMs","Mark everything as read in one tap."]];
         const on=enabled("readAll");
@@ -1592,7 +1584,7 @@
         const channelId = source.channel_id || source.channelId || message.channelId;
         const id = source.id || message.id;
         if (enabled("noDelete") && deleted.has(deletedKey(channelId,id)) && RN && typeof RN.processColor === "function") {
-            // Native row highlight schema from 8227. No injected notice, altered
+            // Native row highlight schema from RowGeneratorConstants (7379). No injected notice, altered
             // message content, or AutoMod state. Only retained local rows are tinted.
             if (deletedHighlight.owner !== RN.processColor) {
                 deletedHighlight.owner = RN.processColor;
@@ -1613,31 +1605,43 @@
     }
     const PLATFORM_COLORS = {online:"#23a55a",idle:"#f0b232",dnd:"#f23f43"};
     const PLATFORM_LABELS = {desktop:"Desktop",mobile:"Mobile",web:"Web",embedded:"Console",vr:"VR"};
-    function PlatformBadges(props) {
-        useSettings("platformIndicators");
-        const [,update] = React.useState(0);
-        // SessionsStore is the upstream source for the current user's own clients.
-        if (enabled("platformIndicators")) {
-            if (!sessionsStore) sessionsStore = inspectedExport(4806,"default");
-            if (!presenceStore) presenceStore = inspectedExport(4828,"default");
-            if (!userStore) userStore = inspectedExport(1372,"default");
-        }
-        React.useEffect(() => {
-            const change = () => update(n => n+1);
-            const stores = [presenceStore,sessionsStore].filter(store => store && typeof store.addChangeListener === "function" && typeof store.removeChangeListener === "function");
-            stores.forEach(store => store.addChangeListener(change));
-            return () => stores.forEach(store => store.removeChangeListener(change));
-        },[presenceStore,sessionsStore]);
-        if (!enabled("platformIndicators") || !presenceStore || !RN) return null;
-        let clients = presenceStore.getClientStatus(props.userId);
+    // This user's clients as a stable key, so a badge only re-renders when its own presence changes.
+    function platformClients(userId) {
+        let clients = presenceStore.getClientStatus(userId);
         const current = userStore && userStore.getCurrentUser();
-        if (current && current.id === props.userId && sessionsStore && typeof sessionsStore.getSessions === "function") {
+        if (current && current.id === userId && sessionsStore && typeof sessionsStore.getSessions === "function") {
             clients = {};
             Object.values(sessionsStore.getSessions() || {}).forEach(session => {
                 const client = session.clientInfo && session.clientInfo.client;
                 if (client && client !== "unknown") clients[client] = session.status;
             });
         }
+        return clients || null;
+    }
+    function platformKey(userId) {
+        const clients = presenceStore && platformClients(userId);
+        return clients ? Object.keys(clients).map(key => key + ":" + clients[key]).join(",") : "";
+    }
+    function PlatformBadges(props) {
+        useSettings("platformIndicators");
+        const [,update] = React.useState(0);
+        // SessionsStore is the upstream source for the current user's own clients.
+        if (enabled("platformIndicators")) {
+            if (!sessionsStore) sessionsStore = inspectedExport(4855,"default");
+            if (!presenceStore) presenceStore = inspectedExport(4877,"default");
+            if (!userStore) userStore = inspectedExport(1378,"default");
+        }
+        const userId = props.userId;
+        React.useEffect(() => {
+            // Presence changes fire for everyone; compare this user's clients before re-rendering.
+            let last = platformKey(userId);
+            const change = () => { const next = platformKey(userId); if (next !== last) { last = next; update(n => n+1); } };
+            const stores = [presenceStore,sessionsStore].filter(store => store && typeof store.addChangeListener === "function" && typeof store.removeChangeListener === "function");
+            stores.forEach(store => store.addChangeListener(change));
+            return () => stores.forEach(store => store.removeChangeListener(change));
+        },[presenceStore,sessionsStore,userId]);
+        if (!enabled("platformIndicators") || !presenceStore || !RN) return null;
+        const clients = platformClients(userId);
         if (!clients) return null;
         const colors = PLATFORM_COLORS, labels = PLATFORM_LABELS;
         // Like the original: one icon per reported client, in presence order.
@@ -1762,7 +1766,7 @@
         if (React) useSettings("hiddenChannels");
         const tree = orig.apply(self,args), channel = args[0] && args[0].channel;
         if (!tree || !React || !RN || !hiddenMetadata(channel)) return tree;
-        const icon = nativeLock || inspectedExport(5345,"LockIcon");
+        const icon = nativeLock || inspectedExport(5410,"LockIcon");
         if (!icon) return tree;
         // Lock next to hidden names, like the original plugin (20px lock, right margin).
         return el(RN.View,{style:{flexDirection:"row",alignItems:"center"},accessibilityLabel:hiddenName(channel)+", locked"},
@@ -1845,13 +1849,13 @@
             return value;
         };
         let tokens=null;
-        try { const t=typeof global.__r==="function" && global.__r(576); tokens=t && (t.default || t); } catch (_) {}
-        const parts={TableRow:x(5854,"TableRow"),TableRowGroup:nativeRowGroup || x(5936,"TableRowGroup"),TableSwitchRow:nativeSwitchRow || x(7477,"TableSwitchRow"),
-            Stack:x(5216,"Stack"),Card:x(7484,"default"),FormRow:x(8903,"FormRow"),FormLabel:x(8903,"FormLabel"),FormSubLabel:x(8903,"FormSubLabel"),
-            TextInput:x(6880,"TextInput"),Send:x(4732,"SendMessageIcon"),ActionSheet:x(7474,"ActionSheet"),Header:x(7426,"BottomSheetTitleHeader"),
-            Close:x(7475,"ActionSheetCloseButton"),sheets:x(4755,"default"),showSheet:x(4755,"showActionSheet"),simpleSheet:x(7472,"showSimpleActionSheet"),clipboard:x(7469,"Clipboard"),
-            alerts:x(5141,"default"),toasts:x(4486,"default"),pushModal:x(4645,"pushModal"),popModal:x(4645,"popModal"),OAuth:oauthModal || x(9358,"default"),
-            createStyles:x(4788,"createStyles"),theme:x(4505,"useThemeContext"),colors:tokens && tokens.colors};
+        try { const t=typeof global.__r==="function" && global.__r(588); tokens=t && (t.default || t); } catch (_) {}
+        const parts={TableRow:x(5916,"TableRow"),TableRowGroup:nativeRowGroup || x(5997,"TableRowGroup"),TableSwitchRow:nativeSwitchRow || x(6621,"TableSwitchRow"),
+            Stack:x(5280,"Stack"),Card:x(5918,"Card"),FormRow:x(8057,"FormRow"),FormLabel:x(8057,"FormLabel"),FormSubLabel:x(8057,"FormSubLabel"),
+            TextInput:x(6021,"TextInput"),Send:x(4778,"SendMessageIcon"),ActionSheet:x(6624,"ActionSheet"),Header:x(6571,"BottomSheetTitleHeader"),
+            Close:x(6619,"ActionSheetCloseButton"),sheets:x(4801,"default"),showSheet:x(4801,"showActionSheet"),simpleSheet:x(6616,"showSimpleActionSheet"),clipboard:x(6614,"Clipboard"),
+            alerts:x(5205,"default"),toasts:x(4531,"default"),pushModal:x(4694,"pushModal"),popModal:x(4694,"popModal"),OAuth:oauthModal || x(8510,"default"),
+            createStyles:x(4837,"createStyles"),theme:x(4551,"useThemeContext"),colors:tokens && tokens.colors};
         return parts;
     }
     function reviewToast(ui,content) {
@@ -1907,7 +1911,7 @@
         const toggle=(key,label,subLabel) => Switch ? el(Switch,{key,label,subLabel,value:settings[key],onValueChange:value=>setSetting(key,value)}) : null;
         // An emptied field keeps the current maximum instead of silently resetting it to 512.
         const commit=() => { if (draft) setSetting("noDeleteLimit",draft); setDraft(String(settings.noDeleteLimit)); };
-        const Text=inspectedExport(4784,"Text");
+        const Text=inspectedExport(4833,"Text");
         const hint="Type 1 to "+MAX_DELETED+", then tap done. Now: "+settings.noDeleteLimit+". When it's full, the oldest message is removed.";
         const onText=text => setDraft(String(text).replace(/[^0-9]/g,"").slice(0,4));
         const inputProps={value:draft,keyboardType:"number-pad",maxLength:4,placeholder:"512",onBlur:commit,onSubmitEditing:commit,returnKeyType:"done"};
@@ -1941,7 +1945,7 @@
         }
         ui.pushModal({key,modal:{key,modal:ui.OAuth,animation:"slide-up",shouldPersistUnderModals:false,closable:true,props:{
             clientId:"915703782174752809",redirectUri:REVIEW_API+"/auth",scopes:["identify"],responseType:"code",permissions:BigInt(0),cancelCompletesFlow:false,
-            // Traced in 347.12 (useOAuth2AuthorizeForm, fn124513): after Authorize the form calls
+            // Traced in 347.12 and 348.10 (useOAuth2AuthorizeForm, fn124513): after Authorize the form calls
             // dismissOAuthModal FIRST, waits 100 ms, and only THEN calls callback({location}).
             // Dismissal is never a cancellation; treating it as one discarded every sign-in.
             dismissOAuthModal:close,
@@ -2038,7 +2042,7 @@
         // Like the style hook, choose once. Retrying missing UI exports must not
         // add a theme hook to an input which already mounted without one.
         if (!reviewThemeTried) {reviewThemeTried=true;reviewThemeHook=typeof ui.theme==="function" ? ui.theme : null;}
-        // 347.12 useThemeContext (fn31267) throws outside its Provider. Reviews
+        // 348.10 useThemeContext (fn31267) throws outside its Provider. Reviews
         // on a server are not a user profile; keep the hook call but use the
         // standard send color when that optional context is absent.
         let theme=null;
@@ -2103,7 +2107,7 @@
         if (!enabled("reviewDB") || !React || !RN || typeof userId!=="string" || !/^\d{17,20}$/.test(userId)) return;
         const ui=reviewUI();
         if (!ui.ActionSheet || typeof ui.showSheet!=="function") { reviewToast(ui,"Reviews are unavailable. Reopen the server menu and try again."); return; }
-        // 4755's NAMED showActionSheet (HBC fn32121) takes an already-created
+        // 4801's NAMED showActionSheet (HBC fn32121) takes an already-created
         // element, then schedules SHOW_ACTION_SHEET through Dispatcher.wait.
         // Reviews are bundled, not lazy imports: avoid openLazy's detached Promise
         // chain entirely. The inspected store (fn31181) accepts "stack".
@@ -2112,7 +2116,7 @@
         catch (error) { reviewToast(ui,"Couldn't open reviews: "+String(error && error.message || error)); }
     }
     // Profiles: the original appends ReviewSection as the LAST card of the profile card stack
-    // (after the note). In 347.12 UserProfileNote (13373) is that last card in the normal, bot,
+    // (after the note). In 348.10 UserProfileNote (12627) is that last card in the normal, bot,
     // tabbed and You-screen layouts, so reviews render directly beneath it.
     function reviewNote(orig,self,args) {
         const tree=orig.apply(self,args), userId=args[0] && args[0].userId;
@@ -2176,37 +2180,37 @@
         const patched = function () { return operation(orig, this, arguments); };
         return replaceValue(exports, key, patched);
     }
-    function hookComponent(exports, operation) {
-        const component = exports.default;
+    // Hook a component export (plain function, or memo/forwardRef object) without breaking React tags.
+    function hookComponent(exports, operation, key) {
+        key = key || "default";
+        const component = exports && exports[key];
         if (component && typeof component === "object" && component.$$typeof) {
-            const key = typeof component.type === "function" ? "type" : typeof component.render === "function" ? "render" : null;
-            if (!key) return exports;
-            const orig = component[key];
-            const patched = function () { return operation(orig, this, arguments); };
-            return replaceValue(exports, "default", cloneWith(component, key, patched));
+            const inner = typeof component.type === "function" ? "type" : typeof component.render === "function" ? "render" : null;
+            if (!inner) return exports;
+            const orig = component[inner];
+            return replaceValue(exports, key, cloneWith(component, inner, function () { return operation(orig, this, arguments); }));
         }
-        return hookExport(exports, "default", operation);
+        return hookExport(exports, key, operation);
     }
     function activatePlugins(id, exports) {
         // MurmurHashV3 is CommonJS (module.exports=function), not an ES default export.
-        if (features.pastelize && id === 1240) pastelHash = typeof exports === "function" ? exports : exports.default;
-        if (features.pastelize && id === 2105) guildMembers = exports.default;
-        if ((features.pastelize || features.noDelete) && id === 8222 && exports.default && exports.default.prototype) hookExport(exports.default.prototype,"generate",messageRow);
-        if (features.platformIndicators && id === 4828) presenceStore = exports.default;
-        if (features.platformIndicators && id === 4806) sessionsStore = exports.default;
-        if (features.platformIndicators && id === 11448) {
+        if (features.pastelize && id === 1252) pastelHash = typeof exports === "function" ? exports : exports.default;
+        if (features.pastelize && id === 2111) guildMembers = exports.default;
+        if ((features.pastelize || features.noDelete) && id === 7378 && exports.default && exports.default.prototype) hookExport(exports.default.prototype,"generate",messageRow);
+        if (features.platformIndicators && id === 4877) presenceStore = exports.default;
+        if (features.platformIndicators && id === 4855) sessionsStore = exports.default;
+        if (features.platformIndicators && id === 10603) {
             displayNameType=exports.DisplayName;
             exports=hookExport(exports,"DisplayName",platformName);
             return hookComponent(exports,(orig,self,args)=>wrapProfileTree(orig.apply(self,args),displayNameType,platformName,platformWrappers));
         }
-        if (features.platformIndicators && id === 13603) return hookComponent(exports,platformHeader);
-        if (features.platformIndicators && id === 16377) return hookComponent(exports,platformDmRow);
-        if (features.platformIndicators && [11159,9970].includes(id)) {
-            const option = id === 13603 ? "piDmHeader" : "piUserList";
-            return hookComponent(exports,(orig,self,args)=>platformPlacement(orig,self,args,option));
-        }
+        if (features.platformIndicators && id === 12845) return hookComponent(exports,platformHeader);
+        if (features.platformIndicators && id === 15667) return hookComponent(exports,platformDmRow);
+        // User list rows (UserRow, default export) and voice panel rows (FormComponents' named MemberRowItem).
+        if (features.platformIndicators && id === 10371) return hookComponent(exports,(orig,self,args)=>platformPlacement(orig,self,args,"piUserList"));
+        if (features.platformIndicators && id === 9108) return hookComponent(exports,(orig,self,args)=>platformPlacement(orig,self,args,"piUserList"),"MemberRowItem");
         // Profile "in voice" users (UserProfileActivityVoiceChannelUsers): private UserRow rows.
-        if (features.platformIndicators && id === 13348) return hookComponent(exports,(orig,self,args)=>{
+        if (features.platformIndicators && id === 12602) return hookComponent(exports,(orig,self,args)=>{
             const tree=orig.apply(self,args);
             if (!enabled("platformIndicators") || !settings.piUserList || !React || !tree) return tree;
             return cloneTree(tree,(node,p)=>{
@@ -2216,8 +2220,8 @@
             },0);
         });
         // Original "Hide mobile status from the normal indicator": avatar Status (design/void/Status,
-        // 14405) draws a phone badge when isMobileOnline; show the plain dot instead.
-        if (features.platformIndicators && id === 14405) {
+        // 13649) draws a phone badge when isMobileOnline; show the plain dot instead.
+        if (features.platformIndicators && id === 13649) {
             const plain = (orig,self,args) => {
                 const props = args[0];
                 if (!enabled("platformIndicators") || !settings.piHideMobile || !props || !props.isMobileOnline) return orig.apply(self,args);
@@ -2225,57 +2229,57 @@
             };
             return hookExport(hookExport(exports,"default",plain),"StatusWithTyping",plain);
         }
-        if (features.readAll && id === 16634) return hookExport(exports,"default",readAllBarProps);
-        if (features.reviewDB && id === 9358) oauthModal=exports.default;
-        if (features.reviewDB && id === 5936) nativeRowGroup=exports.TableRowGroup;
-        if (features.reviewDB && id === 7477) nativeSwitchRow=exports.TableSwitchRow;
-        if (features.hiddenChannels && id === 5345) nativeLock=exports.LockIcon;
-        if (features.hiddenChannels && id === 16569) {
+        if (features.readAll && id === 15929) return hookExport(exports,"default",readAllBarProps);
+        if (features.reviewDB && id === 8510) oauthModal=exports.default;
+        if (features.reviewDB && id === 5997) nativeRowGroup=exports.TableRowGroup;
+        if (features.reviewDB && id === 6621) nativeSwitchRow=exports.TableSwitchRow;
+        if (features.hiddenChannels && id === 5410) nativeLock=exports.LockIcon;
+        if (features.hiddenChannels && id === 15859) {
             // ChannelInfo can be consumed as default export and as named export
             // (GuildRolesAndChannelsRow reads it by name); hook both.
             exports = hookComponent(exports,hiddenInfo);
             return hookExport(exports, "ChannelInfo", hiddenInfo);
         }
-        if (features.reviewDB && id === 13373) return hookComponent(exports,reviewNote);
-        if (features.reviewDB && id === 14479) return hookExport(exports,"ContextMenuPopout",reviewMenu);
+        if (features.reviewDB && id === 12627) return hookComponent(exports,reviewNote);
+        if (features.reviewDB && id === 13987) return hookExport(exports,"ContextMenuPopout",reviewMenu);
 
-        if (features.reviewDB && id === 14273) return hookComponent(exports,reviewGuild);
-        if (id === 14892) exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG);
-        if (id === 11754) return hookExport(exports, "createList", settingsSections);
-        if (id === 14993) SettingsList = exports.SettingsList;
-        if (features.copyBios && id === 11503) return hookComponent(exports, copyBio);
-        if ((features.dashless || features.hiddenChannels) && id === 4941) {
+        if (features.reviewDB && id === 13521) return hookComponent(exports,reviewGuild);
+        if (id === 14130) exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG);
+        if (id === 10874) return hookExport(exports, "createList", settingsSections);
+        if (id === 14236) SettingsList = exports.SettingsList;
+        if (features.copyBios && id === 10742) return hookComponent(exports, copyBio);
+        if ((features.dashless || features.hiddenChannels) && id === 4990) {
             exports = hookExport(exports,"computeChannelName",channelLabel);
             return hookExport(exports, "default", channelLabel);
         }
-        if (features.favouriteAnything && id === 13288) return hookComponent(exports, favouriteButton);
-        if (features.favouriteAnything && id === 10661) return hookExport(exports, "addFavoriteGIF", favouriteAdd);
-        if (features.favouriteAnything && id === 10664) return hookExport(exports, "useFavoriteGIFsMobile", favouriteList);
-        if (id === 2041) channelStore = exports.default;
-        if (features.noTyping && id === 12272) return replaceValue(exports, "default",
+        if (features.favouriteAnything && id === 12524) return hookComponent(exports, favouriteButton);
+        if (features.favouriteAnything && id === 9861) return hookExport(exports, "addFavoriteGIF", favouriteAdd);
+        if (features.favouriteAnything && id === 9864) return hookExport(exports, "useFavoriteGIFsMobile", favouriteList);
+        if (id === 2051) channelStore = exports.default;
+        if (features.noTyping && id === 11348) return replaceValue(exports, "default",
             hookExport(hookExport(exports.default, "startTyping", typing), "stopTyping", typing));
-        if (features.quickDelete && id === 1115) locale = exports;
-        if (features.quickDelete && id === 5141) return replaceValue(exports, "default", hookExport(exports.default, "show", quickConfirm));
-        if (features.noDelete && id === 5010) {messageRecords = exports; restoreDeleted();}
-        if ((features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels) && id === 1372) {userStore = exports.default; restoreDeleted();}
-        if (features.noDelete && id === 5008) {
+        if (features.quickDelete && id === 1127) locale = exports;
+        if (features.quickDelete && id === 5205) return replaceValue(exports, "default", hookExport(exports.default, "show", quickConfirm));
+        if (features.noDelete && id === 5059) {messageRecords = exports; restoreDeleted();}
+        if ((features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels) && id === 1378) {userStore = exports.default; restoreDeleted();}
+        if (features.noDelete && id === 5057) {
             msgStore = exports.default;
             exports = replaceValue(exports,"default",hookExport(hookExport(msgStore,"getMessage",retainedMessage),"getMessages",retainedMessages));
             restoreDeleted(); return exports;
         }
-        if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 573) {
+        if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 585) {
             dispatcher = exports.default.dispatch.bind(exports.default);
             return replaceValue(exports, "default", hookExport(exports.default, "dispatch", dispatchEvent));
         }
-        if (features.hiddenChannels && [1074,1085].includes(id) && exports.Permissions) viewPermission = exports.Permissions.VIEW_CHANNEL;
-        if (features.hiddenChannels && id === 1101) {
+        if (features.hiddenChannels && [1086,1097].includes(id) && exports.Permissions) viewPermission = exports.Permissions.VIEW_CHANNEL;
+        if (features.hiddenChannels && id === 1113) {
             exports = hookExport(exports, "transitionTo", hiddenNavigation);
             exports = hookExport(exports, "replaceWith", hiddenNavigation);
             return hookExport(exports, "transitionToGuild", hiddenGuildNavigation);
         }
-        if (features.hiddenChannels && (id === 4427 || id === 4428)) {
+        if (features.hiddenChannels && id === 4472) {
             // Lioncat6 finds permissions via findByProps("getChannelPermissions","can");
-            // HBC fn4428 references both strings, so hook 4428 as well as 4427.
+            // In 348.10 PermissionStore (4472) is the only module exporting both.
             // Candidate may be default export or the exports object itself.
             const candidate = exports && exports.default && typeof exports.default.can === "function" ? exports.default :
                 exports && typeof exports.can === "function" ? exports : null;
@@ -2287,7 +2291,6 @@
             try {
                 if (permissions && typeof permissions.can === "function" && !permissionsCanOrig) {
                     permissionsCanOrig = permissions.can.bind(permissions);
-                    if (typeof permissions.canBasicChannel === "function") permissionsCanBasicOrig = permissions.canBasicChannel.bind(permissions);
                     const patched = hookExport(hookExport(permissions, "can", hiddenCan), "canBasicChannel", hiddenCan);
                     permissions = patched;
                     if (candidate === exports.default || (exports && exports.default && candidate === permissions)) {
@@ -2297,7 +2300,7 @@
                     }
                     return exports;
                 } else if (candidate && candidate !== permissions && typeof candidate.can === "function") {
-                    // Second permission object (4428 vs 4427): patch it too with same bypass.
+                    // A second permission object, if Discord ever adds one: patch it too with same bypass.
                     const patched2 = hookExport(hookExport(candidate, "can", hiddenCan), "canBasicChannel", hiddenCan);
                     if (candidate === exports.default) exports = replaceValue(exports, "default", patched2);
                     else if (candidate === exports) exports = patched2;
@@ -2305,13 +2308,14 @@
                 }
             } catch (_) {}
         }
-        if (features.hiddenChannels && id === 2096) return replaceValue(exports, "default", hookExport(exports.default, "getChannels", hiddenDirectory));
-        if (features.jumpToTop && id === 9686) chatHeight = exports;
-        if (features.jumpToTop && id === 12550) jumpPill = exports.default;
-        if (features.jumpToTop && id === 12551) jumpIcon = exports.default;
-        if (features.jumpToTop && id === 12549) return hookComponent(exports, jumpButton);
-        if (features.jumpToTop && [10518,11207].includes(id)) return hookComponent(exports, jumpSheet);
-        if (id === 7730) {
+        if (features.hiddenChannels && id === 4470) return replaceValue(exports, "default", hookExport(exports.default, "getChannels", hiddenDirectory));
+        if (features.jumpToTop && id === 8838) chatHeight = exports;
+        if (features.jumpToTop && id === 11643) jumpPill = exports.default;
+        // 348.10's arrow is a registered image asset: Metro exports the asset id itself, not a default.
+        if (features.jumpToTop && id === 11644) jumpIcon = exports && typeof exports === "object" && "default" in exports ? exports.default : exports;
+        if (features.jumpToTop && id === 11642) return hookComponent(exports, jumpButton);
+        if (features.jumpToTop && [9804,10418,15746].includes(id)) return hookComponent(exports, jumpSheet);
+        if (id === 6880) {
             let actions = exports.default;
             if (!actions) return exports;
             if (features.noDelete) actions = hookExport(actions, "deleteMessage", deleteMessage);
@@ -2325,11 +2329,11 @@
             return replaceValue(exports, "default", actions);
         }
         if (!features.freeNitro) return exports;
-        if (id === 1372) userStore = exports.default;
-        if (id === 14280) { emojiCatalog = exports; return hookExport(exports, "canUserUse", catalogEligibility); }
-        if (id === 5708) emojiStore = exports.default;
-        if (id === 5751) stickerStore = exports.default;
-        if (id === 4446) {
+        if (id === 1378) userStore = exports.default;
+        if (id === 13528) { emojiCatalog = exports; return hookExport(exports, "canUserUse", catalogEligibility); }
+        if (id === 5772) emojiStore = exports.default;
+        if (id === 5815) stickerStore = exports.default;
+        if (id === 4491) {
             // The pinned build exports the capabilities on a default singleton;
             // named aliases are not used by its picker. Hook the inspected object.
             let capabilities = exports.default || exports;
@@ -2344,7 +2348,7 @@
             if (exports.default) exports = replaceValue(exports, "default", capabilities);
             else exports = capabilities;
         }
-        if (id === 7611) {
+        if (id === 6756) {
             stickerRules = exports;
             exports = hookExport(exports, "getStickerSendability", sendability);
             exports = hookExport(exports, "isSendableSticker", sendableSticker);
@@ -2423,14 +2427,14 @@
     }
     function activateModule(id, module) {
         try {
-            if (id === 1151) {
+            if (id === 1163) {
                 const nativeFiles = module.exports.default;
                 if (nativeFiles && typeof nativeFiles.getSize === "function" &&
                     typeof nativeFiles.readFile === "function" && typeof nativeFiles.writeFile === "function")
                     initFiles(nativeFiles);
             }
             module.exports = activatePlugins(id, module.exports);
-            if ([17, 19, 414, 1151, 1271, 5375, 5377].includes(id)) module.exports = instrument(module.exports, 0);
+            if ([17, 19, 414, 1163, 1283, 5440, 5442].includes(id)) module.exports = instrument(module.exports, 0);
         } catch (error) {
             status.audioError = "Hook unavailable: " + String(error);
             if (global.console && typeof global.console.warn === "function")
@@ -2444,13 +2448,13 @@
             const args = Array.from(arguments);
             args[0] = function () {
                 const factoryArgs = Array.from(arguments);
-                if (features.hiddenChannels && id === 7802) {
+                if (features.hiddenChannels && id === 6952) {
                     factoryArgs[1] = listImport(factoryArgs[1]);
                     factoryArgs[2] = listImport(factoryArgs[2]);
                     factoryArgs[3] = listImport(factoryArgs[3]);
                 }
                 const result = factory.apply(this, factoryArgs);
-                const module = arguments[4]; // Verified Metro factory ABI in Discord 347.12.
+                const module = arguments[4]; // Verified Metro factory ABI in Discord 348.10.
                 if (module && module.exports) {
                     if (id === 120) {
                         const initialize = module.exports.default;

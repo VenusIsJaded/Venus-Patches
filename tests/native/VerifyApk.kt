@@ -50,7 +50,7 @@ fun main(args: Array<String>) {
         val hash = MessageDigest.getInstance("SHA-256")
         hash.update(hbc, offset + number("prefixSize"), number("originalCodeSize"))
         check(hash.digest().joinToString("") { "%02x".format(it) } ==
-            "f392ecbf2de34d1960b89a97035d692edcd024f75e2e98e4328eba77d083e697")
+            "2194f87abbb4382c4c4a8955501fe2d6db1f1d74702ff7b8fc87200d5196c74a")
         val footer = MessageDigest.getInstance("SHA-1")
         footer.update(hbc, 0, hbc.size - 20)
         check(footer.digest().contentEquals(hbc.copyOfRange(hbc.size - 20, hbc.size)))
