@@ -138,7 +138,7 @@ val venusSettings = bytecodePatch(
 
 @Suppress("unused")
 val fileSizeOnPicker = rawResourcePatch(
-    name = "File size on picker",
+    name = "Attachment sizes",
     description = "Shows file sizes on photos and videos when you attach them."
 ) {
     compatibleWith(discord)
@@ -149,7 +149,7 @@ val fileSizeOnPicker = rawResourcePatch(
 
 @Suppress("unused")
 val copyBios = rawResourcePatch(
-    name = "CopyBios",
+    name = "Selectable bios",
     description = "Lets you select and copy profile bios. Links still work."
 ) {
     compatibleWith(discord)
@@ -160,7 +160,7 @@ val copyBios = rawResourcePatch(
 
 @Suppress("unused")
 val dashless = rawResourcePatch(
-    name = "Dashless",
+    name = "Spaced channel names",
     description = "Shows spaces instead of dashes in channel names. Only changes how they look."
 ) {
     compatibleWith(discord)
@@ -171,7 +171,7 @@ val dashless = rawResourcePatch(
 
 @Suppress("unused")
 val favouriteAnything = rawResourcePatch(
-    name = "FavouriteAnything",
+    name = "Favourite any media",
     description = "Lets you favourite any image or video from the media viewer."
 ) {
     compatibleWith(discord)
@@ -182,7 +182,7 @@ val favouriteAnything = rawResourcePatch(
 
 @Suppress("unused")
 val freeNitro = rawResourcePatch(
-    name = "FreeNitro",
+    name = "Emoji and sticker links",
     description = "Sends emojis and stickers you can't use as image links. These are links, not real Nitro emojis or stickers."
 ) {
     compatibleWith(discord)
@@ -229,7 +229,7 @@ val customVoiceMessages = bytecodePatch(
     }
 }
 
-// Independently selectable offline ports; no Vendetta/Revenge loader dependency.
+// Each feature is its own selectable patch, bundled offline in the Venus runtime.
 private fun bundledPlugin(key: String, title: String, summary: String) = rawResourcePatch(
     name = title,
     description = summary
@@ -241,28 +241,28 @@ private fun bundledPlugin(key: String, title: String, summary: String) = rawReso
 }
 
 @Suppress("unused")
-val noTyping = bundledPlugin("noTyping", "No typing", "Hides that you're typing. You still see when others type.")
+val noTyping = bundledPlugin("noTyping", "Silent typing", "Hides that you're typing. You still see when others type.")
 
 @Suppress("unused")
-val quickDelete = bundledPlugin("quickDelete", "QuickDelete", "Skips the \"are you sure?\" when deleting messages or embeds. Turn it on in Venus settings.")
+val quickDelete = bundledPlugin("quickDelete", "Instant delete", "Skips the \"are you sure?\" when deleting messages or embeds. Turn it on in Venus settings.")
 
 @Suppress("unused")
-val noDelete = bundledPlugin("noDelete", "NoDelete", "Keeps deleted messages visible, outlined in red. You can save them for good and choose how many to keep. Turn it on in Venus settings.")
+val noDelete = bundledPlugin("noDelete", "Keep deleted messages", "Keeps deleted messages visible, outlined in red. You can save them for good and choose how many to keep. Turn it on in Venus settings.")
 
 @Suppress("unused")
-val jumpToTop = bundledPlugin("jumpToTop", "JumpToTop", "Adds a button to jump to the first message in a chat.")
+val jumpToTop = bundledPlugin("jumpToTop", "Jump to first message", "Adds a button to jump to the first message in a chat.")
 
 @Suppress("unused")
-val hiddenChannels = bundledPlugin("hiddenChannels", "Hidden Channels", "Shows channels you can't open, with a lock and when they were created and last used. It can't show their messages. Turn it on in Venus settings.")
+val hiddenChannels = bundledPlugin("hiddenChannels", "Locked channels", "Shows channels you can't open, with a lock and when they were created and last used. It can't show their messages. Turn it on in Venus settings.")
 
 @Suppress("unused")
-val pastelize = bundledPlugin("pastelize", "Pastelize", "Gives names and mentions without a role color a soft pastel color.")
+val pastelize = bundledPlugin("pastelize", "Pastel names", "Gives names and mentions without a role color a soft pastel color.")
 
 @Suppress("unused")
-val platformIndicators = bundledPlugin("platformIndicators", "PlatformIndicators", "Shows whether people are on desktop, mobile, web, console or VR, on profiles, in lists and in DMs.")
+val platformIndicators = bundledPlugin("platformIndicators", "Device badges", "Shows whether people are on desktop, mobile, web, console or VR, on profiles, in lists and in DMs.")
 
 @Suppress("unused")
-val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Read and write reviews of users and servers, using ReviewDB (manti.vendicated.dev). Turn it on in Venus settings.")
+val reviewDB = bundledPlugin("reviewDB", "Reviews", "Read and write reviews of users and servers, using the community ReviewDB service (manti.vendicated.dev). Turn it on in Venus settings.")
 
 @Suppress("unused")
 val readAll = bundledPlugin("readAll", "Read All", "Adds a Read all button to the server list, under the Direct Messages button. Choose whether it clears servers, DMs or both.")

@@ -20,7 +20,9 @@ internal object HbcPrelude {
         .joinToString("") { "%02x".format(it) }
 
     fun inject(file: File, source: String): Result {
-        require(source.length in 1..120000) { "Unexpected bootstrap size" }
+        // No fixed size cap. Each character becomes one string load and one array store, and every
+        // field that records the result (function size, exception range, jump, file length) is 32-bit.
+        require(source.isNotEmpty()) { "Empty bootstrap" }
         var result: Result
         RandomAccessFile(file, "rw").use { raf ->
             fun intAt(offset: Long): Int { raf.seek(offset); return Integer.reverseBytes(raf.readInt()) }
@@ -99,6 +101,8 @@ internal object HbcPrelude {
             val handler = prefix.size()
             emit(119, 14) // Catch: fail open to Discord if local prelude evaluation fails
             val prelude = prefix.toByteArray()
+            // The only real ceiling: the relocated global function and the file must stay 32-bit addressable.
+            require(prelude.size.toLong() + original.size < Int.MAX_VALUE) { "Bootstrap too large for HBC98" }
             raf.setLength((oldLength - 20).toLong()) // remove old SHA-1 footer
             var bodyOffset = oldLength - 20
             while (bodyOffset % 4 != 0) { raf.seek(bodyOffset++.toLong()); raf.write(0) }

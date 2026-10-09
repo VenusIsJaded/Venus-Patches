@@ -2,6 +2,30 @@
 
 Every release works with **Discord 348.10 - Stable**. Always patch the original APKM. Releases up to 1.3.6 were for Discord 347.12.
 
+## 1.3.9 — New names, new icons and no size cap
+
+- **Every feature is named after what it does.** Your settings carry over, so nothing turns on or off.
+
+  | Before | Now |
+  | --- | --- |
+  | CopyBios | **Selectable bios** |
+  | Dashless | **Spaced channel names** |
+  | FavouriteAnything | **Favourite any media** |
+  | File size on picker | **Attachment sizes** |
+  | FreeNitro | **Emoji and sticker links** |
+  | Hidden Channels | **Locked channels** |
+  | JumpToTop | **Jump to first message** |
+  | No typing | **Silent typing** |
+  | NoDelete | **Keep deleted messages** |
+  | Pastelize | **Pastel names** |
+  | PlatformIndicators | **Device badges** |
+  | QuickDelete | **Instant delete** |
+  | ReviewDB | **Reviews** |
+
+- **Device badges has new icons.** Desktop, web, mobile, console and VR are drawn by Venus, and are still tinted by status.
+- **No more size cap.** Venus had a 119,000-character limit on its built-in code. It was a safety margin, not a real limit, so it's gone. New features won't have to squeeze in.
+- **Clearer credits.** [NOTICE](NOTICE) now says where ideas came from, and that Venus doesn't include code from other client mods.
+
 ## 1.3.8 — Bug fixes and a smoother Discord
 
 - **NoDelete keeps your saved messages.** With **Save permanently** on, turning NoDelete off used to erase every saved message. They're now kept, and come back when you turn NoDelete on again.

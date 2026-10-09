@@ -19,3 +19,21 @@ provided that such references:
 - Are accurate, factual, and non-misleading;
 - Do not suggest authorship by the Morphe project; and
 - Appear only in a secondary or descriptive context, not as part of the product or project name.
+
+Venus Patches NOTICE
+====================
+
+Some features are based on ideas from community Discord plugins. The code is written for this
+project: it hooks Discord's own pinned 348.10 JavaScript bundle and doesn't include or load
+code from any other client mod. Feature names describe what each feature does.
+
+Releases 1.2.9 to 1.3.8 bundled five device icons from Martinz64/vendetta-plugins, which are
+released under The Unlicense. Since 1.3.9 they're replaced by Venus's own glyphs, drawn by
+scripts/icons.py.
+
+Reviews talks to the community ReviewDB service (manti.vendicated.dev) only when you turn it
+on. Venus Patches isn't affiliated with or endorsed by that service, or by Discord Inc.
+Discord is a trademark of Discord Inc.
+
+patches/src/main/kotlin/util/PatchListGenerator.kt is adapted from the Morphe patches
+template (https://github.com/MorpheApp/morphe-patches-template) and keeps its header.

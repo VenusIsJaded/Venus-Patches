@@ -97,8 +97,9 @@ context.Terser.minify(source, {compress:false, mangle:false,
     result = subprocess.run(["node", "-e", script, str(TOOLS / "terser.js"), str(source)],
                             cwd=ROOT, check=True, capture_output=True, text=True)
     content = result.stdout
-    if content.count("/*__FEATURES__*/") != 1 or len(content) > 119000:
-        raise SystemExit("Invalid or oversized compact runtime")
+    # No size budget: the injector stores the runtime as bytecode, not in a size-limited slot.
+    if content.count("/*__FEATURES__*/") != 1:
+        raise SystemExit("Invalid compact runtime")
     BUILD.mkdir(parents=True, exist_ok=True)
     output = BUILD / "bootstrap.js"
     output.write_text(content)
@@ -204,8 +205,8 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "Bug fixes and a smoother Discord. NoDelete keeps your saved messages, Read All clears every DM, "
-    "and chats and lists do less work. Patch the original Discord 348.10 APKM."
+    "New names, new icons and no size cap. Every feature is named after what it does, Device badges "
+    "has new icons, and the 119,000-character limit is gone. Patch the original Discord 348.10 APKM."
 )
 
 

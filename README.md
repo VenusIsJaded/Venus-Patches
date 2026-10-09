@@ -23,21 +23,21 @@ To turn plugins on or off at any time, open **Discord Settings → Venus → Plu
 
 | Feature | What it does | Starts |
 | --- | --- | --- |
-| **CopyBios** | Lets you select and copy profile bios | On |
+| **Attachment sizes** | Shows file sizes on photos and videos when you attach them | On |
 | **Custom voice messages** | Sends an audio file as a real voice message, waveform included | Off |
-| **Dashless** | Shows spaces instead of dashes in channel names | On |
-| **FavouriteAnything** | Lets you favourite any image or video | On |
-| **File size on picker** | Shows file sizes on photos and videos when you attach them | On |
-| **FreeNitro** | Sends emojis and stickers you can't use as links | On |
-| **Hidden Channels** | Shows channels you can't open, with a lock | Off |
-| **JumpToTop** | Adds a button to jump to the first message | On |
-| **No typing** | Hides that you're typing | On |
-| **NoDelete** | Keeps deleted messages visible, outlined in red | Off |
-| **Pastelize** | Gives names and mentions soft pastel colors | On |
-| **PlatformIndicators** | Shows whether people are on desktop, mobile, web, console or VR | On |
-| **QuickDelete** | Skips the "are you sure?" when deleting | Off |
+| **Device badges** | Shows whether people are on desktop, mobile, web, console or VR | On |
+| **Emoji and sticker links** | Sends emojis and stickers you can't use as links | On |
+| **Favourite any media** | Lets you favourite any image or video | On |
+| **Instant delete** | Skips the "are you sure?" when deleting | Off |
+| **Jump to first message** | Adds a button to jump to the first message | On |
+| **Keep deleted messages** | Keeps deleted messages visible, outlined in red | Off |
+| **Locked channels** | Shows channels you can't open, with a lock | Off |
+| **Pastel names** | Gives names and mentions soft pastel colors | On |
 | **Read All** | Adds a Read all button to the server list for servers, DMs or both | On |
-| **ReviewDB** | Read and write reviews of users and servers | Off |
+| **Reviews** | Read and write reviews of users and servers | Off |
+| **Selectable bios** | Lets you select and copy profile bios | On |
+| **Silent typing** | Hides that you're typing | On |
+| **Spaced channel names** | Shows spaces instead of dashes in channel names | On |
 
 ### Privacy options
 
@@ -56,10 +56,10 @@ Discord can still see what any client needs to work, like your messages, calls a
 ## Good to know
 
 - **Voice messages** need Android 10 or newer. Most audio files work. If a file can't be converted, it's sent as a normal attachment.
-- **NoDelete** keeps messages until Discord restarts. To keep them for good, turn on **Save permanently** in its settings. Delete a kept message again to hide it.
-- **Hidden Channels** only shows a channel's name and dates. It can't show messages or let you join locked voice channels.
-- **ReviewDB** loads reviews from `manti.vendicated.dev`. To post or report reviews, sign in from its settings page. Signing in never uses your Discord token.
-- **FreeNitro** sends links, not real Nitro emojis or stickers.
+- **Keep deleted messages** keeps messages until Discord restarts. To keep them for good, turn on **Save permanently** in its settings. Delete a kept message again to hide it.
+- **Locked channels** only shows a channel's name and dates. It can't show messages or let you join locked voice channels.
+- **Reviews** loads reviews from the community ReviewDB service at `manti.vendicated.dev`. To post or report reviews, sign in from its settings page. Signing in never uses your Discord token.
+- **Emoji and sticker links** sends links, not real Nitro emojis or stickers.
 - **Read All** uses Discord's own "Mark as read". It clears servers by default. Switch it to DMs or both in its settings, or hold the button for a one-time choice.
 
 ## For developers
@@ -70,4 +70,4 @@ python3 scripts/build.py    # builds and tests patches/build/libs/*.mpp
 
 ## License
 
-[GPL-3.0](LICENSE). Credits are in [NOTICE](NOTICE).
+[GPL-3.0](LICENSE). Notices are in [NOTICE](NOTICE).
