@@ -2,6 +2,15 @@
 
 Every release works with **Discord 348.10 - Stable**. Always patch the original APKM. Releases up to 1.3.6 were for Discord 347.12.
 
+## 1.4.2 — Quest Completer does Play Quests
+
+- **Play Quests work.** Quests like "Play VALORANT for 15 minutes" or "Play AION 2 with your Discord client open" used to be skipped, so they were never accepted or completed. Quest Completer now accepts them and completes them in the background, like video Quests.
+- **No game needed.** Discord counts time for the Quest's game without it being installed or started. It takes as long as the Quest asks, usually 15 minutes.
+- **It works with new and older Quests.** Discord moved where a Quest says which game it's for. Both places are read.
+- **Turn it off on its own** in **Venus → Plugins → Quest Completer → Play Quests**. Turning it off stops a Play Quest that's running.
+- **Video Quests still go first** when a Quest offers both a video and a game.
+- Stream Quests still need a real stream, so they're skipped. You still claim rewards yourself, and Discord may pause Quests on accounts that complete them automatically.
+
 ## 1.4.1 — Quest Completer
 
 - **New plugin: Quest Completer.** When you open Discord, it checks for Quests you haven't finished and completes them in the background. No screen opens and nothing needs a tap.

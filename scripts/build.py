@@ -205,7 +205,7 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "New Quest Completer plugin: completes video and Activity Quests in the background, with no screen. "
+    "Quest Completer now accepts and completes Play Quests too, like \"Play VALORANT for 15 minutes\". "
     "Patch the original Discord 348.10 APKM."
 )
 
