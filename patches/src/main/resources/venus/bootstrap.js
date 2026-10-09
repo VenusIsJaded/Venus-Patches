@@ -21,7 +21,7 @@
     if (features.platformIndicators) selectModules([4877, 4855, 1378, 2051, 10603, 10371, 12845, 15667, 9108, 13649, 12602]);
     if (features.reviewDB) selectModules([12627, 13521, 13987, 8510, 5997, 6621, 1378, 585]);
     if (features.readAll) selectModules([15929]);
-    const revision = "1.3.8";
+    const revision = "1.3.9";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -463,42 +463,42 @@
             const id = "VENUS_" + key.toUpperCase(); plugins.push(id);
             next[id] = settingNode(key, title, hint, "VENUS_PLUGINS");
         }
-        plugin("copyBios", "CopyBios", "Select and copy text in profile bios.");
+        plugin("copyBios", "Selectable bios", "Select and copy text in profile bios.");
         plugin("voice", "Custom voice messages", "Send an audio file on its own as a real voice message. Needs Android 10 or newer.");
-        plugin("dashless", "Dashless", "Show spaces instead of dashes in channel names.");
-        plugin("favouriteAnything", "FavouriteAnything", "Favourite any image or video from the media viewer.");
-        plugin("picker", "File size on picker", "Show each file's size on photos and videos when you attach them.");
+        plugin("dashless", "Spaced channel names", "Show spaces instead of dashes in channel names.");
+        plugin("favouriteAnything", "Favourite any media", "Favourite any image or video from the media viewer.");
+        plugin("picker", "Attachment sizes", "Show each file's size on photos and videos when you attach them.");
         if (features.freeNitro) {
             plugins.push("VENUS_FREENITRO");
-            route("VENUS_FREENITRO", "FreeNitro", [section("Sharing", ["VENUS_EMOJIS", "VENUS_STICKERS"]),
+            route("VENUS_FREENITRO", "Emoji and sticker links", [section("Sharing", ["VENUS_EMOJIS", "VENUS_STICKERS"]),
                 section("Options", ["VENUS_HYPERLINKS", "VENUS_FORCELINKS"])], "VENUS_PLUGINS");
             next.VENUS_EMOJIS = settingNode("emojis", "Free emojis", "Send emojis you can't use as image links.", "VENUS_FREENITRO");
             next.VENUS_STICKERS = settingNode("stickers", "Free stickers", "Send stickers you can't use as image links. Animated stickers may not move.", "VENUS_FREENITRO");
             next.VENUS_HYPERLINKS = settingNode("hyperlinks", "Short links", "Show the emoji or sticker name instead of the full link.", "VENUS_FREENITRO");
             next.VENUS_FORCELINKS = settingNode("forceLinks", "Always send links", "Use links even for emojis and stickers you can already use.", "VENUS_FREENITRO");
         }
-        plugin("hiddenChannels", "Hidden Channels", "Show channels you can't open, with a lock. You still can't read them or join locked voice channels.");
-        plugin("jumpToTop", "JumpToTop", "Add a button to jump to the first message in a chat.");
-        plugin("noTyping", "No typing", "Hide that you're typing. You still see when others type.");
+        plugin("hiddenChannels", "Locked channels", "Show channels you can't open, with a lock. You still can't read them or join locked voice channels.");
+        plugin("jumpToTop", "Jump to first message", "Add a button to jump to the first message in a chat.");
+        plugin("noTyping", "Silent typing", "Hide that you're typing. You still see when others type.");
         if (features.noDelete) {
             plugins.push("VENUS_NODELETE");
-            route("VENUS_NODELETE", "NoDelete", [section("NoDelete", [])], "VENUS_PLUGINS");
+            route("VENUS_NODELETE", "Keep deleted messages", [section("Keep deleted messages", [])], "VENUS_PLUGINS");
             next.VENUS_NODELETE.screen.getComponent = () => NoDeleteSettings;
         }
         if (features.pastelize) {
             const P = "VENUS_PASTELIZE"; plugins.push(P);
-            route(P, "Pastelize", [section("Pastelize", ["VENUS_PASTEL_ENABLED"]),
+            route(P, "Pastel names", [section("Pastel names", ["VENUS_PASTEL_ENABLED"]),
                 section("Options", ["VENUS_PASTELALL", "VENUS_PASTELWEBHOOKNAME", "VENUS_PASTELCONTENT"])], "VENUS_PLUGINS");
-            next.VENUS_PASTEL_ENABLED = settingNode("pastelize", "Enable Pastelize", "Give names and mentions without a role color a soft pastel color.", P);
+            next.VENUS_PASTEL_ENABLED = settingNode("pastelize", "Enable Pastel names", "Give names and mentions without a role color a soft pastel color.", P);
             next.VENUS_PASTELALL = settingNode("pastelAll", "Color every name", "Use pastel colors even for people with a role color.", P);
             next.VENUS_PASTELWEBHOOKNAME = settingNode("pastelWebhookName", "Color webhooks by name", "Webhooks with the same name share a color.", P);
             next.VENUS_PASTELCONTENT = settingNode("pastelContent", "Color message text", "Color the message as well as the name.", P);
         }
         if (features.platformIndicators) {
             const P = "VENUS_PLATFORMINDICATORS"; plugins.push(P);
-            route(P, "PlatformIndicators", [section("PlatformIndicators", ["VENUS_PI_ENABLED"]),
+            route(P, "Device badges", [section("Device badges", ["VENUS_PI_ENABLED"]),
                 section("Show icons", ["VENUS_PI_DM", "VENUS_PI_LIST", "VENUS_PI_PROFILE"]), section("Options", ["VENUS_PI_MOBILE"])], "VENUS_PLUGINS");
-            next.VENUS_PI_ENABLED = settingNode("platformIndicators", "Enable PlatformIndicators", "Show whether people are on desktop, mobile, web, console or VR.", P);
+            next.VENUS_PI_ENABLED = settingNode("platformIndicators", "Enable Device badges", "Show whether people are on desktop, mobile, web, console or VR.", P);
             next.VENUS_PI_DM = settingNode("piDmHeader", "On the DM top bar", "Next to the name at the top of a DM.", P);
             next.VENUS_PI_LIST = settingNode("piUserList", "In lists", "Members, friends, DMs and people in voice.", P);
             next.VENUS_PI_PROFILE = settingNode("piProfile", "On profiles", "Next to the name on a profile.", P);
@@ -511,14 +511,14 @@
         }
         if (features.quickDelete) {
             plugins.push("VENUS_QUICKDELETE");
-            route("VENUS_QUICKDELETE", "QuickDelete", [section("Skip confirmation", ["VENUS_QUICKDELETE_MESSAGES", "VENUS_QUICKDELETE_EMBEDS"])], "VENUS_PLUGINS");
+            route("VENUS_QUICKDELETE", "Instant delete", [section("Skip confirmation", ["VENUS_QUICKDELETE_MESSAGES", "VENUS_QUICKDELETE_EMBEDS"])], "VENUS_PLUGINS");
             next.VENUS_QUICKDELETE_MESSAGES = settingNode("quickDelete", "Delete messages instantly", "Skip \"are you sure?\" when deleting a message. This can't be undone.", "VENUS_QUICKDELETE");
             next.VENUS_QUICKDELETE_EMBEDS = settingNode("quickDeleteEmbeds", "Remove embeds instantly", "Skip \"are you sure?\" when removing a link preview.", "VENUS_QUICKDELETE");
         }
         if (features.reviewDB) {
             plugins.push("VENUS_REVIEWDB");
-            route("VENUS_REVIEWDB", "ReviewDB", [section("ReviewDB", ["VENUS_REVIEWDB_ENABLED"])], "VENUS_PLUGINS");
-            next.VENUS_REVIEWDB_ENABLED = settingNode("reviewDB", "Enable ReviewDB", "Read and write reviews of users and servers.", "VENUS_REVIEWDB");
+            route("VENUS_REVIEWDB", "Reviews", [section("Reviews", ["VENUS_REVIEWDB_ENABLED"])], "VENUS_PLUGINS");
+            next.VENUS_REVIEWDB_ENABLED = settingNode("reviewDB", "Enable Reviews", "Read and write reviews of users and servers.", "VENUS_REVIEWDB");
             next.VENUS_REVIEWDB.screen.getComponent = () => ReviewSettings;
         }
         // Sorted by the title people see, so the list stays alphabetical as plugins are added.
@@ -859,7 +859,7 @@
         // Only messages someone else removed from the server. Your own deletions, unsent or
         // failed local messages and dismissed ephemeral ("Only you can see this") messages
         // must disappear exactly like stock Discord.
-        // Your own sent messages are kept too (red outline), like the original NoDelete.
+        // Your own sent messages are kept too (red outline), as intended: every deletion is kept.
         if (!message) return false;
         if (message.state != null && message.state !== "SENT") return false;
         return !((Number(message.flags) || 0) & 64);
@@ -1094,7 +1094,7 @@
         const real = orig.apply(self, args);
         if (real || !enabled("hiddenChannels")) return real;
         const bit = args[0], channel = args[1];
-        // Original plugin's escape hatch: realCheck asks for the true result.
+        // Escape hatch: a channel with realCheck asks for the true permission result.
         // Loose equality: VIEW_CHANNEL can be BigInt/object across module copies.
         return !!(channel && !channel.realCheck && viewPermission != null && bit == viewPermission &&
             channel.guild_id && channel.type !== 1 && channel.type !== 3) || real;
@@ -1138,7 +1138,7 @@
     }
     function realCan(bit, channel) {
         // Real permission result, bypassing our own global facade.
-        // Supports the original plugin's realCheck escape hatch.
+        // Honours the realCheck escape hatch.
         if (channel && channel.realCheck) { channel = Object.assign({}, channel); delete channel.realCheck; }
         // permissionsCanOrig is always set before permissions, so no second path is needed.
         try { return !!permissionsCanOrig && permissionsCanOrig(bit, channel); } catch (_) { return false; }
@@ -1232,7 +1232,7 @@
         return Promise.resolve();
     }
     function preciseAgo(ms) {
-        // Precise relative durations like the original popup, but exact:
+        // Precise relative durations:
         // "8 days, 7 hours and 7 minutes ago". Three largest nonzero units.
         if (!Number.isFinite(ms)) return null;
         let diff = Date.now() - ms;
@@ -1337,7 +1337,7 @@
         if (!match || !hiddenChannel(match[1]) || hiddenConfirmed.has(match[1])) return orig.apply(self, args);
         const id = match[1];
         showHidden(receivedChannel(id), () => { hiddenConfirmed.add(id); return orig.apply(self, args); });
-        return; // Wait for user choice; View Anyway navigates like the original plugin.
+        return; // Wait for user choice; View Anyway then navigates.
     }
     function hiddenGuildNavigation(orig, self, args) {
         if (!hiddenChannel(args[1]) || hiddenConfirmed.has(args[1])) return orig.apply(self, args);
@@ -1397,8 +1397,8 @@
         return el(type, Object.assign({}, tree.props, {key:tree.key, [JUMP_PROP]:{channel, onClose:props.onClose}}));
     }
     let pastelHash, guildMembers, presenceStore, sessionsStore, displayNameType, nativeRowGroup, nativeSwitchRow, nativeLock, oauthModal;
-    // The original PlatformIndicators plugin's themable PNG glyphs, tinted by status.
-    const platformPngs = {"desktop": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAAVFBMVEUAAACvv7+3u7+5u7+2ub+4u726vL65u765vL65vMG5u723ub23v7+3t7+6vL+4ur+6u765u764vL+4ur23t7+7vb+3ur25ur64ur+7u766ur6vr7/+1nXbAAAAHHRSTlMAEEB/UHDv/99fgIAgQJ+f7++fnyB/YN9vTz8QSaZf3QAAAI1JREFUeAHt1tUBwkAURNEXHZzg1n+d2Fc8u4OTOQXcyKqJ3ARh5C22qiQFYTC0khFIYyuYgDYthGagzQuhDLRFIYS7yBPuakLmSaF2CimkkEIKKfT8I5un0MdCT7v6LUFbFUIhaGsr2IAUWcl2B0K2t6pDVKttGR5P3BJvpxCnfdTMHVo9NaRQ1MpKRC5jHSw3VFQzIwAAAABJRU5ErkJggg==", "web": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAQAAAD/5HvMAAADgklEQVR42u3a32vVdRzH8VdOv2NzGzM7bkp0E9F9RQSbOmK6groQpeugOzXJfnCW3YwgC4IyHCldrBmFELtQRxfK2MHp1sjVZRfBMSJFYu6cMUnOOZPz9Gb45uyc79fv5/tDvDiPv+DJh/fn8+HL56umpqbHFZsZ4hjjzJOnQJkyBfLMM87H7GWzHh16OcoVKgQpM8N79Cht7GaSVcJa5QK7lBZe5SpRzDCgpLGdH6gS3SRPKzm8xTJxFTmgJNDKtyRllFbFQxfTRLVCvSk6FR3b+J3onuRTlllvgUzk1YmVsyJJdPMN1bqkzmizM00cc1rDIP9SawpPrjhFPAf1AN1cotZJ940ezwKb1q33BLX2Kzx2sBwzZ7vWoYXvAVOkV2FxlqjuMMtBNqkBNpIDzI/h7ywnTsfIP5gquxUGV3EiB7zMPcxlPRwDOJITTgNmpx6GyZSDnqKAOa9g9LKKIzniA0yFbQrC+5B6UDf/Y44oCFdwdUPOGMfkgr8kyrg6Lmf0YUq0yw9DuLnBcTw5YwNFzB754RhmkYaUCH7BDMsPZzDDZFMM+gQzJj/8inlTYiS1oNcws/LD35jnJUtKPOgFzHX5YQmzdmCRTSXoGcyi/FDGtEqWlHhQG6YULsjTA4zg5iZf4CkAXrig25gtUowk+FwB2IpZDDfUz8pEWiUF4DnM9XDbfkiKl6QAvB5u248H38KMJBZ0FDMW7uo4qwbIJhQ0gcnKD3sxN3lCirNKgZfrf5hB+aGdEuYVNUQ2dtAuTIk2+WMG87V8MBIzaBQzrdDDVqBDPuIE0cUy5rCC0MMq5lAqQR9hKmRcPoNu0ZF0EN0sYs7JBAyc+UwNsUJYd7nGO2zUGr4CTL9MqMGu8KIaYB43C2yVJPq4h8kpDAaoYv6kS3U4jKvfaGELeUyVfoXDT4C5wAatg8cfuHqbS4A54/K8UgTMd/WnNjuckyqAKdCj8DhArdO0NFilQ8xxhyiq7JMbRqk1GXAEuDshV3hMUesvXkoo6CKe3NHJArUqfEln7KBrdCgaMnVJcIsPa6OcczKKjk6mqFfkFH20RAi6SIfiweMkjS0xwTBvEFaVE3hKAvspEleBfUoOvTGfOH+mJ40X6ctEkaNfaWEn56kQVoVz9CltZDhCjhJBSuR4l4weHdrZwzBjzJFniTJlbpNnljGyDNLW/BmlqelxdR++AoGbDB4jjAAAAABJRU5ErkJggg==", "mobile": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAAXVBMVEUAAAAwMDgwMDUwMDUuMDYwMDYvMTcvMTYvMTYwMDYwMDUvMTYwMjUvMTUvMjYvMTUuMDUuMDQvMDUtMTUwMDgvMDUwMDAtMDYuMDYwMDAtMDUvMDYuMDUtMDcpMTo5aAq8AAAAH3RSTlMAIGBvf1C//89fMN9g75+/j3+fP0C/IFBfMGDPb08fcZ9WCgAAAMNJREFUeAHt2YWNxQAMg2EX/fiVud1/zBuhSaRjfwv8UsQx5J9L0iw/VySIyUoaXa7wu93pcE/g9KDTFS4F+amF5Em3ZwK7FwPeMEsYcoNVxZAaViX5uTd6MuQJKwY5A01u9goFWph1fyKggAIKKKCAAgoooIACCiiggAIKKKCAAgoooIACn/l9d/t3gU/fcEqG9LDKGVLB6saQAZ97owZ2w5NuzwEOKd1G4FMLE5wG36Y/w29ZadRviBn2/Nw2HfjTPgD3/UVA1TCAGgAAAABJRU5ErkJggg==", "embedded": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAAk1BMVEUAAAC3u7+4ur+5vL+5u765u7+6vL+2ub+3v7+6u7+5vL66v7+6vL65u761ur+4u765vL+3t7+6u765u7+9vb23t7+7vb+6u766ur+5ur6/v7+vv7+9vcW1tb+5u727u763ur25vL+6vL+3ub24ur+5u7+4vL+5ur66ur64ur25vL+6u764ur24u722uby5u76vr7/eehxsAAAAMXRSTlMAQJ/f/8+fUCC/3zDv7zC/UEDvfx8gf88w3xAQHzCAT2Bfb4Bvj5/PP6+vv59wUM8QEONx+AAAAWZJREFUeAHt1dWa6zAMBOA5PSqzs2Vmhvd/uWWcVFHqr5f+r+3JRqtJ8UhBEAT/Mv8lpWwuD02hKHcpFXBTuSJ3qtZwQ0HPUVULiCuJhzpiGuKlCZaTL3gnxEVPaLWdkAxYJznIdfGmy0k9MEkOivChLQSkbwS18KElZEBBLSMIX4QMuRxaEJ0vCBndCkJMbEZjIRO6MTWCqjWlRjO6MTeCpLoooDWuCFvSjcgK0pYzohsrM0hZzhXdWJtBynJyR4rGv19dzrp3EC3nhoJKZpCynNxalzqIlrPKU7WDlOXUym8H0XIOufy+htxZX9tHBU24/L5mXH5fSy6/r4jL/8sOidYJv2x7fu0k84SgIn/Qmb50dT2oB6YXk+tf4hElWuuPdeaIlCFx/fkLeM+Q1Ferw3RQZ9SmP8jQlR9H/NZ3tKmG08+sW/SMnrxzZ6Qy/TrfBWkdL+Lq0RUptaYHJyU+HwRB4O0FjTMnvIkvoBQAAAAASUVORK5CYII=", "vr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAAANlBMVEVMaXHv7/Hv7/Hv7/Hv7/Hv7/Hv7/Hv7/Hv7/Hs7PTu7vHv7/Hv7/Hv7/Hv7/Hv7/Hv7/Hv7/EEUZf/AAAAEXRSTlMAzGV4UNr78OcJFDufKb6ri3Gd0SEAAAHQSURBVFjD7VbHdsQgDDRNiOby/z+bjY0N2LRk95C8xxwNHo0KkqZpYGBg4PMwbBa4ZYFiZqaPRVGxNSCoavPwJs0ujLbk2K0TtipKz1s3Zl3RE/PILGKmsqbLL8JcwZ5y9LJmi3E+k8Ib1UH8xcI95Utnaeb2TAnmbzLP01NsnilfBEcBCW9FVXWpwzvxrGYiE785ASC1p2DO3M5xlWty5ZREyrEmKlQK0Tedweu1npUdNPxDVBrlHe5bIHQQue1m/YVIEKjIGKmGG7ZbPKYpqnsMnsGqqxUQNSzpP8WdJoSaNUop7nwFInZF600ijT0F3kE06dXS6RNEXfh7ROI/EMG7RPAM2++I8D48wqefZe0cJy74Bo+HaixBJPbRLXX0k5ueDenWgtzVYojLz670edNL55y2wSgPQPOtFhPbirPlKYlDPOyBPwUtjD8auzr6GwYXDKRrA4RAucMFmR0PvuXjeZ3K+wIiT++MD8Wa32n8KSxc67ArSOYcOzln6rTmi5eKhWbMIbMGyV2gkZkjKE4ZVr6cM1Lp6qxslN6ZoDodeLoVi6igTbqlYmOJ0muIBrIku4oFK7Ix9I7atAQ2SWym1F5HEjB3NDAwMPAuvgCPRUw2yKsaYwAAAABJRU5ErkJggg=="};
+    // Venus's own device glyphs (scripts/icons.py), white on transparent and tinted by status.
+    const platformPngs = {"desktop": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAACTklEQVR42u2YvW4TURCFv7lrk8QRcawQURLx21IhCmokQKKj5h1oqKBA4gGQ8gh0PABItGkogIoKZEBC6YhkObJx8N5DsT/edXYdZ9cUCM82u1e7M3fOmZl7tCb+rjmWAU6wRu7JFuRVRQEcRrhAXHw+gMMD65xZgPsx/dQjpggacYnn3GKtNlDiiPc85UMcQsjJdFH7WqQd6oaQEwgFQq8k/ZLXuLbrsbxGkt7J5ITJEOt02Y7B6SX0VDJjM66ikMt8x0Ukr9DECAl4xi6qXE0OeMAuhqNBK+LEhDo6kCT11BK1r8+SQknXhFxjqsDWGGKoMkDCGM/qZI/ynXjqIlW+zJfTdBlgGWAZ4D/URZF4qX7sF3w7Pa4HqMZ5EI36gnEdLYW0eUgQZ1Fl/wGO++zgcYnX6NA/S5cthAO+1NJ3xtU0kyt0cZEuQm8kjeTlF6CJvI4kfVIgk5nAIa6zl6iAaflakeS7vCYgjHSAE7qpPQ1r5+DlNdJH3Yu9xto0kaoXWC1VC23esoHiPd7hayJvj9lvuhPxO1EzTjZT7bT0M96hJO2coI2C5G7SB/5YXzvCDBfNXPE2c282pyovow3zjeZzsIwJ2Egh2swF6NBJQRgwKm9OU9mM8tzmBdtY7NhoZ0L0Mgj3ecLLUkYKETSZVvWtoEaU4WFiQ50XxRw2SqeKowV4XJr8JJdspwjHCs0YyDnHtQgY8IiDWGta6jzLUbQmDnnMjzKITLOU8jm25ujfPvunJ5lMq8xzbJW+aZo9W+Yb3DM2Yv/835Y/MaiOkBrfrUkAAAAASUVORK5CYII=", "web": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAAGIUlEQVR42rWYX4wdVR3HP2dm7nZtbbsWorXYpi6GWKG2ArV1MdRoacQWTawkJT7558VojKmJIfFJH+RBkQdjTYQnAj6IPhhMNcWQpti0IpBAWinUsrZNFwpuBbrL3b1zZz4+zNm5c3dvyyLxzMOdnHvO7/s7v9855/v9TZB30EL8fQeTgosxmxCQotGXEpDy7aHeDiAhNAy/h2Ggw3QDiD7gBS27onEogWVs49NsYpRVvBdoc5FxjvMER3k9rvDyIA5+gqmIN7nfM16uveyDbhcxNQy2NNh8IuJmf2epam7HroWFpaWlhV075hHmoLc2Zi0CIBUz73FGLZ2tDWlpbh5BVbvOWqj6a1eK2WIAUnHUv6rasavqSSc0mjK+TfpcBO1YqCe8eRDEIPM3O6F1CA65x61O2lXb7vdnXlRz33K3O3y0DqFOeftCiIXmb3RKze2q494p4hE196I3iTjqSxbqSyLu9Fm1G9e6az7E/NSud0Ltmqu/9SoxuEftqHeJS1wi3mJpR91nEIf9ZYQonHJLdHQBQDC15TE1N1fvFXFIPGRp6bHat5b4iFr4oi0zg7ivXsW47zPpbdr+8NxTJ/ZeMTUTN8SJe2uA1OCY2lVvEzNbNUSu/qa5hl54gtfbiUN+L2YGM/GHaulrLpfar2DicbX0/gjbEu+rc7ejB9H0/w9qx9JzjpiYxKwcUfWRvshm4k9VHbclBoOZmU/HbD0T59cAqbgpnlD9cjQRxPd7yVL9VlxPb/wutWvpx6MjqbjFItrYNedQz6NfqTPq4drXVNyp5upY3wqq/VYdsG/WucnEh9UZSw/MXR1ET5d6Ppra0zfhe2rpm17dyED1lvpPVe/rS/4n4zlve001LonX8lbWUJBxngN9N/wGIHCWyXlXcELBaQA+WjNcATzJ0yR0GOa2ii2SSITbkRw4SJssThBYD8AFJOljrwSYAGAtUEQyTYFHI4ts7xGOwGYCAThKSlLDBlZHgISMbh9AwisAXM0KpggYqedYBNpYAWeREj8cwY5Q9LHTMgBepaTTF6QO8AogSykpY28JPEmbYeBDLGOaUFHmMFfFZT9AO3oD0GIdAHewsdFbCQHj6pbzGG81/k1JAVjJKqYhGJBVnGYEa1nybltlaQMnSRL+z60K0SxtRgA43ZfKlFES4FX+M2DuctYggX8x2xe8UVKgQ7taTXV8jsfbcXN9YoPYclzVXyxgqkz8vlp6ydU14SfiaqdU567HBEmBM0AXuKERR8iZAmBkgVw09gbaTMf9U7XrWEYXmOASoXfQnquuPsbqExBICVwA4AMx/aF+EgIfBGCSqdhXCcpt0dUTQIJJ9OYJAhmwk4yCgEhAzkYA697qKTECnI8jBQpkd3TxcPU7Jw+PMElGwbV8Lp6Iqj0PwLq4BXqJLAiMAvBCPT5BrmcMGSLnscpytYKUN/gT0gW+W0db4B9AwQgfaYj3qq1hPWUMBTXAt0npAMc4TUJJg3BuUQsL9TOxJxGvsW2hfr1vH6XijrjvtjRGX2fb0jwqkKyfk/FQJLwTDkUxG8SnVH1wAWX+WNXzDteUiX+JpPuiQ4bqADR9+lStC/ZHGs/En6hlbahHOE+ppQ/HuS3x7lry3LmQ9KuO+2vZsk9smYk3xlDsrlk5Nbgpcu+Xatmy1zK6d3CQbKmE1wpfqAXUPjHYMvh3yzitR6UPqIXnXBrV016NkP92raEn5ecr0084ZREhfm4mpn4t5manuMQh8WNR1P8oGro7KpLc0i9cTjrOQXw+Kv+u+jfHRHxe7XrWtSKu9BlLSyddKm70z2pp10L9xpXE79zydztdp0sfcqtjXjJXX/YHfsdTau6sX3GD+52pt8YA84MKkEzc5im1sBOrmUOe6StAuuprHow91ba44B39wbl8CZWJq3yoLpLKeSVU0SgD5wqsA65fbAlF7cftHq3NdOoCcK4MzJ2N/x73rsasRQH0ytgv+sdIIIParI/7VYekJ3bnP1eq9NMoYNbxWW7lBtaxIlb6b3KOkxzmcU71jfwfPiWkWLPVclayDJjhdd5ofMe44heLxXwMSUgGfPhICQ3J9a4AejQTGt8fFtn+CwOWzryNv78iAAAAAElFTkSuQmCC", "mobile": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAACFElEQVR42u2YsYoUQRCGv5qZHUE5uDsEETEwEUMxUcQXMDARTDQULtAXUAzEdxAMDhPPV7hAEHwFEZRD5GTFSFDUyJvp6d9gxnXW7e5ZWc2mOquuqr+6q6bof0wkJEd40pKR4eLbppSrB9YoEuE93wAjGqZIhr/Cbc5SYhEb4XjDY3a6ZMI2wZUJPdCyst15BFY4fC50WVKtWs3AcqokbXVeSwJkQs/lVcsPZt/C7CmXyRZjhYpsiDX2OYonQ3xNFPkIJcJoOM1+qBKxIk/IAeMd1/gAwS4xjE2ecB5PTvl3XaQuxFNeJr+CzzziAj6SQrJNf7drHv2QChqytPswQFuH2Dn9cH7/WUaAEWAEGAFGgBFgBBgB/o0MvYsMgyg/+LW/AkCN4s9CQFSrXJG4ynF8xMoQ69xAqVMUAwDneM2nGQdrmGBU5DOLdY6hVJrFQAXEBhtzuqYXvn272ipdZAiPx+OAh5zkBPfxuE6rwQgBAmVCm/oi9QiUk/RiZrHTaVpprc6EiWAM3/3ROQKeUXCIkgm7C50lmuWvSGR8Zw/fe/0bcBHHAY6aSwssYco0QseDLLMQui6pkpPvlpN0V4dV6qYqNTN9ox+S7nReS9LY9ja3A6T1o94HtLsqlIVIbBzAlAnd0itVc5xYc6WXnN7qXowjx3hyv0XhFJPZNBLqzR8BDVNc6neIKT2p3FIDs4lPq5+vb06DdS9gBQAAAABJRU5ErkJggg==", "embedded": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAADKklEQVR42u2XzYsUVxTFz6tqEb/ItB9kM6AwMMYPNLgQGZSACyO6GXCR/yC4MZBV/gJX/gHu1IVkExe6iAhuXCmIiIIfIxgCAQVBp3sYjbGr3vtl8V5X9auqabsbBBf9HnTT1OOce0/de95tg77sSjQlmBJMCVpDnpkxcBiPIFEiZMdSIpGTa4iS+lEToBN9MyL8e2WF4G54BqmspHkt6pjmtX0kmVBXL3VP1/WoQBh8OrBTxC4u8ZFJluUaBwJKsQfhW4gzvAUgI8fiRtyWnAyAj5yNKWL4XwO4Y7LlSS4EtIggRSwCOXYsSFf7nQHnyiw8fIJhli62Au8FWBvcFp8xRc4hjKco479SpPi5KAdXp+FEDtxBJH2CBDFHD1uDWmZ5DXiL4xWn2MFRnkAlCwsc9YH3X+9vUfyOnB6LtGmzQLeB2uI4gTCIvfxXkTLDcdEj9wX6M6RWirLC+lAALwJgLFqHTawjpYV4XsnBAo8RBuONIdV8ZG5GHb3TJhklSrSijoh62shpi/Ypk1GuWc1WzM5I2qltQvJJtlkOcTkcGYu02YoJGczQZoGVSAYLPOUg65jjTpC3rCd/bjciqRPAMhtQbT+ryOCAnBf8WxRECT1AkDSaVyoTCWYabwunVPPaIKvXOq3dOqanMjXLxiC20hmQ6BMLkZ/4Mn7b0HTeher15M99V0rU4u9CAAe8Z4n7zGAwJNxiqZCwqQnr9eSAVb5FmH6Et6MyBfjAxhDXX0P72ZJzOHTTLKvBXeEZBmGScA/dje5VJ6tE30uS5rRFVm7I1ZPqsg7KaE5XtVnIyAndF2qVGu/HRc3kgA8ssUT3M24U15Mr3OhkaRX+hd6YyOzKrii/c+AhSWl23q738Im8Ygi2wYXWtu5+D/SA4/06HLxwfgZ6E99mDMCfr144fU+9EJx00pWTA78j0r7RVGeKX+gBlmyMK98XZhYCOx8kb5gqPMVhbk+cwT1+jOGpTXZ+bPpBP+mIdmlmhBkVSav6Rw/0h27WB6+m0ZHQctu0fcTRsas3UYBDCfwxo3zMOT2VmsZlw7Dx3YwxvK8BZKZ/xKcEXz/B//GWAxtl2jw3AAAAAElFTkSuQmCC", "vr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAADHElEQVR42u2XvYtcVRjGf+fcOwsaXMMKSVAxKhi1WAMpRLBQIkIwhZ1KKpVFEAtja5FG/wFBFNuATQj4UQiCX9hoE1SwiYjGQjDEmMWkkMy952dxz9y5O3NndnYllXNOcznznPd5z9fzvBPkxrbIkmBJsCS44QTljPGwq2g9shCmxgoC1S7TLYB6HkHEnMXeXaxhM8+NpH6Cghp4khMc4Y4dn45c5DvO8kEbaTSeeyHe56f+1/atD+dozXbkjyg+5mW1dmhtsm57mtO7qNrKSv3H58YUo/DBe91Uh6pW1p2caqveXPtRQ7X2kRFFcwaRxOccpaIEEhG4mu9S5FbAqUOfjaopOM86FTZnUIhHNWdQqx97zAOuueaa+3zc03m8m+881FB9XiybLSrF06a8OD0lU31jC8V2qMrkV83JYhCDP7a7+IlYWhraXjgQ32vXuD0qqZdcFUNDsNfLarJWnzBYTmRWGL3fymTKOW6PSh4SY8zKEwCJXOUHnHzuJBI/8xsBF0KlNubUex1OTRu1mus7RPXK9TwFCjtE9RK4kBi7uGTHKX8IMzMrsnRtj5pBEEis8gCxZ+MiB7mTmoJIxZ45qIPY/SVO3AN4hUSkILQ9MiCxwU0UXONvSgpenoF6iZX2AjSrNIiF5/P9rtWNnjd6TD3nM97ufo/7hfpCD+qprMRJveJa89AaLTqTpaJ5bO/4kCv5hQ485Bvql97cCfW++vYE6s32kVUmv2mkItj4z9N8SJ0PqNHEXxhmn7uLFS7yIFcYUGW/CnzPOokLLepuynZuRclJ3qKkGvvBuVZrnND/ysrXxYEYDPnrxJRPNBqktcnf3dNgx3Z5xOumdsrYqxpbOZxdr+lB3O+1bDojR+saz/GR4XQd+VmH6jDv5NgUddPbctgxQfQn04ShVtkRXxtb5riqKKh5lHdZ71WYX7eoT0DgHlZ6sBc4yUedusKtdcXAF/3MP9rLtlhr8v/Tr33VW7o1hVOFV1MyrXJgQgzSAnXtJf7q1FczSsdAxN5wi7RAQb1V7oL9wLCr0neh4nf5B2RJ8P8j+BdsDUSkOH5T2gAAAABJRU5ErkJggg=="};
     function PlatformPng(props) {
         const uri = platformPngs[props.platform];
         if (!uri) return el(RN.View,{style:{width:16,height:16,borderRadius:8,backgroundColor:props.color}});
@@ -1694,7 +1694,7 @@
         const clients = platformClients(userId);
         if (!clients) return null;
         const colors = PLATFORM_COLORS, labels = PLATFORM_LABELS;
-        // Like the original: one icon per reported client, in presence order.
+        // One icon per reported client, in presence order.
         const icons = Object.keys(clients).filter(key => key !== "unknown" && colors[clients[key]]).map(key =>
             el(RN.View,{key,accessible:true,accessibilityRole:"image",accessibilityLabel:(labels[key] || key)+": "+clients[key]},
                 el(PlatformPng,{platform:key,color:colors[clients[key]]})));
@@ -1821,7 +1821,7 @@
         if (!tree || !React || !RN || !hiddenMetadata(channel)) return tree;
         const icon = nativeLock || inspectedExport(5410,"LockIcon");
         if (!icon) return tree;
-        // Lock next to hidden names, like the original plugin (20px lock, right margin).
+        // Lock next to hidden names, (20px lock, right margin).
         return el(RN.View,{style:{flexDirection:"row",alignItems:"center"},accessibilityLabel:hiddenName(channel)+", locked"},
             el(icon,{color:"#80848e",style:{width:20,height:20,marginRight:4}}),tree);
     }
@@ -1865,7 +1865,7 @@
     async function reviewRequest(path, method, body) {
         if (!enabled("reviewDB") || typeof global.fetch !== "function") throw new Error("ReviewDB is disabled or networking is unavailable");
         if (!/^\/(users(?:\/\d{17,20}\/reviews)?|reports)(?:\?|$)/.test(path)) throw new Error("Invalid ReviewDB request");
-        // Credentials go in the Authorization header like current Vencord, never in
+        // Credentials go in the Authorization header as ReviewDB's API expects, never in
         // JSON bodies (which proxies and error reporters are more likely to log).
         const token = method && method !== "GET" ? reviewAuth() : "";
         const headers = {accept:"application/json","content-type":"application/json",...(token ? {authorization:token} : {})};
@@ -1932,7 +1932,7 @@
         try { if (ui.toasts && typeof ui.toasts.open==="function") ui.toasts.open({key:"venus-toast",content}); } catch (_) {}
     }
     function hideReviewSheet(ui,key) { try { if (ui.sheets && typeof ui.sheets.hideActionSheet==="function") ui.sheets.hideActionSheet(key); } catch (_) {} }
-    // Styles from Discord's createStyles, as the original plugin: semantic tokens resolve
+    // Styles from Discord's createStyles: semantic tokens resolve
     // per theme. Decided once so a mounted card never changes its hook count.
     let reviewStyleHook, reviewStylesTried=false;
     function useReviewStyles(ui) {
@@ -1957,7 +1957,7 @@
         const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
         const toggle=(key,label,subLabel) => switchRow(Switch,key,label,subLabel);
         const groups=[
-            el(Group,{key:"plugin",title:"ReviewDB"},toggle("reviewDB","Enable ReviewDB","Read and write reviews of users and servers. Opening reviews shares that user or server ID with manti.vendicated.dev.")),
+            el(Group,{key:"plugin",title:"Reviews"},toggle("reviewDB","Enable Reviews","Read and write reviews of users and servers. Opening reviews shares that user or server ID with manti.vendicated.dev.")),
             el(Group,{key:"auth",title:"Account"},
                 el(ui.TableRow,{key:"login",label:pending ? "Signing in..." : authenticated ? "Signed in to ReviewDB" : "Sign in to ReviewDB",
                     arrow:true,disabled:!enabled("reviewDB") || authenticated || pending,onPress:authenticateReviews,subLabel:reviewAuthError || (authenticated ? undefined : "Needed to post, delete or report reviews. Your Discord token is never used.")}),
@@ -1987,7 +1987,7 @@
         const input=ui.TextInput ? el(ui.TextInput,Object.assign({label:"Maximum saved messages",onChange:onText},inputProps)) :
             el(RN.TextInput,Object.assign({onChangeText:onText,style:{fontSize:16,padding:12}},inputProps));
         const groups=[
-            el(Group,{key:"plugin",title:"NoDelete"},toggle("noDelete","Enable NoDelete","Keep deleted messages, including your own, outlined in red. Delete one again to hide it.")),
+            el(Group,{key:"plugin",title:"Keep deleted messages"},toggle("noDelete","Enable Keep deleted messages","Keep deleted messages, including your own, outlined in red. Delete one again to hide it.")),
             el(Group,{key:"save",title:"Saving"},toggle("noDeleteSave","Save permanently","Keep them after Discord restarts, saved only on this phone for your account. When off, they're cleared on restart.")),
             el(Group,{key:"limit",title:"Maximum saved messages"},el(RN.View,{style:{padding:12,gap:8}},input,
                 Text ? el(Text,{variant:"text-xs/medium",color:"text-muted"},hint) : el(RN.Text,{style:{color:"#949ba4",fontSize:12}},hint)))];
@@ -2181,7 +2181,7 @@
         try { ui.showSheet({key,content:el(ReviewSheet,{userId,sheetKey:key}),stackingBehavior:"stack"}); }
         catch (error) { reviewToast(ui,"Couldn't open reviews: "+String(error && error.message || error)); }
     }
-    // Profiles: the original appends ReviewSection as the LAST card of the profile card stack
+    // Profiles: reviews go in as the LAST card of the profile card stack
     // (after the note). In 348.10 UserProfileNote (12627) is that last card in the normal, bot,
     // tabbed and You-screen layouts, so reviews render directly beneath it.
     function reviewNote(orig,self,args) {
@@ -2209,7 +2209,7 @@
         if (!enabled("reviewDB") || !React || !RN || !guild || !/^\d{17,20}$/.test(guild.id) || !ui.TableRow) return React ? el(orig,props) : orig.apply(self,args);
         return el(ServerReviews,{key:guild.id,guildId:guild.id});
     }
-    // User long-press context menu gets a "Reviews" item, as in the original plugin.
+    // User long-press context menu gets a "Reviews" item.
     function reviewMenu(orig,self,args) {
         const props=args[0], menu=props && props.menu, id=menu && menu.key;
         if (!enabled("reviewDB") || !menu || !Array.isArray(menu.items) || menu.items.length!==3 || typeof id!=="string" || !/^\d{17,20}$/.test(id)) return orig.apply(self,args);
@@ -2288,7 +2288,7 @@
                 return Object.assign({},p,{__venusPlatforms:true,renderItem});
             },0);
         });
-        // Original "Hide mobile status from the normal indicator": avatar Status (design/void/Status,
+        // Plain status dot on avatars: avatar Status (design/void/Status,
         // 13649) draws a phone badge when isMobileOnline; show the plain dot instead.
         if (features.platformIndicators && id === 13649) {
             const plain = (orig,self,args) => {
@@ -2353,7 +2353,7 @@
             const candidate = exports && exports.default && typeof exports.default.can === "function" ? exports.default :
                 exports && typeof exports.can === "function" ? exports : null;
             if (candidate) permissions = candidate;
-            // Like the original plugin: globally reveal VIEW_CHANNEL so Discord builds
+            // Globally reveal VIEW_CHANNEL so Discord builds
             // real channel records (names) instead of obfuscated "hidden" stubs.
             // Message/voice access stays blocked via hiddenFetch/hiddenNavigation guards.
             // Use hookExport so frozen/sealed singletons are still patched via clone.
@@ -2540,6 +2540,6 @@
     let define = decorateDefine(existing);
     Object.defineProperty(global, "__d", { configurable: true, enumerable: true,
         get: () => define, set: value => { define = decorateDefine(value); } });
-    // Local diagnostics/test API; not a network endpoint or a dependency on Vendetta globals.
+    // Local diagnostics/test API; not a network endpoint and no client-mod globals.
     global.__venusPatches = Object.freeze({ revision, settings, features, status, setSetting, formatSize, getSize });
 })(globalThis);

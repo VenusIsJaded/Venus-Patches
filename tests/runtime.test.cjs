@@ -871,7 +871,7 @@ test('Hidden Channels adds cached metadata immutably, deduplicates categories an
     const b=hiddenHarness();assert.equal(b.store.getChannels('g'),b.result);b.api.setSetting('hiddenChannels',true);
     const result=b.store.getChannels('g');assert.equal(result.SELECTABLE.length,3);assert.equal(result.VOCAL.length,1);assert.equal(result[4].length,1);
     assert.equal(b.result.SELECTABLE.length,1);assert.equal(b.store.getChannels('g'),result);
-    // Global bypass like the original plugin: UI sees true, realCheck reveals real false.
+    // Global bypass: UI sees true, realCheck reveals real false.
     assert.equal(b.permission.can(b.viewPermission,b.channels.hidden),true);
     assert.equal(b.permission.can(b.viewPermission,Object.assign({},b.channels.hidden,{realCheck:true})),false);
     assert.equal(b.label(b.channels.hidden),'staff chat');
@@ -1298,10 +1298,10 @@ async function loadedReviews(b,userId) {
 }
 test('ReviewDB settings: Account and Settings groups with native rows',()=>{
     const b=reviewHarness();b.api.setSetting('reviewDB',true);const tree=b.Settings();
-    assert.deepEqual(walkElements(tree,n=>n.type==='RowGroup').map(n=>n.props.title),['ReviewDB','Account','Settings']);
+    assert.deepEqual(walkElements(tree,n=>n.type==='RowGroup').map(n=>n.props.title),['Reviews','Account','Settings']);
     const login=walkElements(tree,n=>n.props.label==='Sign in to ReviewDB')[0];assert.equal(login.type,'NativeRow');assert.equal(login.props.arrow,true);assert.equal(login.props.disabled,false);
     const logout=walkElements(tree,n=>n.props.label==='Sign out of ReviewDB')[0];assert.equal(logout.props.disabled,true);assert.match(logout.props.subLabel,/Authorized Apps/);
-    assert.deepEqual(walkElements(tree,n=>n.type==='SwitchRow').map(n=>n.props.label),['Enable ReviewDB','Profile-colored send button','Show the be-respectful note']);
+    assert.deepEqual(walkElements(tree,n=>n.type==='SwitchRow').map(n=>n.props.label),['Enable Reviews','Profile-colored send button','Show the be-respectful note']);
     assert.equal(walkElements(tree,n=>n.type==='Stack')[0].props.spacing,24);
 });
 test('ReviewDB OAuth follows the traced 347.12 order: dismissOAuthModal BEFORE callback still signs in',async()=>{
@@ -1314,7 +1314,7 @@ test('ReviewDB OAuth follows the traced 347.12 order: dismissOAuthModal BEFORE c
     assert.equal(b.popped.length,1);assert.equal(walkElements(b.Settings(),n=>n.props.label==='Signed in to ReviewDB').length,1);
     assert.equal(b.toasts.at(-1).content,'Successfully authenticated with ReviewDB');
 });
-test('ReviewDB sign-in survives disabling the plugin and logs out explicitly, like the original authToken',async()=>{
+test('ReviewDB sign-in survives disabling the plugin and logs out explicitly, and stays signed in',async()=>{
     const b=reviewHarness();const props=openReviewAuth(b);props.callback({location:'https://manti.vendicated.dev/api/reviewdb/auth?code=x'});await flush();await flush();
     b.api.setSetting('reviewDB',false);b.api.setSetting('reviewDB',true);
     assert.equal(walkElements(b.Settings(),n=>n.props.label==='Signed in to ReviewDB').length,1);
@@ -1331,7 +1331,7 @@ test('ReviewDB cancellation, malformed redirects and account switches never sign
     b.account.id='222222222222222222';resolve({ok:true,json:async()=>({success:true,token:'must-not-survive'})});await flush();await flush();
     assert.equal(walkElements(b.Settings(),n=>n.props.label==='Signed in to ReviewDB').length,0);
 });
-test('ReviewDB profile section renders directly after the profile note card with the original layout',async()=>{
+test('ReviewDB profile section renders directly after the profile note card directly beneath it',async()=>{
     const b=reviewHarness();assert.equal(b.note({userId:'222222222222222222'}).props.children[0],b.noteOriginal);
     b.api.setSetting('reviewDB',true);const m=await loadedReviews(b,'222222222222222222');
     assert.equal(m.tree.type,'Fragment');assert.equal(m.tree.props.children[0],b.noteOriginal);assert.equal(m.section.props.userId,'222222222222222222');
@@ -1372,7 +1372,7 @@ test('ReviewDB server Reviews expands in the existing guild sheet, fetches the g
     walkElements(m.render(),n=>n.props.label==='Reviews')[0].props.onPress();
     assert.equal(walkElements(m.render(),n=>n.type&&n.type.name==='ReviewSection').length,0);
 });
-test('ReviewDB user context menu gains a Reviews entry and signed-in actions follow the original permissions',async()=>{
+test('ReviewDB user context menu gains a Reviews entry and signed-in actions follow ReviewDB permissions',async()=>{
     const b=reviewHarness();b.api.setSetting('reviewDB',true);
     b.menu.ContextMenuPopout({menu:{key:'222222222222222222',items:[1,2,3]}});const items=b.menuCalls.at(-1).menu.items;assert.equal(items.at(-1).label,'Reviews');
     items.at(-1).action();assert.equal(b.sheets.at(-1).content.props.userId,'222222222222222222');
@@ -1527,7 +1527,7 @@ test('Hidden Channels uses a native lock icon and preserves frozen ChannelInfo a
     const tree=info({channel:b.channels.hidden});assert.equal(tree.props.children[0].type,'NativeLock');assert.equal(tree.props.children[1],original);assert.match(tree.props.accessibilityLabel,/locked/);
     b.api.setSetting('hiddenChannels',false);assert.equal(info({channel:b.channels.hidden}),original);
 });
-test('PlatformIndicators uses the original tinted PNG glyphs for desktop and mobile',()=>{
+test('Device badges use the bundled tinted PNG glyphs for desktop and mobile',()=>{
     const b=platformFixture();b.load({default:{getClientStatus:()=>({desktop:'online',mobile:'idle'})}},null,4877);
     const icons=b.badges.type({userId:'other'}).props.children;const desktop=icons[0].props.children;const image=desktop.type(desktop.props);
     assert.match(image.props.source.uri,/^data:image\/png;base64,/);assert.equal(image.props.style.tintColor,'#23a55a');assert.equal(image.props.style.width,16);
@@ -1616,7 +1616,7 @@ test('Hidden Channels READY cache belongs to the incoming account before UserSto
     assert.equal(b.label(b.channels.hidden),'second staff');
     account={id:'333333333333333333'};assert.match(b.label(b.channels.hidden),/name unavailable/);
 });
-test('PlatformIndicators hides the stock mobile badge and exposes the original settings',()=>{
+test('Device badges hide the stock mobile badge and expose their settings',()=>{
     const b=boot({platformIndicators:true});reactHarness(b);
     const seen=[];const status=b.load({default:props=>{seen.push(props.isMobileOnline);return null;},StatusWithTyping:props=>{seen.push(props.isMobileOnline);return null;}},null,13649);
     status.default({status:'online',isMobileOnline:true});status.StatusWithTyping({status:'online',isMobileOnline:true});
