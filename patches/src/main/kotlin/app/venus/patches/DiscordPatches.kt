@@ -268,4 +268,4 @@ val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Read and write reviews of 
 val readAll = bundledPlugin("readAll", "Read All", "Adds a Read all button to the server list, under the Direct Messages button. Choose whether it clears servers, DMs or both.")
 
 @Suppress("unused")
-val questCompleter = bundledPlugin("quests", "Quest Completer", "Completes video and Activity Quests in the background when Discord is open, with no screen or tap. You still claim rewards yourself. Discord may pause Quests on accounts that do this.")
+val questCompleter = bundledPlugin("quests", "Quest Completer", "Completes video, Play and Activity Quests in the background when Discord is open, with no screen or tap. You still claim rewards yourself. Discord may pause Quests on accounts that do this.")

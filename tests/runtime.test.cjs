@@ -2140,7 +2140,7 @@ test('NoDelete lowering the maximum removes the oldest kept messages with one ev
     assert.equal(b.messages.has('c:1'),false);assert.equal(b.messages.get('d:9').content,'other');
 });
 
-// ---- 1.4.1 Quest Completer ----
+// ---- 1.4.1 Quest Completer (Play Quests since 1.4.2) ----
 function questHarness({quests = [], settings = {}, fail = {}, fetched = true} = {}) {
     const b = boot({quests:true});
     let clock = 1_800_000_000_000;
@@ -2253,7 +2253,44 @@ test('Quest Completer completes Activity Quests with heartbeats and one final te
     assert.equal(beats.at(-1).body.terminal, true); assert.equal(beats.filter(r => r.body.terminal).length, 1);
     assert.ok(b.events.some(e => e.type === 'QUESTS_SEND_HEARTBEAT_SUCCESS' && e.questId === 'a1'));
 });
-test('Quest Completer skips desktop-only, finished and expired Quests', async () => {
+function playFixture(id, target, extra = {}, app = '1402418491272986635') {
+    const q = questFixture(id, 'PLAY_ON_DESKTOP', target, extra);
+    q.config.taskConfigV2.tasks.PLAY_ON_DESKTOP.applications = [{id:app}];
+    return q;
+}
+test('Quest Completer accepts and completes Play Quests like the ones on the Quests page', async () => {
+    const b = questHarness({quests:[playFixture('p1', 900)]});
+    b.connect(); await b.run(30 * 60 * 1000);
+    const enroll = b.requests.find(r => r.url === '/quests/p1/enroll');
+    assert.ok(enroll, 'accepted the Play Quest'); assert.equal(enroll.body.location, 12);
+    const beats = b.requests.filter(r => r.url === '/quests/p1/heartbeat');
+    assert.ok(beats.length >= 10, 'beats over time, not one jump');
+    assert.ok(beats.every(r => r.body.application_id === '1402418491272986635' && !('stream_key' in r.body)), 'heartbeat names the game');
+    for (let i = 1; i < beats.length - 1; i++) assert.ok(beats[i].at - beats[i - 1].at >= 1000, 'beats are spaced out');
+    assert.equal(beats.at(-1).body.terminal, true); assert.equal(beats.filter(r => r.body.terminal).length, 1);
+    assert.ok(b.map.get('p1').userStatus.completedAt, 'completed');
+    assert.deepEqual(b.ui, [], 'no toast, alert, modal or captcha screen');
+});
+test('Quest Completer reads the game from older Play Quests too', async () => {
+    const q = questFixture('old', 'PLAY_ON_DESKTOP', 60, enrolledAgo(5)); q.config.application = {id:'1234567890123'};
+    const b = questHarness({quests:[q]});
+    b.connect(); await b.run();
+    const beats = b.requests.filter(r => r.url === '/quests/old/heartbeat');
+    assert.ok(beats.length >= 2); assert.ok(beats.every(r => r.body.application_id === '1234567890123'));
+});
+test('Quest Completer leaves Play Quests alone when Play Quests is off', async () => {
+    const b = questHarness({quests:[playFixture('p1', 900)], settings:{questsPlay:false}});
+    b.connect(); await b.run();
+    assert.deepEqual(b.requests, []);
+});
+test('Quest Completer prefers a video task when a Quest offers both', async () => {
+    const q = playFixture('both', 900, enrolledAgo(100)); q.config.taskConfigV2.tasks = {WATCH_VIDEO:{type:'WATCH_VIDEO', target:30}, ...q.config.taskConfigV2.tasks};
+    const b = questHarness({quests:[q]});
+    b.connect(); await b.run();
+    assert.ok(b.requests.some(r => r.url === '/quests/both/video-progress'));
+    assert.equal(b.requests.some(r => r.url === '/quests/both/heartbeat'), false);
+});
+test('Quest Completer skips stream, finished, expired and game-less Quests', async () => {
     const expired = questFixture('old', 'WATCH_VIDEO', 30, enrolledAgo(5)); expired.config.expiresAt = new Date(QUEST_T0 - 1000).toISOString();
     const done = questFixture('done', 'WATCH_VIDEO', 30, {userStatus:{enrolledAt:new Date(QUEST_T0 - 1e6), completedAt:new Date(QUEST_T0), progress:{}}});
     const b = questHarness({quests:[questFixture('pc', 'PLAY_ON_DESKTOP', 900), questFixture('st', 'STREAM_ON_DESKTOP', 900), expired, done]});
@@ -2315,7 +2352,7 @@ test('Quest Completer settings page has its switches and stays alphabetical', ()
     assert.equal(b.registry.VENUS_QUESTS.useTitle(), 'Quest Completer');
     const node = b.registry.VENUS_PLUGINS.screen.getComponent()().props.node;
     assert.ok(node.sections[0].settings.includes('VENUS_QUESTS'));
-    for (const key of ['quests', 'questsVideo', 'questsActivity', 'questsEnroll']) {
+    for (const key of ['quests', 'questsVideo', 'questsPlay', 'questsActivity', 'questsEnroll']) {
         assert.equal(b.api.settings[key], true); assert.equal(b.api.setSetting(key, false), true); assert.equal(b.api.settings[key], false);
     }
 });

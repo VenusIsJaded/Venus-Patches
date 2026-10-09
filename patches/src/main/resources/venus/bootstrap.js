@@ -22,7 +22,7 @@
     if (features.reviewDB) selectModules([12627, 13521, 13987, 8510, 5997, 6621, 1378, 585]);
     if (features.readAll) selectModules([15929]);
     if (features.quests) selectModules([585, 7120]);
-    const revision = "1.4.1";
+    const revision = "1.4.2";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -30,7 +30,7 @@
     const settings = { picker: true, voice: false, copyBios: true, dashless: true, favouriteAnything: true, emojis: true, stickers: true, hyperlinks: true, forceLinks: false,
         noTyping: true, quickDelete: false, quickDeleteEmbeds: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 512,
         jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewThemedSend:true, reviewWarning:true, readAll:true, readAllMode:"guilds",
-        quests:true, questsVideo:true, questsActivity:true, questsEnroll:true };
+        quests:true, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true };
     const status = { picker: false, attachment: false, request: false, menu: false, conversion: false, audioError: "", storage: "waiting" };
     const listeners = new Set();
     const dirty = new Set();
@@ -1602,8 +1602,8 @@
     // Quest Completer: finds unfinished Quests and completes them in the background, with no screen.
     // Based on the community quest scripts (aamiaa's gist, CompleteDiscordQuest, Questify), rebuilt on
     // 348.10's own modules: QuestStore (7120), fetchCurrentQuests (9765), questUserStatusFromServer (7127)
-    // and the HTTP client (1283). Only tasks a phone can do are run: watching a video and playing an Activity.
-    const QUEST_VIDEO_TASKS = ["WATCH_VIDEO_ON_MOBILE", "WATCH_VIDEO"], QUEST_ACTIVITY_TASK = "PLAY_ACTIVITY";
+    // and the HTTP client (1283). Video, Play and Activity tasks are run; stream tasks need a real Go Live.
+    const QUEST_VIDEO_TASKS = ["WATCH_VIDEO_ON_MOBILE", "WATCH_VIDEO"], QUEST_ACTIVITY_TASK = "PLAY_ACTIVITY", QUEST_PLAY_TASK = "PLAY_ON_DESKTOP";
     // QuestContent.QUEST_HOME_MOBILE: where Discord's own app says a quest was accepted from.
     const QUEST_HOME_MOBILE = 12;
     // Video progress may run at most ~10 s ahead of the time since accepting; report about every 7 s like the player.
@@ -1680,6 +1680,13 @@
         const messages = item && item.config && item.config.messages;
         return messages && typeof messages.questName === "string" && messages.questName ? messages.questName : "a Quest";
     }
+    // The game a Play or Activity task counts time for. Since mid-2026 it lives on the task
+    // (taskConfigV2.tasks.<TYPE>.applications[0].id); older quests carry it on config.application.
+    function questApplication(item, task) {
+        const apps = task && task.applications, first = Array.isArray(apps) ? apps.find(app => app && app.id) : null;
+        const id = first ? first.id : item && item.config && item.config.application && item.config.application.id;
+        return id != null && /^\d{5,25}$/.test(String(id)) ? String(id) : null;
+    }
     // The first task this phone can do, in the order the settings allow.
     function questTask(item) {
         const config = item && item.config, tasks = config && (config.taskConfigV2 || config.taskConfig);
@@ -1689,8 +1696,11 @@
             const target = Number(all[type] && all[type].target);
             if (target > 0) return {type, target, kind:"video"};
         }
-        const target = Number(all[QUEST_ACTIVITY_TASK] && all[QUEST_ACTIVITY_TASK].target);
-        if (settings.questsActivity && target > 0) return {type:QUEST_ACTIVITY_TASK, target, kind:"activity"};
+        // "Play <game> for 15 minutes": the same heartbeat Discord's desktop app sends while the game runs.
+        const play = all[QUEST_PLAY_TASK], playTarget = Number(play && play.target), playApp = questApplication(item, play);
+        if (settings.questsPlay && playTarget > 0 && playApp) return {type:QUEST_PLAY_TASK, target:playTarget, kind:"play", applicationId:playApp};
+        const activity = all[QUEST_ACTIVITY_TASK], target = Number(activity && activity.target);
+        if (settings.questsActivity && target > 0) return {type:QUEST_ACTIVITY_TASK, target, kind:"activity", applicationId:questApplication(item, activity)};
         return null;
     }
     function questProgress(item, type) {
@@ -1749,7 +1759,7 @@
         const task = questTask(item), entry = {id:item.id, task, generation:quest.generation, name:questName(item)};
         quest.running = entry;
         notify("quests");
-        const work = task.kind === "video" ? questVideo(entry, item) : questActivity(entry);
+        const work = task.kind === "video" ? questVideo(entry, item) : task.kind === "play" ? questPlay(entry) : questActivity(entry);
         work.then(done => {
             if (!done || entry.generation !== quest.generation) return;
             quest.completed++;
@@ -1805,17 +1815,20 @@
         } catch (_) {}
         return null;
     }
+    // Same body as 348.10's own sendHeartbeat (9765): stream_key for Activities, application_id for games.
     async function questHeartbeat(entry, streamKey, terminal) {
-        const response = await questRequest("/quests/" + entry.id + "/heartbeat", {stream_key:streamKey, terminal});
-        const body = response && response.body, status = questUserStatus(body);
+        const body = {terminal};
+        if (streamKey) body.stream_key = streamKey;
+        if (entry.task.applicationId) body.application_id = entry.task.applicationId;
+        const response = await questRequest("/quests/" + entry.id + "/heartbeat", body);
+        const reply = response && response.body, status = questUserStatus(reply), type = entry.task.type;
         if (status) questDispatch({type:"QUESTS_SEND_HEARTBEAT_SUCCESS", questId:entry.id, streamKey, userStatus:status});
-        const value = Number(body && body.progress && body.progress[QUEST_ACTIVITY_TASK] && body.progress[QUEST_ACTIVITY_TASK].value);
-        return {value:Number.isFinite(value) ? value : 0, completed:!!(body && body.completed_at)};
+        const value = Number(reply && reply.progress && reply.progress[type] && reply.progress[type].value);
+        return {value:Number.isFinite(value) ? value : 0, completed:!!(reply && reply.completed_at)};
     }
-    async function questActivity(entry) {
-        const channelId = questChannel();
-        if (!channelId) throw new Error("no DM or voice channel to count time in");
-        const streamKey = "call:" + channelId + ":1", target = entry.task.target;
+    // Beats every 20 s like Discord does, then one terminal beat once the target is reached.
+    async function questBeat(entry, streamKey) {
+        const target = entry.task.target;
         while (questActive(entry)) {
             const beat = await questHeartbeat(entry, streamKey, false);
             if (!questActive(entry)) return false;
@@ -1824,6 +1837,13 @@
         }
         return false;
     }
+    function questActivity(entry) {
+        const channelId = questChannel();
+        if (!channelId) return Promise.reject(new Error("no DM or voice channel to count time in"));
+        return questBeat(entry, "call:" + channelId + ":1");
+    }
+    // Play Quests: Discord counts time for the quest's game without it being installed or started.
+    function questPlay(entry) { return questBeat(entry, null); }
     // Mobile only loads Quests when you open them; ask for them once in a while, through Discord's own fetch.
     function questsFetch(force) {
         const store = questStore(), fetch = inspectedExport(9765, "fetchCurrentQuests");
@@ -1877,7 +1897,8 @@
         if (key === "quests") { questsStart(1000); return; }
         // Turning a quest type off stops that kind if it's the one running.
         const running = quest.running && quest.running.task;
-        if (!value && running && (key === "questsVideo" && running.kind === "video" || key === "questsActivity" && running.kind === "activity")) {
+        if (!value && running && (key === "questsVideo" && running.kind === "video" || key === "questsActivity" && running.kind === "activity" ||
+            key === "questsPlay" && running.kind === "play")) {
             quest.generation++; quest.running = null; quest.enrolling = false;
             if (quest.scanTimer !== undefined && global.clearTimeout) global.clearTimeout(quest.scanTimer);
             quest.scanTimer = undefined;
@@ -1893,7 +1914,7 @@
         return lines.join("\n");
     }
     // Settings page: three switches and a plain-language status line.
-    const QUEST_NOTE = "Rewards still need claiming yourself. Play and stream Quests need a computer, so they're skipped. Discord may pause Quests on accounts that complete them automatically.";
+    const QUEST_NOTE = "Rewards still need claiming yourself. Stream Quests need a real stream, so they're skipped. Discord may pause Quests on accounts that complete them automatically.";
     function QuestSettings() {
         useSettings("quests");
         // The status line also changes as quests finish; refresh it while the page is open.
@@ -1912,6 +1933,7 @@
             el(Group, {key:"plugin", title:"Quest Completer"}, toggle("quests", "Complete Quests automatically", "Runs in the background whenever Discord is open. No screen opens and nothing needs a tap.")),
             el(Group, {key:"types", title:"Quests to complete"},
                 toggle("questsVideo", "Video Quests", "Reports the video as watched, at normal speed."),
+                toggle("questsPlay", "Play Quests", "Counts time for the game without installing or starting it."),
                 toggle("questsActivity", "Activity Quests", "Counts time in an Activity without starting one."),
                 toggle("questsEnroll", "Accept new Quests", "Accept Quests you haven't started, one at a time. Off: only Quests you accepted yourself.")),
             el(Group, {key:"status", title:"Status"}, el(RN.View, {style:{padding:12}},
