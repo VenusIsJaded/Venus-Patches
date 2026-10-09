@@ -78,6 +78,47 @@ fun main(args: Array<String>) {
     val loaderPrefix = loader.implementation!!.instructions.take(5)
     check(loaderPrefix.mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string } == listOf("assets://index.android.bundle"))
     check(loaderPrefix.mapNotNull { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.name } == listOf("createAssetLoader"))
+    // Quest Completer's User-Agent guard, assembled on Discord's real interceptor (a detached fixture, not a Patcher run).
+    val interceptorMethod = methods.single { it.definingClass == USER_AGENT_INTERCEPTOR && it.name == "intercept" }
+    val untouched = interceptorMethod.implementation!!.instructions.map { it.opcode }
+    val interceptor = MutableMethod(interceptorMethod)
+    keepDesktopQuestAgent(interceptor)
+    val guarded = interceptor.implementation!!.instructions.toList()
+    check(interceptor.implementation!!.registerCount == interceptorMethod.implementation!!.registerCount) { "Guard changed the register count" }
+    check(guarded.size == untouched.size + QUEST_AGENT_GUARD_SIZE) { "Guard is ${guarded.size - untouched.size} instructions, expected $QUEST_AGENT_GUARD_SIZE" }
+    check(guarded.drop(QUEST_AGENT_GUARD_SIZE).map { it.opcode } == untouched) { "Discord's own User-Agent code changed" }
+    // The last added instruction is the nop both branches land on; the 13 before it are the guard itself.
+    check(guarded[QUEST_AGENT_GUARD_SIZE - 1].opcode == Opcode.NOP)
+    val guard = guarded.take(QUEST_AGENT_GUARD_SIZE - 1)
+    check(guard.map { it.opcode } == listOf(Opcode.INVOKE_INTERFACE, Opcode.MOVE_RESULT_OBJECT, Opcode.CONST_STRING, Opcode.INVOKE_VIRTUAL,
+        Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.CONST_STRING, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
+        Opcode.INVOKE_INTERFACE, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT)) { "Guard opcodes: ${guard.map { it.opcode }}" }
+    check(guard.mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string } == listOf("User-Agent", QUEST_DESKTOP_AGENT))
+    // Both if-eqz jump past the guard to the label's nop, just before Discord's own first instruction.
+    val guardUnits = guard.sumOf { it.codeUnits }
+    for (index in listOf(5, 9)) {
+        val at = guard.take(index).sumOf { it.codeUnits }
+        check(at + (guard[index] as OffsetInstruction).codeOffset == guardUnits) { "Guard branch $index lands at the wrong place" }
+        check((guard[index] as OneRegisterInstruction).registerA == 1)
+    }
+    // Only v0-v2 and the Chain parameter (p1 = v4 of 5) are touched.
+    val parameter = interceptor.implementation!!.registerCount - 1
+    for (instruction in guard) {
+        val regs = when (instruction) {
+            is FiveRegisterInstruction -> listOf(instruction.registerC, instruction.registerD, instruction.registerE,
+                instruction.registerF, instruction.registerG).take(instruction.registerCount)
+            is OneRegisterInstruction -> listOf(instruction.registerA)
+            else -> emptyList()
+        }
+        check(regs.all { it in 0..2 || it == parameter }) { "Guard touches register outside v0-v2/p1: $regs" }
+    }
+    val calls = guard.mapNotNull { ((it as? ReferenceInstruction)?.reference as? MethodReference) }
+    check(calls.map { it.definingClass + "->" + it.name } == listOf("Lokhttp3/Interceptor\$Chain;->i", "Lokhttp3/Request;->a",
+        "Ljava/lang/String;->startsWith", "Lokhttp3/Interceptor\$Chain;->a"))
+    for (call in calls.filter { it.definingClass != "Ljava/lang/String;" })
+        check(methods.any { it.definingClass == call.definingClass && it.name == call.name && it.returnType == call.returnType &&
+            it.parameterTypes.map { p -> p.toString() } == call.parameterTypes.map { p -> p.toString() } }) { "Unresolved host call $call" }
+    check((guard[10] as FiveRegisterInstruction).let { it.registerC == parameter && it.registerD == 0 }) { "Guard must proceed with the original request" }
     fun resolveHost(ref: MethodReference): Boolean = methods.any {
         it.definingClass == ref.definingClass && it.name == ref.name && it.returnType == ref.returnType &&
             it.parameterTypes.map { parameter -> parameter.toString() } == ref.parameterTypes.map { parameter -> parameter.toString() } && it.accessFlags and 1 != 0
@@ -202,7 +243,7 @@ fun main(args: Array<String>) {
             check(calls.single().definingClass == "Ljava/lang/Throwable;" && calls.single().name == "toString")
         } else check(calls.isEmpty())
     }
-    println("PASS: 17 pinned HBC targets, all 7 HBC selection combinations, valid footers, unchanged unrelated bytes, rejection of changed inputs, 80 exact native ABIs and assembled register-safe early-return/Promise/callback guards, native result shapes, 64 dependency selections, cached-bundle pinning, corrupt-header/footer rejection and combined prelude compatibility; no APK patched")
+    println("PASS: 17 pinned HBC targets, all 7 HBC selection combinations, valid footers, unchanged unrelated bytes, rejection of changed inputs, 80 exact native ABIs and assembled register-safe early-return/Promise/callback guards, native result shapes, 64 dependency selections, cached-bundle pinning, corrupt-header/footer rejection combined prelude compatibility and the Quest Completer desktop User-Agent guard; no APK patched")
 }
 
 
