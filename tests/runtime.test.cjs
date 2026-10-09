@@ -2032,3 +2032,99 @@ test('PlatformIndicators badges re-render only when that user\'s own clients cha
     assert.equal(renders, 1, 'an unchanged presence must not re-render');
     cleanup.forEach(fn => fn()); assert.equal(listeners.size, 0);
 });
+
+// ---- 1.3.8 regressions ----
+test('NoDelete switched off keeps the saved archive and switching it back on restores it',async()=>{
+    const raw={id:'1',channel_id:'c',author:{id:'u'},content:'saved'};
+    const saved=JSON.stringify({version:1,accountId:'owner',messages:[{id:'1',channelId:'c',message:raw}]});
+    const b=await archiveHarness(saved);assert.equal(b.store.getMessage('c','1').content,'saved');
+    b.api.setSetting('noDelete',false);await new Promise(r=>setTimeout(r,900));await flush();
+    assert.equal(JSON.parse(b.getDisk()).messages.length,1,'turning NoDelete off must not erase saved messages');
+    assert.equal(b.store.getMessage('c','1'),undefined);
+    b.api.setSetting('noDelete',true);await flush();await flush();await flush();
+    assert.equal(b.store.getMessage('c','1').content,'saved');
+});
+test('NoDelete removes kept messages with one bulk event per channel when switched off',()=>{
+    const b=deletionHarness();b.api.setSetting('noDelete',true);
+    for(const id of ['1','2','3']){b.messages.set('c:'+id,{});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id});}
+    b.messages.set('d:9',{});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'d',id:'9'});
+    const n=b.events.length;b.api.setSetting('noDelete',false);
+    const removals=b.events.slice(n);assert.equal(removals.length,2);
+    assert.deepEqual(Array.from(removals.find(e=>e.type==='MESSAGE_DELETE_BULK').ids),['1','2','3']);
+    assert.equal(b.messages.size,0);
+});
+test('NoDelete builds archive copies only when saving',async()=>{
+    const b=await archiveHarness(null);b.load({default:{getCurrentUser:()=>({id:'owner'})}},null,1378);
+    const store=b.load({default:{getMessage:()=>({id:'5',content:'hi',author:{id:'x'}}),getMessages:()=>new MessageCollection(),emitChange(){}}},null,5057).default;
+    const dispatch=b.load({default:{dispatch(){}}},null,585).default;
+    dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id:'5'});await new Promise(r=>setTimeout(r,900));await flush();
+    assert.equal(JSON.parse(b.getDisk()).messages[0].message.content,'hi');assert.ok(store);
+});
+test('NoDelete limit edits that change nothing do not rewrite settings',async()=>{
+    const b=boot(allFeatures);const writes=[];b.load({default:native({writeFile:async(d,n,t)=>writes.push(n)})});await flush();await flush();
+    b.api.setSetting('noDelete',true);await flush();await flush();const n=writes.length;
+    b.api.setSetting('noDeleteLimit','512');await flush();await flush();assert.equal(writes.length,n);
+});
+test('JumpToTop connected sheets keep one stable component type across renders',()=>{
+    const b=boot(allFeatures);const {React}=reactHarness(b);b.load({default:{jumpToMessage:()=>{}}},null,6880);
+    const inner=props=>React.createElement('Group',{children:[React.createElement('Row',{label:'Mute',onPress:()=>{}})]});
+    const wrapper=b.load({default:props=>React.createElement(inner,{channel:props.channel})},null,10418).default;
+    const first=wrapper({channel:{id:'100',type:0}}),second=wrapper({channel:{id:'100',type:0}});
+    assert.equal(first.type,second.type,'a new type each render remounts the sheet');
+    const tree=first.type(first.props);assert.equal(tree.props.children[0].props.label,'Jump to top');
+    assert.equal(Object.keys(first.props).includes('__venusJumpSheet'),true);
+    let seen;const spy=b.load({default:()=>React.createElement(props=>{seen=props;return null;},{a:1})},null,9804).default;
+    const t=spy({channel:{id:'1',type:0}});t.type(t.props);assert.equal('__venusJumpSheet' in seen,false);
+});
+test('Hidden Channels asks the real permission store once and keeps canBasicChannel separate',()=>{
+    const b=boot(allFeatures);let can=0,basic=0;const VIEW={bit:1};
+    b.load({Permissions:{VIEW_CHANNEL:VIEW}},null,1086);
+    const store=b.load({default:{can:()=>{can++;return true;},canBasicChannel:()=>{basic++;return false;}}},null,4472).default;
+    b.api.setSetting('hiddenChannels',true);
+    assert.equal(store.can(VIEW,{id:'x',guild_id:'g',type:0}),true);assert.equal(can,1);
+    assert.equal(store.canBasicChannel(VIEW,{id:'y',guild_id:'g',type:0}),true);assert.equal(basic,1);assert.equal(can,1);
+    assert.equal(store.canBasicChannel(VIEW,{id:'y',guild_id:'g',type:0,realCheck:true}),false);
+});
+test('Hidden Channels ignores unrelated Flux events without account lookups',()=>{
+    const b=boot(allFeatures);let lookups=0;b.load({default:{getCurrentUser:()=>{lookups++;return {id:'me'};}}},null,1378);
+    const dispatch=b.load({default:{dispatch(){}}},null,585).default;b.api.setSetting('hiddenChannels',true);lookups=0;
+    for(const type of ['TYPING_START','PRESENCE_UPDATES','VOICE_STATE_UPDATES'])dispatch.dispatch({type});
+    dispatch.dispatch({type:'MESSAGE_CREATE',message:{content:'hi'}});assert.equal(lookups,0);
+});
+test('PlatformIndicators shares one store listener for many badges',()=>{
+    const b=boot({platformIndicators:true}),{React,RN}=reactHarness(b);const effects=[];let renders=0;
+    React.useEffect=fn=>effects.push(fn);React.useState=()=>[0,()=>{renders++;}];
+    const listeners=new Set(),status={a:{desktop:'online'},b:{mobile:'idle'}};
+    b.load({default:{getClientStatus:id=>status[id],addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>listeners.delete(fn)}},null,4877);
+    b.load({default:{getCurrentUser:()=>({id:'me'})}},null,1378);
+    const row=b.load({default:()=>React.createElement('Row',{label:React.createElement(RN.Text,{children:'x'})})},null,10371).default;
+    const badges=['a','b','a'].map(id=>walkElements(row({user:{id}}),n=>n.type&&n.type.name==='PlatformBadges')[0]);
+    effects.length=0;badges.forEach(badge=>badge.type(badge.props));const cleanup=effects.map(fn=>fn());
+    assert.equal(listeners.size,1);status.a={desktop:'dnd'};listeners.forEach(fn=>fn());assert.equal(renders,2);
+    cleanup.forEach(fn=>fn());assert.equal(listeners.size,0);
+});
+test('PlatformIndicators voice-user list keeps a stable renderItem',()=>{
+    const b=boot({platformIndicators:true}),{React}=reactHarness(b);
+    const render=()=>null;const list=React.createElement('List',{renderItem:render});
+    const exports=b.load({default:()=>React.createElement('View',{children:list})},null,12602);
+    const one=exports.default({}).props.children.props.renderItem,two=exports.default({}).props.children.props.renderItem;
+    assert.equal(one,two);
+});
+test('Read All skips DMs without a last message and acknowledges in batches of 100',()=>{
+    const dms=Array.from({length:150},(_,i)=>'d'+i).concat(['empty']);
+    const b=readAllHarness({dms});b.context.__r=(old=>id=>id===4852?{default:{lastMessageId:id=>id==='empty'?null:'m-'+id}}:old(id))(b.context.__r);
+    b.api.setSetting('readAllMode','dms');pressReadAll(b);
+    assert.deepEqual(b.calls.acks.map(a=>a.length),[100,50]);assert.equal(b.calls.acks.flat().some(a=>a.channelId==='empty'),false);
+    assert.equal(b.calls.toasts.at(-1),'Marked 150 DMs as read');
+});
+test('ReviewDB views share one UserStore listener that wakes only on account changes',()=>{
+    const b=boot(allFeatures),{React}=reactHarness(b);const listeners=new Set();let account={id:'111111111111111111'};
+    b.load({default:{getCurrentUser:()=>account,addChangeListener:fn=>listeners.add(fn),removeChangeListener:fn=>listeners.delete(fn)}},null,1378);
+    const effects=[];React.useEffect=fn=>effects.push(fn);let wakes=0;React.useState=()=>[0,()=>{wakes++;}];
+    const note=b.load({default:()=>null},null,12627).default;b.api.setSetting('reviewDB',true);
+    for(const id of ['222222222222222222','333333333333333333']){const s=note({userId:id}).props.children[1];try{s.type(s.props);}catch(_){}}
+    const cleanup=effects.splice(0).map(fn=>fn()).filter(Boolean);
+    assert.equal(listeners.size,1);wakes=0;listeners.forEach(fn=>fn());assert.equal(wakes,0,'unrelated user updates must not re-render reviews');
+    account={id:'444444444444444444'};listeners.forEach(fn=>fn());assert.ok(wakes>0);
+    cleanup.forEach(fn=>fn());assert.equal(listeners.size,0);
+});

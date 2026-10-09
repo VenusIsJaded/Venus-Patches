@@ -204,8 +204,8 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "Now works with Discord 348.10. Crash reporting is blocked properly, JumpToTop works on threads, "
-    "and PlatformIndicators is smoother. Patch the original Discord 348.10 APKM."
+    "Bug fixes and a smoother Discord. NoDelete keeps your saved messages, Read All clears every DM, "
+    "and chats and lists do less work. Patch the original Discord 348.10 APKM."
 )
 
 
