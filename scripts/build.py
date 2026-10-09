@@ -205,7 +205,7 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "Quest Completer now accepts and completes Play Quests too, like \"Play VALORANT for 15 minutes\". "
+    "Play and Activity Quests finish again: Quest Completer reports their time the way Discord for Windows does. "
     "Patch the original Discord 348.10 APKM."
 )
 

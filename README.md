@@ -61,7 +61,7 @@ Discord can still see what any client needs to work, like your messages, calls a
 - **Hidden Channels** only shows a channel's name and dates. It can't show messages or let you join locked voice channels.
 - **ReviewDB** loads reviews from the community ReviewDB service at `manti.vendicated.dev`. To post or report reviews, sign in from its settings page. Signing in never uses your Discord token.
 - **FreeNitro** sends links, not real Nitro emojis or stickers.
-- **Quest Completer** checks for new Quests when Discord opens and every 30 minutes after. It accepts and completes video, Play and Activity Quests one at a time. Play Quests count time for the game without installing it. Stream Quests need a real stream, so they're skipped. You still claim rewards yourself. Discord may pause Quests on accounts that complete them automatically.
+- **Quest Completer** checks for new Quests when Discord opens and every 30 minutes after. It accepts and completes video, Play and Activity Quests one at a time. Play and Activity Quests count time without installing or starting anything. That time is reported the way Discord's Windows app reports it, because Discord only counts play time from desktop. Stream Quests need a real stream, so they're skipped. You still claim rewards yourself. Discord may pause Quests on accounts that complete them automatically.
 - **Read All** uses Discord's own "Mark as read". It clears servers by default. Switch it to DMs or both in its settings, or hold the button for a one-time choice.
 
 ## For developers

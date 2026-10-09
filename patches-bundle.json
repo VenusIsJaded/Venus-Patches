@@ -1,8 +1,8 @@
 {
-  "created_at": "2026-10-09T18:21:20",
-  "description": "Quest Completer now accepts and completes Play Quests too, like \"Play VALORANT for 15 minutes\". Patch the original Discord 348.10 APKM.",
-  "download_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/download/v1.4.2/patches-1.4.2.mpp",
-  "page_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/tag/v1.4.2",
+  "created_at": "2026-10-09T23:13:17",
+  "description": "Play and Activity Quests finish again: Quest Completer reports their time the way Discord for Windows does. Patch the original Discord 348.10 APKM.",
+  "download_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/download/v1.4.3/patches-1.4.3.mpp",
+  "page_url": "https://github.com/VenusIsJaded/Venus-Patches/releases/tag/v1.4.3",
   "signature_download_url": "",
-  "version": "1.4.2"
+  "version": "1.4.3"
 }

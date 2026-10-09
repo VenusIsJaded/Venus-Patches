@@ -22,7 +22,7 @@
     if (features.reviewDB) selectModules([12627, 13521, 13987, 8510, 5997, 6621, 1378, 585]);
     if (features.readAll) selectModules([15929]);
     if (features.quests) selectModules([585, 7120]);
-    const revision = "1.4.2";
+    const revision = "1.4.3";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -1607,10 +1607,23 @@
     // QuestContent.QUEST_HOME_MOBILE: where Discord's own app says a quest was accepted from.
     const QUEST_HOME_MOBILE = 12;
     // Video progress may run at most ~10 s ahead of the time since accepting; report about every 7 s like the player.
-    const QUEST_VIDEO_LEEWAY = 10, QUEST_VIDEO_STEP = 7, QUEST_HEARTBEAT_MS = 20000;
+    // Play and Activity heartbeats follow Discord's desktop QuestProgressManager: one a minute, and when less
+    // than a minute is left it waits exactly what's left plus one second.
+    const QUEST_VIDEO_LEEWAY = 10, QUEST_VIDEO_STEP = 7, QUEST_HEARTBEAT_MS = 60000, QUEST_HEARTBEAT_TAIL_MS = 1000;
+    // QuestVariants.MOBILE_ACTIVITY_QUEST: an Activity Quest that Discord's phone app reports itself.
+    const QUEST_MOBILE_ACTIVITY = 36;
+    // Discord answers 401 when a phone reports play time, so Play and Activity heartbeats are sent as Discord
+    // Stable for Windows: host 1.0.9261, web build 634304, updater metadata 93252, Electron 42.11.10.
+    const QUEST_DESKTOP = {version:"1.0.9261", build:634304, native:93252, electron:"42.11.10", chrome:"148.0.7778.280",
+        osVersion:"10.0.26100", osSdk:"26100"};
+    const QUEST_DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/" +
+        QUEST_DESKTOP.version + " Chrome/" + QUEST_DESKTOP.chrome + " Electron/" + QUEST_DESKTOP.electron + " Safari/537.36";
+    // Bits desktop's launch signature keeps clear when it detects no client mod (docs.discord.food, Launch Signature).
+    const QUEST_SIGNATURE_BITS = [119, 108, 100, 91, 84, 75, 61, 55, 48, 38, 24, 11];
+    const QUEST_HEARTBEAT_SESSION_MS = 30 * 60 * 1000;
     const QUEST_REFETCH_MS = 30 * 60 * 1000, QUEST_RETRY_MS = 30 * 60 * 1000, QUEST_REFUSED_MS = 6 * 60 * 60 * 1000;
     const quest = {store:null, dispatcher:null, generation:0, running:null, enrolling:false, skip:new Map(), enrollBlockedUntil:0,
-        scanTimer:undefined, refetchTimer:undefined, user:null, completed:0, last:"", error:""};
+        scanTimer:undefined, refetchTimer:undefined, user:null, completed:0, last:"", error:"", desktop:null, executables:new Map()};
     function questSleep(ms) { return new Promise(resolve => { later(resolve, ms); }); }
     function questStore() {
         if (quest.store) return quest.store;
@@ -1644,10 +1657,84 @@
         cancel(error);
         return true;
     }
-    function questRequest(url, body) {
-        const http = inspectedExport(1283, "HTTP");
-        if (!http || typeof http.post !== "function") return Promise.reject(new Error("Discord's network client isn't ready"));
-        return Promise.resolve().then(() => http.post({url, body, interceptResponse:questIntercept}));
+    // desktop: send this request as the Windows desktop app. Only Play and Activity heartbeats (and the game
+    // lookup that names their executable) do; enrolling and video progress stay the phone, which Discord accepts.
+    function questRequest(url, body, desktop, method) {
+        const http = inspectedExport(1283, "HTTP"), send = http && http[method || "post"];
+        if (typeof send !== "function") return Promise.reject(new Error("Discord's network client isn't ready"));
+        const request = {url, interceptResponse:questIntercept};
+        if (body !== undefined) request.body = body;
+        if (desktop) request.onRequestCreated = questDesktopRequest;
+        return Promise.resolve().then(() => send.call(http, request));
+    }
+    function questHex(count) { let hex = ""; for (let i = 0; i < count; i++) hex += Math.floor(Math.random() * 16).toString(16); return hex; }
+    function questUuidText(hex) { return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20, 32); }
+    // RFC 4122 version 4, like crypto.randomUUID().
+    function questUuid() { const hex = questHex(32); return hex.slice(0, 12) + "4" + hex.slice(13, 16) + "89ab"[Math.floor(Math.random() * 4)] + hex.slice(17); }
+    // A random UUID with every client-mod bit cleared, the way desktop makes one when it detects no mods.
+    function questLaunchSignature() {
+        const digits = questUuid().split("").map(c => parseInt(c, 16));
+        for (const bit of QUEST_SIGNATURE_BITS) { const i = 31 - Math.floor(bit / 4); digits[i] &= ~(1 << bit % 4); }
+        return questUuidText(digits.map(d => d.toString(16)).join(""));
+    }
+    function questBase64(text) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", bytes = [];
+        for (const c of unescape(encodeURIComponent(text))) bytes.push(c.charCodeAt(0));
+        let out = "";
+        for (let i = 0; i < bytes.length; i += 3) {
+            const n = bytes[i] << 16 | (bytes[i + 1] || 0) << 8 | (bytes[i + 2] || 0);
+            out += chars[n >> 18 & 63] + chars[n >> 12 & 63] + (i + 1 < bytes.length ? chars[n >> 6 & 63] : "=") + (i + 2 < bytes.length ? chars[n & 63] : "=");
+        }
+        return out;
+    }
+    function questLocale() {
+        try {
+            const read = inspectedExport(1348, "getSuperProperties"), own = typeof read === "function" ? read() : null;
+            const locale = own && own.system_locale;
+            if (typeof locale === "string" && /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(locale)) return locale;
+        } catch (_) {}
+        return "en-US";
+    }
+    // One desktop launch per Discord launch: its launch id and signature stay the same, and the analytics
+    // heartbeat session id rolls over every 30 minutes like desktop's. The locale is the phone's own.
+    function questDesktopProperties() {
+        const now = Date.now();
+        const identity = quest.desktop || (quest.desktop = {launch:questUuidText(questUuid()), signature:questLaunchSignature(),
+            locale:questLocale(), session:"", sessionAt:0});
+        if (!identity.session || now - identity.sessionAt >= QUEST_HEARTBEAT_SESSION_MS) { identity.session = questUuidText(questUuid()); identity.sessionAt = now; }
+        // Same keys, in the same order, as desktop's getSuperProperties.
+        const properties = {os:"Windows", browser:"Discord Client", release_channel:"stable", client_version:QUEST_DESKTOP.version,
+            os_version:QUEST_DESKTOP.osVersion, os_arch:"x64", app_arch:"x64", system_locale:identity.locale, has_client_mods:false,
+            client_launch_id:identity.launch, browser_user_agent:QUEST_DESKTOP_UA, browser_version:QUEST_DESKTOP.electron,
+            os_sdk_version:QUEST_DESKTOP.osSdk, client_build_number:QUEST_DESKTOP.build, native_build_number:QUEST_DESKTOP.native,
+            client_event_source:null, launch_signature:identity.signature, client_heartbeat_session_id:identity.session,
+            client_app_state:"unfocused"};
+        try {
+            const encode = inspectedExport(1283, "encodeProperties"), encoded = typeof encode === "function" ? encode(properties) : null;
+            if (typeof encoded === "string" && encoded) return encoded;
+        } catch (_) {}
+        return questBase64(JSON.stringify(properties));
+    }
+    // Discord's HTTP client hands over the request before its prepareRequest adds the phone's X-Super-Properties,
+    // so those headers are swapped as they're set. The native User-Agent interceptor leaves this Windows agent
+    // alone (see questCompleter in DiscordPatches.kt); every other request still says Discord-Android.
+    function questDesktopRequest(request) {
+        if (!request || typeof request.set !== "function") return;
+        const properties = questDesktopProperties(), set = request.set;
+        const value = (name, original) => {
+            const key = String(name).toLowerCase();
+            return key === "x-super-properties" ? properties : key === "user-agent" ? QUEST_DESKTOP_UA : original;
+        };
+        request.set = function (name, original) {
+            if (name && typeof name === "object") {
+                const copy = {};
+                for (const key of Object.keys(name)) copy[key] = value(key, name[key]);
+                return set.call(this, copy);
+            }
+            return set.call(this, name, value(name, original));
+        };
+        request.set("User-Agent", QUEST_DESKTOP_UA);
+        request.set("X-Super-Properties", properties);
     }
     // QuestStore exposes these as getters in 348.10; accept a method too.
     function questFlag(store, key) {
@@ -1700,7 +1787,9 @@
         const play = all[QUEST_PLAY_TASK], playTarget = Number(play && play.target), playApp = questApplication(item, play);
         if (settings.questsPlay && playTarget > 0 && playApp) return {type:QUEST_PLAY_TASK, target:playTarget, kind:"play", applicationId:playApp};
         const activity = all[QUEST_ACTIVITY_TASK], target = Number(activity && activity.target);
-        if (settings.questsActivity && target > 0) return {type:QUEST_ACTIVITY_TASK, target, kind:"activity", applicationId:questApplication(item, activity)};
+        const activityApp = questApplication(item, activity), features = config.features;
+        const mobile = Array.isArray(features) && features.includes(QUEST_MOBILE_ACTIVITY);
+        if (settings.questsActivity && target > 0 && activityApp) return {type:QUEST_ACTIVITY_TASK, target, kind:"activity", applicationId:activityApp, mobile};
         return null;
     }
     function questProgress(item, type) {
@@ -1800,50 +1889,69 @@
         if (!completed) completed = questVideoStatus(await questRequest("/quests/" + entry.id + "/video-progress", {timestamp:target}));
         return completed;
     }
-    // Activity quests count time in a call; any DM or voice channel id gives the heartbeat its stream key.
-    function questChannel() {
-        try {
-            const channels = inspectedExport(2051, "default"), sorted = channels && typeof channels.getSortedPrivateChannels === "function" && channels.getSortedPrivateChannels();
-            if (sorted && sorted[0] && sorted[0].id) return sorted[0].id;
-        } catch (_) {}
-        try {
-            const guilds = inspectedExport(4470, "default"), all = guilds && typeof guilds.getAllGuilds === "function" && guilds.getAllGuilds();
-            for (const key of Object.keys(all || {})) {
-                const vocal = all[key] && all[key].VOCAL, first = vocal && vocal[0] && vocal[0].channel;
-                if (first && first.id) return first.id;
-            }
-        } catch (_) {}
-        return null;
+    // The executable_path desktop reports for a running game: the last two parts of its lowercase path, the way
+    // its QuestProgressManager trims exePath (973522 Ic). Discord's own list of the game's Windows executables
+    // is read once per game, and a test build, launcher or helper is never the one picked.
+    function questExecutableName(app) {
+        const all = app && Array.isArray(app.executables) ? app.executables : [];
+        const rank = name => (/(^|[\/_.-])(test|launcher|crash|helper|setup|update|install|unins)/i.test(name) ? 2 : 0) + (name.includes("/") ? 1 : 0);
+        const names = all.filter(e => e && e.os === "win32" && !e.is_launcher && typeof e.name === "string" && /\.exe$/i.test(e.name))
+            .map(e => e.name.replace(/^>/, "").replace(/\\/g, "/").toLowerCase()).filter(name => !/(^|\/)\.\.(\/|$)/.test(name));
+        names.sort((a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0));
+        return names[0] || null;
     }
-    // Same body as 348.10's own sendHeartbeat (9765): stream_key for Activities, application_id for games.
-    async function questHeartbeat(entry, streamKey, terminal) {
-        const body = {terminal};
-        if (streamKey) body.stream_key = streamKey;
-        if (entry.task.applicationId) body.application_id = entry.task.applicationId;
-        const response = await questRequest("/quests/" + entry.id + "/heartbeat", body);
+    function questExecutablePath(app, exe) {
+        const parts = exe.split("/").filter(Boolean);
+        if (parts.length >= 2) return parts.slice(-2).join("/");
+        const folder = String(app && app.name || "").toLowerCase().replace(/[<>:"\/\\|?*]/g, "").trim();
+        return folder ? folder + "/" + parts[0] : null;
+    }
+    async function questExecutable(applicationId) {
+        if (quest.executables.has(applicationId)) return quest.executables.get(applicationId);
+        let path = null;
+        try {
+            const response = await questRequest("/applications/public?application_ids=" + applicationId, undefined, true, "get");
+            const list = response && response.body, app = Array.isArray(list) ? list.find(a => a && String(a.id) === applicationId) : null;
+            const exe = questExecutableName(app);
+            if (exe) path = questExecutablePath(app, exe);
+        } catch (_) {}
+        // Unknown is fine: desktop sends no path for a game it can't place either.
+        quest.executables.set(applicationId, path);
+        return path;
+    }
+    // Same body as Discord's own sendHeartbeat (9765): application_id names the game or Activity, and a game
+    // also says which executable is running. Play and Activity heartbeats go out as Discord for Windows.
+    async function questHeartbeat(entry, desktop) {
+        const body = {application_id:entry.task.applicationId, terminal:false};
+        if (entry.executablePath) body.executable_path = entry.executablePath;
+        const response = await questRequest("/quests/" + entry.id + "/heartbeat", body, desktop);
         const reply = response && response.body, status = questUserStatus(reply), type = entry.task.type;
-        if (status) questDispatch({type:"QUESTS_SEND_HEARTBEAT_SUCCESS", questId:entry.id, streamKey, userStatus:status});
+        if (status) questDispatch({type:"QUESTS_SEND_HEARTBEAT_SUCCESS", questId:entry.id, userStatus:status});
         const value = Number(reply && reply.progress && reply.progress[type] && reply.progress[type].value);
         return {value:Number.isFinite(value) ? value : 0, completed:!!(reply && reply.completed_at)};
     }
-    // Beats every 20 s like Discord does, then one terminal beat once the target is reached.
-    async function questBeat(entry, streamKey) {
+    // Desktop's pace: a beat right away, then one a minute. With under a minute left it waits what's left plus a
+    // second, and stops once Discord says the Quest is done. A finished Quest gets no terminal beat on desktop.
+    async function questBeat(entry, desktop) {
         const target = entry.task.target;
         while (questActive(entry)) {
-            const beat = await questHeartbeat(entry, streamKey, false);
+            const beat = await questHeartbeat(entry, desktop);
             if (!questActive(entry)) return false;
-            if (beat.completed || beat.value >= target) { await questHeartbeat(entry, streamKey, true); return true; }
-            await questSleep(Math.min(QUEST_HEARTBEAT_MS, Math.max(1000, Math.ceil((target - beat.value) * 1000) + 1000)));
+            if (beat.completed || beat.value >= target) return true;
+            const left = Math.max(0, (target - beat.value) * 1000);
+            await questSleep(left <= QUEST_HEARTBEAT_MS ? left + QUEST_HEARTBEAT_TAIL_MS : QUEST_HEARTBEAT_MS);
         }
         return false;
     }
-    function questActivity(entry) {
-        const channelId = questChannel();
-        if (!channelId) return Promise.reject(new Error("no DM or voice channel to count time in"));
-        return questBeat(entry, "call:" + channelId + ":1");
-    }
+    // Activity Quests: Discord counts time in the Activity without it being started. A mobile Activity Quest is
+    // one the phone app reports itself, so only the others are sent as desktop.
+    function questActivity(entry) { return questBeat(entry, !entry.task.mobile); }
     // Play Quests: Discord counts time for the quest's game without it being installed or started.
-    function questPlay(entry) { return questBeat(entry, null); }
+    async function questPlay(entry) {
+        entry.executablePath = await questExecutable(entry.task.applicationId);
+        if (!questActive(entry)) return false;
+        return questBeat(entry, true);
+    }
     // Mobile only loads Quests when you open them; ask for them once in a while, through Discord's own fetch.
     function questsFetch(force) {
         const store = questStore(), fetch = inspectedExport(9765, "fetchCurrentQuests");

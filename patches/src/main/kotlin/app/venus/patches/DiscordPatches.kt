@@ -267,5 +267,57 @@ val reviewDB = bundledPlugin("reviewDB", "ReviewDB", "Read and write reviews of 
 @Suppress("unused")
 val readAll = bundledPlugin("readAll", "Read All", "Adds a Read all button to the server list, under the Direct Messages button. Choose whether it clears servers, DMs or both.")
 
+internal const val USER_AGENT_INTERCEPTOR = "Lcom/discord/client_info/ClientUserAgent\$DiscordUserAgentInterceptor;"
+/** The start of the Windows desktop User-Agent that Quest Completer sends Play and Activity heartbeats with. */
+internal const val QUEST_DESKTOP_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/"
+/** Instructions [keepDesktopQuestAgent] adds before Discord's own code, counting the nop its label lands on. */
+internal const val QUEST_AGENT_GUARD_SIZE = 14
+
+/**
+ * Discord's OkHttp interceptor replaces every request's User-Agent with Discord-Android/348010;RNA.
+ * A request that already says it's the Windows desktop app passes through untouched; everything else is unchanged.
+ * Locals v0-v2 are free: the interceptor has 5 registers and 2 of them are parameters.
+ */
+internal fun keepDesktopQuestAgent(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val implementation = method.implementation ?: throw PatchException("User-Agent interceptor has no code")
+    if (method.parameterTypes.map { it.toString() } != listOf("Lokhttp3/Interceptor\$Chain;") ||
+        method.returnType != "Lokhttp3/Response;" || implementation.registerCount - 2 < 3)
+        throw PatchException("Discord's User-Agent interceptor ABI changed")
+    method.addInstructions(0, """
+        invoke-interface {p1}, Lokhttp3/Interceptor${'$'}Chain;->i()Lokhttp3/Request;
+        move-result-object v0
+        const-string v1, "User-Agent"
+        invoke-virtual {v0, v1}, Lokhttp3/Request;->a(Ljava/lang/String;)Ljava/lang/String;
+        move-result-object v1
+        if-eqz v1, :venus_android_agent
+        const-string v2, "$QUEST_DESKTOP_AGENT"
+        invoke-virtual {v1, v2}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+        move-result v1
+        if-eqz v1, :venus_android_agent
+        invoke-interface {p1, v0}, Lokhttp3/Interceptor${'$'}Chain;->a(Lokhttp3/Request;)Lokhttp3/Response;
+        move-result-object v0
+        return-object v0
+        :venus_android_agent
+        nop
+    """)
+}
+
 @Suppress("unused")
-val questCompleter = bundledPlugin("quests", "Quest Completer", "Completes video, Play and Activity Quests in the background when Discord is open, with no screen or tap. You still claim rewards yourself. Discord may pause Quests on accounts that do this.")
+val questCompleter = bytecodePatch(
+    name = "Quest Completer",
+    description = "Completes video, Play and Activity Quests in the background when Discord is open, with no screen or tap. You still claim rewards yourself. Discord may pause Quests on accounts that do this."
+) {
+    compatibleWith(discord)
+    section(PLUGINS)
+    dependsOn(venusSettings)
+    execute {
+        additionalSelections += "quests"
+        // Play and Activity time only counts when it comes from the desktop app.
+        keepDesktopQuestAgent(Fingerprint(
+            definingClass = USER_AGENT_INTERCEPTOR,
+            name = "intercept",
+            returnType = "Lokhttp3/Response;",
+            parameters = listOf("Lokhttp3/Interceptor\$Chain;")
+        ).method)
+    }
+}

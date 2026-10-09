@@ -2,6 +2,16 @@
 
 Every release works with **Discord 348.10 - Stable**. Always patch the original APKM. Releases up to 1.3.6 were for Discord 347.12.
 
+## 1.4.3 — Play Quests count again
+
+- **Play Quests finish now.** In 1.4.2 they were accepted, then stopped with "Couldn't finish …: HTTP 401", and Discord showed "Waiting for you to launch … on desktop or connected console". Discord only counts play time that comes from its desktop app or a linked console, so Quest Completer now reports it the way Discord for Windows does.
+- **Activity Quests finish too.** Quests you'd normally play inside Discord, like VALORANT Aces, were refused the same way. They're now reported like desktop does, naming the Activity instead of a call. Activity Quests made for phones still come from your phone.
+- **Only those reports change.** Accepting Quests and watching videos still come from your phone, as before, because Discord allows that.
+- **Paced like the desktop app.** Play time is reported once a minute, not every 20 seconds, and it stops as soon as the Quest is done, the same as desktop. A 15-minute Quest still takes about 15 minutes.
+- **It names the game properly.** Each report says which game it's for, and which of the game's files is running, using Discord's own list for that game. Test builds and launchers are never picked.
+- **Everything else is still your phone.** Messages, calls and the rest of Discord aren't touched.
+- Stream Quests still need a real stream, so they're skipped. You still claim rewards yourself, and Discord may pause Quests on accounts that complete them automatically.
+
 ## 1.4.2 — Quest Completer does Play Quests
 
 - **Play Quests work.** Quests like "Play VALORANT for 15 minutes" or "Play AION 2 with your Discord client open" used to be skipped, so they were never accepted or completed. Quest Completer now accepts them and completes them in the background, like video Quests.

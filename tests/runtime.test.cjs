@@ -2140,8 +2140,8 @@ test('NoDelete lowering the maximum removes the oldest kept messages with one ev
     assert.equal(b.messages.has('c:1'),false);assert.equal(b.messages.get('d:9').content,'other');
 });
 
-// ---- 1.4.1 Quest Completer (Play Quests since 1.4.2) ----
-function questHarness({quests = [], settings = {}, fail = {}, fetched = true} = {}) {
+// ---- 1.4.1 Quest Completer (Play Quests since 1.4.2, sent as Discord for Windows since 1.4.3) ----
+function questHarness({quests = [], settings = {}, fail = {}, fetched = true, apps = {}} = {}) {
     const b = boot({quests:true});
     let clock = 1_800_000_000_000;
     b.context.__clock = () => clock;
@@ -2173,8 +2173,25 @@ function questHarness({quests = [], settings = {}, fail = {}, fetched = true} = 
         addChangeListener: fn => listeners.add(fn), removeChangeListener: fn => listeners.delete(fn),
     };
     const progress = new Map();
-    const http = {post(request) {
-        requests.push({url:request.url, body:request.body, at:clock});
+    // Like 348.10's sendRequest: onRequestCreated gets the superagent request, then prepareRequest sets the phone's headers.
+    function headersFor(request) {
+        const headers = {};
+        const agent = {set(name, value) {
+            if (name && typeof name === 'object') { Object.assign(headers, name); return agent; }
+            headers[name] = value; return agent;
+        }};
+        if (typeof request.onRequestCreated === 'function') request.onRequestCreated(agent);
+        agent.set('User-Agent', 'Discord-Android/348010;RNA');
+        agent.set('X-Super-Properties', 'cGhvbmU=');
+        agent.set('Authorization', 'token');
+        return headers;
+    }
+    const http = {get(request) {
+        requests.push({url:request.url, method:'get', headers:headersFor(request), at:clock});
+        const ids = request.url.split('application_ids=')[1];
+        return Promise.resolve({body:ids && apps[ids] ? [apps[ids]] : []});
+    }, post(request) {
+        requests.push({url:request.url, body:request.body, headers:headersFor(request), at:clock});
         const id = request.url.split('/')[2], q = map.get(id), kind = request.url.split('/')[3];
         if (fail[kind]) {
             // Discord's HTTP client asks the request's own interceptor first, then its global handler.
@@ -2185,12 +2202,13 @@ function questHarness({quests = [], settings = {}, fail = {}, fetched = true} = 
         }
         if (kind === 'enroll') return Promise.resolve({body:{quest_id:id, enrolled_at:new Date(clock).toISOString()}});
         const tasks = q.config.taskConfigV2.tasks, type = Object.keys(tasks)[0], target = tasks[type].target;
-        const value = kind === 'video-progress' ? Math.min(target, request.body.timestamp) : Math.min(target, (progress.get(id) || 0) + 20);
+        const value = kind === 'video-progress' ? Math.min(target, request.body.timestamp) : Math.min(target, (progress.get(id) || 0) + 60);
         progress.set(id, value);
         return Promise.resolve({body:{quest_id:id, completed_at:value >= target ? 'now' : null, progress:{[type]:{value}}}});
     }};
     let fetches = 0;
-    const native = {1283:{HTTP:http},
+    const native = {1283:{HTTP:http, encodeProperties:value => Buffer.from(JSON.stringify(value)).toString('base64')},
+        1348:{getSuperProperties:() => ({os:'Android', system_locale:'en-GB'})},
         7127:{questUserStatusFromServer:body => ({questId:body.quest_id, enrolledAt:body.enrolled_at ? new Date(body.enrolled_at) : null,
             completedAt:body.completed_at || null, progress:body.progress || {}})},
         9765:{fetchCurrentQuests:() => { fetches++; return Promise.resolve(); }},
@@ -2244,14 +2262,28 @@ test('Quest Completer never reports video progress faster than real time allows'
     assert.equal(video.at(-1).body.timestamp, 60);
     assert.ok(b.map.get('q1').userStatus.completedAt);
 });
-test('Quest Completer completes Activity Quests with heartbeats and one final terminal beat', async () => {
-    const b = questHarness({quests:[questFixture('a1', 'PLAY_ACTIVITY', 60, enrolledAgo(5))]});
+function activityFixture(id, target, extra = {}, app = '1124225423214485597', features = []) {
+    const q = questFixture(id, 'PLAY_ACTIVITY', target, extra);
+    q.config.taskConfigV2.tasks.PLAY_ACTIVITY.applications = [{id:app}]; q.config.features = features;
+    return q;
+}
+const desktopProperties = r => JSON.parse(Buffer.from(r.headers['X-Super-Properties'], 'base64').toString());
+test('Quest Completer completes Activity Quests as the desktop app, like Discord does', async () => {
+    const b = questHarness({quests:[activityFixture('a1', 180, enrolledAgo(5))]});
     b.connect(); await b.run();
     const beats = b.requests.filter(r => r.url === '/quests/a1/heartbeat');
-    assert.ok(beats.length >= 3);
-    assert.ok(beats.every(r => r.body.stream_key === 'call:dm1:1'));
-    assert.equal(beats.at(-1).body.terminal, true); assert.equal(beats.filter(r => r.body.terminal).length, 1);
+    assert.equal(beats.length, 3);
+    assert.ok(beats.every(r => r.body.application_id === '1124225423214485597' && r.body.terminal === false && !('stream_key' in r.body)));
+    assert.ok(beats.every(r => r.headers['User-Agent'].includes('discord/1.0.9261') && desktopProperties(r).os === 'Windows'));
     assert.ok(b.events.some(e => e.type === 'QUESTS_SEND_HEARTBEAT_SUCCESS' && e.questId === 'a1'));
+    assert.ok(b.map.get('a1').userStatus.completedAt);
+});
+test('Quest Completer reports mobile Activity Quests from the phone', async () => {
+    const b = questHarness({quests:[activityFixture('m1', 120, enrolledAgo(5), '1124225423214485597', [36])]});
+    b.connect(); await b.run();
+    const beats = b.requests.filter(r => r.url === '/quests/m1/heartbeat');
+    assert.ok(beats.length >= 2);
+    assert.ok(beats.every(r => r.headers['User-Agent'] === 'Discord-Android/348010;RNA' && r.headers['X-Super-Properties'] === 'cGhvbmU='));
 });
 function playFixture(id, target, extra = {}, app = '1402418491272986635') {
     const q = questFixture(id, 'PLAY_ON_DESKTOP', target, extra);
@@ -2264,19 +2296,60 @@ test('Quest Completer accepts and completes Play Quests like the ones on the Que
     const enroll = b.requests.find(r => r.url === '/quests/p1/enroll');
     assert.ok(enroll, 'accepted the Play Quest'); assert.equal(enroll.body.location, 12);
     const beats = b.requests.filter(r => r.url === '/quests/p1/heartbeat');
-    assert.ok(beats.length >= 10, 'beats over time, not one jump');
+    assert.equal(beats.length, 15, 'one beat a minute for 15 minutes, not one jump');
     assert.ok(beats.every(r => r.body.application_id === '1402418491272986635' && !('stream_key' in r.body)), 'heartbeat names the game');
-    for (let i = 1; i < beats.length - 1; i++) assert.ok(beats[i].at - beats[i - 1].at >= 1000, 'beats are spaced out');
-    assert.equal(beats.at(-1).body.terminal, true); assert.equal(beats.filter(r => r.body.terminal).length, 1);
+    for (let i = 1; i < beats.length - 1; i++) assert.equal(beats[i].at - beats[i - 1].at, 60000, 'a minute apart, like desktop');
+    assert.equal(beats.at(-1).at - beats.at(-2).at, 61000, 'the last minute waits what is left plus a second');
+    assert.equal(beats.some(r => r.body.terminal), false, 'no terminal beat once Discord says it is done');
     assert.ok(b.map.get('p1').userStatus.completedAt, 'completed');
     assert.deepEqual(b.ui, [], 'no toast, alert, modal or captcha screen');
+});
+test('Quest Completer sends Play heartbeats as Discord for Windows and nothing else', async () => {
+    const b = questHarness({quests:[playFixture('p1', 120, enrolledAgo(5)), questFixture('v1', 'WATCH_VIDEO', 30, enrolledAgo(100))]});
+    b.connect(); await b.run();
+    const beats = b.requests.filter(r => r.url === '/quests/p1/heartbeat');
+    assert.ok(beats.length >= 2);
+    for (const r of beats) {
+        assert.equal(r.headers['User-Agent'], 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9261 Chrome/148.0.7778.280 Electron/42.11.10 Safari/537.36');
+        assert.equal(r.headers.Authorization, 'token', 'still your own login');
+        const p = desktopProperties(r);
+        assert.deepEqual(Object.keys(p), ['os','browser','release_channel','client_version','os_version','os_arch','app_arch','system_locale','has_client_mods',
+            'client_launch_id','browser_user_agent','browser_version','os_sdk_version','client_build_number','native_build_number','client_event_source',
+            'launch_signature','client_heartbeat_session_id','client_app_state'], 'same keys in the same order as desktop');
+        assert.equal(p.os, 'Windows'); assert.equal(p.browser, 'Discord Client'); assert.equal(p.client_build_number, 634304);
+        assert.equal(p.has_client_mods, false); assert.equal(p.system_locale, 'en-GB', "the phone's own language");
+        assert.match(p.client_launch_id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+        const bits = BigInt('0x' + p.launch_signature.replace(/-/g, ''));
+        for (const bit of [119, 108, 100, 91, 84, 75, 61, 55, 48, 38, 24, 11]) assert.equal((bits >> BigInt(bit)) & 1n, 0n, 'no client mod bit ' + bit);
+    }
+    assert.equal(new Set(beats.map(r => desktopProperties(r).client_launch_id)).size, 1, 'one desktop launch, not a new one each beat');
+    const others = b.requests.filter(r => !r.url.endsWith('/heartbeat') && !r.url.startsWith('/applications/'));
+    assert.ok(others.length > 0);
+    assert.ok(others.every(r => r.headers['User-Agent'] === 'Discord-Android/348010;RNA' && r.headers['X-Super-Properties'] === 'cGhvbmU='), 'video progress stays the phone');
+});
+test("Quest Completer names the game's real executable, never a test build or launcher", async () => {
+    const app = {id:'1402418491272986635', name:'Marvel Rivals', executables:[
+        {os:'win32', name:'marvel-win64-test.exe'}, {os:'win32', name:'launcher.exe', is_launcher:true},
+        {os:'darwin', name:'marvel.app'}, {os:'win32', name:'win64/marvel-win64-shipping.exe'}]};
+    const b = questHarness({quests:[playFixture('p1', 120, enrolledAgo(5))], apps:{'1402418491272986635':app}});
+    b.connect(); await b.run();
+    const lookups = b.requests.filter(r => r.url.startsWith('/applications/public'));
+    assert.equal(lookups.length, 1); assert.equal(lookups[0].headers['User-Agent'].includes('discord/1.0.9261'), true);
+    const beats = b.requests.filter(r => r.url === '/quests/p1/heartbeat');
+    assert.ok(beats.length >= 2 && beats.every(r => r.body.executable_path === 'win64/marvel-win64-shipping.exe'));
+    const single = questHarness({quests:[playFixture('p2', 60, enrolledAgo(5), '42424242424242')], apps:{'42424242424242':{id:'42424242424242', name:'March of Giants', executables:[{os:'win32', name:'MarchOfGiants.exe'}]}}});
+    single.connect(); await single.run();
+    assert.equal(single.requests.find(r => r.url === '/quests/p2/heartbeat').body.executable_path, 'march of giants/marchofgiants.exe');
+    const unknown = questHarness({quests:[playFixture('p3', 60, enrolledAgo(5))]});
+    unknown.connect(); await unknown.run();
+    assert.equal('executable_path' in unknown.requests.find(r => r.url === '/quests/p3/heartbeat').body, false, 'nothing made up');
 });
 test('Quest Completer reads the game from older Play Quests too', async () => {
     const q = questFixture('old', 'PLAY_ON_DESKTOP', 60, enrolledAgo(5)); q.config.application = {id:'1234567890123'};
     const b = questHarness({quests:[q]});
     b.connect(); await b.run();
     const beats = b.requests.filter(r => r.url === '/quests/old/heartbeat');
-    assert.ok(beats.length >= 2); assert.ok(beats.every(r => r.body.application_id === '1234567890123'));
+    assert.ok(beats.length >= 1); assert.ok(beats.every(r => r.body.application_id === '1234567890123'));
 });
 test('Quest Completer leaves Play Quests alone when Play Quests is off', async () => {
     const b = questHarness({quests:[playFixture('p1', 900)], settings:{questsPlay:false}});

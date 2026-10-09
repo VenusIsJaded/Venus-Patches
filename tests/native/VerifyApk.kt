@@ -129,6 +129,21 @@ fun main(args: Array<String>) {
         }
     }
     check(abiErrors.isEmpty()) { abiErrors.joinToString("\n") }
+    // Quest Completer: Discord's User-Agent interceptor lets a Windows desktop agent through, and only that.
+    val interceptors = dex.dexEntryNames.flatMap { name ->
+        dex.getEntry(name)!!.dexFile.classes.filter { it.type == "Lcom/discord/client_info/ClientUserAgent\$DiscordUserAgentInterceptor;" }
+    }
+    check(interceptors.size == 1) { "Expected one User-Agent interceptor" }
+    val intercept = interceptors.single().methods.single { it.name == "intercept" }.implementation!!
+    val interceptCode = intercept.instructions.toList()
+    val agentStrings = interceptCode.mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string }
+    check(intercept.registerCount == 5 && interceptCode.size == 29) { "Unexpected interceptor size ${interceptCode.size}" }
+    check(agentStrings.first() == "User-Agent" &&
+        agentStrings[1] == "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/") { "Desktop agent guard missing" }
+    check(interceptCode[12].opcode == Opcode.RETURN_OBJECT && interceptCode[13].opcode == Opcode.NOP)
+    // Discord's own code after the guard still forces Discord-Android on every other request.
+    check(interceptCode.drop(14).any { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.let { ref ->
+        ref.definingClass == "Lokhttp3/Request\$Builder;" && ref.name == "a" } == true })
     val fileModules = dex.dexEntryNames.flatMap { name ->
         dex.getEntry(name)!!.dexFile.classes.filter { it.type == "Lcom/discord/file_manager/FileModule;" }
     }
