@@ -2,6 +2,16 @@
 
 Every release works with **Discord 348.10 - Stable**. Always patch the original APKM. Releases up to 1.3.6 were for Discord 347.12.
 
+## 1.3.8 — Bug fixes and a smoother Discord
+
+- **NoDelete keeps your saved messages.** With **Save permanently** on, turning NoDelete off used to erase every saved message. They're now kept, and come back when you turn NoDelete on again.
+- **Read All clears every DM.** One DM with no messages could stop the rest from being marked as read. Lots of unread DMs are also sent in smaller batches, like Discord does.
+- **JumpToTop's menu stays put.** Holding a channel or thread no longer rebuilds the whole menu every time it updates.
+- **Hidden Channels does half the permission checks,** and works more reliably for channels Discord has only partly loaded.
+- **Smoother chats and lists.** PlatformIndicators, ReviewDB and Hidden Channels do much less work when people come online, type or change status.
+- **Less work when messages are deleted.** NoDelete only makes a saved copy when **Save permanently** is on, and turning it off clears a chat in one step.
+- Leaving NoDelete's maximum box without changing it no longer re-saves your settings.
+
 ## 1.3.7 — Discord 348.10
 
 - **Works with Discord 348.10.** Patch the original **348.10 - Stable** APKM. Discord 347.12 is no longer supported, so update Discord before you patch again.

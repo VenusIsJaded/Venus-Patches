@@ -21,7 +21,7 @@
     if (features.platformIndicators) selectModules([4877, 4855, 1378, 2051, 10603, 10371, 12845, 15667, 9108, 13649, 12602]);
     if (features.reviewDB) selectModules([12627, 13521, 13987, 8510, 5997, 6621, 1378, 585]);
     if (features.readAll) selectModules([15929]);
-    const revision = "1.3.7";
+    const revision = "1.3.8";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -97,7 +97,10 @@
             settings.readAllMode = value; dirty.add(key); save(); notify(key); return true;
         }
         if (key === "noDeleteLimit") {
-            settings.noDeleteLimit = deleteLimit(value); dirty.add(key); trimDeleted(); save(); notify(key); return true;
+            const limit = deleteLimit(value);
+            // Leaving the box without changing it no longer rewrites your settings.
+            if (limit === settings.noDeleteLimit && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.noDeleteLimit = limit; dirty.add(key); trimDeleted(); save(); notify(key); return true;
         }
         if (settings[key] === !!value && status.storage !== "loading" && status.storage !== "waiting") return true;
         value = !!value;
@@ -106,10 +109,13 @@
             job.cancelled = true;
             nativeVoice("cancel", job.id).catch(() => {});
         });
-        if (key === "noDelete" && !value) clearDeleted(true);
+        // Switching NoDelete off hides kept messages but must not erase the saved archive:
+        // it used to write an empty file, so turning it back on lost every saved message.
+        if (key === "noDelete" && !value) { clearDeleted(true, settings.noDeleteSave); archiveRestored = false; }
         if (key === "hiddenChannels") {hiddenViews.clear();}
         settings[key] = value;
         if (key === "noDeleteSave") { if (value) restoreDeleted(); else archiveRestored = false; persistDeleted(); }
+        if (key === "noDelete" && value) restoreDeleted();
         dirty.add(key);
         if (key === "picker" && !value) {
             clearSizes();
@@ -561,10 +567,12 @@
         }, 0);
     }
     function channelLabel(orig, self, args) {
-        const channel=args[0], locked=hiddenMetadata(channel), next=Array.from(args);
-        if (locked) {
+        const channel=args[0];
+        let next=args;
+        if (hiddenMetadata(channel)) {
             // Formatter-only facade avoids Discord's OBFUSCATED label branch while
             // preserving its escaping, category casing and the real model/flags.
+            next=Array.from(args);
             next[0]=cloneWith(cloneWith(channel,"name",hiddenName(channel)),"isObfuscated",()=>false);
         }
         const name=orig.apply(self,next);
@@ -745,7 +753,10 @@
         if (hiddenAccount !== owner) {hiddenNames.clear();hiddenAccount = owner;}
         const name = receivedName(channel);
         if (!channel || !channel.guild_id || !channel.id || !name) return;
-        if (hiddenNames.size >= 4096 && !hiddenNames.has(channel.id)) hiddenNames.delete(hiddenNames.keys().next().value);
+        const known = hiddenNames.get(channel.id);
+        // READY replays thousands of unchanged names: don't churn the cache for them.
+        if (known && known.guild === channel.guild_id && known.name === name) return;
+        if (hiddenNames.size >= 4096 && !known) hiddenNames.delete(hiddenNames.keys().next().value);
         hiddenNames.set(channel.id,{guild:channel.guild_id,name});
     }
     function hiddenName(channel) {
@@ -764,7 +775,15 @@
     const CHANNEL_EVENTS = new Set(["CHANNEL_CREATE","CHANNEL_UPDATE"]), GUILD_EVENTS = new Set(["GUILD_CREATE","GUILD_UPDATE"]);
     const READY_EVENTS = new Set(["CONNECTION_OPEN","CONNECTION_OPEN_SUPPLEMENTAL"]), BATCH_EVENTS = new Set(["CHANNEL_UPDATES","THREAD_LIST_SYNC"]);
     const MESSAGE_EVENTS = new Set(["MESSAGE_CREATE","MESSAGE_UPDATE"]), RESTORE_EVENTS = new Set(["CONNECTION_OPEN","CACHE_LOADED"]);
+    // Every Flux event passes through here: leave typing, presence, voice and the rest alone.
+    const HIDDEN_EVENTS = new Set(["LOGOUT","CHANNEL_DELETE","GUILD_DELETE",...CHANNEL_EVENTS,...GUILD_EVENTS,...READY_EVENTS,...BATCH_EVENTS,...MESSAGE_EVENTS]);
     function channelMetadataEvent(event) {
+        if (!HIDDEN_EVENTS.has(event.type)) return;
+        // Most messages mention no channels; skip the account lookup for them.
+        if (MESSAGE_EVENTS.has(event.type)) {
+            const msg = event.message || event;
+            if (!msg || !Array.isArray(msg.mention_channels) || !msg.mention_channels.length) return;
+        }
         const current = userStore && userStore.getCurrentUser();
         // This hook runs BEFORE UserStore handles READY. Scope its metadata to
         // the incoming user, otherwise the first post-READY lookup erases it.
@@ -861,7 +880,7 @@
         if (settings.noDeleteSave && (!user || !archiveRestored)) return;
         try {
             archivePending = JSON.stringify({version:1, accountId:settings.noDeleteSave && user ? user.id : null,
-                messages:settings.noDeleteSave ? Array.from(deleted.values()).map(entry => ({channelId:entry.channelId,id:entry.id,message:entry.raw})) : []});
+                messages:settings.noDeleteSave ? Array.from(deleted.values(), archiveEntry).filter(Boolean) : []});
             if (archivePending.length > ARCHIVE_BYTES) throw new Error("Deleted message archive exceeds 32 MB");
         } catch (_) { status.archive = "save failed"; notify(); return; }
         if (archiveWriting) return;
@@ -875,7 +894,7 @@
         Promise.resolve().then(write);
     }
     function restoreDeleted() {
-        if (!enabled("noDeleteSave") || !files || !messageRecords || archiveRestored || archiveLoading || status.storage === "loading") return;
+        if (!enabled("noDelete") || !enabled("noDeleteSave") || !files || !messageRecords || archiveRestored || archiveLoading || status.storage === "loading") return;
         const user = userStore && userStore.getCurrentUser && userStore.getCurrentUser();
         const constants = files.getConstants && files.getConstants();
         if (!user || !constants || typeof constants.DocumentsDirPath !== "string") return;
@@ -883,7 +902,7 @@
         archiveLoading = true;
         Promise.resolve().then(() => files.fileExists(path)).then(exists => exists ? files.readFile(path,"utf8") : null).then(text => {
             const current = userStore.getCurrentUser();
-            if (!enabled("noDeleteSave") || !current || current.id !== accountId) return;
+            if (!enabled("noDelete") || !enabled("noDeleteSave") || !current || current.id !== accountId) return;
             if (text) {
                 if (text.length > ARCHIVE_BYTES) throw new Error("Archive too large");
                 const saved = JSON.parse(text);
@@ -912,6 +931,11 @@
         try { Object.defineProperty(copy,"venusDeleted",{value:true,enumerable:true,configurable:true}); } catch (_) {}
         return copy;
     }
+    // Built on first save, not on every deletion: most people never turn saving on.
+    function archiveEntry(entry) {
+        if (entry.raw === undefined) { try { entry.raw = rawDeleted(entry.message, entry); } catch (_) { entry.raw = null; } }
+        return entry.raw ? {channelId:entry.channelId,id:entry.id,message:entry.raw} : null;
+    }
     function rawDeleted(message, event) {
         // Retain content/metadata only; no tokens, downloaded attachments or remote fetches.
         const raw = {id:event.id,channel_id:event.channelId,content:message.content || "",author:message.author,
@@ -930,16 +954,22 @@
         }
         if (changed) { invalidateDeleted(); persistDeleted(); }
     }
-    function clearDeleted(remove) {
+    function clearDeleted(remove, keepArchive) {
         const events = Array.from(deleted.values());
         deleted.clear(); deletedByChannel.clear(); invalidateDeleted();
-        if (remove && dispatcher) events.forEach(entry => dispatcher({type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id}));
-        if (remove) persistDeleted();
+        // One bulk removal per channel instead of one Flux dispatch (and store emit) per message.
+        if (remove && dispatcher) {
+            const byChannel = new Map();
+            events.forEach(entry => { const ids = byChannel.get(entry.channelId); if (ids) ids.push(entry.id); else byChannel.set(entry.channelId, [entry.id]); });
+            byChannel.forEach((ids, channelId) => dispatcher(ids.length === 1 ? {type:"MESSAGE_DELETE",channelId,id:ids[0]} : {type:"MESSAGE_DELETE_BULK",channelId,ids}));
+        }
+        if (remove && !keepArchive) persistDeleted();
     }
     function retainedMessage(orig, self, args) {
-        const result = orig.apply(self,args);
-        const entry = enabled("noDelete") && deleted.get(deletedKey(args[0],args[1]));
-        return entry ? entry.message : result;
+        // Hot path (every row render): skip the key build while nothing is kept in this channel.
+        const bucket = deleted.size && enabled("noDelete") && deletedByChannel.get(args[0]);
+        const entry = bucket && bucket.get(deletedKey(args[0],args[1]));
+        return entry ? entry.message : orig.apply(self,args);
     }
     function retainedMessages(orig, self, args) {
         const result = orig.apply(self,args), channelId = args[0];
@@ -989,9 +1019,7 @@
             if (!pending) break;
             orig.call(self,{type:"MESSAGE_DELETE",channelId:pending.channelId,id:pending.id});
         }
-        let raw;
-        try { raw = rawDeleted(message,event); } catch (_) { raw = null; }
-        keepDeleted(key,{type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id,message:markDeleted(message),raw});
+        keepDeleted(key,{type:"MESSAGE_DELETE",channelId:event.channelId,id:event.id,message:markDeleted(message),raw:undefined});
         invalidateDeleted(); persistDeleted();
         // Update the underlying collection too: native row diffing compares record identity.
         // The retained view supplies a new record; do not corrupt content to force a diff.
@@ -1060,17 +1088,16 @@
                 el(jumpPill,{icon:jumpIcon,onPress,accessibilityLabel:"Jump to top"})));
     }
     function hiddenCan(orig, self, args) {
-        const bit = args && args[0], channel = args && args[1];
-        if (!enabled("hiddenChannels")) return orig.apply(self, args);
+        // One real permission check per call. The old path ran it twice for every visible
+        // channel, and re-checked canBasicChannel with the full can(), which reads a
+        // different record shape (348.10 PermissionStore: basicPermissions).
+        const real = orig.apply(self, args);
+        if (real || !enabled("hiddenChannels")) return real;
+        const bit = args[0], channel = args[1];
         // Original plugin's escape hatch: realCheck asks for the true result.
-        if (channel && channel.realCheck) return orig.apply(self, args);
         // Loose equality: VIEW_CHANNEL can be BigInt/object across module copies.
-        if (viewPermission != null && bit == viewPermission && channel && channel.guild_id && channel.type !== 1 && channel.type !== 3) {
-            let hidden = false;
-            try { hidden = !realCan(bit, channel); } catch (_) { hidden = false; }
-            if (hidden) return true;
-        }
-        return orig.apply(self, args);
+        return !!(channel && !channel.realCheck && viewPermission != null && bit == viewPermission &&
+            channel.guild_id && channel.type !== 1 && channel.type !== 3) || real;
     }
     // The mobile list has a second VIEW_CHANNEL filter. Give ONLY that factory a
     // metadata-list facade; the real permission store and all other callers stay stock.
@@ -1113,11 +1140,8 @@
         // Real permission result, bypassing our own global facade.
         // Supports the original plugin's realCheck escape hatch.
         if (channel && channel.realCheck) { channel = Object.assign({}, channel); delete channel.realCheck; }
-        try {
-            if (permissionsCanOrig) return permissionsCanOrig(bit, channel);
-            if (permissions && typeof permissions.can === "function") return permissions.can.call(permissions, bit, channel);
-        } catch (_) {}
-        return false;
+        // permissionsCanOrig is always set before permissions, so no second path is needed.
+        try { return !!permissionsCanOrig && permissionsCanOrig(bit, channel); } catch (_) { return false; }
     }
     function hiddenMetadata(value) {
         if (!enabled("hiddenChannels")) return false;
@@ -1148,28 +1172,20 @@
             if (basic) Object.values(basic).forEach(keep);
             Object.values(full).forEach(keep);
         }
-        try {
-            if (guild && channelStore && typeof channelStore.getMutableGuildChannelsForGuild === "function") {
-                full = channelStore.getMutableGuildChannelsForGuild(guild);
-                if (full) {
-                    basic = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
-                    // Native lazy caching keeps basic metadata for channels with no full record.
-                    // Merge by ID, with full records retaining their richer native prototype.
-                    source = basic ? Object.assign({},basic,full) : full;
-                    remember();
-                }
-            }
-        } catch (_) { source = undefined; }
-        if (!enabled("hiddenChannels") || !result || !guild || !channelStore || !permissions ||
-            typeof channelStore.getMutableGuildChannelsForGuild !== "function") return result;
-        if (!source) {
-            // The read above threw part-way: fall back to the original two-step lookup.
+        function read() {
             full = channelStore.getMutableGuildChannelsForGuild(guild);
-            if (!full) return result;
+            if (!full) return;
             basic = typeof channelStore.getMutableBasicGuildChannelsForGuild === "function" && channelStore.getMutableBasicGuildChannelsForGuild(guild);
+            // Native lazy caching keeps basic metadata for channels with no full record.
+            // Merge by ID, with full records retaining their richer native prototype.
             source = basic ? Object.assign({},basic,full) : full;
             remember();
         }
+        const readable = guild && channelStore && typeof channelStore.getMutableGuildChannelsForGuild === "function";
+        try { if (readable) read(); } catch (_) { source = undefined; }
+        if (!enabled("hiddenChannels") || !result || !readable || !permissions) return result;
+        // The read above threw part-way: retry once, letting a real error surface as before.
+        if (!source) { read(); if (!source) return result; }
         const extra = Object.values(source).filter(channel => hiddenMetadata(channel));
         // Recheck permissions and metadata on each directory lookup; retain stable
         // array identity for unchanged inputs and bound the cache to 16 guilds.
@@ -1328,19 +1344,29 @@
         const id = args[1];
         showHidden(receivedChannel(id), () => { hiddenConfirmed.add(id); return orig.apply(self, args); });
     }
-    function sheetComponent(component, channel, onClose) {
-        if (!component || !React) return component;
-        function transform(orig, self, args) {
-            const tree = orig.apply(self, args);
-            return addJumpRow(tree, channel, onClose);
-        }
-        if (typeof component === "function") return function () { return transform(component, this, arguments); };
-        if (component.$$typeof) {
+    // One cached wrapper per sheet component. A new type on every render made React
+    // unmount and remount the whole sheet (losing its state) each time it re-rendered.
+    // The channel and close handler travel in one private prop, removed before Discord sees it.
+    const JUMP_PROP = "__venusJumpSheet";
+    const sheetTypes = new WeakMap();
+    function sheetComponent(component) {
+        if (!component || !React || (typeof component !== "function" && typeof component !== "object")) return component;
+        if (sheetTypes.has(component)) return sheetTypes.get(component);
+        let result = component;
+        if (typeof component === "function") result = function (props) {
+            const jump = props && props[JUMP_PROP];
+            if (!jump) return component.apply(this, arguments);
+            const next = Array.from(arguments), clean = Object.assign({}, props);
+            delete clean[JUMP_PROP]; next[0] = clean;
+            return addJumpRow(component.apply(this, next), jump.channel, jump.onClose);
+        };
+        else if (component.$$typeof) {
             const key = component.type ? "type" : "render";
-            const child = sheetComponent(component[key], channel, onClose);
-            return child === component[key] ? component : cloneWith(component, key, child);
+            const child = sheetComponent(component[key]);
+            if (child !== component[key]) result = cloneWith(component, key, child);
         }
-        return component;
+        sheetTypes.set(component, result);
+        return result;
     }
     function addJumpRow(tree, channel, onClose) {
         let added = false;
@@ -1366,8 +1392,9 @@
         // React tags and patch its render, not the exports object or frozen element.
         const transformed = addJumpRow(tree, channel, props.onClose);
         if (transformed !== tree) return transformed;
-        const type = sheetComponent(tree.type, channel, props.onClose);
-        return type === tree.type ? tree : el(type, tree.props);
+        const type = sheetComponent(tree.type);
+        if (type === tree.type) return tree;
+        return el(type, Object.assign({}, tree.props, {key:tree.key, [JUMP_PROP]:{channel, onClose:props.onClose}}));
     }
     let pastelHash, guildMembers, presenceStore, sessionsStore, displayNameType, nativeRowGroup, nativeSwitchRow, nativeLock, oauthModal;
     // The original PlatformIndicators plugin's themable PNG glyphs, tinted by status.
@@ -1469,9 +1496,6 @@
         if (!api.privateReads || typeof api.privateReads.getUnreadPrivateChannelIds!=="function") return [];
         return Array.from(api.privateReads.getUnreadPrivateChannelIds() || []).filter(id => typeof id==="string");
     }
-    function readAllToast(ui,content) {
-        try { if (ui.toasts && typeof ui.toasts.open==="function") ui.toasts.open({key:"venus-read-all",content}); } catch (_) {}
-    }
     // Same native paths as Discord: the server menu's markGuildsAsRead (13507) with the
     // GUILD_LIST source, and a single BULK_ACK for DMs at each channel's last message.
     function readAll(mode) {
@@ -1487,15 +1511,18 @@
                 const ids=unreadDmIds(api);
                 if (ids.length && api.readActions && typeof api.readActions.bulkAck==="function" && api.reads) {
                     const type=api.readTypes && api.readTypes.CHANNEL != null ? api.readTypes.CHANNEL : 0;
-                    api.readActions.bulkAck(ids.map(channelId => ({channelId, readStateType:type, messageId:api.reads.lastMessageId(channelId)})));
-                    dms=ids.length;
+                    // A DM without a known last message can't be acknowledged; sending it anyway
+                    // made the whole request fail. Discord's own /read-states/ack-bulk takes 100 at a time.
+                    const acks=ids.map(channelId => ({channelId, readStateType:type, messageId:api.reads.lastMessageId(channelId)})).filter(ack => ack.messageId);
+                    for (let i=0;i<acks.length;i+=100) api.readActions.bulkAck(acks.slice(i,i+100));
+                    dms=acks.length;
                 }
             }
-        } catch (error) { readAllToast(ui,"Couldn't mark as read: "+error); return; }
+        } catch (error) { reviewToast(ui,"Couldn't mark as read: "+error); return; }
         const parts=[];
         if (guilds) parts.push(guilds+(guilds===1 ? " server" : " servers"));
         if (dms) parts.push(dms+(dms===1 ? " DM" : " DMs"));
-        readAllToast(ui, parts.length ? "Marked "+parts.join(" and ")+" as read" : "Nothing unread");
+        reviewToast(ui, parts.length ? "Marked "+parts.join(" and ")+" as read" : "Nothing unread");
     }
     // Holding the button: Discord's own action sheet with the three one-time choices.
     function readAllChooser() {
@@ -1546,6 +1573,15 @@
         }
         return view;
     }
+    // Shared by the Read All, ReviewDB and NoDelete pages: Discord's spacing, scrolling and switch rows.
+    function settingsBody(ui,groups,scroll) {
+        const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
+            el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
+        return RN.ScrollView ? el(RN.ScrollView,scroll || null,body) : body;
+    }
+    function switchRow(Switch,key,label,subLabel) {
+        return Switch ? el(Switch,{key,label,subLabel,value:settings[key],onValueChange:value=>setSetting(key,value)}) : null;
+    }
     // Settings page: Discord's own radio list (TableRadioGroup 5995 / TableRadioRow 5994).
     function ReadAllSettings() {
         useSettings("readAll");
@@ -1562,12 +1598,9 @@
             el(Group,{key:"mode"},choices.map(([value,label]) => ui.TableRow &&
                 el(ui.TableRow,{key:value,label:(settings.readAllMode===value ? "\u2713 " : "")+label,disabled:!on,onPress:() => setSetting("readAllMode",value)})));
         const groups=[
-            el(Group,{key:"plugin",title:"Read All"},Switch ? el(Switch,{label:"Show the Read all button",subLabel:"In the server list, under Direct Messages. Hold it for a one-time choice.",
-                value:settings.readAll,onValueChange:value => setSetting("readAll",value)}) : null),
+            el(Group,{key:"plugin",title:"Read All"},switchRow(Switch,"readAll","Show the Read all button","In the server list, under Direct Messages. Hold it for a one-time choice.")),
             picker];
-        const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
-            el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
-        return RN.ScrollView ? el(RN.ScrollView,null,body) : body;
+        return settingsBody(ui,groups);
     }
     const deletedHighlight = {};
     function messageRow(orig, self, args) {
@@ -1622,6 +1655,30 @@
         const clients = presenceStore && platformClients(userId);
         return clients ? Object.keys(clients).map(key => key + ":" + clients[key]).join(",") : "";
     }
+    // One listener per store for every badge on screen, not two per badge. Each change works
+    // out a person's clients once, however many badges show them, and wakes only those badges.
+    const platformSubs = new Map(), platformStores = new Set();
+    function platformChanged() {
+        platformSubs.forEach((entry, userId) => {
+            const key = platformKey(userId);
+            if (key !== entry.key) { entry.key = key; entry.fns.forEach(fn => fn()); }
+        });
+    }
+    function platformSubscribe(userId, fn) {
+        let entry = platformSubs.get(userId);
+        if (!entry) platformSubs.set(userId, entry = {key:platformKey(userId), fns:new Set()});
+        entry.fns.add(fn);
+        [presenceStore,sessionsStore].forEach(store => {
+            if (store && !platformStores.has(store) && typeof store.addChangeListener === "function" && typeof store.removeChangeListener === "function") {
+                platformStores.add(store); store.addChangeListener(platformChanged);
+            }
+        });
+        return () => {
+            entry.fns.delete(fn);
+            if (!entry.fns.size && platformSubs.get(userId) === entry) platformSubs.delete(userId);
+            if (!platformSubs.size) { platformStores.forEach(store => store.removeChangeListener(platformChanged)); platformStores.clear(); }
+        };
+    }
     function PlatformBadges(props) {
         useSettings("platformIndicators");
         const [,update] = React.useState(0);
@@ -1632,14 +1689,7 @@
             if (!userStore) userStore = inspectedExport(1378,"default");
         }
         const userId = props.userId;
-        React.useEffect(() => {
-            // Presence changes fire for everyone; compare this user's clients before re-rendering.
-            let last = platformKey(userId);
-            const change = () => { const next = platformKey(userId); if (next !== last) { last = next; update(n => n+1); } };
-            const stores = [presenceStore,sessionsStore].filter(store => store && typeof store.addChangeListener === "function" && typeof store.removeChangeListener === "function");
-            stores.forEach(store => store.addChangeListener(change));
-            return () => stores.forEach(store => store.removeChangeListener(change));
-        },[presenceStore,sessionsStore,userId]);
+        React.useEffect(() => platformSubscribe(userId, () => update(n => n+1)),[presenceStore,sessionsStore,userId]);
         if (!enabled("platformIndicators") || !presenceStore || !RN) return null;
         const clients = platformClients(userId);
         if (!clients) return null;
@@ -1659,7 +1709,13 @@
     // DM header (HBC fn58674 PrivateChannelHeader) renders its name inside a separate
     // ChannelTitle component (fn58681, props title/accessibleTitle/userId), so the badge
     // goes inside ChannelTitle's own output: right after the name, before the arrow.
-    const platformTitleTypes = new WeakMap();
+    // One cached wrapper per component and placement, so React keeps the same element type.
+    const platformTypes = {piDmHeader:new WeakMap(), piUserList:new WeakMap()};
+    function platformType(target, option) {
+        let type = platformTypes[option].get(target);
+        if (!type) platformTypes[option].set(target, type = function () { return platformPlacement(target,this,arguments,option); });
+        return type;
+    }
     function platformHeader(orig,self,args) {
         if (React) useSettings("platformIndicators");
         const tree = orig.apply(self,args);
@@ -1672,8 +1728,7 @@
             const p = node.props;
             if (!swapped && typeof node.type === "function" && "accessibleTitle" in p && "title" in p && typeof p.userId === "string") {
                 swapped = true;
-                let type = platformTitleTypes.get(node.type);
-                if (!type) { const target = node.type; type = function () { return platformPlacement(target,this,arguments,"piDmHeader"); }; platformTitleTypes.set(target,type); }
+                const type = platformType(node.type,"piDmHeader");
                 return el(type,Object.assign({},p,{key:node.key}));
             }
             const child = visit(p.children,depth+1);
@@ -1732,13 +1787,11 @@
             return Object.assign({},p,{children:children.map(child => child !== title ? child : el(RN.View,{key:"venus-platform-title",style:{flexDirection:"row",alignItems:"center",gap:6,flexShrink:1}},child,el(PlatformBadges,{userId})))});
         },0);
     }
-    const platformRowTypes = new WeakMap();
+    const platformRenderers = new WeakMap();
     function platformRow(row) {
         // Swap a list row's private UserRow for a cached wrapper adding badges after its label.
         if (!row || typeof row !== "object" || typeof row.type !== "function" || !React) return row;
-        let type = platformRowTypes.get(row.type);
-        if (!type) { const orig = row.type; type = function () { return platformPlacement(orig,this,arguments,"piUserList"); }; platformRowTypes.set(orig,type); }
-        return el(type,Object.assign({},row.props,{key:row.key}));
+        return el(platformType(row.type,"piUserList"),Object.assign({},row.props,{key:row.key}));
     }
     function wrapProfileTree(tree, target, operation, cache) {
         if (!tree || !target || !React) return tree;
@@ -1824,21 +1877,37 @@
         reviewAuthAttempt++;reviewToken="";reviewAccount=null;reviewAuthState="idle";reviewAuthError="";
         reviewCache.clear();if (saved) save();notify("reviewDB");
     }
+    // One UserStore listener for every review view, and it only wakes them when the signed-in
+    // account actually changes. Before, each open view re-rendered every review view on any user update.
+    let reviewWatchers=0, reviewWatchStore=null, reviewWatchId;
+    function reviewUserChanged() {
+        const id=currentId();
+        if (id===reviewWatchId) return;
+        reviewWatchId=id;
+        reviewAuth();
+        notify("reviewDB");
+    }
     function useReviews() {
         useSettings("reviewDB");
         React.useEffect(() => {
             const store=userStore;
             if (!store || typeof store.addChangeListener!=="function") return;
-            function changed() {reviewAuth();notify("reviewDB");}
-            store.addChangeListener(changed);
-            return () => {if (typeof store.removeChangeListener==="function") store.removeChangeListener(changed);};
+            if (!reviewWatchers++) { reviewWatchStore=store; reviewWatchId=currentId(); store.addChangeListener(reviewUserChanged); }
+            return () => {
+                if (--reviewWatchers || !reviewWatchStore) return;
+                if (typeof reviewWatchStore.removeChangeListener==="function") reviewWatchStore.removeChangeListener(reviewUserChanged);
+                reviewWatchStore=null;
+            };
         },[userStore]);
     }
     function currentId() { const user=userStore && userStore.getCurrentUser(); return user && user.id; }
     // Discord design-system parts traced in the pinned HBC98 bundle. Demand-loaded at
     // render/action time only; no extra Metro factories are wrapped for them.
     const reviewExports=new Map();
+    let reviewParts=null;
     function reviewUI() {
+        // Once every part has loaded, reuse the same object: this runs on every render.
+        if (reviewParts) return reviewParts;
         // Keep successful exports, never a partially initialized UI snapshot.
         // Missing exports must be retried when Metro finishes initializing them.
         const x=(id,key) => {
@@ -1856,10 +1925,11 @@
             Close:x(6619,"ActionSheetCloseButton"),sheets:x(4801,"default"),showSheet:x(4801,"showActionSheet"),simpleSheet:x(6616,"showSimpleActionSheet"),clipboard:x(6614,"Clipboard"),
             alerts:x(5205,"default"),toasts:x(4531,"default"),pushModal:x(4694,"pushModal"),popModal:x(4694,"popModal"),OAuth:oauthModal || x(8510,"default"),
             createStyles:x(4837,"createStyles"),theme:x(4551,"useThemeContext"),colors:tokens && tokens.colors};
+        if (Object.keys(parts).every(key => parts[key] != null)) reviewParts=parts;
         return parts;
     }
     function reviewToast(ui,content) {
-        try { if (ui.toasts && typeof ui.toasts.open==="function") ui.toasts.open({key:"venus-reviewdb",content}); } catch (_) {}
+        try { if (ui.toasts && typeof ui.toasts.open==="function") ui.toasts.open({key:"venus-toast",content}); } catch (_) {}
     }
     function hideReviewSheet(ui,key) { try { if (ui.sheets && typeof ui.sheets.hideActionSheet==="function") ui.sheets.hideActionSheet(key); } catch (_) {} }
     // Styles from Discord's createStyles, as the original plugin: semantic tokens resolve
@@ -1885,7 +1955,7 @@
         if (!React || !RN || !ui.TableRow) return null;
         const authenticated=!!reviewAuth(), pending=reviewAuthState==="exchanging";
         const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
-        const toggle=(key,label,subLabel) => Switch ? el(Switch,{key,label,subLabel,value:settings[key],onValueChange:value=>setSetting(key,value)}) : null;
+        const toggle=(key,label,subLabel) => switchRow(Switch,key,label,subLabel);
         const groups=[
             el(Group,{key:"plugin",title:"ReviewDB"},toggle("reviewDB","Enable ReviewDB","Read and write reviews of users and servers. Opening reviews shares that user or server ID with manti.vendicated.dev.")),
             el(Group,{key:"auth",title:"Account"},
@@ -1896,9 +1966,7 @@
             el(Group,{key:"settings",title:"Settings"},
                 toggle("reviewThemedSend","Profile-colored send button","Match the send button to the profile's theme colors."),
                 toggle("reviewWarning","Show the be-respectful note","Show ReviewDB's reminder at the top of reviews."))];
-        const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
-            el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
-        return RN.ScrollView ? el(RN.ScrollView,null,body) : body;
+        return settingsBody(ui,groups);
     }
     function NoDeleteSettings() {
         useSettings();
@@ -1908,7 +1976,7 @@
         React.useEffect(() => { setDraft(String(settings.noDeleteLimit)); },[settings.noDeleteLimit]);
         if (!React || !RN) return null;
         const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
-        const toggle=(key,label,subLabel) => Switch ? el(Switch,{key,label,subLabel,value:settings[key],onValueChange:value=>setSetting(key,value)}) : null;
+        const toggle=(key,label,subLabel) => switchRow(Switch,key,label,subLabel);
         // An emptied field keeps the current maximum instead of silently resetting it to 512.
         const commit=() => { if (draft) setSetting("noDeleteLimit",draft); setDraft(String(settings.noDeleteLimit)); };
         const Text=inspectedExport(4833,"Text");
@@ -1923,9 +1991,7 @@
             el(Group,{key:"save",title:"Saving"},toggle("noDeleteSave","Save permanently","Keep them after Discord restarts, saved only on this phone for your account. When off, they're cleared on restart.")),
             el(Group,{key:"limit",title:"Maximum saved messages"},el(RN.View,{style:{padding:12,gap:8}},input,
                 Text ? el(Text,{variant:"text-xs/medium",color:"text-muted"},hint) : el(RN.Text,{style:{color:"#949ba4",fontSize:12}},hint)))];
-        const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
-            el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},groups);
-        return RN.ScrollView ? el(RN.ScrollView,{keyboardShouldPersistTaps:"handled"},body) : body;
+        return settingsBody(ui,groups,{keyboardShouldPersistTaps:"handled"});
     }
     function authenticateReviews() {
         if (!enabled("reviewDB") || reviewAuthState==="exchanging") return;
@@ -2216,7 +2282,10 @@
             return cloneTree(tree,(node,p)=>{
                 if (typeof p.renderItem!=="function" || p.__venusPlatforms) return p;
                 const render=p.renderItem;
-                return Object.assign({},p,{__venusPlatforms:true,renderItem:function(){return platformRow(render.apply(this,arguments));}});
+                // Same wrapper for the same renderItem, so the list doesn't redraw every row.
+                let renderItem=platformRenderers.get(render);
+                if (!renderItem) platformRenderers.set(render,renderItem=function(){return platformRow(render.apply(this,arguments));});
+                return Object.assign({},p,{__venusPlatforms:true,renderItem});
             },0);
         });
         // Original "Hide mobile status from the normal indicator": avatar Status (design/void/Status,
@@ -2289,22 +2358,10 @@
             // Message/voice access stays blocked via hiddenFetch/hiddenNavigation guards.
             // Use hookExport so frozen/sealed singletons are still patched via clone.
             try {
-                if (permissions && typeof permissions.can === "function" && !permissionsCanOrig) {
-                    permissionsCanOrig = permissions.can.bind(permissions);
-                    const patched = hookExport(hookExport(permissions, "can", hiddenCan), "canBasicChannel", hiddenCan);
-                    permissions = patched;
-                    if (candidate === exports.default || (exports && exports.default && candidate === permissions)) {
-                        exports = replaceValue(exports, "default", patched);
-                    } else if (candidate === exports) {
-                        exports = patched;
-                    }
-                    return exports;
-                } else if (candidate && candidate !== permissions && typeof candidate.can === "function") {
-                    // A second permission object, if Discord ever adds one: patch it too with same bypass.
-                    const patched2 = hookExport(hookExport(candidate, "can", hiddenCan), "canBasicChannel", hiddenCan);
-                    if (candidate === exports.default) exports = replaceValue(exports, "default", patched2);
-                    else if (candidate === exports) exports = patched2;
-                    return exports;
+                if (candidate && !permissionsCanOrig) {
+                    permissionsCanOrig = candidate.can.bind(candidate);
+                    permissions = hookExport(hookExport(candidate, "can", hiddenCan), "canBasicChannel", hiddenCan);
+                    return candidate === exports ? permissions : replaceValue(exports, "default", permissions);
                 }
             } catch (_) {}
         }
