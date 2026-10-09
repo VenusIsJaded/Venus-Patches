@@ -1298,10 +1298,10 @@ async function loadedReviews(b,userId) {
 }
 test('ReviewDB settings: Account and Settings groups with native rows',()=>{
     const b=reviewHarness();b.api.setSetting('reviewDB',true);const tree=b.Settings();
-    assert.deepEqual(walkElements(tree,n=>n.type==='RowGroup').map(n=>n.props.title),['Reviews','Account','Settings']);
+    assert.deepEqual(walkElements(tree,n=>n.type==='RowGroup').map(n=>n.props.title),['ReviewDB','Account','Settings']);
     const login=walkElements(tree,n=>n.props.label==='Sign in to ReviewDB')[0];assert.equal(login.type,'NativeRow');assert.equal(login.props.arrow,true);assert.equal(login.props.disabled,false);
     const logout=walkElements(tree,n=>n.props.label==='Sign out of ReviewDB')[0];assert.equal(logout.props.disabled,true);assert.match(logout.props.subLabel,/Authorized Apps/);
-    assert.deepEqual(walkElements(tree,n=>n.type==='SwitchRow').map(n=>n.props.label),['Enable Reviews','Profile-colored send button','Show the be-respectful note']);
+    assert.deepEqual(walkElements(tree,n=>n.type==='SwitchRow').map(n=>n.props.label),['Enable ReviewDB','Profile-colored send button','Show the be-respectful note']);
     assert.equal(walkElements(tree,n=>n.type==='Stack')[0].props.spacing,24);
 });
 test('ReviewDB OAuth follows the traced 347.12 order: dismissOAuthModal BEFORE callback still signs in',async()=>{
@@ -1527,7 +1527,7 @@ test('Hidden Channels uses a native lock icon and preserves frozen ChannelInfo a
     const tree=info({channel:b.channels.hidden});assert.equal(tree.props.children[0].type,'NativeLock');assert.equal(tree.props.children[1],original);assert.match(tree.props.accessibilityLabel,/locked/);
     b.api.setSetting('hiddenChannels',false);assert.equal(info({channel:b.channels.hidden}),original);
 });
-test('Device badges use the bundled tinted PNG glyphs for desktop and mobile',()=>{
+test('PlatformIndicators uses the bundled tinted PNG glyphs for desktop and mobile',()=>{
     const b=platformFixture();b.load({default:{getClientStatus:()=>({desktop:'online',mobile:'idle'})}},null,4877);
     const icons=b.badges.type({userId:'other'}).props.children;const desktop=icons[0].props.children;const image=desktop.type(desktop.props);
     assert.match(image.props.source.uri,/^data:image\/png;base64,/);assert.equal(image.props.style.tintColor,'#23a55a');assert.equal(image.props.style.width,16);
@@ -1616,7 +1616,7 @@ test('Hidden Channels READY cache belongs to the incoming account before UserSto
     assert.equal(b.label(b.channels.hidden),'second staff');
     account={id:'333333333333333333'};assert.match(b.label(b.channels.hidden),/name unavailable/);
 });
-test('Device badges hide the stock mobile badge and expose their settings',()=>{
+test('PlatformIndicators hides the stock mobile badge and exposes its settings',()=>{
     const b=boot({platformIndicators:true});reactHarness(b);
     const seen=[];const status=b.load({default:props=>{seen.push(props.isMobileOnline);return null;},StatusWithTyping:props=>{seen.push(props.isMobileOnline);return null;}},null,13649);
     status.default({status:'online',isMobileOnline:true});status.StatusWithTyping({status:'online',isMobileOnline:true});
@@ -2127,4 +2127,15 @@ test('ReviewDB views share one UserStore listener that wakes only on account cha
     assert.equal(listeners.size,1);wakes=0;listeners.forEach(fn=>fn());assert.equal(wakes,0,'unrelated user updates must not re-render reviews');
     account={id:'444444444444444444'};listeners.forEach(fn=>fn());assert.ok(wakes>0);
     cleanup.forEach(fn=>fn());assert.equal(listeners.size,0);
+});
+
+// ---- 1.3.10 regressions ----
+test('NoDelete lowering the maximum removes the oldest kept messages with one event per channel',()=>{
+    const b=deletionHarness();b.api.setSetting('noDelete',true);
+    for(const id of ['1','2','3','4']){b.messages.set('c:'+id,{content:'m'+id});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id});}
+    b.messages.set('d:9',{content:'other'});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'d',id:'9'});
+    const n=b.events.length;b.api.setSetting('noDeleteLimit','1');
+    const removals=b.events.slice(n);assert.equal(removals.length,1,'one bulk removal, not one per message');
+    assert.equal(removals[0].type,'MESSAGE_DELETE_BULK');assert.deepEqual(Array.from(removals[0].ids),['1','2','3','4']);
+    assert.equal(b.messages.has('c:1'),false);assert.equal(b.messages.get('d:9').content,'other');
 });

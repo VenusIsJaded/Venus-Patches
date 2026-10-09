@@ -2,6 +2,18 @@
 
 Every release works with **Discord 348.10 - Stable**. Always patch the original APKM. Releases up to 1.3.6 were for Discord 347.12.
 
+## 1.3.10 — Original names and icons are back, plus fixes
+
+- **Every feature has its 1.3.8 name again,** in Morphe and in Venus settings: CopyBios, Dashless, FavouriteAnything, File size on picker, FreeNitro, Hidden Channels, JumpToTop, No typing, NoDelete, Pastelize, PlatformIndicators, QuickDelete and ReviewDB. Your settings carry over, so nothing turns on or off.
+- **PlatformIndicators has its original icons back.**
+- **Everything else from 1.3.9 stays,** including the removed size cap and the clearer [NOTICE](NOTICE).
+- **Lowering NoDelete's maximum is instant.** Going from 5000 to 1 used to send up to 4,999 separate deletes. Each chat now gets one.
+- **ReviewDB's refresh works properly.** Refreshing a profile's reviews could push a different profile out of the cache. A failed older request could also wipe newer reviews.
+- **Hidden Channels shows locked channels more reliably** when Discord's permission value comes in a different number type.
+- **Smoother chats with NoDelete or Pastelize on.** Rows in chats with no kept messages skip the deleted-message check, and sorting kept messages does less work.
+- **Opening a server with Hidden Channels on does less work.** Each locked channel's name is looked up once, not twice, and channel names are remembered without extra copies or account lookups.
+- Without NoDelete patched in, Discord no longer schedules a saved-message restore every time it connects.
+
 ## 1.3.9 — New names, new icons and no size cap
 
 - **Every feature is named after what it does.** Your settings carry over, so nothing turns on or off.

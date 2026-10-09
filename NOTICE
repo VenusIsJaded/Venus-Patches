@@ -25,13 +25,13 @@ Venus Patches NOTICE
 
 Some features are based on ideas from community Discord plugins. The code is written for this
 project: it hooks Discord's own pinned 348.10 JavaScript bundle and doesn't include or load
-code from any other client mod. Feature names describe what each feature does.
+code from any other client mod.
 
-Releases 1.2.9 to 1.3.8 bundled five device icons from Martinz64/vendetta-plugins, which are
-released under The Unlicense. Since 1.3.9 they're replaced by Venus's own glyphs, drawn by
-scripts/icons.py.
+PlatformIndicators uses five device icons from Martinz64/vendetta-plugins, which are released
+under The Unlicense. Release 1.3.9 briefly replaced them with Venus-drawn glyphs; 1.3.10 brings
+the original icons back.
 
-Reviews talks to the community ReviewDB service (manti.vendicated.dev) only when you turn it
+ReviewDB talks to the community ReviewDB service (manti.vendicated.dev) only when you turn it
 on. Venus Patches isn't affiliated with or endorsed by that service, or by Discord Inc.
 Discord is a trademark of Discord Inc.
 

@@ -205,8 +205,8 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "New names, new icons and no size cap. Every feature is named after what it does, Device badges "
-    "has new icons, and the 119,000-character limit is gone. Patch the original Discord 348.10 APKM."
+    "Original names and icons are back, plus bug fixes and less work. Keeps 1.3.9's removed size cap. "
+    "Patch the original Discord 348.10 APKM."
 )
 
 
