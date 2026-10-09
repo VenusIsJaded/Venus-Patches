@@ -470,7 +470,7 @@ test('conversion disabled has no codec bridge calls for audio uploads', async ()
     await upload.reactNativeCompressAndExtractData();assert.equal(calls,0);
 });
 
-const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true, noTyping:true, quickDelete:true, noDelete:true, jumpToTop:true, hiddenChannels:true, pastelize:true, platformIndicators:true, reviewDB:true, readAll:true};
+const allFeatures = {picker:true, voice:true, copyBios:true, dashless:true, favouriteAnything:true, freeNitro:true, noTyping:true, quickDelete:true, noDelete:true, jumpToTop:true, hiddenChannels:true, pastelize:true, platformIndicators:true, reviewDB:true, readAll:true, quests:true};
 function reactHarness(b) {
     const React = {
         createElement(type, props, ...children) { return {type, props:{...props, ...(children.length ? {children:children.length === 1 ? children[0] : children} : {})}}; },
@@ -2129,7 +2129,7 @@ test('ReviewDB views share one UserStore listener that wakes only on account cha
     cleanup.forEach(fn=>fn());assert.equal(listeners.size,0);
 });
 
-// ---- 1.3.10 regressions ----
+// ---- 1.4.0 (first published as 1.3.10) regressions ----
 test('NoDelete lowering the maximum removes the oldest kept messages with one event per channel',()=>{
     const b=deletionHarness();b.api.setSetting('noDelete',true);
     for(const id of ['1','2','3','4']){b.messages.set('c:'+id,{content:'m'+id});b.dispatch.dispatch({type:'MESSAGE_DELETE',channelId:'c',id});}
@@ -2138,4 +2138,192 @@ test('NoDelete lowering the maximum removes the oldest kept messages with one ev
     const removals=b.events.slice(n);assert.equal(removals.length,1,'one bulk removal, not one per message');
     assert.equal(removals[0].type,'MESSAGE_DELETE_BULK');assert.deepEqual(Array.from(removals[0].ids),['1','2','3','4']);
     assert.equal(b.messages.has('c:1'),false);assert.equal(b.messages.get('d:9').content,'other');
+});
+
+// ---- 1.4.1 Quest Completer ----
+function questHarness({quests = [], settings = {}, fail = {}, fetched = true} = {}) {
+    const b = boot({quests:true});
+    let clock = 1_800_000_000_000;
+    b.context.__clock = () => clock;
+    vm.runInContext('Date.now=function(){return __clock();}', b.context);
+    const timers = [];
+    b.context.setTimeout = (fn, ms) => { const t = {fn, at:clock + (ms || 0)}; timers.push(t); return t; };
+    b.context.clearTimeout = t => { const i = timers.indexOf(t); if (i >= 0) timers.splice(i, 1); };
+    b.context.setInterval = () => 0; b.context.clearInterval = () => {};
+    const subs = new Map(), events = [], requests = [], ui = [];
+    const map = new Map(quests.map(q => [q.id, q]));
+    const listeners = new Set();
+    function apply(action) {
+        const set = (id, status) => { const q = map.get(id); if (q) map.set(id, Object.assign({}, q, {userStatus:Object.assign({}, q.userStatus, status)})); };
+        if (action.type === 'QUESTS_ENROLL_SUCCESS') set(action.enrolledQuestUserStatus.questId, action.enrolledQuestUserStatus);
+        if (action.type === 'QUESTS_SEND_HEARTBEAT_SUCCESS') set(action.questId, action.userStatus);
+        if (action.type === 'QUESTS_USER_STATUS_UPDATE') set(action.user_status.quest_id, {completedAt:action.user_status.completed_at});
+        listeners.forEach(fn => fn());
+    }
+    const dispatcher = {
+        subscribe(type, fn) { (subs.get(type) || subs.set(type, []).get(type)).push(fn); },
+        unsubscribe() {}, dispatch(action) { events.push(action); apply(action); return Promise.resolve(); },
+    };
+    const store = {
+        get quests() { return map; }, getQuest: id => map.get(id),
+        get isFetchingCurrentQuests() { return false; },
+        get lastFetchedCurrentQuests() { return fetched ? clock : null; },
+        get questEnrollmentBlockedUntil() { return null; },
+        get isQuestAccessSuspended() { return false; },
+        addChangeListener: fn => listeners.add(fn), removeChangeListener: fn => listeners.delete(fn),
+    };
+    const progress = new Map();
+    const http = {post(request) {
+        requests.push({url:request.url, body:request.body, at:clock});
+        const id = request.url.split('/')[2], q = map.get(id), kind = request.url.split('/')[3];
+        if (fail[kind]) {
+            // Discord's HTTP client asks the request's own interceptor first, then its global handler.
+            return new Promise((resolve, reject) => {
+                const handled = request.interceptResponse && request.interceptResponse(fail[kind], () => {}, reject);
+                if (!handled) { ui.push('global captcha screen'); reject(new Error('unhandled')); }
+            });
+        }
+        if (kind === 'enroll') return Promise.resolve({body:{quest_id:id, enrolled_at:new Date(clock).toISOString()}});
+        const tasks = q.config.taskConfigV2.tasks, type = Object.keys(tasks)[0], target = tasks[type].target;
+        const value = kind === 'video-progress' ? Math.min(target, request.body.timestamp) : Math.min(target, (progress.get(id) || 0) + 20);
+        progress.set(id, value);
+        return Promise.resolve({body:{quest_id:id, completed_at:value >= target ? 'now' : null, progress:{[type]:{value}}}});
+    }};
+    let fetches = 0;
+    const native = {1283:{HTTP:http},
+        7127:{questUserStatusFromServer:body => ({questId:body.quest_id, enrolledAt:body.enrolled_at ? new Date(body.enrolled_at) : null,
+            completedAt:body.completed_at || null, progress:body.progress || {}})},
+        9765:{fetchCurrentQuests:() => { fetches++; return Promise.resolve(); }},
+        2051:{default:{getSortedPrivateChannels:() => [{id:'dm1'}]}},
+        4531:{default:{open:value => ui.push('toast ' + value.content)}}, 5205:{default:{show:() => ui.push('alert')}},
+        4694:{pushModal:() => ui.push('modal')}};
+    b.context.__r = id => native[id] || null;
+    b.load({default:dispatcher}, null, 585);
+    b.load({default:store}, null, 7120);
+    for (const [key, value] of Object.entries(settings)) b.api.setSetting(key, value);
+    // Runs fake time forward up to `horizon` (default 20 minutes), firing timers in order.
+    async function run(horizon = 20 * 60 * 1000) {
+        const end = clock + horizon;
+        for (let i = 0; i < 2000; i++) {
+            await flush();
+            if (!timers.length) { await flush(); if (!timers.length) break; }
+            timers.sort((x, y) => x.at - y.at);
+            if (timers[0].at > end) break;
+            const t = timers.shift(); clock = Math.max(clock, t.at); t.fn();
+        }
+        await flush(); await flush();
+    }
+    function connect(id = 'me') { (subs.get('CONNECTION_OPEN') || []).forEach(fn => fn({type:'CONNECTION_OPEN', user:{id}})); }
+    return {...b, map, requests, events, ui, subs, run, connect, timers, http,
+        get fetches() { return fetches; }, get clock() { return clock; }, advance(ms) { clock += ms; }};
+}
+const QUEST_T0 = 1_800_000_000_000;
+function questFixture(id, type, target, extra = {}) {
+    return Object.assign({id, config:{expiresAt:new Date(QUEST_T0 + 7 * 864e5).toISOString(), messages:{questName:'Quest ' + id},
+        taskConfigV2:{tasks:{[type]:{type, target}}}}, userStatus:null}, extra);
+}
+const enrolledAgo = seconds => ({userStatus:{enrolledAt:new Date(QUEST_T0 - seconds * 1000), completedAt:null, progress:{}}});
+
+test('Quest Completer accepts and completes a new video Quest in the background with no screen', async () => {
+    const b = questHarness({quests:[questFixture('q1', 'WATCH_VIDEO_ON_MOBILE', 30)]});
+    b.connect(); await b.run();
+    const enroll = b.requests.find(r => r.url === '/quests/q1/enroll');
+    assert.ok(enroll, 'accepted the quest'); assert.equal(enroll.body.location, 12);
+    assert.ok(b.events.some(e => e.type === 'QUESTS_ENROLL_SUCCESS'), 'QuestStore learns it was accepted');
+    const video = b.requests.filter(r => r.url === '/quests/q1/video-progress');
+    assert.ok(video.length >= 4, 'reports progress in steps, not one jump');
+    assert.equal(video.at(-1).body.timestamp, 30);
+    assert.ok(b.map.get('q1').userStatus.completedAt, 'completed');
+    assert.deepEqual(b.ui, [], 'no toast, alert, modal or captcha screen');
+});
+test('Quest Completer never reports video progress faster than real time allows', async () => {
+    const b = questHarness({quests:[questFixture('q1', 'WATCH_VIDEO', 60, enrolledAgo(0))]});
+    b.connect(); await b.run();
+    const video = b.requests.filter(r => r.url === '/quests/q1/video-progress');
+    for (const r of video) assert.ok(r.body.timestamp <= (r.at - QUEST_T0) / 1000 + 11, `timestamp ${r.body.timestamp} reported too early`);
+    assert.equal(video.at(-1).body.timestamp, 60);
+    assert.ok(b.map.get('q1').userStatus.completedAt);
+});
+test('Quest Completer completes Activity Quests with heartbeats and one final terminal beat', async () => {
+    const b = questHarness({quests:[questFixture('a1', 'PLAY_ACTIVITY', 60, enrolledAgo(5))]});
+    b.connect(); await b.run();
+    const beats = b.requests.filter(r => r.url === '/quests/a1/heartbeat');
+    assert.ok(beats.length >= 3);
+    assert.ok(beats.every(r => r.body.stream_key === 'call:dm1:1'));
+    assert.equal(beats.at(-1).body.terminal, true); assert.equal(beats.filter(r => r.body.terminal).length, 1);
+    assert.ok(b.events.some(e => e.type === 'QUESTS_SEND_HEARTBEAT_SUCCESS' && e.questId === 'a1'));
+});
+test('Quest Completer skips desktop-only, finished and expired Quests', async () => {
+    const expired = questFixture('old', 'WATCH_VIDEO', 30, enrolledAgo(5)); expired.config.expiresAt = new Date(QUEST_T0 - 1000).toISOString();
+    const done = questFixture('done', 'WATCH_VIDEO', 30, {userStatus:{enrolledAt:new Date(QUEST_T0 - 1e6), completedAt:new Date(QUEST_T0), progress:{}}});
+    const b = questHarness({quests:[questFixture('pc', 'PLAY_ON_DESKTOP', 900), questFixture('st', 'STREAM_ON_DESKTOP', 900), expired, done]});
+    b.connect(); await b.run();
+    assert.deepEqual(b.requests, []);
+});
+test('Quest Completer runs one Quest at a time, soonest-expiring first', async () => {
+    const late = questFixture('late', 'WATCH_VIDEO', 30, enrolledAgo(100));
+    const soon = questFixture('soon', 'WATCH_VIDEO', 30, enrolledAgo(100)); soon.config.expiresAt = new Date(QUEST_T0 + 864e5).toISOString();
+    const b = questHarness({quests:[late, soon]});
+    b.connect(); await b.run();
+    const order = b.requests.map(r => r.url.split('/')[2]);
+    assert.equal(order[0], 'soon');
+    assert.ok(order.lastIndexOf('soon') < order.indexOf('late'), 'never interleaved');
+    assert.ok(b.map.get('late').userStatus.completedAt && b.map.get('soon').userStatus.completedAt);
+});
+test('Quest Completer only finishes Quests you accepted when Accept new Quests is off', async () => {
+    const b = questHarness({quests:[questFixture('new', 'WATCH_VIDEO', 30), questFixture('mine', 'WATCH_VIDEO', 30, enrolledAgo(100))], settings:{questsEnroll:false}});
+    b.connect(); await b.run();
+    assert.equal(b.requests.some(r => r.url.includes('/new/')), false);
+    assert.ok(b.map.get('mine').userStatus.completedAt);
+});
+test('Quest Completer turns a captcha into a quiet skip instead of opening a screen', async () => {
+    const b = questHarness({quests:[questFixture('q1', 'WATCH_VIDEO', 30)], fail:{enroll:{ok:false, status:400, body:{captcha_key:['captcha-required']}}}});
+    b.connect(); await b.run();
+    assert.equal(b.requests.filter(r => r.url === '/quests/q1/enroll').length, 1, 'not retried right away');
+    assert.deepEqual(b.ui, []);
+    b.advance(7 * 3600 * 1000); b.connect(); await b.run();
+    assert.equal(b.requests.filter(r => r.url === '/quests/q1/enroll').length, 2, 'tried again hours later');
+});
+test('Quest Completer waits out Discord\'s rate limit before accepting more', async () => {
+    const b = questHarness({quests:[questFixture('q1', 'WATCH_VIDEO', 30), questFixture('q2', 'WATCH_VIDEO', 30)],
+        fail:{enroll:{ok:false, status:429, body:{retry_after:600}}}});
+    b.connect(); await b.run(5 * 60 * 1000);
+    assert.equal(b.requests.filter(r => r.url.endsWith('/enroll')).length, 1);
+    b.advance(11 * 60 * 1000); b.connect(); await b.run(60 * 1000);
+    assert.equal(b.requests.filter(r => r.url.endsWith('/enroll')).length, 2, 'tries the next one after the wait');
+});
+test('Quest Completer stops a running Quest when switched off and on logout', async () => {
+    const b = questHarness({quests:[questFixture('q1', 'WATCH_VIDEO', 600, enrolledAgo(0))]});
+    b.connect(); await b.run(60 * 1000);
+    const sent = b.requests.length; assert.ok(sent > 0);
+    b.api.setSetting('quests', false); await b.run();
+    assert.equal(b.requests.length, sent, 'nothing sent after switching off'); assert.equal(b.timers.length, 0);
+    b.api.setSetting('quests', true); await b.run(60 * 1000);
+    assert.ok(b.requests.length > sent, 'resumes when switched back on');
+    const resumed = b.requests.length;
+    b.subs.get('LOGOUT').forEach(fn => fn({type:'LOGOUT'})); await b.run();
+    assert.equal(b.requests.length, resumed);
+});
+test('Quest Completer asks Discord for Quests when the phone hasn\'t loaded them yet', async () => {
+    const b = questHarness({fetched:false});
+    b.connect(); await b.run();
+    assert.equal(b.fetches, 1);
+});
+test('Quest Completer settings page has its switches and stays alphabetical', () => {
+    const b = settingsHarness();
+    assert.equal(b.registry.VENUS_QUESTS.type, 'route'); assert.equal(b.registry.VENUS_QUESTS.parent, 'VENUS_PLUGINS');
+    assert.equal(b.registry.VENUS_QUESTS.useTitle(), 'Quest Completer');
+    const node = b.registry.VENUS_PLUGINS.screen.getComponent()().props.node;
+    assert.ok(node.sections[0].settings.includes('VENUS_QUESTS'));
+    for (const key of ['quests', 'questsVideo', 'questsActivity', 'questsEnroll']) {
+        assert.equal(b.api.settings[key], true); assert.equal(b.api.setSetting(key, false), true); assert.equal(b.api.settings[key], false);
+    }
+});
+test('unselected Quest Completer never touches QuestStore or the dispatcher', () => {
+    const b = boot({readAll:true});
+    let subscribed = 0, listened = 0;
+    b.load({default:{subscribe:() => subscribed++, dispatch(){}}}, null, 585);
+    b.load({default:{getQuest(){}, addChangeListener:() => listened++}}, null, 7120);
+    assert.equal(subscribed, 0); assert.equal(listened, 0);
+    assert.equal(b.api.setSetting('quests', true), false);
 });

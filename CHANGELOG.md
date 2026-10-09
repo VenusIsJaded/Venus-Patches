@@ -2,7 +2,19 @@
 
 Every release works with **Discord 348.10 - Stable**. Always patch the original APKM. Releases up to 1.3.6 were for Discord 347.12.
 
-## 1.3.10 — Original names and icons are back, plus fixes
+## 1.4.1 — Quest Completer
+
+- **New plugin: Quest Completer.** When you open Discord, it checks for Quests you haven't finished and completes them in the background. No screen opens and nothing needs a tap.
+- **It accepts new Quests for you,** one at a time, then completes them. To only finish Quests you accepted yourself, turn off **Accept new Quests** in its settings.
+- **Video and Activity Quests are supported.** Videos are reported as watched at normal speed, and Activity time is counted without starting the Activity. Play and stream Quests need a computer, so they're skipped.
+- **It keeps checking while Discord is open.** New Quests are picked up every 30 minutes, the one ending soonest goes first, and Discord's own Quest screens show the progress.
+- **Nothing pops up.** If Discord asks for a captcha or says to slow down, that Quest is skipped quietly and tried again later.
+- **Choose what it does** in **Venus → Plugins → Quest Completer**: video Quests, Activity Quests and accepting new Quests can each be turned off, and a status line shows what it has completed.
+- You still claim rewards yourself. Discord may pause Quests on accounts that complete them automatically, so use it at your own risk.
+
+## 1.4.0 — Original names and icons are back, plus fixes
+
+This release was first published as 1.3.10. Only the number changed.
 
 - **Every feature has its 1.3.8 name again,** in Morphe and in Venus settings: CopyBios, Dashless, FavouriteAnything, File size on picker, FreeNitro, Hidden Channels, JumpToTop, No typing, NoDelete, Pastelize, PlatformIndicators, QuickDelete and ReviewDB. Your settings carry over, so nothing turns on or off.
 - **PlatformIndicators has its original icons back.**
