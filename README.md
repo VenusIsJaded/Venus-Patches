@@ -37,6 +37,7 @@ To turn plugins on or off at any time, open **Discord Settings → Venus → Plu
 | **PlatformIndicators** | Shows whether people are on desktop, mobile, web, console or VR | On |
 | **QuickDelete** | Skips the "are you sure?" when deleting | Off |
 | **Read All** | Adds a Read all button to the server list for servers, DMs or both | On |
+| **Quest Completer** | Completes video and Activity Quests in the background, with no screen or tap | On |
 | **ReviewDB** | Read and write reviews of users and servers | Off |
 
 ### Privacy options
@@ -60,6 +61,7 @@ Discord can still see what any client needs to work, like your messages, calls a
 - **Hidden Channels** only shows a channel's name and dates. It can't show messages or let you join locked voice channels.
 - **ReviewDB** loads reviews from the community ReviewDB service at `manti.vendicated.dev`. To post or report reviews, sign in from its settings page. Signing in never uses your Discord token.
 - **FreeNitro** sends links, not real Nitro emojis or stickers.
+- **Quest Completer** checks for new Quests when Discord opens and every 30 minutes after. It accepts and completes video and Activity Quests one at a time. Play and stream Quests need a computer, so they're skipped. You still claim rewards yourself. Discord may pause Quests on accounts that complete them automatically.
 - **Read All** uses Discord's own "Mark as read". It clears servers by default. Switch it to DMs or both in its settings, or hold the button for a one-time choice.
 
 ## For developers

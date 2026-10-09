@@ -205,7 +205,7 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "Original names and icons are back, plus bug fixes and less work. Keeps 1.3.9's removed size cap. "
+    "New Quest Completer plugin: completes video and Activity Quests in the background, with no screen. "
     "Patch the original Discord 348.10 APKM."
 )
 

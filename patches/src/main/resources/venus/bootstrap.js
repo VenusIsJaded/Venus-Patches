@@ -21,14 +21,16 @@
     if (features.platformIndicators) selectModules([4877, 4855, 1378, 2051, 10603, 10371, 12845, 15667, 9108, 13649, 12602]);
     if (features.reviewDB) selectModules([12627, 13521, 13987, 8510, 5997, 6621, 1378, 585]);
     if (features.readAll) selectModules([15929]);
-    const revision = "1.3.10";
+    if (features.quests) selectModules([585, 7120]);
+    const revision = "1.4.1";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
     const deferred = new Map();
     const settings = { picker: true, voice: false, copyBios: true, dashless: true, favouriteAnything: true, emojis: true, stickers: true, hyperlinks: true, forceLinks: false,
         noTyping: true, quickDelete: false, quickDeleteEmbeds: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 512,
-        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewThemedSend:true, reviewWarning:true, readAll:true, readAllMode:"guilds" };
+        jumpToTop: true, hiddenChannels: false, pastelize:true, pastelAll:false, pastelWebhookName:true, pastelContent:false, platformIndicators:true, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewThemedSend:true, reviewWarning:true, readAll:true, readAllMode:"guilds",
+        quests:true, questsVideo:true, questsActivity:true, questsEnroll:true };
     const status = { picker: false, attachment: false, request: false, menu: false, conversion: false, audioError: "", storage: "waiting" };
     const listeners = new Set();
     const dirty = new Set();
@@ -120,6 +122,7 @@
         if (key === "picker" && !value) {
             clearSizes();
         }
+        if (features.quests && featureFor(key) === "quests") questsSettingChanged(key, value);
         save();
         notify(key);
         return true;
@@ -155,6 +158,7 @@
             // Persist edits made while the asynchronous restore was in flight.
             if (dirty.size) save();
             restoreDeleted();
+            if (features.quests && !enabled("quests")) questsStop();
             notify("*");
         }).catch(() => { status.storage = "read failed (defaults)"; if (dirty.size) save(); notify("*"); });
     }
@@ -417,7 +421,7 @@
 
     // Native setting nodes use Discord's own themed rows, navigation and back stack.
     let SettingsList;
-    const featureFor = key => key === "reviewThemedSend" || key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" || key === "noDeleteLimit" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key === "readAllMode" ? "readAll" : key;
+    const featureFor = key => key === "reviewThemedSend" || key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" || key === "forceLinks" ? "freeNitro" : key === "quickDeleteEmbeds" ? "quickDelete" : key === "noDeleteSave" || key === "noDeleteLimit" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : ["pastelAll","pastelWebhookName","pastelContent"].includes(key) ? "pastelize" : key === "readAllMode" ? "readAll" : /^quests[A-Z]/.test(key) ? "quests" : key;
     function section(label, keys) { return { label, settings: keys }; }
     // Plain-language status for General -> About; the raw values stay in status for diagnostics.
     function aboutText() {
@@ -514,6 +518,11 @@
             route("VENUS_QUICKDELETE", "QuickDelete", [section("Skip confirmation", ["VENUS_QUICKDELETE_MESSAGES", "VENUS_QUICKDELETE_EMBEDS"])], "VENUS_PLUGINS");
             next.VENUS_QUICKDELETE_MESSAGES = settingNode("quickDelete", "Delete messages instantly", "Skip \"are you sure?\" when deleting a message. This can't be undone.", "VENUS_QUICKDELETE");
             next.VENUS_QUICKDELETE_EMBEDS = settingNode("quickDeleteEmbeds", "Remove embeds instantly", "Skip \"are you sure?\" when removing a link preview.", "VENUS_QUICKDELETE");
+        }
+        if (features.quests) {
+            plugins.push("VENUS_QUESTS");
+            route("VENUS_QUESTS", "Quest Completer", [section("Quest Completer", [])], "VENUS_PLUGINS");
+            next.VENUS_QUESTS.screen.getComponent = () => QuestSettings;
         }
         if (features.reviewDB) {
             plugins.push("VENUS_REVIEWDB");
@@ -1590,6 +1599,327 @@
         }
         return view;
     }
+    // Quest Completer: finds unfinished Quests and completes them in the background, with no screen.
+    // Based on the community quest scripts (aamiaa's gist, CompleteDiscordQuest, Questify), rebuilt on
+    // 348.10's own modules: QuestStore (7120), fetchCurrentQuests (9765), questUserStatusFromServer (7127)
+    // and the HTTP client (1283). Only tasks a phone can do are run: watching a video and playing an Activity.
+    const QUEST_VIDEO_TASKS = ["WATCH_VIDEO_ON_MOBILE", "WATCH_VIDEO"], QUEST_ACTIVITY_TASK = "PLAY_ACTIVITY";
+    // QuestContent.QUEST_HOME_MOBILE: where Discord's own app says a quest was accepted from.
+    const QUEST_HOME_MOBILE = 12;
+    // Video progress may run at most ~10 s ahead of the time since accepting; report about every 7 s like the player.
+    const QUEST_VIDEO_LEEWAY = 10, QUEST_VIDEO_STEP = 7, QUEST_HEARTBEAT_MS = 20000;
+    const QUEST_REFETCH_MS = 30 * 60 * 1000, QUEST_RETRY_MS = 30 * 60 * 1000, QUEST_REFUSED_MS = 6 * 60 * 60 * 1000;
+    const quest = {store:null, dispatcher:null, generation:0, running:null, enrolling:false, skip:new Map(), enrollBlockedUntil:0,
+        scanTimer:undefined, refetchTimer:undefined, user:null, completed:0, last:"", error:""};
+    function questSleep(ms) { return new Promise(resolve => { later(resolve, ms); }); }
+    function questStore() {
+        if (quest.store) return quest.store;
+        const store = inspectedExport(7120, "default");
+        if (!store || typeof store.getQuest !== "function") return null;
+        questAttach(store);
+        return store;
+    }
+    function questAttach(store) {
+        if (quest.store || !store || typeof store.getQuest !== "function") return;
+        quest.store = store;
+        if (typeof store.addChangeListener === "function") store.addChangeListener(questsChanged);
+    }
+    // Store updates arrive in bursts (fetch, enroll, progress). One scan per burst is enough.
+    function questsChanged() { if (enabled("quests")) questsSchedule(1500); }
+    function questsSchedule(ms) {
+        if (quest.scanTimer !== undefined || typeof global.setTimeout !== "function") return;
+        quest.scanTimer = global.setTimeout(questsScan, ms);
+    }
+    function questStatus(text, error) {
+        if (error) quest.error = text; else { quest.last = text; quest.error = ""; }
+        notify("quests");
+    }
+    // Discord's HTTP client (its auth and headers), with this request's own interceptResponse. Discord asks
+    // it before its global handler (captcha, MFA, restricted-hours screens), so taking every failed response
+    // here means a challenge just fails the request quietly instead of opening a screen.
+    function questIntercept(response, retry, cancel) {
+        if (!response || response.ok || typeof cancel !== "function") return false;
+        const error = new Error("HTTP " + response.status);
+        error.status = response.status; error.body = response.body;
+        cancel(error);
+        return true;
+    }
+    function questRequest(url, body) {
+        const http = inspectedExport(1283, "HTTP");
+        if (!http || typeof http.post !== "function") return Promise.reject(new Error("Discord's network client isn't ready"));
+        return Promise.resolve().then(() => http.post({url, body, interceptResponse:questIntercept}));
+    }
+    // QuestStore exposes these as getters in 348.10; accept a method too.
+    function questFlag(store, key) {
+        try { const value = store[key]; return typeof value === "function" ? value.call(store) : value; } catch (_) { return undefined; }
+    }
+    function questDispatch(action) {
+        const dispatcher = quest.dispatcher || inspectedExport(585, "default");
+        try {
+            if (!dispatcher || typeof dispatcher.dispatch !== "function") return false;
+            const result = dispatcher.dispatch(action);
+            if (result && typeof result.catch === "function") result.catch(() => {});
+            return true;
+        } catch (_) { return false; }
+    }
+    function questUserStatus(body) {
+        const convert = inspectedExport(7127, "questUserStatusFromServer");
+        try { return body && typeof convert === "function" ? convert(body) : null; } catch (_) { return null; }
+    }
+    function questRetryAfter(error) {
+        const body = error && error.body, value = body && (body.retry_after != null ? body.retry_after : body.retryAfter);
+        const seconds = Number(value != null ? value : error && error.retryAfter);
+        return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, 86400) * 1000 : error && error.status === 429 ? 60000 : 0;
+    }
+    function questTime(value) {
+        if (value == null || value === "") return NaN;
+        const time = value instanceof Date ? value.getTime() : typeof value === "number" ? value : Date.parse(String(value));
+        return Number.isFinite(time) ? time : NaN;
+    }
+    function questName(item) {
+        const messages = item && item.config && item.config.messages;
+        return messages && typeof messages.questName === "string" && messages.questName ? messages.questName : "a Quest";
+    }
+    // The first task this phone can do, in the order the settings allow.
+    function questTask(item) {
+        const config = item && item.config, tasks = config && (config.taskConfigV2 || config.taskConfig);
+        const all = tasks && tasks.tasks;
+        if (!all || typeof all !== "object") return null;
+        if (settings.questsVideo) for (const type of QUEST_VIDEO_TASKS) {
+            const target = Number(all[type] && all[type].target);
+            if (target > 0) return {type, target, kind:"video"};
+        }
+        const target = Number(all[QUEST_ACTIVITY_TASK] && all[QUEST_ACTIVITY_TASK].target);
+        if (settings.questsActivity && target > 0) return {type:QUEST_ACTIVITY_TASK, target, kind:"activity"};
+        return null;
+    }
+    function questProgress(item, type) {
+        const progress = item && item.userStatus && item.userStatus.progress, value = Number(progress && progress[type] && progress[type].value);
+        return Number.isFinite(value) && value > 0 ? value : 0;
+    }
+    function questOpen(item, now) {
+        if (!item || typeof item.id !== "string" || !item.config) return false;
+        if (item.userStatus && item.userStatus.completedAt) return false;
+        const expires = questTime(item.config.expiresAt);
+        return !(expires <= now + 60000) && !((quest.skip.get(item.id) || 0) > now);
+    }
+    function questsScan() {
+        quest.scanTimer = undefined;
+        if (!enabled("quests")) return;
+        const store = questStore();
+        if (!store) return;
+        if (questFlag(store, "isQuestAccessSuspended") === true) { if (!quest.error) questStatus("Discord has paused Quests on this account.", true); return; }
+        let all;
+        try { all = store.quests; } catch (_) { return; }
+        if (!all || typeof all.values !== "function") return;
+        const now = Date.now(), ready = [], waiting = [];
+        for (const item of all.values()) {
+            if (!questOpen(item, now) || !questTask(item)) continue;
+            if (item.userStatus && item.userStatus.enrolledAt) ready.push(item); else if (settings.questsEnroll) waiting.push(item);
+        }
+        // Soonest-expiring first, so nothing runs out while another quest is going.
+        const expiry = item => { const time = questTime(item.config.expiresAt); return Number.isFinite(time) ? time : Infinity; };
+        const soonest = (a, b) => expiry(a) - expiry(b);
+        ready.sort(soonest); waiting.sort(soonest);
+        const blocked = quest.enrollBlockedUntil > now || questTime(questFlag(store, "questEnrollmentBlockedUntil")) > now;
+        if (waiting.length && !quest.enrolling && !blocked) questEnroll(waiting[0]);
+        if (!quest.running && ready.length) questRun(ready[0]);
+    }
+    // Accepting one at a time, a few seconds apart. A refusal or captcha leaves that quest alone for hours.
+    function questEnroll(item) {
+        const generation = quest.generation, id = item.id;
+        quest.enrolling = true;
+        questRequest("/quests/" + id + "/enroll", {location:QUEST_HOME_MOBILE}).then(response => {
+            if (generation !== quest.generation) return;
+            const status = questUserStatus(response && response.body);
+            if (!status || !questDispatch({type:"QUESTS_ENROLL_SUCCESS", enrolledQuestUserStatus:status})) questsFetch(true);
+        }, error => {
+            if (generation !== quest.generation) return;
+            const wait = questRetryAfter(error);
+            if (wait) quest.enrollBlockedUntil = Date.now() + wait;
+            quest.skip.set(id, Date.now() + Math.max(wait, QUEST_REFUSED_MS));
+        }).then(() => {
+            if (generation !== quest.generation) return;
+            quest.enrolling = false;
+            questsSchedule(3000 + Math.floor(Math.random() * 2000));
+        });
+    }
+    function questActive(entry) { return quest.running === entry && entry.generation === quest.generation && enabled("quests"); }
+    function questRun(item) {
+        const task = questTask(item), entry = {id:item.id, task, generation:quest.generation, name:questName(item)};
+        quest.running = entry;
+        notify("quests");
+        const work = task.kind === "video" ? questVideo(entry, item) : questActivity(entry);
+        work.then(done => {
+            if (!done || entry.generation !== quest.generation) return;
+            quest.completed++;
+            // The store's own update follows; don't pick the same quest again in the meantime.
+            quest.skip.set(entry.id, Date.now() + 10 * 60 * 1000);
+            questStatus("Completed " + entry.name + ".", false);
+        }, error => {
+            if (entry.generation !== quest.generation) return;
+            const wait = questRetryAfter(error);
+            quest.skip.set(entry.id, Date.now() + Math.max(wait, QUEST_RETRY_MS));
+            questStatus("Couldn't finish " + entry.name + ": " + String(error && error.message || error), true);
+        }).then(() => {
+            if (quest.running === entry) quest.running = null;
+            if (entry.generation === quest.generation) questsSchedule(2000 + Math.floor(Math.random() * 2000));
+        });
+    }
+    // Mirrors the server's answer into QuestStore, so Discord's own Quest screens stay right.
+    function questVideoStatus(response) {
+        const body = response && response.body;
+        if (body && body.quest_id) questDispatch({type:"QUESTS_USER_STATUS_UPDATE", user_status:body});
+        return !!(body && body.completed_at);
+    }
+    async function questVideo(entry, item) {
+        const enrolled = questTime(item.userStatus && item.userStatus.enrolledAt), target = entry.task.target;
+        if (!Number.isFinite(enrolled)) throw new Error("no accepted time");
+        let done = questProgress(item, entry.task.type), completed = false;
+        while (questActive(entry) && done < target) {
+            const allowed = (Date.now() - enrolled) / 1000 + QUEST_VIDEO_LEEWAY, next = Math.min(target, done + QUEST_VIDEO_STEP);
+            if (allowed < next) { await questSleep(Math.max(1000, Math.ceil((next - allowed) * 1000))); continue; }
+            const response = await questRequest("/quests/" + entry.id + "/video-progress", {timestamp:Math.min(target, next + Math.random())});
+            if (!questActive(entry)) return false;
+            completed = questVideoStatus(response);
+            done = next;
+            if (completed) break;
+            await questSleep(1000 + Math.floor(Math.random() * 500));
+        }
+        if (!questActive(entry)) return false;
+        if (!completed) completed = questVideoStatus(await questRequest("/quests/" + entry.id + "/video-progress", {timestamp:target}));
+        return completed;
+    }
+    // Activity quests count time in a call; any DM or voice channel id gives the heartbeat its stream key.
+    function questChannel() {
+        try {
+            const channels = inspectedExport(2051, "default"), sorted = channels && typeof channels.getSortedPrivateChannels === "function" && channels.getSortedPrivateChannels();
+            if (sorted && sorted[0] && sorted[0].id) return sorted[0].id;
+        } catch (_) {}
+        try {
+            const guilds = inspectedExport(4470, "default"), all = guilds && typeof guilds.getAllGuilds === "function" && guilds.getAllGuilds();
+            for (const key of Object.keys(all || {})) {
+                const vocal = all[key] && all[key].VOCAL, first = vocal && vocal[0] && vocal[0].channel;
+                if (first && first.id) return first.id;
+            }
+        } catch (_) {}
+        return null;
+    }
+    async function questHeartbeat(entry, streamKey, terminal) {
+        const response = await questRequest("/quests/" + entry.id + "/heartbeat", {stream_key:streamKey, terminal});
+        const body = response && response.body, status = questUserStatus(body);
+        if (status) questDispatch({type:"QUESTS_SEND_HEARTBEAT_SUCCESS", questId:entry.id, streamKey, userStatus:status});
+        const value = Number(body && body.progress && body.progress[QUEST_ACTIVITY_TASK] && body.progress[QUEST_ACTIVITY_TASK].value);
+        return {value:Number.isFinite(value) ? value : 0, completed:!!(body && body.completed_at)};
+    }
+    async function questActivity(entry) {
+        const channelId = questChannel();
+        if (!channelId) throw new Error("no DM or voice channel to count time in");
+        const streamKey = "call:" + channelId + ":1", target = entry.task.target;
+        while (questActive(entry)) {
+            const beat = await questHeartbeat(entry, streamKey, false);
+            if (!questActive(entry)) return false;
+            if (beat.completed || beat.value >= target) { await questHeartbeat(entry, streamKey, true); return true; }
+            await questSleep(Math.min(QUEST_HEARTBEAT_MS, Math.max(1000, Math.ceil((target - beat.value) * 1000) + 1000)));
+        }
+        return false;
+    }
+    // Mobile only loads Quests when you open them; ask for them once in a while, through Discord's own fetch.
+    function questsFetch(force) {
+        const store = questStore(), fetch = inspectedExport(9765, "fetchCurrentQuests");
+        if (!store || typeof fetch !== "function") return;
+        try {
+            if (questFlag(store, "isFetchingCurrentQuests") === true) return;
+            const last = questTime(questFlag(store, "lastFetchedCurrentQuests")) || 0;
+            if (!force && last && Date.now() - last < QUEST_REFETCH_MS) return;
+            const result = fetch();
+            if (result && typeof result.catch === "function") result.catch(() => {});
+        } catch (_) {}
+    }
+    function questsRefetchLoop() {
+        quest.refetchTimer = undefined;
+        if (!enabled("quests") || typeof global.setTimeout !== "function") return;
+        questsFetch(false); questsSchedule(1000);
+        quest.refetchTimer = global.setTimeout(questsRefetchLoop, QUEST_REFETCH_MS);
+    }
+    function questsStart(delay) {
+        if (!enabled("quests") || typeof global.setTimeout !== "function") return;
+        if (quest.refetchTimer !== undefined && global.clearTimeout) global.clearTimeout(quest.refetchTimer);
+        quest.refetchTimer = global.setTimeout(questsRefetchLoop, delay);
+    }
+    // Stops everything in flight: switching it off, logging out, or another account signing in.
+    function questsStop() {
+        quest.generation++;
+        quest.running = null; quest.enrolling = false; quest.enrollBlockedUntil = 0; quest.skip.clear();
+        if (global.clearTimeout) {
+            if (quest.scanTimer !== undefined) global.clearTimeout(quest.scanTimer);
+            if (quest.refetchTimer !== undefined) global.clearTimeout(quest.refetchTimer);
+        }
+        quest.scanTimer = undefined; quest.refetchTimer = undefined;
+    }
+    function questsReset() { questsStop(); quest.completed = 0; quest.last = ""; quest.error = ""; notify("quests"); }
+    function questsConnected(event) {
+        const id = event && event.user && event.user.id;
+        if (id && quest.user && id !== quest.user) questsReset();
+        if (id) quest.user = id;
+        // A reconnect keeps the quest that's running; a first connect waits for Discord to settle.
+        questsStart(8000);
+    }
+    function questsInit(dispatcher) {
+        if (quest.dispatcher || !dispatcher || typeof dispatcher.subscribe !== "function") return;
+        quest.dispatcher = dispatcher;
+        dispatcher.subscribe("CONNECTION_OPEN", questsConnected);
+        dispatcher.subscribe("LOGOUT", () => { questsReset(); quest.user = null; });
+    }
+    function questsSettingChanged(key, value) {
+        if (key === "quests" && !value) { questsStop(); return; }
+        if (!enabled("quests")) return;
+        if (key === "quests") { questsStart(1000); return; }
+        // Turning a quest type off stops that kind if it's the one running.
+        const running = quest.running && quest.running.task;
+        if (!value && running && (key === "questsVideo" && running.kind === "video" || key === "questsActivity" && running.kind === "activity")) {
+            quest.generation++; quest.running = null; quest.enrolling = false;
+            if (quest.scanTimer !== undefined && global.clearTimeout) global.clearTimeout(quest.scanTimer);
+            quest.scanTimer = undefined;
+        }
+        questsSchedule(1000);
+    }
+    function questStatusText() {
+        if (!enabled("quests")) return "Off.";
+        const lines = [quest.completed ? "Completed " + quest.completed + (quest.completed === 1 ? " Quest" : " Quests") + " since Discord opened." : "Waiting for new Quests."];
+        if (quest.running) lines.push("Now: " + quest.running.name + ".");
+        if (quest.last) lines.push("Last: " + quest.last);
+        if (quest.error) lines.push(quest.error);
+        return lines.join("\n");
+    }
+    // Settings page: three switches and a plain-language status line.
+    const QUEST_NOTE = "Rewards still need claiming yourself. Play and stream Quests need a computer, so they're skipped. Discord may pause Quests on accounts that complete them automatically.";
+    function QuestSettings() {
+        useSettings("quests");
+        // The status line also changes as quests finish; refresh it while the page is open.
+        const [, tick] = React.useState(0);
+        React.useEffect(() => {
+            if (typeof global.setInterval !== "function") return;
+            const timer = global.setInterval(() => tick(n => n + 1), 5000);
+            return () => global.clearInterval(timer);
+        }, []);
+        const ui = reviewUI();
+        if (!RN) return null;
+        const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Text = inspectedExport(4833, "Text");
+        const toggle = (key, label, subLabel) => switchRow(Switch, key, label, subLabel);
+        const text = questStatusText();
+        const groups = [
+            el(Group, {key:"plugin", title:"Quest Completer"}, toggle("quests", "Complete Quests automatically", "Runs in the background whenever Discord is open. No screen opens and nothing needs a tap.")),
+            el(Group, {key:"types", title:"Quests to complete"},
+                toggle("questsVideo", "Video Quests", "Reports the video as watched, at normal speed."),
+                toggle("questsActivity", "Activity Quests", "Counts time in an Activity without starting one."),
+                toggle("questsEnroll", "Accept new Quests", "Accept Quests you haven't started, one at a time. Off: only Quests you accepted yourself.")),
+            el(Group, {key:"status", title:"Status"}, el(RN.View, {style:{padding:12}},
+                Text ? el(Text, {variant:"text-sm/medium", color:"text-default"}, text) : el(RN.Text, {style:{color:"#dbdee1", fontSize:14}}, text))),
+            el(RN.View, {key:"note", style:{paddingHorizontal:4}},
+                Text ? el(Text, {variant:"text-xs/medium", color:"text-muted"}, QUEST_NOTE) : el(RN.Text, {style:{color:"#949ba4", fontSize:12}}, QUEST_NOTE))];
+        return settingsBody(ui, groups);
+    }
     // Shared by the Read All, ReviewDB and NoDelete pages: Discord's spacing, scrolling and switch rows.
     function settingsBody(ui,groups,scroll) {
         const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},groups) :
@@ -2361,6 +2691,8 @@
             exports = replaceValue(exports,"default",hookExport(hookExport(msgStore,"getMessage",retainedMessage),"getMessages",retainedMessages));
             restoreDeleted(); return exports;
         }
+        if (features.quests && id === 7120) questAttach(exports.default);
+        if (features.quests && id === 585) questsInit(exports.default);
         if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 585) {
             dispatcher = exports.default.dispatch.bind(exports.default);
             return replaceValue(exports, "default", hookExport(exports.default, "dispatch", dispatchEvent));
