@@ -22,7 +22,7 @@
     if (features.reviewDB) selectModules([12627, 13521, 13987, 8510, 5997, 6621, 1378, 585]);
     if (features.readAll) selectModules([15929]);
     if (features.quests) selectModules([585, 7120]);
-    const revision = "1.4.3";
+    const revision = "1.4.4";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -914,20 +914,26 @@
         Promise.resolve().then(() => files.fileExists(path)).then(exists => exists ? files.readFile(path,"utf8") : null).then(text => {
             const current = userStore.getCurrentUser();
             if (!enabled("noDelete") || !enabled("noDeleteSave") || !current || current.id !== accountId) return;
+            // Messages kept before the archive loaded, or saved ones that didn't all fit, mean the file needs updating.
+            // Otherwise it already says exactly this, and opening Discord no longer rewrites it every time.
+            let restored = 0, changed = deleted.size > 0 || !text;
             if (text) {
                 if (text.length > ARCHIVE_BYTES) throw new Error("Archive too large");
                 const saved = JSON.parse(text);
                 if (saved.version !== 1 || !Array.isArray(saved.messages) || saved.messages.length > MAX_DELETED) throw new Error("Invalid archive");
-                if (saved.accountId === accountId) saved.messages.forEach(entry => {
-                    if (!entry || typeof entry.id !== "string" || typeof entry.channelId !== "string" || !entry.message || entry.message.id !== entry.id || entry.message.channel_id !== entry.channelId || !entry.message.author) return;
+                if (saved.accountId !== accountId) changed = true;
+                else saved.messages.forEach(entry => {
+                    if (!entry || typeof entry.id !== "string" || typeof entry.channelId !== "string" || !entry.message || entry.message.id !== entry.id || entry.message.channel_id !== entry.channelId || !entry.message.author) { changed = true; return; }
                     const key = deletedKey(entry.channelId,entry.id);
                     if (deleted.size < settings.noDeleteLimit && !deleted.has(key)) {
-                        try { entry.message = Object.assign({},entry.message); keepDeleted(key,{type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id,raw:entry.message,message:markDeleted(messageRecords.createMessageRecord(entry.message))}); }
-                        catch (_) { /* Invalid individual records do not poison the archive. */ }
-                    }
+                        try { entry.message = Object.assign({},entry.message); keepDeleted(key,{type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id,raw:entry.message,message:markDeleted(messageRecords.createMessageRecord(entry.message))}); restored++; }
+                        catch (_) { changed = true; /* Invalid individual records do not poison the archive. */ }
+                    } else changed = true;
                 });
             }
-            archiveRestored = true; invalidateDeleted(); persistDeleted();
+            archiveRestored = true; invalidateDeleted();
+            if (changed) persistDeleted(); else status.archive = "saved locally";
+            if (!restored && !changed) return;
             if (msgStore && typeof msgStore.emitChange === "function") msgStore.emitChange();
         }).catch(() => {status.archive = "restore failed"; notify();}).finally(() => {archiveLoading = false;});
     }
@@ -1061,7 +1067,6 @@
         }
         if (!enabled("noDelete")) return orig.apply(self, args);
         if (event.type === "MESSAGE_DELETE" && event.channelId && event.id) {
-            const key = deletedKey(event.channelId, event.id);
             // Your own deletion of a message we were already showing: remove it for real.
             const kept = rememberDeleted(event, orig, self);
             // Discord's deleteMessage chains .then() on dispatch(); always hand back a thenable.
@@ -1501,7 +1506,7 @@
     // unread DMs and above the line, so the native FastList's sections, anchors and recycler
     // keys stay stock. Only that row's height grows, through the list's own itemSize.
     const READ_ALL_HEIGHT = 36;
-    const readAllViews = new WeakMap();
+    const readAllViews = new WeakMap(), readAllData = new WeakMap();
     // ReadStateActionCreators (6532) exports ack/bulkAck by name, with no default object.
     function readActionsExport() {
         if (typeof global.__r !== "function") return null;
@@ -1585,18 +1590,24 @@
         if (React) useSettings("readAll");
         const data=result && result.listDataProps;
         if (!enabled("readAll") || !React || !RN || !data || typeof data.itemSize!=="function" || typeof data.renderItem!=="function") return result;
-        let view=readAllViews.get(data);
-        if (!view) {
+        // The wrapped list data is shared per native listDataProps, but the returned props are per result:
+        // keying the whole view on listDataProps handed back an older result's listProps.
+        const known=readAllViews.get(result);
+        if (known) return known;
+        let listDataProps=readAllData.get(data);
+        if (!listDataProps) {
             const enums=readAllExports().renderSections, separator=enums && typeof enums.SEPARATOR==="number" ? enums.SEPARATOR : 6;
             const itemSize=data.itemSize, renderItem=data.renderItem;
-            const listDataProps=Object.assign({},data,{
+            listDataProps=Object.assign({},data,{
                 itemSize:function (section) { const size=itemSize.apply(this,arguments); return section===separator && enabled("readAll") ? size+READ_ALL_HEIGHT : size; },
                 renderItem:function (section) {
                     const node=renderItem.apply(this,arguments);
                     return section===separator && enabled("readAll") ? el(RN.View,{key:"venus-read-all",style:{width:"100%"}},el(ReadAllButton,null),node) : node;
                 }});
-            readAllViews.set(data, view=Object.assign({},result,{listDataProps}));
+            readAllData.set(data, listDataProps);
         }
+        const view=Object.assign({},result,{listDataProps});
+        readAllViews.set(result, view);
         return view;
     }
     // Quest Completer: finds unfinished Quests and completes them in the background, with no screen.
@@ -1621,7 +1632,9 @@
     // Bits desktop's launch signature keeps clear when it detects no client mod (docs.discord.food, Launch Signature).
     const QUEST_SIGNATURE_BITS = [119, 108, 100, 91, 84, 75, 61, 55, 48, 38, 24, 11];
     const QUEST_HEARTBEAT_SESSION_MS = 30 * 60 * 1000;
-    const QUEST_REFETCH_MS = 30 * 60 * 1000, QUEST_RETRY_MS = 30 * 60 * 1000, QUEST_REFUSED_MS = 6 * 60 * 60 * 1000;
+    const QUEST_REFETCH_MS = 30 * 60 * 1000, QUEST_RETRY_MS = 30 * 60 * 1000, QUEST_REFUSED_MS = 6 * 60 * 60 * 1000, QUEST_OFFLINE_MS = 5 * 60 * 1000;
+    // Heartbeats in a row that Discord answers without counting any more time before Quest Completer gives up for now.
+    const QUEST_STALLED_BEATS = 5;
     const quest = {store:null, dispatcher:null, generation:0, running:null, enrolling:false, skip:new Map(), enrollBlockedUntil:0,
         scanTimer:undefined, refetchTimer:undefined, user:null, completed:0, last:"", error:"", desktop:null, executables:new Map()};
     function questSleep(ms) { return new Promise(resolve => { later(resolve, ms); }); }
@@ -1836,7 +1849,10 @@
             if (generation !== quest.generation) return;
             const wait = questRetryAfter(error);
             if (wait) quest.enrollBlockedUntil = Date.now() + wait;
-            quest.skip.set(id, Date.now() + Math.max(wait, QUEST_REFUSED_MS));
+            // Only a real answer from Discord (refused, captcha) leaves the Quest alone for hours. No connection
+            // means Discord never saw the request, so it's tried again sooner.
+            const refused = error && Number.isFinite(error.status) && error.status > 0;
+            quest.skip.set(id, Date.now() + Math.max(wait, refused ? QUEST_REFUSED_MS : QUEST_OFFLINE_MS));
         }).then(() => {
             if (generation !== quest.generation) return;
             quest.enrolling = false;
@@ -1861,7 +1877,7 @@
             quest.skip.set(entry.id, Date.now() + Math.max(wait, QUEST_RETRY_MS));
             questStatus("Couldn't finish " + entry.name + ": " + String(error && error.message || error), true);
         }).then(() => {
-            if (quest.running === entry) quest.running = null;
+            if (quest.running === entry) { quest.running = null; notify("quests"); }
             if (entry.generation === quest.generation) questsSchedule(2000 + Math.floor(Math.random() * 2000));
         });
     }
@@ -1914,9 +1930,11 @@
             const list = response && response.body, app = Array.isArray(list) ? list.find(a => a && String(a.id) === applicationId) : null;
             const exe = questExecutableName(app);
             if (exe) path = questExecutablePath(app, exe);
+            // Only Discord's answer is remembered. A dropped connection used to leave the game unnamed until Discord restarted.
+            if (quest.executables.size >= 64) quest.executables.delete(quest.executables.keys().next().value);
+            quest.executables.set(applicationId, path);
         } catch (_) {}
         // Unknown is fine: desktop sends no path for a game it can't place either.
-        quest.executables.set(applicationId, path);
         return path;
     }
     // Same body as Discord's own sendHeartbeat (9765): application_id names the game or Activity, and a game
@@ -1934,10 +1952,14 @@
     // second, and stops once Discord says the Quest is done. A finished Quest gets no terminal beat on desktop.
     async function questBeat(entry, desktop) {
         const target = entry.task.target;
+        let best = -1, stalled = 0;
         while (questActive(entry)) {
             const beat = await questHeartbeat(entry, desktop);
             if (!questActive(entry)) return false;
             if (beat.completed || beat.value >= target) return true;
+            // A Quest Discord stops counting used to get a heartbeat every minute for as long as Discord stayed open.
+            if (beat.value > best) { best = beat.value; stalled = 0; }
+            else if (++stalled >= QUEST_STALLED_BEATS) throw new Error("Discord stopped counting time");
             const left = Math.max(0, (target - beat.value) * 1000);
             await questSleep(left <= QUEST_HEARTBEAT_MS ? left + QUEST_HEARTBEAT_TAIL_MS : QUEST_HEARTBEAT_MS);
         }
@@ -2024,14 +2046,8 @@
     // Settings page: three switches and a plain-language status line.
     const QUEST_NOTE = "Rewards still need claiming yourself. Stream Quests need a real stream, so they're skipped. Discord may pause Quests on accounts that complete them automatically.";
     function QuestSettings() {
+        // Every status change (start, finish, error) already notifies "quests"; no 5-second redraw timer.
         useSettings("quests");
-        // The status line also changes as quests finish; refresh it while the page is open.
-        const [, tick] = React.useState(0);
-        React.useEffect(() => {
-            if (typeof global.setInterval !== "function") return;
-            const timer = global.setInterval(() => tick(n => n + 1), 5000);
-            return () => global.clearInterval(timer);
-        }, []);
         const ui = reviewUI();
         if (!RN) return null;
         const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Text = inspectedExport(4833, "Text");
@@ -2565,7 +2581,7 @@
         }
         const title=system ? "ReviewDB System Message" : "Review by "+String(sender.username || "Unknown");
         if (typeof ui.simpleSheet==="function") try {
-            ui.simpleSheet({key:"ReviewOverflow",header:{title,onClose:() => hideReviewSheet(ui)},options});return;
+            ui.simpleSheet({key:"ReviewOverflow",header:{title,onClose:() => hideReviewSheet(ui,"ReviewOverflow")},options});return;
         } catch (_) {}
         RN.Alert.alert(title,undefined,options.map(option => ({text:option.label,style:option.isDestructive ? "destructive" : "default",onPress:option.onPress}))
             .concat([{text:"Cancel",style:"cancel"}]));
