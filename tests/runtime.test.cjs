@@ -2437,3 +2437,73 @@ test('unselected Quest Completer never touches QuestStore or the dispatcher', ()
     assert.equal(subscribed, 0); assert.equal(listened, 0);
     assert.equal(b.api.setSetting('quests', true), false);
 });
+
+// ---- 1.4.4 regressions ----
+test('Read All hands back the newest server bar props, not an older result sharing the same list data',()=>{
+    const b=readAllHarness();
+    const hook=b.load({default:props=>props},null,15929);
+    const older=Object.freeze({listProps:{scroll:1},listDataProps:b.data}), newer=Object.freeze({listProps:{scroll:2},listDataProps:b.data});
+    const a=hook.default(older), c=hook.default(newer);
+    assert.equal(a.listProps.scroll,1);assert.equal(c.listProps.scroll,2,'the newer render must keep its own listProps');
+    assert.equal(a.listDataProps,c.listDataProps,'the wrapped list data is still shared, so the list does not redraw');
+    assert.equal(hook.default(newer),c,'same result, same view');
+});
+test('Quest Completer asks for the game again after a dropped connection instead of leaving it unnamed', async () => {
+    const app = {id:'1402418491272986635', name:'Marvel Rivals', executables:[{os:'win32', name:'win64/marvel.exe'}]};
+    const b = questHarness({quests:[playFixture('p1', 60, enrolledAgo(5)), playFixture('p2', 60, enrolledAgo(5))], apps:{'1402418491272986635':app}});
+    const get = b.http.get; let offline = true;
+    // Only the first lookup drops; the connection is back by the next Quest.
+    b.http.get = request => { if (offline) { offline = false; return Promise.reject(new Error('Network request failed')); } return get(request); };
+    b.connect(); await b.run();
+    const first = b.requests.find(r => r.url === '/quests/p1/heartbeat');
+    assert.ok(first); assert.equal('executable_path' in first.body, false, 'nothing made up while offline');
+    const later = b.requests.filter(r => r.url === '/quests/p2/heartbeat').at(-1);
+    assert.equal(later.body.executable_path, 'win64/marvel.exe', 'looked up again once online');
+});
+test('Quest Completer retries accepting a Quest soon after a dropped connection, but waits hours after a refusal', async () => {
+    const b = questHarness({quests:[questFixture('q1', 'WATCH_VIDEO', 30)]});
+    const post = b.http.post; let offline = true;
+    b.http.post = request => offline && request.url.endsWith('/enroll') ? Promise.reject(new Error('Network request failed')) : post(request);
+    b.connect(); await b.run(60 * 1000);
+    assert.equal(b.requests.filter(r => r.url === '/quests/q1/enroll').length, 0);
+    offline = false; b.advance(6 * 60 * 1000); b.connect(); await b.run();
+    assert.ok(b.requests.some(r => r.url === '/quests/q1/enroll'), 'tried again minutes later, not 6 hours later');
+    assert.ok(b.map.get('q1').userStatus.completedAt);
+});
+test('Quest Completer gives up on a Quest Discord stops counting instead of sending heartbeats forever', async () => {
+    const b = questHarness({quests:[playFixture('p1', 900, enrolledAgo(5))]});
+    const post = b.http.post;
+    // Discord keeps answering, but the Quest is stuck at two minutes.
+    b.http.post = request => { const sent = post(request);
+        return request.url.endsWith('/heartbeat') ? sent.then(() => ({body:{quest_id:'p1', completed_at:null, progress:{PLAY_ON_DESKTOP:{value:120}}}})) : sent; };
+    b.connect(); await b.run(20 * 60 * 1000);
+    const beats = b.requests.filter(r => r.url === '/quests/p1/heartbeat').length;
+    assert.ok(beats >= 5 && beats <= 7, 'stopped after a few beats with no progress, sent ' + beats);
+});
+test('Quest Completer settings page has no 5-second redraw timer', async () => {
+    const b = questHarness({quests:[questFixture('v1', 'WATCH_VIDEO', 30, enrolledAgo(100))]});
+    let intervals = 0; b.context.setInterval = () => { intervals++; return 0; };
+    const React = {createElement:(type, props, ...children) => ({type, props:{...props, children:children.length > 1 ? children : children[0]}}),
+        useState:v => [v, () => {}], useEffect:fn => { fn(); }, useRef:v => ({current:v}), useMemo:f => f(), useCallback:f => f, Fragment:'Fragment'};
+    b.load(React, null, 17); b.load({View:'View', Text:'Text', Modal:'Modal', ScrollView:'ScrollView'}, null, 19);
+    const registry = b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route'}}}, null, 14130).SETTING_RENDERER_CONFIG;
+    registry.VENUS_QUESTS.screen.getComponent()();
+    assert.equal(intervals, 0, 'no 5-second polling');
+});
+test('ReviewDB review menu closes its own sheet', async () => {
+    const b=reviewHarness();b.api.setSetting('reviewDB',true);const m=await loadedReviews(b,'222222222222222222');
+    const profileCard=m.render().props.children;const rows=profileCard.props.children[0].props.children;
+    rows[1].type(rows[1].props).props.children.props.onLongPress();
+    b.simple.at(-1).header.onClose();assert.equal(b.hiddenSheets.at(-1),'ReviewOverflow');
+});
+test('NoDelete restoring an unchanged archive at startup does not rewrite it', async () => {
+    const raw={id:'1',channel_id:'c',author:{id:'u'},content:'saved'};
+    const saved=JSON.stringify({version:1,accountId:'owner',messages:[{id:'1',channelId:'c',message:raw}]});
+    const b=await archiveHarness(saved);await new Promise(r=>setTimeout(r,900));await flush();
+    assert.equal(b.store.getMessage('c','1').content,'saved');
+    assert.equal(b.writes.filter(([name])=>name==='venus-deleted-messages.json').length,0,'nothing changed, nothing written');
+    assert.equal(b.api.status.archive,'saved locally');
+    const other=await archiveHarness(JSON.stringify({version:1,accountId:'owner',messages:[{id:'1',channelId:'c',message:raw},{id:'bad'}]}));
+    await new Promise(r=>setTimeout(r,900));await flush();
+    assert.equal(other.writes.filter(([name])=>name==='venus-deleted-messages.json').length,1,'a cleaned-up archive is written once');
+});

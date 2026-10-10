@@ -205,7 +205,7 @@ def build():
 
 
 RELEASE_SUMMARY = (
-    "Play and Activity Quests finish again: Quest Completer reports their time the way Discord for Windows does. "
+    "Bug fixes and less work: Read All, Quest Completer, ReviewDB and NoDelete fixes. "
     "Patch the original Discord 348.10 APKM."
 )
 

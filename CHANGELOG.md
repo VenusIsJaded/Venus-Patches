@@ -2,6 +2,16 @@
 
 Every release works with **Discord 348.10 - Stable**. Always patch the original APKM. Releases up to 1.3.6 were for Discord 347.12.
 
+## 1.4.4 — Bug fixes and less work
+
+- **Read All no longer brings back an older server list.** The button's list was remembered by the list's data alone, so a later render could get an earlier render's list settings back. Each render now keeps its own, and the button's row is still shared, so the list doesn't redraw.
+- **Quest Completer names the game again after a dropped connection.** If looking up which of a game's files to report failed once, that game went unnamed until Discord restarted. Only Discord's real answer is remembered now.
+- **A dropped connection no longer parks a Quest for 6 hours.** If accepting a Quest failed because you were offline, it was left alone as if Discord had refused it. It's now tried again after about 5 minutes. A real refusal or captcha still waits hours.
+- **Quest Completer stops on a Quest Discord has stopped counting.** It used to send a heartbeat every minute for as long as Discord stayed open. After 5 heartbeats with no new time, it stops and tries again later.
+- **The ReviewDB review menu closes properly.** Its close button closed nothing, because it didn't say which sheet to close.
+- **Opening Discord doesn't rewrite your saved deleted messages.** With **Save permanently** on, the whole file was written again on every start, even when nothing had changed. It's only written now when something did change.
+- **The Quest Completer page doesn't redraw every 5 seconds.** It updates when a Quest starts, finishes or fails, including the moment one finishes.
+
 ## 1.4.3 — Play Quests count again
 
 - **Play Quests finish now.** In 1.4.2 they were accepted, then stopped with "Couldn't finish …: HTTP 401", and Discord showed "Waiting for you to launch … on desktop or connected console". Discord only counts play time that comes from its desktop app or a linked console, so Quest Completer now reports it the way Discord for Windows does.
