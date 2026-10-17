@@ -4808,7 +4808,7 @@ test('Message highlights customizes left bar thickness and reply/mention & delet
 
 
 
-test('every option page renders in the shared design: status card first, row icons, and no crash on or off',()=>{
+test('every option page renders in the shared design: status card only when useful, row icons, and no crash on or off',()=>{
     const b=settingsHarness();const {React}=reactHarness(b);React.useState=init=>[init,()=>{}];
     function TableSwitchRow(){} function TableRowGroup(){} function TableRadioGroup(){} function TableRadioRow(){} function TableRowIcon(){} function Text(){}
     b.context.__r=id=>({6621:{TableSwitchRow},5997:{TableRowGroup},5995:{TableRadioGroup},5994:{TableRadioRow},5922:{TableRowIcon},4833:{Text},5916:{TableRow:'Row'},
@@ -4816,6 +4816,8 @@ test('every option page renders in the shared design: status card first, row ico
     const pages={VENUS_NODELETE:'noDelete',VENUS_MESSAGEHIGHLIGHT:'messageHighlight',VENUS_TRANSLATE:'translate',VENUS_GESTURES:'gestures',VENUS_FREENITRO:'freeNitro',
         VENUS_PASTELIZE:'pastelize',VENUS_PLATFORMINDICATORS:'platformIndicators',VENUS_REVIEWDB:'reviewDB',VENUS_USERNOTIF:'userNotif',VENUS_ACCOUNTSWITCHER:'accountSwitcher',
         VENUS_READALL:'readAll',VENUS_CUSTOMTHEMES:'customThemes',VENUS_QUESTS:'quests',VENUS_HIDDENCHANNELS:'hiddenChannels',VENUS_LANGUAGE:null};
+    // Pages with live runtime status always show a status card when on; others lead directly with their preview or controls.
+    const liveStatus=new Set(['VENUS_TRANSLATE','VENUS_REVIEWDB','VENUS_USERNOTIF','VENUS_ACCOUNTSWITCHER','VENUS_CUSTOMTHEMES','VENUS_QUESTS']);
     for (const on of [true,false]) for (const [id,key] of Object.entries(pages)) {
         if (key) b.api.setSetting(key,on);
         const nodes=pageNodes(b.registry[id].screen.getComponent()());
@@ -4824,8 +4826,7 @@ test('every option page renders in the shared design: status card first, row ico
         if (id!=='VENUS_LANGUAGE') for (const row of nodes.filter(n=>n.type===TableSwitchRow||n.type===TableRadioRow))
             assert.equal(row.props.icon&&row.props.icon.type,TableRowIcon,id+': '+row.props.label+' has a row icon');
         const titles=nodes.filter(n=>n.type===Text&&n.props.variant==='text-md/semibold').map(n=>n.props.children);
-        // Message highlights has no live status: its preview leads, and the card only shows to say it's off.
-        if (id!=='VENUS_MESSAGEHIGHLIGHT' || !on) assert.ok(titles.length,id+' starts with a titled status card');
+        if (liveStatus.has(id) && on) assert.ok(titles.length,id+' shows its live status card');
         if (!on && key) assert.ok(titles.includes('Turned off'),id+' says it is turned off');
     }
 });
@@ -4919,7 +4920,7 @@ function hookHost(b, React, node) {
     }
     // Runs timers one at a time (each may add the next), re-rendering after each, up to n steps.
     function run(n) { for (let k = 0; k < n && timers.length; k++) { const t = timers.shift(); t.fn(); render(); } }
-    return {render, run, timers, texts:() => render().filter(x => typeof x.props.children === 'string').map(x => x.props.children)};
+    return {render, run, timers, texts:() => render().flatMap(x => Array.isArray(x.props.children) ? x.props.children : [x.props.children]).filter(c => typeof c === 'string')};
 }
 function previewNode(b, id, name) { return pageNodes(b.registry[id].screen.getComponent()()).find(n => n.type && n.type.name === name); }
 // The caption shown by the player strip, its step badge (2/5) and time (0:03 / 0:24).
@@ -5053,24 +5054,17 @@ test('Message highlights preview glows only the highlight you just changed, neve
     b.api.setSetting('messageHighlightThickness', 3);
     assert.deepEqual(fresh(), [true, true], 'a new width shows on both');
 });
-test('Message highlights preview plays at a readable pace: Sam\'s reply lights up as it arrives, Alex\'s deleted message stays highlighted', () => {
+test('Message highlights preview shows a clean static picture of your question, Sam\'s reply and Alex\'s kept deleted message, without a Watch player', () => {
     const b = boot({messageHighlight:true, noDelete:true}); const {React} = reactHarness(b);
     b.api.setSetting('messageHighlight', true);
     const registry = b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route', IconComponent(){}}}}, null, 14130).SETTING_RENDERER_CONFIG;
     const node = () => pageNodes(registry.VENUS_MESSAGEHIGHLIGHT.screen.getComponent()()).find(n => n.type && n.type.name === 'HighlightPreview');
     const host = hookHost(b, React, node());
     const glows = () => host.render().filter(n => n.type && n.type.name === 'HighlightGlow');
-    let counts = new Set(), both = false; const orig = host.run;
-    host.run = n => { orig(n); const g = glows(); counts.add(g.length); if (g.length === 2 && g.every(x => x.props.fresh)) both = true; };
-    const run = storyTimes(host), caps = run.times.map(x => x[0]);
-    for (const t of ['You ask everyone a question', "Sam replies and mentions you, so it's highlighted in your reply color", 'Alex sends a message',
-        'Alex deletes it: it stays, highlighted in your deleted color', 'Change the colors or the bar width below to see them here'])
-        assert.ok(caps.includes(t), 'caption: ' + t + ' / ' + caps.join(' | '));
-    for (const [cap, ms] of run.times) assert.ok(ms >= 2400, cap + ': ' + ms + ' ms');
-    assert.ok(counts.has(0) && counts.has(1) && counts.has(2), 'messages arrive one by one: ' + [...counts]); assert.ok(both, 'the deleted one lights up too');
-    // No useless Try it toggle: changing a color or bar width below lights up the corresponding message right away.
-    assert.ok(!host.render().some(n => n.props && n.props.accessibilityLabel === 'Try it'), 'no separate Try it toggle');
-    assert.ok(host.render().some(n => n.props && n.props.accessibilityLabel === 'Pause'), 'Watch player controls stay available');
+    assert.equal(glows().length, 2, 'both the reply and the kept deleted message are shown right away');
+    for (const t of ['Did everyone see the new update?', 'Yes, it looks great!', 'Oops, wrong chat. Deleting this.'])
+        assert.ok(host.texts().some(s => s.includes(t)), 'shows: ' + t);
+    assert.ok(!host.render().some(n => n.props && (n.props.accessibilityLabel === 'Try it' || n.props.accessibilityLabel === 'Pause')), 'no Watch / Try it toggle or player');
 });
 test('Hidden channels preview uses Discord\'s locked-channel icon and tapping it does what a real tap does', () => {
     const b = settingsHarness(); const {React} = reactHarness(b); const shown = [];
@@ -5087,11 +5081,12 @@ test('Hidden channels preview uses Discord\'s locked-channel icon and tapping it
     b.api.setSetting('hiddenChannelsMenu', false); row().props.onPress(); assert.equal(shown.length, 1, 'with the menu off, nothing opens');
     assert.equal(row().props.shake, 1, 'it shakes instead');
 });
-test('Device indicators preview shows the real screens around the icons, follows every option, and Try it guides you', () => {
+test('Device indicators preview shows the real screens around the icons and follows every option directly without a Watch loop', () => {
     const b = settingsHarness(); const {React} = reactHarness(b);
     b.api.setSetting('platformIndicators', true);
     const host = hookHost(b, React, previewNode(b, 'VENUS_PLATFORMINDICATORS', 'PlatformPreview'));
-    host.render(); host.render().find(n => n.props && n.props.accessibilityLabel === 'Try it').props.onPress(); host.timers.length = 0;
+    host.render();
+    assert.ok(!host.render().some(n => n.props && (n.props.accessibilityLabel === 'Watch' || n.props.accessibilityLabel === 'Pause')), 'directly interactive without a Watch loop');
     const nodes = () => { const n = host.render(); return n.concat(...n.filter(x => x.type && x.type.name === 'PreviewSegmented').map(x => pageNodes(x.props.items.map(i => ({type:'Tab', props:{label:i.label, onPress:() => x.props.onChange(i.value)}}))))); };
     const icons = () => nodes().filter(n => n.type && n.type.name === 'PopIn' && /^pi/.test(n.props.key)).map(n => n.props.key.split(':')[0]);
     const pick = label => nodes().find(n => n.type === 'Tab' && n.props.label === label).props.onPress();
@@ -5099,7 +5094,6 @@ test('Device indicators preview shows the real screens around the icons, follows
     // A DM: Discord's header with Alex, the chat and the message bar; the icons sit next to the name.
     assert.deepEqual(icons(), ['piDmHeader']);
     assert.ok(texts().includes('Are you coming to the game tonight?') && texts().includes('Message @Alex'));
-    assert.ok(texts().includes("Tap Change Alex's devices and watch the icons change"), 'a tip says what to try');
     // Members: Discord's Online header, Alex and two others, each with their own icons.
     pick('Members'); assert.deepEqual(icons(), ['piUserList', 'piUserList', 'piUserList']);
     assert.ok(texts().some(t => /^ONLINE — 3$/.test(t)) && texts().includes('Riley'));
@@ -5115,28 +5109,11 @@ test('Device indicators preview shows the real screens around the icons, follows
     change(); assert.equal(texts().find(t => /^Alex is on: /.test(t)), 'Alex is on: Mobile (Online)');
     assert.equal(phone(), false, 'hidden by default');
     b.api.setSetting('piHideMobile', false); assert.equal(phone(), true, 'phone badge shows when not hidden');
-    assert.ok(!texts().includes("Tap Change Alex's devices and watch the icons change"), 'the tip moves on');
     b.api.setSetting('platformIndicators', false);
     const off = hookHost(b, React, previewNode(b, 'VENUS_PLATFORMINDICATORS', 'PlatformPreview'));
     assert.deepEqual(off.render().filter(n => n.type && n.type.name === 'PopIn' && /^pi/.test(n.props.key)), [], 'no icons while off');
 });
-test('Device indicators preview plays: from a DM to the member list to a profile, as Alex changes devices', () => {
-    const b = settingsHarness(); const {React} = reactHarness(b);
-    b.api.setSetting('platformIndicators', true);
-    const host = hookHost(b, React, previewNode(b, 'VENUS_PLATFORMINDICATORS', 'PlatformPreview'));
-    const run = storyTimes(host);
-    for (const t of ["In a DM, Alex's devices show next to their name at the top: a computer and a phone", 'Alex is only on a phone now',
-        "In the member list, everyone's devices show next to their name", 'Alex switches to a computer and the web, on Do Not Disturb',
-        'On a profile, they show next to the name', 'Then to a console and a computer'])
-        assert.ok(run.times.some(([c]) => c === t), 'caption: ' + t + ' / ' + run.times.map(x => x[0]));
-    for (const [cap, ms] of run.times) assert.ok(ms >= 2400, cap + ': ' + ms + ' ms');
-    assert.ok(run.seen.has('Message @Alex') && run.seen.has('Riley') && run.seen.has('Message'), 'all three screens show');
-    // A screen whose switch is off says so.
-    b.api.setSetting('piUserList', false);
-    const off = storyTimes(hookHost(b, React, previewNode(b, 'VENUS_PLATFORMINDICATORS', 'PlatformPreview')));
-    assert.ok(off.times.some(([c]) => c === "Here they're off in your options, so nothing shows"));
-});
-test('Nitro preview shows Discord\'s own Wumpus, sent from Discord\'s picker; Try it guides you through an emoji and a sticker', () => {
+test('Nitro preview shows Discord\'s own Wumpus, sent from Discord\'s expression picker without a lock badge; Try it guides you through an emoji and a sticker', () => {
     const b = nitroHarness(); const {React} = reactHarness(b);
     let read = 0; b.load({default:{getCustomEmojiById:() => null, getGuilds:() => { read++; return {}; }}}, null, 5772);
     const registry = b.load({SETTING_RENDERER_CONFIG:{ACCOUNT:{type:'route', IconComponent(){}}}}, null, 14130).SETTING_RENDERER_CONFIG;
@@ -5147,24 +5124,29 @@ test('Nitro preview shows Discord\'s own Wumpus, sent from Discord\'s picker; Tr
     const arts = () => host.render().filter(x => x.type && x.type.name === 'NitroArt').map(n => pageNodes(n.type(n.props)).find(x => x.type === 'Image').props.source.uri);
     const sent = () => host.texts().find(t => /^Sent as /.test(t));
     const send = () => host.render().find(n => n.props && n.props.accessibilityHint === 'Tap to send it').props.onPress();
-    assert.ok(host.texts().includes('Nothing sent yet') && host.texts().includes('Tap the locked one below to send it without Nitro'));
-    assert.equal(host.render().find(n => n.props && n.props.accessibilityHint === 'Tap to send it').props.accessibilityLabel, 'wumpus_wave', 'the picker has the Nitro emoji');
+    assert.ok(host.texts().includes('Nothing sent yet') && host.texts().includes('Tap the Nitro emoji below to send it as a link'));
+    assert.ok(host.texts().includes('Find the perfect emoji') && host.texts().includes('GAME NIGHT'), 'looks like Discord\'s expression picker');
+    const nitroBtn = host.render().find(n => n.props && n.props.accessibilityHint === 'Tap to send it');
+    assert.equal(nitroBtn.props.accessibilityLabel, 'wumpus_wave', 'the picker has the Nitro emoji');
+    assert.ok(!pageNodes(nitroBtn).some(n => n.type && /Lock/.test(n.type.name || '')), 'no lock badge when unlocked by the feature');
     send(); assert.deepEqual(arts(), ['modules_guilds_bar_native_images_wumpus_wave'], 'an image bundled in Discord, shown as chat shows it');
     assert.equal(sent(), 'Sent as [wumpus_wave](\u2026)');
-    assert.ok(host.texts().includes('Now try a sticker: tap Stickers, then the locked one'));
-    host.render().find(n => n.props && n.props.accessibilityRole === 'tab' && n.props.key === 'sticker').props.onPress(); send();
+    assert.ok(host.texts().includes('Tap the emoji button in the message bar to try a sticker'));
+    host.render().find(n => n.props && n.props.accessibilityLabel === 'Open expression picker').props.onPress();
+    assert.ok(host.texts().includes('Find the perfect sticker') && host.texts().includes('Tap the Nitro sticker below to send it as a link'));
+    send();
     assert.deepEqual(arts(), ['modules_guilds_bar_native_images_wumpus_wave', 'images_native_gifting_wumpus_box_premium120'], 'then the sticker');
-    assert.ok(host.texts().includes("That's how everyone sees it. You can send more"));
+    assert.ok(host.texts().includes("That's how everyone sees it. Tap the emoji button to send more"));
     b.api.setSetting('hyperlinks', false); assert.match(sent(), /^Sent as https:\/\/media\.discordapp\.net\/stickers\//);
     assert.equal(read, 0, 'never reads your servers\' emojis or stickers');
 });
-test('Nitro preview plays at a readable pace: open the picker, pick the locked emoji, everyone sees it; then a sticker', () => {
+test('Nitro preview plays at a readable pace: open the picker from the emoji button, pick the unlocked Nitro emoji, everyone sees it; then a sticker', () => {
     const b = settingsHarness(); const {React} = reactHarness(b);
     b.api.setSetting('freeNitro', true);
     const host = hookHost(b, React, previewNode(b, 'VENUS_FREENITRO', 'NitroPreview'));
     const kinds = new Set(); const orig = host.run; host.run = n => { orig(n); host.render().filter(x => x.type && x.type.name === 'NitroArt').forEach(x => kinds.add(x.props.kind)); };
     const run = storyTimes(host), caps = run.times.map(x => x[0]);
-    for (const t of ['You open the emoji picker', 'You pick a Nitro emoji from another server. The lock means it needs Nitro',
+    for (const t of ['You open the emoji picker', "You pick a Nitro emoji from another server. Venus unlocks it so there's no lock",
         'Venus sends it as a short link, and everyone sees the emoji', 'Then you open the sticker picker', "It's sent as a short link too, and everyone sees the sticker"])
         assert.ok(caps.includes(t), 'caption: ' + t + ' / ' + caps.join(' | '));
     for (const [cap, ms] of run.times) assert.ok(ms >= 2400, cap + ': ' + ms + ' ms');
@@ -5178,37 +5160,22 @@ test('Nitro preview plays at a readable pace: open the picker, pick the locked e
     const none = hookHost(b, React, previewNode(b, 'VENUS_FREENITRO', 'NitroPreview'));
     assert.ok(!none.render().some(n => n.props && n.props.accessibilityLabel === 'Watch')); assert.equal(none.timers.length, 0);
 });
-test('Deleted messages preview plays at a readable pace: Alex edits twice and the old versions stay, Sam deletes and it stays', () => {
+test('Deleted messages and Pastel names previews show the final chat picture directly and follow their options live without a Watch loop', () => {
     const b = settingsHarness(); const {React} = reactHarness(b);
     b.api.setSetting('noDelete', true); b.api.setSetting('noDeleteEdits', true);
     const host = hookHost(b, React, previewNode(b, 'VENUS_NODELETE', 'NoDeletePreview'));
-    let most = 0, outlined = false, ripples = 0;
-    const orig = host.run; host.run = n => { orig(n); const nodes = host.render();
-        most = Math.max(most, nodes.filter(x => x.type && x.type.name === 'PopIn' && /^old:/.test(x.props.key)).length);
-        if (nodes.some(x => x.type && x.type.name === 'PopIn' && x.props.key === 'bar')) outlined = true;
-        if (nodes.some(x => x.type && x.type.name === 'TapRipple')) ripples++; };
-    const run = storyTimes(host), caps = run.times.map(x => x[0]);
-    for (const t of ['Alex says when to meet', 'Alex edits it to 7', 'The old text stays above it, crossed out', 'And edits it again to 8',
-        'Sam deletes a message', 'It stays for you, outlined, so you can still read it']) assert.ok(caps.includes(t), 'caption: ' + t);
-    for (const [cap, ms] of run.times) assert.ok(ms >= 2400, cap + ': ' + ms + ' ms');
-    assert.equal(most, 2, 'both earlier versions show'); assert.ok(outlined); assert.ok(ripples >= 3);
+    assert.ok(!host.render().some(n => n.props && (n.props.accessibilityLabel === 'Try it' || n.props.accessibilityLabel === 'Pause')), 'no Watch / Try it on Deleted messages');
+    assert.equal(host.render().filter(n => n.type && n.type.name === 'PopIn' && /^old:/.test(n.props.key)).length, 2, 'shows both earlier versions crossed out');
+    for (const t of ['See you at 6', 'See you at 7', 'See you at 8', 'Oops, wrong chat. Deleting this.'])
+        assert.ok(host.texts().includes(t), 'shows: ' + t);
     b.api.setSetting('noDeleteEdits', false);
-    const plain = hookHost(b, React, previewNode(b, 'VENUS_NODELETE', 'NoDeletePreview')); let old2 = 0;
-    const o2 = plain.run; plain.run = n => { o2(n); old2 += plain.render().filter(x => x.type && x.type.name === 'PopIn' && /^old:/.test(x.props.key)).length; };
-    const r2 = storyTimes(plain);
-    assert.ok(r2.times.some(([c]) => c === 'It shows (edited), like in Discord') && old2 === 0, 'without edit history, only the new version shows');
-});
-test('Pastel names preview plays at a readable pace: people post one by one and each name fills in with its color', () => {
-    const b = settingsHarness(); const {React} = reactHarness(b);
+    const plain = hookHost(b, React, previewNode(b, 'VENUS_NODELETE', 'NoDeletePreview'));
+    assert.equal(plain.render().filter(n => n.type && n.type.name === 'PopIn' && /^old:/.test(n.props.key)).length, 0, 'no history when Show edit history is off');
     b.api.setSetting('pastelize', true);
-    const host = hookHost(b, React, previewNode(b, 'VENUS_PASTELIZE', 'PastelPreview'));
-    const names = () => host.render().filter(n => n.type === 'Text' && n.props.numberOfLines === 1 && n.props.children !== 'general').map(n => n.props.children);
-    const counts = []; const orig = host.run; host.run = n => { orig(n); counts.push(names().length); };
-    const run = storyTimes(host), caps = run.times.map(x => x[0]);
-    for (const t of ['People post in the chat', 'Each name gets its own soft color', 'A name with a role color keeps it',
-        'The same name always gets the same color, on every phone']) assert.ok(caps.includes(t), 'caption: ' + t);
-    for (const [cap, ms] of run.times) assert.ok(ms >= 2400, cap + ': ' + ms + ' ms');
-    assert.ok(counts.includes(1) && counts.includes(2) && counts.includes(3), 'one at a time: ' + counts);
+    const pastel = hookHost(b, React, previewNode(b, 'VENUS_PASTELIZE', 'PastelPreview'));
+    assert.ok(!pastel.render().some(n => n.props && (n.props.accessibilityLabel === 'Try it' || n.props.accessibilityLabel === 'Pause')), 'no Watch / Try it on Pastel names');
+    for (const t of ['Alex', 'Sam', 'Jordan', 'Has anyone tried the new update?', 'Yes, it looks great!', 'Same here.'])
+        assert.ok(pastel.texts().includes(t), 'shows: ' + t);
 });
 test('Translate preview plays your choice at a readable pace (on its own, or Hold and Translate in the menu); Try it guides you', () => {
     const b = settingsHarness(); const {React} = reactHarness(b);
@@ -5238,18 +5205,4 @@ test('Translate preview plays your choice at a readable pace (on its own, or Hol
     assert.ok(host.texts().includes('Tap Show original in the menu'));
     host.render().find(n => n.props && n.props.key === 'translate' && n.props.onPress).props.onPress();
     assert.ok(!host.texts().includes("Hi everyone! Who's coming tonight?") && !host.texts().includes('Hold it again to show the original'));
-});
-test('Deleted messages and Pastel names previews have no redundant Try it switch and follow their options live', () => {
-    const b = settingsHarness(); const {React} = reactHarness(b);
-    b.api.setSetting('noDelete', true); b.api.setSetting('noDeleteEdits', true);
-    const host = hookHost(b, React, previewNode(b, 'VENUS_NODELETE', 'NoDeletePreview'));
-    assert.ok(!host.render().some(n => n.props && n.props.accessibilityLabel === 'Try it'), 'no redundant Try it toggle on Deleted messages');
-    assert.ok(host.render().some(n => n.props && n.props.accessibilityLabel === 'Pause'), 'Watch player strip is active');
-    b.api.setSetting('noDeleteEdits', false);
-    const plain = hookHost(b, React, previewNode(b, 'VENUS_NODELETE', 'NoDeletePreview'));
-    assert.equal(plain.render().filter(n => n.type && n.type.name === 'PopIn' && /^old:/.test(n.props.key)).length, 0, 'no history when Show edit history is off');
-    b.api.setSetting('pastelize', true);
-    const pastel = hookHost(b, React, previewNode(b, 'VENUS_PASTELIZE', 'PastelPreview'));
-    assert.ok(!pastel.render().some(n => n.props && n.props.accessibilityLabel === 'Try it'), 'no redundant Try it toggle on Pastel names');
-    assert.ok(pastel.render().some(n => n.props && n.props.accessibilityLabel === 'Pause'), 'Watch player strip is active');
 });

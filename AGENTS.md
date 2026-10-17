@@ -270,11 +270,13 @@ design") renders each page on and off and fails when a page breaks the rules bel
 
 **Page order, top to bottom**
 
-1. **Status card** (`statusCard(key, text, {title, IconComponent, leading})`): a bold title that says the state in
-   a few words ("Watching all 12 friends", "Signed in as Venus", "3 Quests done"), the details under it in muted
-   text, and the feature's own icon in a round badge on the left. Use `leading` for something more personal than an
-   icon when there is one: the watched people's `avatarPile`, your avatar, a theme's `themeSwatch`. When the feature
-   is off, use `offCard(key, Icon)` ("Turned off" / "Switch it on in Features to start.").
+1. **Status card** (`statusCard(key, text, {title, IconComponent, leading})`): shown at the top of a page only when the
+   feature is off (`offCard(key, Icon)` — "Turned off" / "Switch it on in Features to start."), when a sub-option state
+   needs calling out (e.g. every device indicator location turned off, or both emojis and stickers turned off), or when the
+   feature has genuine live runtime state to report (who you're watching in User activity notifications, which account is
+   signed in, Quest progress, ReviewDB account, active custom theme, translation engine status, or a non-zero count of kept
+   deleted/edited messages). Never show a redundant "Turned on" or "Nothing kept yet" filler card at the top of a page when
+   its preview or options below already speak for themselves.
 2. **A live preview**, when the feature changes how something looks or what a gesture does: a small chat surface built with
    `chatPreview` + `previewMessage` that follows the settings below it as you change them (bar width and colors,
    edit history, pastel names, device icons, translation notes, link style). Previews use plain sample people and
@@ -282,15 +284,16 @@ design") renders each page on and off and fails when a page breaks the rules bel
    Every preview is drawn as the part of Discord it changes: `previewScreen` with
    `previewHeader` (channel header with `ThreadIcon` / `MagnifyingGlassIcon` / `GroupIcon`), `previewInput` (message bar with `GiftIcon` and `ReactionIcon`) and `previewBar` (reply/edit bar with `@ ON` on replies), or that screen's
    own layout (member list, profile, channel list, message menu with 4 quick reactions + Add Reaction, dialog), using `usePreviewChrome()` tokens.
-   - Watch is `useStory(active, () => [[waitMs, step, caption?], …], deps)` with `storyStrip(k, s, story)` under the
-     preview. Each caption says in plain words what happens and stays up at least `readMs` (2.4–5 s); the strip shows
-     the step number, a progress bar, the time and pause / start over. Build the steps from the settings below
-     (no triple-tap, no delete scene), show the finger with `tapRipple` and type with `typeSteps`.
-   - Include **Watch and Try it** (`previewToggle(mode, setMode)` from `usePreviewMode()`, shown only while the feature
-     is on) only when the feature is something you learn by doing the actual interaction in Discord (double-tap / triple-tap
-     gestures, tapping a locked channel, sending from the emoji/sticker picker, holding a message to open its menu and tap
-     Translate, or switching screens in Device indicators). Passive visual features whose controls below already update the
-     preview live (Keep deleted messages, Pastel name colors, Message highlights) use Watch directly without a separate Try it toggle.
+   - Include **Watch** (`useStory(active, () => [[waitMs, step, caption?], …], deps)` with `storyStrip(k, s, story)` under the
+     preview) and **Try it** (`previewToggle(mode, setMode)` from `usePreviewMode()`, shown only while the feature is on)
+     only when the feature involves a sequence of steps or gesture interactions in Discord (double-tap / triple-tap gestures,
+     tapping a locked channel, opening the expression picker from the message bar to send a Nitro emoji or sticker, or holding
+     a message to open its menu and tap Translate). Each Watch caption says in plain words what happens and stays up at least
+     `readMs` (2.4–5 s); the strip shows the step number, a progress bar, the time and pause / start over.
+   - Static visual features whose appearance is clear from a single chat picture (Keep deleted messages, Pastel name colors,
+     Message highlights) show that static end-screen directly and update live as you flip the switches or pick colors below,
+     without a Watch loop or Watch/Try it toggle. Show device indicators is directly interactive with its DM / Members / Profile
+     switcher and Change Alex's devices button.
    - In Try it, a `previewTip` (Discord's brand tooltip) says what to do next, step by step, until everything your options allow has been tried.
    - Use sample art bundled in Discord (the Wumpus drawables) or plain sample people, never anything from your servers.
 3. **Choices**, each group with a short title:

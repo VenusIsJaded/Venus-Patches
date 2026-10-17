@@ -1002,10 +1002,7 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const choices = [["auto", tr("Same as Discord"), tr("Follows Discord's Language setting.")]].concat(UI_LANGUAGES.map(([code, name, english]) => [code, name, english]));
-        const shown = UI_LANGUAGES.find(entry => entry[0] === uiLanguage());
         const groups = [
-            statusCard("status", settings.language === "auto" ? "Follows Discord's language. Pick one below to keep Venus in another." : "Venus stays in this language, whatever Discord's is.",
-                {title:shown ? shown[1] : "English", IconComponent:venusIcon(14958, "LanguageIcon")}),
             radioGroup(ui, "language", "Show Venus settings in", "language", true, choices, true),
             footnote("note", i18n.loading.has(uiLanguage()) ? "Loading the language..." : "Only Venus's own settings and messages change. Discord's language is set in Discord's Language settings.")];
         return settingsBody(ui, groups);
@@ -2561,9 +2558,7 @@
         if (!RN) return null;
         const on = enabled("gestures");
         const groups = [
-            on ? statusCard("status", settings.gestureTripleDelete ? "Double-tap replies. Triple-tap your own message deletes it." :
-                settings.gestureOwn === "edit" ? "Double-tap replies, or edits your own message." : "Double-tap any message to reply to it.",
-                {title:tr("Double-tap to reply"), IconComponent:venusIcon(8216, "ReactionIcon")}) : offCard("status", venusIcon(8216, "ReactionIcon")),
+            on ? null : offCard("status", venusIcon(8216, "ReactionIcon")),
             el(GesturePreview, {key:"preview", on}),
             radioGroup(ui, "own", "Double-tap your own message", "gestureOwn", on, [
                 ["edit", "Edit it", "Opens it for editing, when Discord lets you.", rowIcon(9829, "PencilIcon")],
@@ -3259,6 +3254,8 @@
         barDivider:{width:1, height:16, backgroundColor:"#ffffff14"},
         brand:{backgroundColor:"#5865f2"}, brandText:{color:"#ffffff"}, brandFg:{color:"#5865f2"},
         secondary:{backgroundColor:"#4e505899"}, secondaryText:{color:"#f2f3f5"},
+        segTrack:{backgroundColor:"#1e1f22"}, segIndicator:{backgroundColor:"#4e5058"},
+        searchField:{backgroundColor:"#111214"}, pickerCatBar:{backgroundColor:"#2b2d31", borderTopColor:"#ffffff0f"},
         sheet:{backgroundColor:"#232428", borderTopLeftRadius:16, borderTopRightRadius:16, paddingTop:8, paddingBottom:4},
         sheetRow:{backgroundColor:"#2b2d31", borderColor:"#ffffff0f"}, modal:{backgroundColor:"#313338", borderRadius:16, padding:16, gap:12}, scrim:{backgroundColor:"#000000a6"},
         strip:{backgroundColor:"#4e50581a", borderTopWidth:1, borderTopColor:"#ffffff0f"}, track:{backgroundColor:"#4e505899"}, fill:{backgroundColor:"#5865f2"},
@@ -3281,6 +3278,10 @@
             brand:{backgroundColor:c.BACKGROUND_BRAND}, brandText:{color:c.CONTROL_BRAND_FOREGROUND_NEW || c.WHITE || "#ffffff"},
             brandFg:{color:c.CONTROL_BRAND_FOREGROUND || c.TEXT_BRAND || c.BACKGROUND_BRAND || "#5865f2"},
             secondary:{backgroundColor:c.CONTROL_SECONDARY_BACKGROUND_DEFAULT}, secondaryText:{color:c.CONTROL_SECONDARY_TEXT_DEFAULT},
+            segTrack:{backgroundColor:c.MOBILE_SEGMENTED_CONTROL_BACKGROUND || c.BACKGROUND_BASE_LOWEST},
+            segIndicator:{backgroundColor:c.MOBILE_SEGMENTED_CONTROL_INDICATOR_BACKGROUND || c.BACKGROUND_MOD_STRONG},
+            searchField:{backgroundColor:c.INPUT_BACKGROUND_DEFAULT || c.BACKGROUND_BASE_LOWEST},
+            pickerCatBar:{backgroundColor:c.BACKGROUND_SURFACE_HIGH || c.CARD_BACKGROUND_DEFAULT, borderTopColor:c.BORDER_SUBTLE},
             sheet:Object.assign({}, PREVIEW_CHROME_DARK.sheet, {backgroundColor:c.MOBILE_ACTIONSHEET_BACKGROUND || c.BACKGROUND_BASE_LOW}),
             sheetRow:{backgroundColor:c.CARD_BACKGROUND_DEFAULT, borderColor:c.BORDER_SUBTLE}, modal:Object.assign({}, PREVIEW_CHROME_DARK.modal, {backgroundColor:c.MODAL_BACKGROUND}),
             scrim:{backgroundColor:c.BACKGROUND_SCRIM}, strip:Object.assign({}, PREVIEW_CHROME_DARK.strip, {backgroundColor:c.BACKGROUND_MOD_SUBTLE, borderTopColor:c.BORDER_SUBTLE}),
@@ -3305,17 +3306,22 @@
                 (props.icons || [[5388, "ThreadIcon"], [6473, "MagnifyingGlassIcon"]]).map(([id, name]) =>
                     el(RN.View, {key:name, style:k.headerPill}, el(venusIcon(id, name), {size:"sm", color:k.icon.color})))));
     }
-    // Discord's message bar: the + button, the text pill with its gift and emoji buttons, then the mic, or Send once there's text.
+    // Discord's message bar: the + button, the text pill with its gift and emoji/keyboard buttons, then the mic, or Send once there's text.
     function previewInput(k, s, props) {
-        const Plus = venusIcon(10455, "PlusLargeIcon"), Gift = venusIcon(10528, "GiftIcon"), Smile = venusIcon(8216, "ReactionIcon"),
-            Mic = venusIcon(9461, "MicrophoneIcon"), Send = venusIcon(4778, "SendMessageIcon"), text = props.text || "";
+        const Plus = venusIcon(10455, "PlusLargeIcon"), Gift = venusIcon(10528, "GiftIcon"),
+            Expr = props.pickerOpen ? venusIcon(10813, "KeyboardIcon") : venusIcon(8216, "ReactionIcon"),
+            Mic = venusIcon(9461, "MicrophoneIcon"), Send = venusIcon(4778, "SendMessageIcon"), Press = RN.Pressable || RN.View, text = props.text || "";
         const showGift = !text && !(features.hideGift && enabled("hideGift"));
+        const exprIcon = el(RN.View, {style:{justifyContent:"center", alignItems:"center"}},
+            el(Expr, {size:"sm", color:props.pickerOpen ? s.name.color : k.icon.color}), props.smileRipple || null);
         return el(RN.View, {key:"input"}, props.bar || null, props.above || null,
             el(RN.View, {style:k.inputRow},
                 el(RN.View, {style:k.round}, el(Plus, {size:"sm", color:k.icon.color})),
                 el(RN.View, {style:k.pill}, el(RN.Text, {style:[text ? s.text : s.muted, {flex:1, fontSize:15}], numberOfLines:1}, text || props.placeholder),
                     showGift ? el(Gift, {size:"sm", color:k.icon.color}) : null,
-                    el(Smile, {size:"sm", color:k.icon.color})),
+                    props.onSmile ? el(Press, {onPress:props.onSmile, accessibilityRole:"button",
+                        accessibilityLabel:tr(props.pickerOpen ? "Close expression picker" : "Open expression picker"),
+                        hitSlop:{top:8, bottom:8, left:8, right:8}}, exprIcon) : exprIcon),
                 text ? popIn("send", el(RN.View, {style:k.send}, el(Send, {size:"sm", color:k.brandText.color}))) :
                     el(RN.View, {style:k.round}, el(Mic, {size:"sm", color:k.icon.color}))));
     }
@@ -3394,7 +3400,7 @@
     }
     // Shared by every option page: Discord's spacing and scrolling, with each group revealed in turn.
     function settingsBody(ui,groups,scroll) {
-        const shown=groups.map((group,i) => group && typeof group==="object" ?
+        const shown=groups.filter(Boolean).map((group,i) => typeof group==="object" ?
             el(VenusReveal,{key:group.key != null ? group.key : group.props && group.props.key != null ? group.props.key : "group"+i,index:i},group) : group);
         const body=ui.Stack ? el(ui.Stack,{style:{paddingVertical:24,paddingHorizontal:12},spacing:24},shown) :
             el(RN.View,{style:{paddingVertical:24,paddingHorizontal:12,gap:24}},shown);
@@ -3664,8 +3670,7 @@
         if (!React || !RN) return null;
         const on=enabled("hiddenChannels"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow, lock=venusIcon(5410,"LockIcon");
         const groups=[
-            on ? statusCard("status",settings.hiddenChannelsMenu ? "Tap a locked channel to see when it was made and last used." :
-                "Locked channels are listed, and tapping one does nothing.",{title:tr("Showing hidden channels"),IconComponent:lock}) : offCard("status",lock),
+            on ? null : offCard("status",lock),
             el(HiddenChannelsPreview,{key:"preview",on}),
             el(Group,{key:"tap",title:tr("When you tap a locked channel")},
                 switchRow(Switch,"hiddenChannelsMenu","Show its details","Shows when it was created, its last message and last pin, with View Anyway.",rowIcon(4788,"CircleInformationIcon"))),
@@ -3676,11 +3681,9 @@
         useSettings("readAll");
         const ui=reviewUI();
         if (!React || !RN) return null;
-        const on=enabled("readAll"), mode=settings.readAllMode;
+        const on=enabled("readAll");
         const groups=[
-            on ? statusCard("status",mode==="dms" ? "One tap marks every DM and group DM as read." : mode==="both" ? "One tap marks every server, DM and group DM as read." :
-                "One tap marks every unread server as read.",{title:tr("Read all button"),IconComponent:venusIcon(15161,"DoubleCheckmarkIcon")}) :
-                offCard("status",venusIcon(15161,"DoubleCheckmarkIcon")),
+            on ? null : offCard("status",venusIcon(15161,"DoubleCheckmarkIcon")),
             radioGroup(ui,"mode","When you tap Read all","readAllMode",on,[["guilds","Servers","Marks every unread server as read.",rowIcon(8584,"ServerIcon")],
                 ["dms","Direct messages","Marks every unread DM and group DM as read.",rowIcon(6503,"EnvelopeIcon")],
                 ["both","Servers and DMs","Marks everything as read in one tap.",rowIcon(15161,"DoubleCheckmarkIcon")]]),
@@ -3717,55 +3720,77 @@
         return el(ref.current ? A.View : RN.View, {style:motionStyle}, art);
     }
     // The message as everyone sees it: just the emoji or sticker, the way chat shows a link to one.
-    // Watch: you open the emoji picker, pick a Nitro emoji (it would normally be locked), it's sent and everyone sees it;
-    // then the same with a sticker. Try it: send one yourself from the picker.
+    // Watch: you tap the emoji button in the message bar, pick a Nitro emoji from another server (unlocked by Venus, so
+    // there's no lock icon on it), it's sent and everyone sees it; then the same with a sticker. Try it: send one yourself.
     function NitroPicker(props) {
-        const k = props.k, s = props.s, Press = RN.Pressable || RN.View, Lock = venusIcon(5410, "LockIcon"), Down = venusIcon(10604, "ChevronSmallDownIcon");
-        const kinds = props.kinds, tab = props.tab, item = NITRO_SAMPLES[tab];
-        const tabPill = kind => el(Press, {key:kind, onPress:() => props.onTab && props.onTab(kind), accessibilityRole:"tab", accessibilityState:{selected:tab === kind},
-            style:[{paddingHorizontal:14, paddingVertical:6, borderRadius:16}, tab === kind ? k.secondary : null]},
-            el(RN.Text, {style:[tab === kind ? k.secondaryText : s.muted, {fontWeight:"600", fontSize:13}]}, tr(kind === "emoji" ? "Emojis" : "Stickers")));
-        const plain = kind => kind === "emoji" ? ["\ud83d\ude00", "\ud83d\ude02", "\ud83d\udc4d", "\ud83c\udf89"] : [];
-        return el(RN.View, {key:"picker", style:[k.sheet, {borderTopLeftRadius:16, borderTopRightRadius:16, paddingHorizontal:12, gap:8, paddingBottom:10}]},
+        const k = props.k, s = props.s, Press = RN.Pressable || RN.View, Down = venusIcon(10604, "ChevronSmallDownIcon"),
+            Search = venusIcon(6473, "MagnifyingGlassIcon"), Nitro = venusIcon(8119, "NitroWheelIcon"),
+            Smile = venusIcon(8216, "ReactionIcon"), Sticker = venusIcon(11937, "StickerIcon"), Backspace = venusIcon(9742, "BackspaceIcon");
+        const kinds = props.kinds, tab = props.tab, item = NITRO_SAMPLES[tab], canSwitch = kinds.length > 1;
+        const tabPill = (kind, label, enabledTab) => {
+            const active = tab === kind;
+            return el(Press, {key:kind, onPress:enabledTab && props.onTab ? () => props.onTab(kind) : undefined,
+                disabled:!enabledTab || !props.onTab, accessibilityRole:"tab", accessibilityState:{selected:active, disabled:!enabledTab},
+                style:[{flex:1, paddingVertical:6, borderRadius:16, alignItems:"center", opacity:enabledTab ? 1 : 0.45}, active ? k.segIndicator : null]},
+                el(RN.Text, {style:[active ? {color:s.name.color} : s.muted, {fontWeight:"600", fontSize:13}]}, label));
+        };
+        const plain = kind => kind === "emoji" ? ["\ud83d\ude00", "\ud83d\ude02", "\ud83d\udc4d", "\ud83c\udf89", "\ud83d\udd25", "\u2728"] : [];
+        return el(RN.View, {key:"picker", style:[k.sheet, {borderTopLeftRadius:16, borderTopRightRadius:16, paddingTop:8, paddingBottom:0, gap:8}]},
             el(RN.View, {style:{alignSelf:"center", width:36, height:4, borderRadius:2, backgroundColor:"#80848e66"}}),
-            el(RN.View, {style:{flexDirection:"row", gap:6, alignSelf:"center"}}, kinds.map(tabPill)),
-            el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:4, marginTop:2}},
-                el(RN.Text, {style:k.category}, tr("Game Night")),
-                el(Down, {size:"xxs", color:k.category.color})),
-            el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:10, flexWrap:"wrap"}},
-                plain(tab).map(e => el(RN.Text, {key:e, style:{fontSize:28}}, e)),
+            el(RN.View, {style:[k.segTrack, {flexDirection:"row", padding:3, gap:3, borderRadius:20, marginHorizontal:12}]},
+                tabPill("emoji", tr("Emojis"), kinds.includes("emoji")),
+                tabPill("gif", tr("GIFs"), false),
+                tabPill("sticker", tr("Stickers"), kinds.includes("sticker"))),
+            el(RN.View, {style:[k.searchField, {flexDirection:"row", alignItems:"center", gap:8, height:36, borderRadius:18, paddingHorizontal:12, marginHorizontal:12}]},
+                el(Search, {size:"xs", color:k.iconMuted.color}),
+                el(RN.Text, {style:[s.muted, {flex:1, fontSize:14}], numberOfLines:1}, tr(tab === "emoji" ? "Find the perfect emoji" : "Find the perfect sticker"))),
+            el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:4, paddingHorizontal:12, marginTop:2}},
+                el(Down, {size:"xxs", color:k.category.color}),
+                el(RN.Text, {style:k.category}, tr("Game Night").toUpperCase()),
+                el(Nitro, {size:"xxs", color:k.brandFg.color})),
+            el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:8, flexWrap:"wrap", paddingHorizontal:12, paddingBottom:4}},
                 el(Press, {key:"nitro", onPress:props.onPick, accessibilityRole:"button", accessibilityLabel:item.name, accessibilityHint:tr("Tap to send it"),
-                    style:[{padding:4, borderRadius:10}, props.highlight ? k.selected : null]},
-                    el(RN.View, {style:{width:tab === "emoji" ? 36 : 72, height:tab === "emoji" ? 36 : 72}},
-                        RN.Image ? el(RN.Image, {source:{uri:item.res, width:tab === "emoji" ? 36 : 72, height:tab === "emoji" ? 36 : 72},
-                            style:{width:tab === "emoji" ? 36 : 72, height:tab === "emoji" ? 36 : 72}, resizeMode:"contain"}) : null,
-                        el(RN.View, {style:[k.brand, {position:"absolute", right:-4, bottom:-4, width:18, height:18, borderRadius:9, alignItems:"center", justifyContent:"center"}]},
-                            el(Lock, {size:"xxs", color:k.brandText.color}))),
-                    tapRipple(props.pulse, "pick", {left:0, top:0}))));
+                    style:[{padding:6, borderRadius:10, borderWidth:1.5, borderColor:k.brandFg.color + "66", backgroundColor:k.brandFg.color + "14"}, props.highlight ? k.selected : null]},
+                    el(RN.View, {style:{width:tab === "emoji" ? 33 : 64, height:tab === "emoji" ? 33 : 64, alignItems:"center", justifyContent:"center"}},
+                        RN.Image ? el(RN.Image, {source:{uri:item.res, width:tab === "emoji" ? 33 : 64, height:tab === "emoji" ? 33 : 64},
+                            style:{width:tab === "emoji" ? 33 : 64, height:tab === "emoji" ? 33 : 64}, resizeMode:"contain"}) :
+                            el(RN.Text, {style:{fontSize:tab === "emoji" ? 26 : 48}}, item.glyph)),
+                    tapRipple(props.pulse, "pick", {left:0, top:0})),
+                plain(tab).map(e => el(RN.View, {key:e, style:{width:45, height:45, alignItems:"center", justifyContent:"center"}},
+                    el(RN.Text, {style:{fontSize:28}}, e)))),
+            el(RN.View, {style:[k.pickerCatBar, {flexDirection:"row", alignItems:"center", height:40, paddingHorizontal:12, gap:14, borderTopWidth:1}]},
+                el(RN.View, {style:[k.selected, {width:28, height:28, borderRadius:14, alignItems:"center", justifyContent:"center"}]},
+                    el(RN.Text, {style:{color:s.name.color, fontSize:12, fontWeight:"700"}}, "G")),
+                el(tab === "emoji" ? Smile : Sticker, {size:"xs", color:k.iconMuted.color}),
+                el(RN.View, {style:{flex:1}}),
+                canSwitch && props.onTab ? el(Press, {onPress:() => props.onTab(tab === "emoji" ? "sticker" : "emoji"), accessibilityRole:"button",
+                    accessibilityLabel:tr(tab === "emoji" ? "Stickers" : "Emojis"), hitSlop:{top:8, bottom:8, left:8, right:8}},
+                    el(tab === "emoji" ? Sticker : Smile, {size:"xs", color:k.icon.color})) : null,
+                tab === "emoji" ? el(Backspace, {size:"xs", color:k.icon.color}) : null));
     }
     function NitroPreview(props) {
         useSettings("freeNitro");
-        const s = useChatPreviewStyles(), k = usePreviewChrome(), [mode, setMode] = usePreviewMode(), on = props.on, Press = RN.Pressable || RN.View;
-        const blank = {pick:0, sent:[], picker:null, pulse:null, tried:{}};
+        const s = useChatPreviewStyles(), k = usePreviewChrome(), [mode, setMode] = usePreviewMode(), on = props.on;
+        const blank = {pick:0, sent:[], picker:null, open:true, pulse:null, tried:{}};
         const kinds = [settings.emojis && "emoji", settings.stickers && "sticker"].filter(Boolean);
         const [state, setState] = React.useState(blank), watching = on && kinds.length > 0 && mode === "watch";
         const update = change => setState(st => Object.assign({}, st, typeof change === "function" ? change(st) : change));
-        const send = kind => update(st => ({picker:null, pulse:null, pick:st.pick + 1, sent:st.sent.concat([kind]).slice(-2), tried:Object.assign({}, st.tried, {[kind]:true})}));
+        const send = kind => update(st => ({picker:null, open:false, pulse:null, pick:st.pick + 1, sent:st.sent.concat([kind]).slice(-2), tried:Object.assign({}, st.tried, {[kind]:true})}));
         const link = settings.hyperlinks ? tr("a short link") : tr("a link");
         const story = useStory(watching, () => {
-            const steps = [[0, () => setState(blank)]];
+            const steps = [[0, () => setState(Object.assign({}, blank, {open:false}))]];
             kinds.forEach((kind, i) => {
-                steps.push([i ? 600 : 900, () => update({pulse:{who:"plus", id:kind}}), tr(kind === "emoji" ? "You open the emoji picker" : i ? "Then you open the sticker picker" : "You open the sticker picker")],
-                    [400, () => { animateLayout(); update({picker:kind}); }],
-                    [1400, () => update({pulse:{who:"pick", id:"p" + kind}}), tr(kind === "emoji" ? "You pick a Nitro emoji from another server. The lock means it needs Nitro" :
-                        "You pick a Nitro sticker. It would need Nitro too")],
+                steps.push([i ? 600 : 900, () => update({pulse:{who:"smile", id:kind}}), tr(kind === "emoji" ? "You open the emoji picker" : i ? "Then you open the sticker picker" : "You open the sticker picker")],
+                    [400, () => { animateLayout(); update({picker:kind, open:true}); }],
+                    [1400, () => update({pulse:{who:"pick", id:"p" + kind}}), tr(kind === "emoji" ? "You pick a Nitro emoji from another server. Venus unlocks it so there's no lock" :
+                        "You pick a Nitro sticker. Venus unlocks it too")],
                     [500, () => { animateLayout(); send(kind); }, tr(kind === "emoji" ? "Venus sends it as {link}, and everyone sees the emoji" : "It's sent as {link} too, and everyone sees the sticker", {link})],
                     [1200, () => {}]);
             });
             return steps;
         }, [settings.emojis, settings.stickers, settings.hyperlinks]);
-        // Try it: the picker is open under the chat; tap the locked one to send it. Tabs switch between emojis and stickers.
-        const tab = watching ? state.picker : on && kinds.length ? (state.picker || kinds[0]) : null;
+        // Try it: the picker opens under the chat; tap the unlocked Nitro emoji or sticker (or the emoji button in the message bar) to send it.
+        const tab = watching ? state.picker : on && kinds.length && state.open ? (state.picker && kinds.includes(state.picker) ? state.picker : kinds[0]) : null;
         const messages = state.sent.map((kind, i) => el(RN.View, {key:"msg" + state.pick + ":" + i}, popIn("msg" + i + kind + state.pick,
             previewMessage(s, "m" + i, tr("You"), "#5865f2", tr("Today at 4:01 PM"), el(RN.View, {style:{alignItems:"flex-start", paddingTop:2}},
                 el(NitroArt, {key:kind, kind, item:NITRO_SAMPLES[kind], play:state.pick}))))));
@@ -3775,28 +3800,35 @@
         const sentAs = item ? el(RN.View, {key:"sent", style:{paddingHorizontal:16, paddingBottom:4}},
             el(RN.Text, {style:s.muted, numberOfLines:1}, tr("Sent as {link}", {link:settings.hyperlinks ? "[" + item.name + "](\u2026)" :
                 last === "emoji" ? "https://cdn.discordapp.com/emojis/\u2026.gif" : "https://media.discordapp.net/stickers/\u2026.png"}))) : null;
-        const picker = tab ? el(NitroPicker, {key:"picker", k, s, kinds:watching ? [tab] : kinds, tab, pulse:state.pulse, highlight:watching && state.pulse && state.pulse.who === "pick",
-            onTab:watching ? null : kind => update({picker:kind}), onPick:watching ? null : () => { animateLayout(); send(tab); }}) : null;
+        const picker = tab ? el(NitroPicker, {key:"picker", k, s, kinds, tab, pulse:state.pulse, highlight:watching && state.pulse && state.pulse.who === "pick",
+            onTab:watching ? null : kind => { animateLayout(); update({picker:kind, open:true}); },
+            onPick:watching ? null : () => { animateLayout(); send(tab); }}) : null;
         const remaining = kinds.filter(kind => !state.tried[kind]);
-        const tip = on && !watching && kinds.length ? previewTip(k, remaining.length === kinds.length ? tr("Tap the locked one below to send it without Nitro") :
-            remaining.length ? tr("Now try a sticker: tap Stickers, then the locked one") : tr("That's how everyone sees it. You can send more"), "down") : null;
-        const plusRipple = el(RN.View, {key:"plus", style:{position:"absolute", left:8, bottom:8, width:40, height:40}}, tapRipple(state.pulse, "plus", {left:3, top:3}));
+        const tip = on && !watching && kinds.length ? previewTip(k, !tab ?
+            tr(remaining.length ? "Tap the emoji button in the message bar to try a sticker" : "That's how everyone sees it. Tap the emoji button to send more") :
+            remaining.length === kinds.length ? tr(tab === "emoji" ? "Tap the Nitro emoji below to send it as a link" : "Tap the Nitro sticker below to send it as a link") :
+            remaining.length ? tr(tab === remaining[0] ? (tab === "sticker" ? "Tap the Nitro sticker below to send it as a link" : "Tap the Nitro emoji below to send it as a link") :
+                remaining[0] === "sticker" ? "Now try a sticker: tap Stickers, then the Nitro sticker" : "Now try an emoji: tap Emojis, then the Nitro emoji") :
+            tr("That's how everyone sees it. You can send more"), "down") : null;
+        const togglePicker = on && !watching && kinds.length ? () => {
+            animateLayout();
+            update(st => ({open:!st.open, picker:!st.open ? (remaining[0] || st.picker || kinds[0]) : st.picker}));
+        } : null;
         return el(RN.View, {key:"preview"}, on && kinds.length ? previewToggle(mode, value => { setMode(value); setState(blank); }) : null,
-            previewScreen(s, "preview", "Nitro link preview", [el(RN.View, {key:"chat", style:{minHeight:watching ? 150 : 110}}, messages.length ? messages : sample), sentAs],
+            previewScreen(s, "preview", "Nitro link preview", [el(RN.View, {key:"chat", style:{minHeight:watching ? 140 : 96}}, messages.length ? messages : sample), sentAs],
                 {header:previewHeader(k, {title:"general"}),
-                 footer:el(RN.View, {key:"foot"}, tip, el(RN.View, null, previewInput(k, s, {placeholder:tr("Message {channel}", {channel:"#general"})}), plusRipple),
+                 footer:el(RN.View, {key:"foot"}, tip, previewInput(k, s, {placeholder:tr("Message {channel}", {channel:"#general"}),
+                    pickerOpen:!!tab, onSmile:togglePicker, smileRipple:tapRipple(state.pulse, "smile", {left:-7, top:-7})}),
                     picker, watching ? storyStrip(k, s, story) : null)}));
     }
     function FreeNitroSettings() {
         useSettings("freeNitro");
         const ui=reviewUI();
         if (!React || !RN) return null;
-        const on=enabled("freeNitro"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
-        const sends=settings.emojis && settings.stickers ? "Nitro emojis and stickers you send become links that show up as the image." :
-            settings.emojis ? "Nitro emojis you send become links that show up as the image." : settings.stickers ? "Nitro stickers you send become links that show up as the image." : "";
+        const on=enabled("freeNitro"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow, hasAny=!!(settings.emojis || settings.stickers);
         const groups=[
-            on ? statusCard("status",sends || "Turn on emojis or stickers below.",
-                {title:tr("Sending as links"),IconComponent:venusIcon(8119,"NitroWheelIcon")}) : offCard("status",venusIcon(8119,"NitroWheelIcon")),
+            !on ? offCard("status",venusIcon(8119,"NitroWheelIcon")) : !hasAny ? statusCard("status","Turn on emojis or stickers below.",
+                {title:tr("Sending as links"),IconComponent:venusIcon(8119,"NitroWheelIcon")}) : null,
             el(NitroPreview,{key:"preview",on}),
             el(Group,{key:"send",title:tr("Send as links")},
                 switchRow(Switch,"emojis","Emojis","Emojis from other servers, and animated emojis.",rowIcon(8719,"ChatSmileIcon")),
@@ -3806,38 +3838,24 @@
             footnote("note","Everyone sees the image, but it's a link, not a real Nitro emoji or sticker.")];
         return settingsBody(ui,groups);
     }
-    // Pastel names: a few names in their own pastel color, the way they'll show in chat.
-    const PASTEL_CAST = [["Alex","Sam","Jordan"],["Riley","Morgan","Casey"],["Taylor","Jamie","Avery"],["Quinn","Rowan","Skyler"]];
-    // People post one at a time and each name fills in with its own color; then a new group arrives.
+    // Pastel names: a live chat preview showing names in their own pastel color (and Sam with a role color).
     // The switches below (Replace role colors, Color message text) update the preview live.
     function PastelPreview(props) {
         useSettings("pastelize");
         const s=useChatPreviewStyles(), k=usePreviewChrome(), on=!!props.on;
-        const [state,setState]=React.useState({round:0,shown:3,painted:3});
-        const update=change => setState(st => Object.assign({},st,typeof change==="function" ? change(st) : change));
-        const story=useStory(on,() => {
-            const steps=[[0,() => setState(st => ({round:st.round,shown:0,painted:0})),tr("People post in the chat")]];
-            [0,1,2].forEach(i => steps.push([i ? 900 : 600,() => { animateLayout(); update({shown:i+1}); }],
-                [500,() => update({painted:i+1}),i===0 ? tr("Each name gets its own soft color") :
-                    i===1 ? (settings.pastelAll ? tr("Even names with a role color get a pastel one") : tr("A name with a role color keeps it")) : null]));
-            steps.push([1200,() => {},tr("The same name always gets the same color, on every phone")],
-                [1500,() => { animateLayout(); update(st => ({round:st.round+1,shown:0,painted:0})); }]);
-            return steps;
-        },[settings.pastelAll,settings.pastelContent]);
         const tint=(seed,sat,light,fallback) => { const c=on && pastelColor(seed,sat,light); return c ? c.hex : fallback; };
-        const cast=PASTEL_CAST[state.round % PASTEL_CAST.length], shown=on ? state.shown : 3, painted=on ? state.painted : 3;
-        const people=[[cast[0],"#3ba55c",tr("Has anyone tried the new update?"),null],[cast[1],"#eb459e",tr("Yes, it looks great!"),"#e67e22"],[cast[2],"#faa61a",tr("Same here.")]];
-        const chat=people.slice(0,shown).map(([who,avatar,text,role],i) => {
-            const plain=i>=painted, kept=role && !settings.pastelAll;
-            const name=kept ? role : plain ? s.name.color : tint(who,0.75,0.6,s.name.color);
-            const body=!plain && settings.pastelContent && !kept ? tint(who,0.85,0.75,null) : null;
-            return el(RN.View,{key:state.round+":"+who},popIn("msg:"+state.round+":"+who,previewMessage(s,who,who,avatar,tr(["Today at 4:01 PM","Today at 4:03 PM","Today at 4:05 PM"][i]),
-                el(RN.Text,{style:body ? [s.text,{color:body}] : s.text},text),{nameColor:name})));
+        const people=[["Alex","#3ba55c",tr("Has anyone tried the new update?"),null],["Sam","#eb459e",tr("Yes, it looks great!"),"#e67e22"],["Jordan","#faa61a",tr("Same here.")]];
+        const chat=people.map(([who,avatar,text,role],i) => {
+            const kept=role && !settings.pastelAll;
+            const name=kept ? role : tint(who,0.75,0.6,s.name.color);
+            const body=on && settings.pastelContent && !kept ? tint(who,0.85,0.75,null) : null;
+            return el(RN.View,{key:who},previewMessage(s,who,who,avatar,tr(["Today at 4:01 PM","Today at 4:03 PM","Today at 4:05 PM"][i]),
+                el(RN.Text,{style:body ? [s.text,{color:body}] : s.text},text),{nameColor:name}));
         });
         return el(RN.View,{key:"preview"},
-            previewScreen(s,"preview","Pastel names preview",[el(RN.View,{key:"chat",style:{minHeight:on ? 200 : 0}},chat)],
+            previewScreen(s,"preview","Pastel names preview",[el(RN.View,{key:"chat"},chat)],
                 {header:previewHeader(k,{title:"general"}),
-                 footer:el(RN.View,{key:"foot"},previewInput(k,s,{placeholder:tr("Message {channel}",{channel:"#general"})}),on ? storyStrip(k,s,story) : null)}));
+                 footer:previewInput(k,s,{placeholder:tr("Message {channel}",{channel:"#general"})})}));
     }
     function PastelSettings() {
         useSettings("pastelize");
@@ -3845,8 +3863,7 @@
         if (!React || !RN) return null;
         const on=enabled("pastelize"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
         const groups=[
-            on ? statusCard("status",settings.pastelAll ? "Every name has its own pastel color, even with a role color." : "Names without a role color get their own pastel color.",
-                {title:tr("Pastel names"),IconComponent:venusIcon(14795,"PaintPaletteIcon")}) : offCard("status",venusIcon(14795,"PaintPaletteIcon")),
+            on ? null : offCard("status",venusIcon(14795,"PaintPaletteIcon")),
             el(PastelPreview,{key:"preview",on}),
             el(Group,{key:"colors",title:tr("Colors")},
                 switchRow(Switch,"pastelAll","Replace role colors","Every name uses its pastel color, even with a role color.",rowIcon(10398,"CrownIcon")),
@@ -3855,8 +3872,7 @@
         return settingsBody(ui,groups);
     }
     // Device indicators: the icons shown where Discord shows them, inside the screen around them: a DM's header, the
-    // member list and a profile, each following its own switch. Watch: Alex moves between devices while the preview
-    // goes from the DM to the member list to the profile. Try it: pick the screen, then change Alex's devices.
+    // member list and a profile, each following its own switch. Pick the screen, or change Alex's devices to see them update.
     const PLATFORM_DEMO = [{desktop:"online", mobile:"idle"}, {mobile:"online"}, {desktop:"dnd", web:"dnd"}, {embedded:"online", desktop:"idle"}];
     const PLATFORM_SCREENS = [["piDmHeader"], ["piUserList"], ["piProfile"]];
     const PLATFORM_PEOPLE = [["Sam", "#eb459e", {desktop:"online"}], ["Riley", "#faa61a", {mobile:"online"}]];
@@ -3864,29 +3880,11 @@
     function PreviewSegmented(props) { return venusSegmented(props); }
     function PlatformPreview(props) {
         useSettings("platformIndicators");
-        const s = useChatPreviewStyles(), k = usePreviewChrome(), Press = RN.Pressable || RN.View, [mode, setMode] = usePreviewMode();
-        const blank = {demo:0, screen:"piDmHeader", pulse:null, tried:{}};
-        const [state, setState] = React.useState(blank), demo = state.demo, on = props.on, watching = on && mode === "watch";
+        const s = useChatPreviewStyles(), k = usePreviewChrome(), Press = RN.Pressable || RN.View;
+        const blank = {demo:0, screen:"piDmHeader", pulse:null};
+        const [state, setState] = React.useState(blank), demo = state.demo, on = props.on;
         const update = change => setState(st => Object.assign({}, st, typeof change === "function" ? change(st) : change));
         const shown = key => on && settings[key];
-        // Where each screen is, and what it says when its switch is off.
-        const where = key => tr(key === "piDmHeader" ? "In a DM, Alex's devices show next to their name at the top: a computer and a phone" :
-            key === "piUserList" ? "In the member list, everyone's devices show next to their name" : "On a profile, they show next to the name");
-        const offHere = () => tr("Here they're off in your options, so nothing shows");
-        const story = useStory(watching, () => {
-            const steps = [];
-            const go = (screen, demoAt, caption) => steps.push([steps.length ? 600 : 0, () => { animateLayout(); update({screen, demo:demoAt, pulse:null}); }, caption]);
-            const change = (next, caption) => steps.push([900, () => update(st => ({pulse:{who:"alex", id:"p" + next + ":" + st.screen}}))],
-                [300, () => { animateLayout(); update({demo:next}); }, caption]);
-            go("piDmHeader", 0, settings.piDmHeader ? where("piDmHeader") : offHere());
-            change(1, tr(settings.piHideMobile ? "Alex is only on a phone now" : "Alex is only on a phone now, so their avatar shows a phone"));
-            go("piUserList", 1, settings.piUserList ? where("piUserList") : offHere());
-            change(2, tr("Alex switches to a computer and the web, on Do Not Disturb"));
-            go("piProfile", 2, settings.piProfile ? where("piProfile") : offHere());
-            change(3, tr("Then to a console and a computer"));
-            steps.push([600, () => {}]);
-            return steps;
-        }, [settings.piDmHeader, settings.piUserList, settings.piProfile, settings.piHideMobile]);
         const clients = PLATFORM_DEMO[demo % PLATFORM_DEMO.length];
         const statusOf = c => c.desktop || c.mobile || c.web || c.embedded || "offline";
         const icons = (place, c, keyed) => shown(place) ? popIn(place + ":" + (keyed || "") + demo, el(RN.View, {style:{flexDirection:"row", gap:2, alignItems:"center"}},
@@ -3914,7 +3912,7 @@
             badges:icons("piDmHeader", clients), icons:[[7309, "PhoneCallIcon"], [10976, "VideoIcon"], [6473, "MagnifyingGlassIcon"]]}), ripple);
         // The member list: Discord's "Online — 3" header and a row per person, status under the name.
         const memberRow = (name, color, c, alex) => el(RN.View, {key:name, style:[{flexDirection:"row", alignItems:"center", gap:12, paddingHorizontal:16, paddingVertical:6},
-            alex ? {marginHorizontal:8, paddingHorizontal:8, borderRadius:8} : null, alex && watching ? k.selected : null]},
+            alex ? {marginHorizontal:8, paddingHorizontal:8, borderRadius:8} : null]},
             avatar(name.slice(0, 1), color, c, 32), el(RN.View, {style:{flex:1}},
                 el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:6}}, el(Text, {style:[s.name, {fontSize:15}], numberOfLines:1}, name), icons("piUserList", c, name)),
                 el(Text, {style:s.muted}, tr(PLATFORM_STATUS[statusOf(c)] || "Online"))), alex ? ripple : null);
@@ -3939,33 +3937,30 @@
         const header = screen === "piDmHeader" ? dmHeader() : screen === "piUserList" ? previewHeader(k, {title:"general"}) : null;
         const off = on && !settings[screen] ? el(RN.View, {key:"off", style:{marginHorizontal:12, marginBottom:8, padding:10, borderRadius:8, backgroundColor:"#4e505833"}},
             el(Text, {style:[s.muted, {fontSize:13}]}, tr("Off in your options: no icons here"))) : null;
-        // Try it: pick the screen, then change what Alex is on. A tip says what Alex is on right now.
         const now = Object.keys(clients).map(platform => tr(PLATFORM_LABELS[platform]) + " (" + tr(PLATFORM_STATUS[clients[platform]]) + ")").join(", ");
-        const tryBar = on && !watching ? el(RN.View, {key:"try", style:[k.strip, {padding:12, gap:10}]},
-            el(PreviewSegmented, {key:"platformScreen", value:screen, onChange:value => update(st => ({screen:value, tried:Object.assign({}, st.tried, {[value]:true})})),
+        const tryBar = on ? el(RN.View, {key:"try", style:[k.strip, {padding:12, gap:10}]},
+            el(PreviewSegmented, {key:"platformScreen", value:screen, onChange:value => update({screen:value}),
                 items:PLATFORM_SCREENS.map(([key]) => ({value:key, label:tr(key === "piDmHeader" ? "DM" : key === "piUserList" ? "Members" : "Profile")}))}),
-            el(Press, {onPress:() => { animateLayout(); update(st => ({demo:st.demo + 1, pulse:{who:"alex", id:"t" + (st.demo + 1)}, tried:Object.assign({}, st.tried, {devices:true})})); },
+            el(Press, {onPress:() => { animateLayout(); update(st => ({demo:st.demo + 1, pulse:{who:"alex", id:"t" + (st.demo + 1)}})); },
                 accessibilityRole:"button", accessibilityHint:tr("Tap to change Alex's devices"),
                 style:[k.secondary, {borderRadius:20, paddingVertical:10, flexDirection:"row", alignItems:"center", justifyContent:"center", gap:8}]},
                 el(venusIcon(14470, "LaptopPhoneIcon"), {size:"sm", color:k.secondaryText.color}),
                 el(Text, {style:[k.secondaryText, {fontWeight:"600"}]}, tr("Change Alex's devices"))),
             el(Text, {style:[s.muted, {fontSize:13}]}, tr("Alex is on: {devices}", {devices:now}))) : null;
-        const tip = on && !watching ? previewTip(k, !state.tried.devices ? tr("Tap Change Alex's devices and watch the icons change") :
-            Object.keys(state.tried).length < 3 ? tr("Now pick another screen to see the icons there") : null, "down") : null;
-        return el(RN.View, {key:"preview"}, on ? previewToggle(mode, value => { setMode(value); setState(blank); }) : null,
+        return el(RN.View, {key:"preview"},
             previewScreen(s, "preview", "Device indicators preview", [el(RN.View, {key:"screen:" + screen, style:{minHeight:236}}, popIn("screen:" + screen,
                 el(RN.View, null, body))), off],
-                {header, footer:el(RN.View, {key:"foot"}, tip, tryBar, watching ? storyStrip(k, s, story) : null)}));
+                {header, footer:tryBar}));
     }
     function PlatformSettings() {
         useSettings("platformIndicators");
         const ui=reviewUI();
         if (!React || !RN) return null;
         const on=enabled("platformIndicators"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
-        const places=[settings.piDmHeader && tr("In DMs"),settings.piUserList && tr("In lists"),settings.piProfile && tr("On profiles")].filter(Boolean);
+        const hasPlace=!!(settings.piDmHeader || settings.piUserList || settings.piProfile);
         const groups=[
-            on ? statusCard("status",places.length ? places.join(" \u00b7 ") : "Turn on at least one place below.",
-                {title:tr("Device indicators"),IconComponent:venusIcon(14470,"LaptopPhoneIcon")}) : offCard("status",venusIcon(14470,"LaptopPhoneIcon")),
+            !on ? offCard("status",venusIcon(14470,"LaptopPhoneIcon")) : !hasPlace ? statusCard("status","Turn on at least one place below.",
+                {title:tr("Device indicators"),IconComponent:venusIcon(14470,"LaptopPhoneIcon")}) : null,
             el(PlatformPreview,{key:"preview",on}),
             el(Group,{key:"where",title:tr("Show icons")},
                 switchRow(Switch,"piDmHeader","In DMs","Next to the name at the top of a DM.",rowIcon(6503,"EnvelopeIcon")),
@@ -4469,41 +4464,24 @@
             footnote("note","Reviews come from manti.vendicated.dev. Opening reviews sends that profile's or server's ID to ReviewDB.")];
         return settingsBody(ui,groups);
     }
-    // Try it: tap Sam's message to delete it (it stays, outlined), tap Alex's to edit it (the old text stays above).
-    // Follows Show edit history and your Message highlights colors.
-    // Watch: Alex edits a message twice and the earlier versions stay above it, then Sam deletes one and it stays,
-    // outlined. Toggling Show edit history updates the preview live.
+    // A live chat preview: Alex's edited message with earlier versions faded and crossed out above it, and Sam's kept
+    // deleted message outlined in your deleted highlight color. Toggling Show edit history updates it live.
     function NoDeletePreview(props) {
-        const s=useChatPreviewStyles(), k=usePreviewChrome(), on=!!props.on;
-        const blank={deleted:false,edits:0,pulse:null};
-        const [state,setState]=React.useState(blank);
-        const update=change => setState(st => Object.assign({},st,typeof change==="function" ? change(st) : change));
+        const s=useChatPreviewStyles(), k=usePreviewChrome();
         const red=highlightColorHex(features.messageHighlight && enabled("messageHighlight") ? settings.messageHighlightDeletedColor : "default","#f23f43");
         const bar=(features.messageHighlight && enabled("messageHighlight") ? settings.messageHighlightThickness : 1)*2;
         const versions=[tr("See you at 6"),tr("See you at 7"),tr("See you at 8")];
-        const pulse=who => update(st => ({pulse:{who,id:who+":"+st.edits+":"+st.deleted}}));
-        const story=useStory(on,() => [[0,() => setState(blank),tr("Alex says when to meet")],
-            [1400,() => pulse("edited"),tr("Alex edits it to 7")],[400,() => { animateLayout(); update({edits:1}); },
-                props.edits ? tr("The old text stays above it, crossed out") : tr("It shows (edited), like in Discord")],
-            [1400,() => pulse("edited"),tr("And edits it again to 8")],[400,() => { animateLayout(); update({edits:2}); }],
-            [1400,() => pulse("deleted"),tr("Sam deletes a message")],
-            [400,() => { animateLayout(); update({deleted:true}); },tr("It stays for you, outlined, so you can still read it")],
-            [1200,() => {}]],[props.edits]);
-        const edits=on ? state.edits : 2, deleted=on ? state.deleted : true;
-        const history=props.edits ? versions.slice(0,edits) : [];
+        const history=props.edits ? versions.slice(0,2) : [];
         return el(RN.View,{key:"preview"},
             previewScreen(s,"preview","Deleted messages preview",[
             el(RN.View,{key:"edited"},
                 previewMessage(s,"edited","Alex","#3ba55c",tr("Today at 4:01 PM"),el(RN.View,null,
                     history.map((text,i) => popIn("old:"+i,el(RN.Text,{style:s.faded},text))),
-                    el(RN.Text,{style:s.text},versions[edits],edits ? el(RN.Text,{style:s.muted}," "+tr("(edited)")) : null))),
-                tapRipple(state.pulse,"edited")),
-            el(RN.View,{key:"deleted",style:deleted ? {backgroundColor:red+"1a"} : null},
-                deleted ? popIn("bar",el(RN.View,{style:{position:"absolute",left:0,top:0,bottom:0,width:bar,backgroundColor:red}})) : null,
-                previewMessage(s,"msg","Sam","#eb459e",tr("Today at 4:03 PM"),el(RN.Text,{style:s.text},tr("Oops, wrong chat. Deleting this."))),
-                tapRipple(state.pulse,"deleted"))],
-            {header:previewHeader(k,{title:"general"}),footer:el(RN.View,{key:"foot"},previewInput(k,s,{placeholder:tr("Message {channel}",{channel:"#general"})}),
-                on ? storyStrip(k,s,story) : null)}));
+                    el(RN.Text,{style:s.text},versions[2],el(RN.Text,{style:s.muted}," "+tr("(edited)")))))),
+            el(RN.View,{key:"deleted",style:{backgroundColor:red+"1a"}},
+                el(RN.View,{style:{position:"absolute",left:0,top:0,bottom:0,width:bar,backgroundColor:red}}),
+                previewMessage(s,"msg","Sam","#eb459e",tr("Today at 4:03 PM"),el(RN.Text,{style:s.text},tr("Oops, wrong chat. Deleting this."))))],
+            {header:previewHeader(k,{title:"general"}),footer:previewInput(k,s,{placeholder:tr("Message {channel}",{channel:"#general"})})}));
     }
     const NODELETE_LIMITS = [100, 512, 1000, MAX_DELETED];
     function NoDeleteSettings() {
@@ -4514,14 +4492,12 @@
         // How many to keep is a choice of four, not a number to type. A number saved by an older version shows
         // as the closest choice and stays as it is until you pick another.
         const limit=settings.noDeleteLimit, nearest=NODELETE_LIMITS.reduce((best,n) => Math.abs(n-limit)<Math.abs(best-limit) ? n : best,NODELETE_LIMITS[0]);
-        const kept=deleted.size, changed=edits.size;
-        const summary=!settings.noDelete ? "Turned off. Switch it on in Features to start." :
-            kept || changed ? tr(settings.noDeleteSave ? "{deleted} and {edited} kept, saved on this phone." : "{deleted} and {edited} kept until Discord restarts.",
-                {deleted:count(kept,"deleted message"),edited:count(changed,"edited message")}) :
-            tr("Nothing kept yet. Deleted messages will show here.");
+        const kept=deleted.size, changed=edits.size, hasKept=kept>0 || changed>0;
+        const summary=hasKept ? tr(settings.noDeleteSave ? "{deleted} and {edited} kept, saved on this phone." : "{deleted} and {edited} kept until Discord restarts.",
+            {deleted:count(kept,"deleted message"),edited:count(changed,"edited message")}) : "";
         const groups=[
-            settings.noDelete ? statusCard("status",summary,{title:kept || changed ? pl(kept+changed,"{n} message kept","{n} messages kept") : tr("Keeping deleted messages"),
-                IconComponent:venusIcon(4791,"TrashIcon")}) : offCard("status",venusIcon(4791,"TrashIcon")),
+            !settings.noDelete ? offCard("status",venusIcon(4791,"TrashIcon")) : hasKept ? statusCard("status",summary,{title:pl(kept+changed,"{n} message kept","{n} messages kept"),
+                IconComponent:venusIcon(4791,"TrashIcon")}) : null,
             el(NoDeletePreview,{key:"preview",edits:!!settings.noDeleteEdits,on:!!settings.noDelete}),
             el(Group,{key:"edits",title:tr("Edited messages")},toggle("noDeleteEdits","Show edit history","What a message said before it was edited, faded and crossed out above it. Up to 10 versions each.",rowIcon(9829,"PencilIcon"))),
             el(Group,{key:"save",title:tr("Storage")},toggle("noDeleteSave","Keep after restarting","Deleted and edited messages survive closing Discord. Saved only on this phone, for this account.",rowIcon(4782,"DownloadIcon"))),
@@ -6738,8 +6714,8 @@
             state.menu ? "down" : undefined) : null;
         const sheet = (watching || on) && state.menu ? previewSheet(k, s, [
             ["reply", venusIcon(11108, "ArrowAngleLeftUpIcon"), tr("Reply"), watching ? null : closeMenu],
-            ["translate", Lang, actionLabel, watching ? null : tapMenuTranslate],
-            ["copy", venusIcon(4780, "CopyIcon"), tr("Copy Text"), watching ? null : closeMenu]], state.pulse) : null;
+            ["copy", venusIcon(4780, "CopyIcon"), tr("Copy Text"), watching ? null : closeMenu],
+            ["translate", Lang, actionLabel, watching ? null : tapMenuTranslate]], state.pulse) : null;
         return el(RN.View, {key:"preview"}, on ? previewToggle(mode, value => { setMode(value); setState(value === "try" ? startTry() : blank); }) : null,
             previewScreen(s, "preview", "Translation preview", [message, tip, sheet],
                 {header:previewHeader(k, {title:"general"}),
@@ -7629,36 +7605,16 @@
                 props.tip || null),
             props.caption ? previewCaption(s, props.caption) : null, props.footer || null);
     }
-    // Watch: you ask, Sam replies and mentions you (it lights up as it arrives), Alex sends a message and deletes it
-    // (it stays, in your deleted color). Changing the colors or bar width below lights up the matching message right away.
+    // A live chat preview: your question, Sam's reply mentioning you (highlighted in your reply color), and Alex's kept
+    // deleted message (highlighted in your deleted color). Changing the colors or bar width below lights up the matching message right away.
     function HighlightPreview(props) {
         useSettings("messageHighlight");
-        const s = useChatPreviewStyles(), k = usePreviewChrome();
-        const on = !!props.on, hasDeleted = !!props.deleted;
-        const blank = {count:3, pending:false, beats:{reply:0, deleted:0}, pulse:null};
-        const [state, setState] = React.useState(blank);
-        const update = change => setState(st => Object.assign({}, st, typeof change === "function" ? change(st) : change));
-        const beat = key => update(st => ({beats:Object.assign({}, st.beats, {[key]:st.beats[key] + 1})}));
-        const story = useStory(on, () => {
-            const steps = [[0, () => setState(st => Object.assign({}, blank, {count:1, beats:st.beats})), tr("You ask everyone a question")],
-                [1200, () => { animateLayout(); update({count:2}); beat("reply"); }, tr("Sam replies and mentions you, so it's highlighted in your reply color")]];
-            if (hasDeleted) steps.push([1400, () => { animateLayout(); update({count:3, pending:true}); }, tr("Alex sends a message")],
-                [1300, () => update({pulse:{who:"deleted", id:"del" + Date.now()}})],
-                [400, () => { animateLayout(); update({pending:false}); beat("deleted"); }, tr("Alex deletes it: it stays, highlighted in your deleted color")]);
-            steps.push([600, () => {}, tr("Change the colors or the bar width below to see them here")], [800, () => {}]);
-            return steps;
-        }, [hasDeleted]);
-        // A message glows when its beat goes up (it arrived), or when you change its color or the width:
-        // each beat is a new glow, which plays once when it appears, so drawing the page again never replays it.
-        const beats = state.beats, given = props.fresh || {};
-        const fresh = {reply:!!given.reply || beats.reply > 0, deleted:!!given.deleted || beats.deleted > 0};
+        const s = useChatPreviewStyles(), k = usePreviewChrome(), given = props.fresh || {};
         return el(RN.View, {key:"preview"},
-            highlightPreview({key:"chat", me:props.me, bar:props.bar, ping:props.ping, deleted:props.deleted, fresh,
-                count:on ? state.count : 3, pending:on && state.pending, beats,
+            highlightPreview({key:"chat", me:props.me, bar:props.bar, ping:props.ping, deleted:props.deleted,
+                fresh:{reply:!!given.reply, deleted:!!given.deleted},
                 header:previewHeader(k, {title:"general"}),
-                footer:el(RN.View, {key:"foot"}, previewInput(k, s, {placeholder:tr("Message {channel}", {channel:"#general"})}),
-                    on ? storyStrip(k, s, story) : null),
-                ripple:key => tapRipple(state.pulse, key)}));
+                footer:previewInput(k, s, {placeholder:tr("Message {channel}", {channel:"#general"})})}));
     }
     // One highlight's colors: its name and current color, then a row of swatches and a last one for any color.
     function highlightColorPicker(props) {
