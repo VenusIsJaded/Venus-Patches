@@ -1138,7 +1138,7 @@
         cleanChannels:["Emoji", "Symbols and dividers", "Fancy letters", "Spaces instead of dashes", "Spaces in channel names", "general chat", "Categories", "Channel names", "Decorations"],
         experiments:["Dev Tools", "Experiments", "Experiment", "Developer", "Staff"],
         noHandsfree:["Bluetooth", "Headphones", "Hands-free", "Calls", "Voice channels", "Microphone"],
-        voiceOptions:["Soundboard", "Leave sound", "Volume", "Mute everyone", "Speaker", "Earpiece", "Bluetooth", "Wired headset", "Headphones", "Output", "Join sound", "Leave sound", "Voice channels", "Notification", "Mute"],
+        voiceOptions:["Soundboard", "Goodbye sound", "Call volume", "Chime volume", "Mute everyone", "Speaker", "Earpiece", "Bluetooth", "Wired headset", "Headphones", "Output", "Join chime", "Leave chime", "Voice channels", "Notification", "Mute"],
         bulkDelete:["Select Messages", "Select all", "Delete", "Clear kept deleted messages", "Include kept deleted messages", "Ask before deleting"],
         badges:["Game time", "Unique games", "Switch games every", "Games at once", "Add hours now", "Advanced", "Hours Played", "Unique Games Played", "Years Active", "Personalization"]};
     function searchFold(text) {
@@ -6679,36 +6679,39 @@
                 picked ? popIn("check:" + site.id + ":" + item.id, el(Check, {size:"sm"})) : null);
         }));
     }
+    // Laid out by when each part acts: joining (call volume, where calls play), the chimes Discord plays as people come
+    // and go, and leaving (a goodbye sound for everyone). Each volume picker only shows once its part is on.
     function VoiceOptionsSettings() {
         useSettings("voiceOptions");
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("voiceOptions"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const volumeOn = on && settings.voiceOptionsVolume;
+        const percent = n => tr("{n}%", {n}), percentSteps = BRIGHTNESS_STEPS.map(n => ({value:n, label:percent(n)}));
+        const chimes = settings.voiceOptionsJoinSound || settings.voiceOptionsLeaveSound;
         const groups = [
             !on ? offCard("status", venusIcon(8224, "VoiceNormalIcon"), "voiceOptions") : null,
-            el(Group, {key:"volumeOn"},
-                switchRow(Switch, "voiceOptionsVolume", "Change the volume when joining", undefined, rowIcon(8224, "VoiceNormalIcon"))),
-            el(PresetOrCustom, {key:"volume", title:"Volume when you join", value:settings.voiceOptionsVolumeLevel, disabled:!volumeOn, min:0, max:100, placeholder:50,
-                inputLabel:tr("Volume, 0 to 100"), format:n => tr("{n}%", {n}), onChange:value => setSetting("voiceOptionsVolumeLevel", value),
-                presets:BRIGHTNESS_STEPS.map(n => ({value:n, label:tr("{n}%", {n})})), hint:"Applied each time you join. 0% mutes everyone, and you can still change it once you're in."}),
-            radioGroup(ui, "output", "Audio output when joining", "voiceOptionsOutput", on, [
+            el(Group, {key:"join", title:tr("When you join")},
+                switchRow(Switch, "voiceOptionsVolume", "Start at a set volume", "How loud everyone sounds each time you join a voice channel.", rowIcon(8224, "VoiceNormalIcon"))),
+            settings.voiceOptionsVolume ? el(PresetOrCustom, {key:"volume", title:"Call volume", value:settings.voiceOptionsVolumeLevel, disabled:!on, placeholder:50, min:0, max:100,
+                inputLabel:tr("Volume, 0 to 100"), format:percent, presets:percentSteps, onChange:value => setSetting("voiceOptionsVolumeLevel", value),
+                hint:"0% joins with everyone muted. You can still change it in the call."}) : null,
+            radioGroup(ui, "output", "Play calls through", "voiceOptionsOutput", on, [
                 ["default", "Don't change", null],
                 ["speaker", "Speaker", null, rowIcon(8224, "VoiceNormalIcon")],
                 ["earpiece", "Earpiece", null, rowIcon(11538, "PhoneIcon")],
                 ["bluetooth", "Bluetooth", null, rowIcon(12271, "HeadphonesIcon")],
                 ["wired", "Wired headset", null, rowIcon(12271, "HeadphonesIcon")]]),
             footnote("outputNote", "If it isn't connected, Discord picks as usual."),
-            el(Group, {key:"sounds", title:tr("Join and leave sounds")},
-                switchRow(Switch, "voiceOptionsJoinSound", "Join sound", undefined, rowIcon(8768, "BellIcon")),
-                switchRow(Switch, "voiceOptionsLeaveSound", "Leave sound", undefined, rowIcon(10347, "BellSlashIcon"))),
-            el(PresetOrCustom, {key:"soundVolume", title:"Volume", value:settings.voiceOptionsSoundVolume, disabled:!on, min:0, max:100, placeholder:100,
-                inputLabel:tr("Volume, 0 to 100"), format:n => tr("{n}%", {n}), onChange:value => setSetting("voiceOptionsSoundVolume", value),
-                presets:BRIGHTNESS_STEPS.map(n => ({value:n, label:tr("{n}%", {n})}))}),
-            el(Group, {key:"exit"},
-                switchRow(Switch, "voiceOptionsExit", "Soundboard sound when you leave", "Everyone in the channel hears it. Needs Nitro.", rowIcon(12269, "SoundboardIcon"))),
-            !voiceNitro() ? footnote("exitNitro", "Your account doesn't have Nitro, so no sound is sent.") : null,
-            settings.voiceOptionsExit ? el(VoiceSoundPicker, {key:"exitSound", on}) : null];
+            el(Group, {key:"sounds", title:tr("Join and leave chimes")},
+                switchRow(Switch, "voiceOptionsJoinSound", "Join chime", "Plays as people join the voice channel.", rowIcon(8768, "BellIcon")),
+                switchRow(Switch, "voiceOptionsLeaveSound", "Leave chime", "Plays as people leave the voice channel.", rowIcon(10347, "BellSlashIcon"))),
+            chimes ? el(PresetOrCustom, {key:"soundVolume", title:"Chime volume", value:settings.voiceOptionsSoundVolume, disabled:!on, placeholder:100, min:0, max:100,
+                inputLabel:tr("Volume, 0 to 100"), format:percent, presets:percentSteps, onChange:value => setSetting("voiceOptionsSoundVolume", value),
+                hint:"Only these two chimes change. Voices and other sounds stay the same."}) : null,
+            el(Group, {key:"exit", title:tr("When you leave")},
+                switchRow(Switch, "voiceOptionsExit", "Goodbye sound", "When you tap Disconnect, a soundboard sound plays for everyone in the channel. Needs Nitro.", rowIcon(12269, "SoundboardIcon"))),
+            settings.voiceOptionsExit ? el(VoiceSoundPicker, {key:"exitSound", on}) : null,
+            settings.voiceOptionsExit && !voiceNitro() ? footnote("exitNitro", "Your account doesn't have Nitro, so no sound is sent.") : null];
         return settingsBody(ui, groups);
     }
     function TenorSettings() {
