@@ -73,7 +73,7 @@
         badges:false, badgesGameTime:true, badgesUniqueGames:true, badgesCycleMinutes:15, badgesGamesAtOnce:2, systemFont:false, systemFontSource:"phone",
         systemEmoji:false, systemEmojiSource:"phone", gestures:false, gestureOwn:"edit", gestureTripleDelete:true,
         validUser:false, youBarSettings:false, splitMessages:false,
-        translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false,
+        translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false, translateSkip:"",
         userNotif:false, userNotifFriends:true, userNotifStatus:true, userNotifMessages:true, userNotifTyping:true, userNotifPush:false,
         accountSwitcher:false, accountSwitcherYouBar:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
@@ -90,7 +90,7 @@
             badges: false, badgesGameTime: true, badgesUniqueGames: true, badgesCycleMinutes: 15, badgesGamesAtOnce: 2, systemFont: false, systemFontSource: "phone",
             systemEmoji: false, systemEmojiSource: "phone", gestures: false, gestureOwn: "edit", gestureTripleDelete: true,
             validUser: false, youBarSettings: false, splitMessages: false,
-            translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false,
+            translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false, translateSkip: "",
             userNotif: false, userNotifFriends: true, userNotifStatus: true, userNotifMessages: true, userNotifTyping: true, userNotifPush: false,
             accountSwitcher: false, accountSwitcherYouBar: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
@@ -409,6 +409,7 @@
         if (key === "badgesCycleMinutes") return badgeCycleMinutes(value);
         if (key === "badgesGamesAtOnce") return badgeAtOnce(value);
         if (key === "fixEmbedsSites") return fixSitesText(value);
+        if (key === "translateSkip") return translateSkipText(value);
         if (key === "hiddenFeatures") return hiddenFeaturesText(value);
         if (key === "hideAnythingSpots") return hideSpotsText(value);
         if (key === "materialYouColor") return myIsColor(value) ? value.toLowerCase() : undefined;
@@ -487,6 +488,12 @@
             if (!(key === "fixEmbedsStyle" ? FIX_STYLES : key === "fixEmbedsTranslate" ? FIX_TRANSLATE : TRANSLATE_LANGUAGES).includes(value)) return false;
             if (settings[key] === value && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings[key] = value; dirty.add(key); save(); notify(key); return true;
+        }
+        if (key === "translateSkip") {
+            const clean = translateSkipText(value);
+            if (clean === undefined) return false;
+            if (settings.translateSkip === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.translateSkip = clean; dirty.add(key); save(); notify(key); translateChanged(); return true;
         }
         if (key === "fixEmbedsSites") {
             const clean = fixSitesText(value);
@@ -1118,7 +1125,7 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu"],
+    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications"], accountSwitcher:["Button on the profile bar", "Create a new account", "Export accounts", "Import accounts"],
@@ -12285,17 +12292,60 @@
     // Per target language, worked out once: the letters it doesn't use, and every other language's everyday words that
     // aren't its own. translateLooksForeign runs for rows and on every message change in a chat, so it no longer builds a
     // RegExp and walks ~550 listed words for each message.
+    // Don't translate (#124): languages you read, saved as sorted codes ("de,es"). Their messages are still sent once, since
+    // only Google can tell a message's language, but they're shown as written unless you translate one from its menu. The
+    // translation stays saved, so taking a language off the list shows its messages translated again with no new request.
+    function translateSkipText(raw) {
+        if (typeof raw !== "string" || raw.length > 600) return undefined;
+        const codes = new Set();
+        raw.split(",").forEach(part => { const code = part.trim(); if (TRANSLATE_LANGUAGES.includes(code)) codes.add(code); });
+        return Array.from(codes).sort().join(",");
+    }
+    const translateSkipCache = {text:null, list:[], bases:new Set(), scripts:new Set(), latin:""};
+    function translateSkipInfo() {
+        const text = settings.translateSkip || "";
+        if (translateSkipCache.text === text) return translateSkipCache;
+        const list = text ? text.split(",") : [], bases = new Set(), scripts = new Set();
+        let latin = "";
+        list.forEach(code => {
+            const base = languageBase(code);
+            if (base !== "zh") bases.add(base);
+            const script = TRANSLATE_SCRIPT_OF[base];
+            if (script) scripts.add(script); else if (LATIN_LETTERS[base] !== undefined) latin += LATIN_LETTERS[base];
+        });
+        return Object.assign(translateSkipCache, {text, list, bases, scripts, latin});
+    }
+    // A language Google detected ("iw", "zh-TW"...) that you don't want translated. Both Chinese scripts can be picked apart.
+    function translateSkipped(language) {
+        if (!language || !settings.translateSkip) return false;
+        const info = translateSkipInfo(), base = languageBase(language);
+        if (base === "zh") return info.list.includes(/^zh[-_](TW|HK|MO|Hant)/i.test(language) ? "zh-TW" : "zh-CN") || language === "zh" && info.list.includes("zh-CN");
+        return info.bases.has(base);
+    }
+    // The language you translate into is never translated anyway, so it isn't offered.
+    function translateSameLanguage(code, target) {
+        return code === target || languageBase(code) !== "zh" && languageBase(code) === languageBase(target);
+    }
+    // A message drawn lately whose saved translation is from a language you don't translate.
+    function translateSkipsMessage(id) {
+        if (!settings.translateSkip) return false;
+        const shown = translate.shown.get(id), entry = shown && shown.key && translate.cache.get(shown.key);
+        return !!entry && entry.state === "done" && translateSkipped(entry.language);
+    }
     const translateForeignPlans = new Map();
     function translateForeignPlan(base) {
-        if (translateForeignPlans.has(base)) return translateForeignPlans.get(base);
-        const own = LATIN_LETTERS[base];
+        const skip = translateSkipInfo(), slot = base + "|" + skip.text;
+        if (translateForeignPlans.has(slot)) return translateForeignPlans.get(slot);
+        const own = LATIN_LETTERS[base] === undefined ? undefined : LATIN_LETTERS[base] + skip.latin;
         let plan = null;
         if (own !== undefined) {
             const ownWords = new Set(LATIN_WORDS[base] || []), foreign = new Set();
-            for (const code in LATIN_WORDS) if (code !== base) for (const word of LATIN_WORDS[code]) if (!ownWords.has(word)) foreign.add(word);
+            for (const code in LATIN_WORDS) if (code !== base && skip.bases.has(code)) for (const word of LATIN_WORDS[code]) ownWords.add(word);
+            for (const code in LATIN_WORDS) if (code !== base && !skip.bases.has(code)) for (const word of LATIN_WORDS[code]) if (!ownWords.has(word)) foreign.add(word);
             plan = {allowed:new RegExp("[^a-z'" + own + "]"), foreign};
         }
-        translateForeignPlans.set(base, plan);
+        if (translateForeignPlans.size >= 16) translateForeignPlans.clear();
+        translateForeignPlans.set(slot, plan);
         return plan;
     }
     function translateLooksForeign(text) {
@@ -12306,7 +12356,7 @@
         for (let i = 0; i < TRANSLATE_SCRIPTS.length && !found; i++) if (TRANSLATE_SCRIPTS[i][1].test(text)) found = TRANSLATE_SCRIPTS[i][0];
         // Japanese is written with kanji too, so kanji alone never shows the bar to a Japanese reader.
         if (found === "hani" && base === "ja") return false;
-        if (found) return found !== want;
+        if (found) return found !== want && !translateSkipInfo().scripts.has(found);
         const words = text.toLowerCase().replace(/https?:\/\/\S+|<[^>]*>|:[\w~]+:/g, " ").match(/[a-z\u00c0-\u024f\u1e00-\u1eff']+/g);
         if (!words || !words.some(word => word.length > 2)) return false;
         // Latin text for someone reading a non-Latin language.
