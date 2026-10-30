@@ -21,7 +21,7 @@ private data class Quad<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
 fun main(args: Array<String>) {
     val groups = listOf(HbcPrivacy.analytics, HbcPrivacy.telemetry, HbcPrivacy.crash)
     val natives = NativePrivacy.crash + NativePrivacy.telemetry + NativePrivacy.attribution + NativePrivacy.advertising
-    check(natives.size == 137 && natives.distinct().size == natives.size)
+    check(natives.size == 139 && natives.distinct().size == natives.size)
     check(groups.flatten().size == 102 && groups.flatten().map { it.offset }.distinct().size == 102)
     check(HbcPrivacy.resolvedPromise.last() == 6.toByte())
     // Cross-check every opcode constant against scripts/hbc/ops.txt (Hermes 250829098 BytecodeList.def)
