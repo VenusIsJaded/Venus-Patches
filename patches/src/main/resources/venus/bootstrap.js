@@ -56,6 +56,7 @@
     if (features.bulkDelete) selectModules([584, 1085, 1390, 2065, 2116, 4750, 5432, 7174, 7742, 9675, 10368, 10694]);
     if (features.experiments) selectModules([584, 1390, 1401]);
     if (features.hideAnything) selectModules([13092, 14973, 14974, 9115, 10028, 15371, 15465, 11935, 11942, 11946, 11956, 11957, 12854, 13425, 14827, 16467, 14279, 8525, 8775, 10533, 11997, 14206, 14212, 14143, 14216, 12364, 12365, 13418, 10614, 6882, 13402, 13181, 16466, 16575, 12208, 11864, 10515, 17567, 16074, 16577, 17499, 17487, 10748]);
+    if (features.voiceOptions) { targetModules[584] = 1; targetModules[10982] = 1; targetModules[5889] = 1; }
     const revision = "1.19.0";
     // The Discord build these patches are pinned to (DiscordPatches.kt compatibleWith); shown on the About page.
     const DISCORD_VERSION = "350.8";
@@ -77,7 +78,7 @@
         accountSwitcher:false, accountSwitcherYouBar:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsClean:true, fixEmbedsDark:true, fixEmbedsStyle:"full", fixEmbedsTranslate:"off", fixEmbedsLanguage:"en", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, hideAnything:false, hideAnythingSpots:"", language:"auto", hiddenFeatures:"" };
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsClean:true, fixEmbedsDark:true, fixEmbedsStyle:"full", fixEmbedsTranslate:"off", fixEmbedsLanguage:"en", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, hideAnything:false, hideAnythingSpots:"", language:"auto", hiddenFeatures:"" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
     function defaultSettings() {
@@ -94,7 +95,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsClean: true, fixEmbedsDark: true, fixEmbedsStyle: "full", fixEmbedsTranslate: "off", fixEmbedsLanguage: "en", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, hideAnything: false, hideAnythingSpots: "", language: "auto", hiddenFeatures: ""
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsClean: true, fixEmbedsDark: true, fixEmbedsStyle: "full", fixEmbedsTranslate: "off", fixEmbedsLanguage: "en", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, hideAnything: false, hideAnythingSpots: "", language: "auto", hiddenFeatures: ""
         }));
     }
     // Backup and restore (#68): when you last saved a backup, and whether a restore is being applied right now.
@@ -397,13 +398,14 @@
     function acceptedSetting(key, value) {
         if (!owns(settings, key) || typeof value !== typeof settings[key]) return undefined;
         if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
-            key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) ||
+            key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
             key === "fixEmbedsStyle" && !FIX_STYLES.includes(value) || key === "fixEmbedsTranslate" && !FIX_TRANSLATE.includes(value) || key === "fixEmbedsLanguage" && !TRANSLATE_LANGUAGES.includes(value) ||
             (key === "systemFontSource" || key === "systemEmojiSource") && !FONT_SOURCES.includes(value) ||
             key === "messageHighlightThickness" && !HIGHLIGHT_THICKNESSES.includes(value) || key === "language" && !isLanguage(value)) return undefined;
         if (key === "messageHighlightPingColor" || key === "noDeleteColor") return isHighlightColor(value) ? normalizeHighlightColor(value) : undefined;
         if (key === "messageHighlightBrightness" || key === "noDeleteBrightness") return brightness(value);
         if (key === "noDeleteLimit") return deleteLimit(value);
+        if (key === "voiceOptionsVolumeLevel" || key === "voiceOptionsSoundVolume") return brightness(value);
         if (key === "badgesCycleMinutes") return badgeCycleMinutes(value);
         if (key === "badgesGamesAtOnce") return badgeAtOnce(value);
         if (key === "fixEmbedsSites") return fixSitesText(value);
@@ -459,6 +461,22 @@
             if (features[font ? "systemFont" : "systemEmoji"] && settings[font ? "systemFont" : "systemEmoji"] && !backup.restoring &&
                 status.storage !== "loading" && status.storage !== "waiting" && value !== (font ? fontSourceInUse : emojiSourceInUse)) later(() => askRestart(font ? "font" : "emoji"), 0);
             return true;
+        }
+        if (key === "voiceOptionsOutput") {
+            if (!VOICE_OUTPUTS.includes(value)) return false;
+            if (settings.voiceOptionsOutput === value && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.voiceOptionsOutput = value; dirty.add(key); save(); notify(key); return true;
+        }
+        if (key === "voiceOptionsExitSound") {
+            if (!(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value))) return false;
+            if (settings.voiceOptionsExitSound === value && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.voiceOptionsExitSound = value; dirty.add(key); save(); notify(key); return true;
+        }
+        if (key === "voiceOptionsVolumeLevel" || key === "voiceOptionsSoundVolume") {
+            if (typeof value !== "number" || !Number.isFinite(value)) return false;
+            const level = brightness(value);
+            if (settings[key] === level && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings[key] = level; dirty.add(key); save(); notify(key); return true;
         }
         if (key === "tenorGifsSource") {
             if (!TENOR_SOURCES.includes(value)) return false;
@@ -1033,7 +1051,7 @@
     const featureFor = key => {
         const cached = featureTable[key];
         if (cached !== undefined) return cached;
-        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : key === "noDeleteSave" || key === "noDeleteLimit" || key === "noDeleteEdits" || key === "noDeleteColor" || key === "noDeleteBrightness" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : key;
+        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : key === "noDeleteSave" || key === "noDeleteLimit" || key === "noDeleteEdits" || key === "noDeleteColor" || key === "noDeleteBrightness" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : key;
     };
     // Section titles are read whenever Discord draws the list, so they follow the language too. "Venus" is a name.
     function section(label, keys) {
@@ -1068,7 +1086,7 @@
         hiddenChannels:[8218, "LockIcon"], systemFont:[15974, "LettersIcon"], systemEmoji:[12901, "ChatSmileIcon"],
         youBarSettings:[7092, "SettingsIcon"], quests:[13012, "QuestsIcon"],
         badges:[8921, "TrophyIcon"], userNotif:[8768, "BellIcon"], accountSwitcher:[8212, "GroupIcon"], appIcons:[8229, "AppsIcon"],
-        customThemes:[15652, "EyeDropperIcon"], iconPacks:[11063, "ImageSparkleIcon"], messageHighlight:[16947, "PaintbrushThinIcon"], serverInfo:[5046, "CircleInformationIcon"], serverEdit:[9720, "PencilIcon"], fixEmbeds:[12910, "EmbedIcon"], tenorGifs:[9748, "GifIcon"], nitroThemes:[17143, "SparklesIcon"], materialYou:[15560, "PaintPaletteIcon"], hideBlocked:[17072, "ChatShieldIcon"], bulkDelete:[6868, "CircleCheckIcon"], experiments:[15894, "BeakerIcon"], cleanChannels:[12605, "MagicWandIcon"], noHandsfree:[12271, "HeadphonesIcon"], staffTag:[10262, "CrownIcon"], removedAlerts:[5036, "UserMinusIcon"], hideAnything:[10260, "XLargeIcon"], fullImages:[11587, "ImagesIcon"], alwaysTrust:[10410, "ShieldIcon"], noConfirmPin:[10334, "PinIcon"], clickableMentions:[8213, "AtIcon"]};
+        customThemes:[15652, "EyeDropperIcon"], iconPacks:[11063, "ImageSparkleIcon"], messageHighlight:[16947, "PaintbrushThinIcon"], serverInfo:[5046, "CircleInformationIcon"], serverEdit:[9720, "PencilIcon"], fixEmbeds:[12910, "EmbedIcon"], tenorGifs:[9748, "GifIcon"], nitroThemes:[17143, "SparklesIcon"], materialYou:[15560, "PaintPaletteIcon"], hideBlocked:[17072, "ChatShieldIcon"], bulkDelete:[6868, "CircleCheckIcon"], experiments:[15894, "BeakerIcon"], cleanChannels:[12605, "MagicWandIcon"], noHandsfree:[12271, "HeadphonesIcon"], voiceOptions:[8224, "VoiceNormalIcon"], staffTag:[10262, "CrownIcon"], removedAlerts:[5036, "UserMinusIcon"], hideAnything:[10260, "XLargeIcon"], fullImages:[11587, "ImagesIcon"], alwaysTrust:[10410, "ShieldIcon"], noConfirmPin:[10334, "PinIcon"], clickableMentions:[8213, "AtIcon"]};
     const venusIcons = new Map();
     function venusIcon(id, name, fallback) {
         const slot = id + ":" + name;
@@ -1120,6 +1138,7 @@
         cleanChannels:["Emoji", "Symbols and dividers", "Fancy letters", "Spaces instead of dashes", "Spaces in channel names", "general chat", "Categories", "Channel names", "Decorations"],
         experiments:["Dev Tools", "Experiments", "Experiment", "Developer", "Staff"],
         noHandsfree:["Bluetooth", "Headphones", "Hands-free", "Calls", "Voice channels", "Microphone"],
+        voiceOptions:["Soundboard", "Leave sound", "Volume", "Mute everyone", "Speaker", "Earpiece", "Bluetooth", "Wired headset", "Headphones", "Output", "Join sound", "Leave sound", "Voice channels", "Notification", "Mute"],
         bulkDelete:["Select Messages", "Select all", "Delete", "Clear kept deleted messages", "Include kept deleted messages", "Ask before deleting"],
         badges:["Game time", "Unique games", "Switch games every", "Games at once", "Add hours now", "Advanced", "Hours Played", "Unique Games Played", "Years Active", "Personalization"]};
     function searchFold(text) {
@@ -1619,6 +1638,7 @@
         withOptions("quests", "quests", "VENUS_QUESTS", "Complete Quests automatically", "Finishes video, Play and Activity Quests in the background.", "Quests", QuestSettings);
         // Advanced
         toggle("advanced", "experiments", "Unlock Discord experiments", "Adds Dev Tools to Settings, to try features Discord is still testing.");
+        withOptions("advanced", "voiceOptions", "VENUS_VOICEOPTIONS", "Voice channel options", "Choose the volume, audio output and sounds for voice channels.", "Voice channel options", VoiceOptionsSettings);
         toggle("advanced", "noHandsfree", "Keep Bluetooth audio clear in calls", "Headphones stay in music quality in calls. Your phone's mic picks up your voice.");
         withOptions("quests", "badges", "VENUS_BADGES", "Complete badges automatically", "Plays real PC games in the background for game time and unique games.", "Badges", BadgeSettings);
         const listed = [["Messages", groups.messages], ["Sending", groups.sending], ["People", groups.people],
@@ -6658,6 +6678,38 @@
                     line(fixServiceHost(site, item), "text-xs/medium", "text-muted", {color:"#949ba4", fontSize:12})),
                 picked ? popIn("check:" + site.id + ":" + item.id, el(Check, {size:"sm"})) : null);
         }));
+    }
+    function VoiceOptionsSettings() {
+        useSettings("voiceOptions");
+        const ui = reviewUI();
+        if (!React || !RN) return null;
+        const on = enabled("voiceOptions"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
+        const volumeOn = on && settings.voiceOptionsVolume;
+        const groups = [
+            !on ? offCard("status", venusIcon(8224, "VoiceNormalIcon"), "voiceOptions") : null,
+            el(Group, {key:"volumeOn"},
+                switchRow(Switch, "voiceOptionsVolume", "Change the volume when joining", undefined, rowIcon(8224, "VoiceNormalIcon"))),
+            el(PresetOrCustom, {key:"volume", title:"Volume when you join", value:settings.voiceOptionsVolumeLevel, disabled:!volumeOn, min:0, max:100, placeholder:50,
+                inputLabel:tr("Volume, 0 to 100"), format:n => tr("{n}%", {n}), onChange:value => setSetting("voiceOptionsVolumeLevel", value),
+                presets:BRIGHTNESS_STEPS.map(n => ({value:n, label:tr("{n}%", {n})})), hint:"Applied each time you join. 0% mutes everyone, and you can still change it once you're in."}),
+            radioGroup(ui, "output", "Audio output when joining", "voiceOptionsOutput", on, [
+                ["default", "Don't change", null],
+                ["speaker", "Speaker", null, rowIcon(8224, "VoiceNormalIcon")],
+                ["earpiece", "Earpiece", null, rowIcon(11538, "PhoneIcon")],
+                ["bluetooth", "Bluetooth", null, rowIcon(12271, "HeadphonesIcon")],
+                ["wired", "Wired headset", null, rowIcon(12271, "HeadphonesIcon")]]),
+            footnote("outputNote", "If it isn't connected, Discord picks as usual."),
+            el(Group, {key:"sounds", title:tr("Join and leave sounds")},
+                switchRow(Switch, "voiceOptionsJoinSound", "Join sound", undefined, rowIcon(8768, "BellIcon")),
+                switchRow(Switch, "voiceOptionsLeaveSound", "Leave sound", undefined, rowIcon(10347, "BellSlashIcon"))),
+            el(PresetOrCustom, {key:"soundVolume", title:"Volume", value:settings.voiceOptionsSoundVolume, disabled:!on, min:0, max:100, placeholder:100,
+                inputLabel:tr("Volume, 0 to 100"), format:n => tr("{n}%", {n}), onChange:value => setSetting("voiceOptionsSoundVolume", value),
+                presets:BRIGHTNESS_STEPS.map(n => ({value:n, label:tr("{n}%", {n})}))}),
+            el(Group, {key:"exit"},
+                switchRow(Switch, "voiceOptionsExit", "Soundboard sound when you leave", "Everyone in the channel hears it. Needs Nitro.", rowIcon(12269, "SoundboardIcon"))),
+            !voiceNitro() ? footnote("exitNitro", "Your account doesn't have Nitro, so no sound is sent.") : null,
+            settings.voiceOptionsExit ? el(VoiceSoundPicker, {key:"exitSound", on}) : null];
+        return settingsBody(ui, groups);
     }
     function TenorSettings() {
         useSettings("tenorGifs");
@@ -11794,6 +11846,227 @@
         return orig.apply(self, next);
     }
 
+    // Voice channel options (#103). One Flux listener (the dispatcher, module 584) serves the first two parts, and each part
+    // acts on the next tick because Flux can't start a dispatch from inside a listener.
+    // Volume when joining: VOICE_CHANNEL_SELECT carries the new channelId, null on leaving. Only a join from no channel
+    // counts, so switching channels doesn't undo a volume changed in the call. It sets Discord's output volume
+    // (AudioActionCreators 5243, the same action as the slider in Voice settings, 100 being Discord's default).
+    // Audio output when joining: once the voice connection is up (RTC_CONNECTION_STATE, RTC_CONNECTED), the chosen device is
+    // picked from AudioManagerStore (8782) with Discord's own action, the one the output sheet in the voice panel uses
+    // (AudioManagerActionCreator 8791). Devices are told apart by simpleDeviceType (AudioDeviceType, 8783). A device that
+    // isn't connected leaves Discord's choice alone, and so does one that's already in use.
+    const VOICE_OUTPUTS = ["default", "speaker", "earpiece", "bluetooth", "wired"];
+    const VOICE_OUTPUT_TYPES = {speaker:"SPEAKERPHONE", earpiece:"EARPIECE", bluetooth:"BLUETOOTH_HEADSET", wired:"WIRED_HEADSET"};
+    const voiceOptions = {dispatcher:null, joined:false, channelId:null, leaving:false, asked:false};
+    function voiceOptionsInit(dispatcher) {
+        if (voiceOptions.dispatcher || !dispatcher || typeof dispatcher.subscribe !== "function") return;
+        voiceOptions.dispatcher = dispatcher;
+        dispatcher.subscribe("VOICE_CHANNEL_SELECT", voiceOptionsSelect);
+        dispatcher.subscribe("RTC_CONNECTION_STATE", voiceOptionsState);
+        dispatcher.subscribe("LOGOUT", () => { voiceOptions.joined = false; });
+    }
+    function voiceOptionsSelect(event) {
+        const joined = !!(event && event.channelId), joining = joined && !voiceOptions.joined;
+        voiceOptions.joined = joined; voiceOptions.channelId = joined ? event.channelId : null;
+        if (joining && enabled("voiceOptions") && settings.voiceOptionsVolume) later(voiceVolumeApply, 0);
+    }
+    function voiceVolumeApply() {
+        if (!enabled("voiceOptions") || !settings.voiceOptionsVolume) return;
+        const audio = inspectedExport(5243, "default");
+        if (audio && typeof audio.setOutputVolume === "function") try { audio.setOutputVolume(settings.voiceOptionsVolumeLevel); } catch (_) {}
+    }
+    function voiceOptionsState(event) {
+        if (!event || !enabled("voiceOptions") || settings.voiceOptionsOutput === "default") return;
+        const states = inspectedExport(1085, "RTCConnectionStates"), contexts = inspectedExport(5117, "MediaEngineContextTypes");
+        if (!states || event.state !== states.CONNECTED || contexts && event.context !== contexts.DEFAULT) return;
+        later(voiceOutputApply, 0);
+    }
+    function voiceOutputApply() {
+        if (!enabled("voiceOptions") || settings.voiceOptionsOutput === "default") return;
+        const store = inspectedExport(8782, "default"), choose = inspectedExport(8791, "setAudioOutputDevice"), types = inspectedExport(8783, "AudioDeviceType");
+        if (!store || typeof choose !== "function" || !types || typeof store.getAudioDevices !== "function") return;
+        try {
+            const devices = store.getAudioDevices(), wanted = types[VOICE_OUTPUT_TYPES[settings.voiceOptionsOutput]];
+            const device = Array.isArray(devices) && wanted !== undefined ? devices.find(entry => entry && entry.simpleDeviceType === wanted) : null;
+            if (!device) return;
+            const active = typeof store.getActiveAudioDevice === "function" ? store.getActiveAudioDevice() : null;
+            if (!active || active.deviceId !== device.deviceId) choose(device);
+        } catch (_) {}
+    }
+    // Join and leave sounds: Discord's voice panel plays them through playSound (SoundUtils 10982) by name, the way every
+    // in-app sound plays. Turned off, the call is skipped. Quieter, the sound's volume (0 to 1, MobileAudioSound 10986) is
+    // set from the moment it's made until it plays: both happen inside this one synchronous call, so the level only ever
+    // reaches these two sounds.
+    const VOICE_SOUNDS = {user_join:"voiceOptionsJoinSound", user_leave:"voiceOptionsLeaveSound"};
+    let voiceSoundLevel = null, voiceSoundPatched = false;
+    function voiceSoundPlay(orig, self, args) {
+        const key = VOICE_SOUNDS[args[0]];
+        if (!key || !enabled("voiceOptions")) return orig.apply(self, args);
+        if (!settings[key]) return Promise.resolve();
+        if (settings.voiceOptionsSoundVolume >= 100 || !voiceSoundPatch()) return orig.apply(self, args);
+        voiceSoundLevel = settings.voiceOptionsSoundVolume / 100;
+        try { return orig.apply(self, args); } finally { voiceSoundLevel = null; }
+    }
+    function voiceSoundPatch() {
+        if (voiceSoundPatched) return true;
+        const Sound = inspectedExport(10986, "MobileAudioSound"), proto = Sound && Sound.prototype;
+        if (!proto || typeof proto.play !== "function" || typeof proto.playWithListener !== "function") return false;
+        ["play", "playWithListener"].forEach(name => {
+            const orig = proto[name];
+            proto[name] = function () { if (voiceSoundLevel !== null) try { this.volume = voiceSoundLevel; } catch (_) {} return orig.apply(this, arguments); };
+        });
+        return voiceSoundPatched = true;
+    }
+    // Soundboard sound when you leave: Discord sends a soundboard sound with a plain request to the channel (HTTP.post of
+    // Endpoints.SEND_SOUNDBOARD_SOUND, VoiceChannelEffectsActionCreators 7058), and the server plays it for everyone in the
+    // channel, so it still plays after you've gone. The Disconnect button (SelectedChannelActionCreators 5889, disconnect)
+    // waits for that request to finish, at most a moment, before it really leaves, so the leave can't beat the sound to the
+    // server. Needs Nitro, like Discord's own sounds from other servers: with it off, nothing is sent and leaving is
+    // untouched. The saved sound is "guildId:soundId"; sounds come from SoundboardStore (5428).
+    const VOICE_SOUND_ID = /^[\w-]{1,24}:[\w-]{1,24}$/;
+    function voiceNitro() {
+        const user = currentUser();
+        return !!user && (user.premiumType === 1 || user.premiumType === 2);
+    }
+    function voiceLeave(orig, self, args) {
+        const channelId = voiceOptions.channelId, saved = settings.voiceOptionsExitSound;
+        if (!channelId || voiceOptions.leaving || !enabled("voiceOptions") || !settings.voiceOptionsExit || !VOICE_SOUND_ID.test(saved) || !voiceNitro()) return orig.apply(self, args);
+        const http = inspectedExport(1295, "HTTP"), endpoints = inspectedExport(1085, "Endpoints");
+        if (!http || typeof http.post !== "function" || !endpoints || typeof endpoints.SEND_SOUNDBOARD_SOUND !== "function") return orig.apply(self, args);
+        const cut = saved.indexOf(":"), guildId = saved.slice(0, cut), body = {sound_id:saved.slice(cut + 1)};
+        if (guildId !== String(inspectedExport(5430, "DEFAULT_SOUND_GUILD_ID"))) body.source_guild_id = guildId;
+        let sent = null;
+        try { sent = http.post({url:endpoints.SEND_SOUNDBOARD_SOUND(channelId), body}); } catch (_) {}
+        if (!sent || typeof sent.then !== "function") return orig.apply(self, args);
+        voiceOptions.leaving = true;
+        let done = false;
+        const leave = () => { if (done) return; done = true; voiceOptions.leaving = false; try { orig.apply(self, args); } catch (_) {} };
+        sent.then(leave, leave);
+        later(leave, 1500);
+    }
+    // The sound picker on the options page, laid out like Discord's own soundboard and emoji pickers: a row that shows the sound
+    // you picked opens a sheet over the page with a search box, a strip of servers and a grid of sounds with their emoji.
+    // Tapping a sound picks it and closes the sheet; tapping the picked one again clears it.
+    const VOICE_SHEET = "VenusVoiceSounds", VOICE_TILE_MIN = 150, VOICE_GAP = 8, VOICE_PEEK = 3;
+    const VOICE_SOUND_DARK = {top:{backgroundColor:"#2b2d31", paddingHorizontal:16, paddingBottom:12},
+        chip:{height:44, borderRadius:14, alignItems:"center", justifyContent:"center", overflow:"hidden", borderWidth:2, borderColor:"transparent", backgroundColor:"#35373c"},
+        chipOn:{borderColor:"#5865f2"}, initials:{color:"#dbdee1", fontSize:14, fontWeight:"700"},
+        tile:{flexDirection:"row", alignItems:"center", gap:8, height:46, paddingHorizontal:10, borderRadius:10, borderWidth:2, borderColor:"transparent", backgroundColor:"#35373c"},
+        tileOn:{borderColor:"#5865f2", backgroundColor:"#5865f229"}, name:{color:"#f2f3f5", fontSize:14, fontWeight:"600", flexShrink:1},
+        head:{flexDirection:"row", alignItems:"center", gap:4, paddingVertical:2}};
+    // Every sound the store has loaded, one list per server with Discord's own first. Each is {id, name, emojiId, emojiName}.
+    function voiceSoundLists() {
+        const store = inspectedExport(5428, "default"), defaultId = String(inspectedExport(5430, "DEFAULT_SOUND_GUILD_ID")), guilds = inspectedExport(2087, "default");
+        let raw = null;
+        try { raw = store && typeof store.getSounds === "function" ? store.getSounds() : null; } catch (_) {}
+        const lists = new Map();
+        const add = (key, sounds) => {
+            const items = Array.isArray(sounds) ? sounds : sounds && typeof sounds === "object" ? Object.keys(sounds).map(id => sounds[id]) : [];
+            for (let i = 0; i < items.length && i < 100; i++) {
+                const sound = items[i];
+                if (!sound || sound.soundId == null || typeof sound.name !== "string" || sound.available === false) continue;
+                const guild = String(sound.guildId != null ? sound.guildId : key), id = guild + ":" + sound.soundId;
+                if (!VOICE_SOUND_ID.test(id)) continue;
+                const emojiId = sound.emojiId != null ? String(sound.emojiId) : "";
+                let list = lists.get(guild); if (!list) lists.set(guild, list = []);
+                list.push({id, name:sound.name, emojiId:/^\d{1,24}$/.test(emojiId) ? emojiId : "", emojiName:typeof sound.emojiName === "string" ? sound.emojiName : ""});
+            }
+        };
+        if (raw instanceof Map) raw.forEach((sounds, key) => add(String(key), sounds));
+        else if (raw && typeof raw === "object") Object.keys(raw).forEach(key => add(key, raw[key]));
+        const guildOf = guild => { try { return guilds && typeof guilds.getGuild === "function" ? guilds.getGuild(guild) : null; } catch (_) { return null; } };
+        const name = guild => guild === defaultId ? tr("Default sounds") : (guildOf(guild) || {}).name || guild;
+        const order = Array.from(lists.keys()).sort((a, b) => a === defaultId ? -1 : b === defaultId ? 1 : name(a).localeCompare(name(b))).slice(0, 40);
+        return {lists, order, defaultId, guildOf, name};
+    }
+    // Asks Discord for the sounds once, and redraws whenever its store has more.
+    function useVoiceSounds() {
+        const [, refresh] = React.useState(0);
+        React.useEffect(() => {
+            const store = inspectedExport(5428, "default"), fetchSounds = inspectedExport(7048, "maybeFetchSoundboardSounds");
+            if (!voiceOptions.asked && typeof fetchSounds === "function") { voiceOptions.asked = true; try { fetchSounds(); } catch (_) {} }
+            if (!store || typeof store.addChangeListener !== "function") return undefined;
+            const fn = () => refresh(n => n + 1);
+            store.addChangeListener(fn);
+            return () => { try { store.removeChangeListener(fn); } catch (_) {} };
+        }, []);
+        return voiceSoundLists();
+    }
+    // The sound's own emoji (a custom one is an image, a standard one is text), or Discord's soundboard icon.
+    function VoiceSoundEmoji(props) {
+        const Icon = venusIcon(12269, "SoundboardIcon"), sound = props.sound;
+        if (sound.emojiId) return el(RN.Image, {style:{width:24, height:24}, source:{uri:"https://cdn.discordapp.com/emojis/" + sound.emojiId + ".webp?size=64&quality=lossless"}, accessible:false});
+        if (sound.emojiName) return el(RN.Text, {style:{fontSize:20, width:24, textAlign:"center"}, accessible:false}, sound.emojiName);
+        return el(RN.View, {style:{width:24, alignItems:"center"}}, el(Icon, {size:"sm", color:props.color}));
+    }
+    function openVoiceSounds() {
+        const ui = reviewUI();
+        if (!ui.ActionSheet || typeof ui.showSheet !== "function") return;
+        try { ui.showSheet({key:VOICE_SHEET, content:el(VoiceSoundSheet, null), stackingBehavior:"stack"}); } catch (_) {}
+    }
+    // On the page: one row with the picked sound (its emoji, name and server). It opens the sheet.
+    function VoiceSoundPicker(props) {
+        const ui = reviewUI(), Group = ui.TableRowGroup || RN.View, Chevron = venusIcon(6906, "ChevronSmallRightIcon"), data = useVoiceSounds(), saved = settings.voiceOptionsExitSound;
+        let current = null, currentGuild = "";
+        data.lists.forEach((list, guild) => { const found = list.find(sound => sound.id === saved); if (found) { current = found; currentGuild = guild; } });
+        return el(Group, {key:"sound"}, ui.TableRow ? el(ui.TableRow, {key:"current", label:current ? current.name : tr("Choose a sound"), subLabel:current ? data.name(currentGuild) : undefined,
+            icon:current && (current.emojiId || current.emojiName) ? el(VoiceSoundEmoji, {sound:current}) : rowIcon(12269, "SoundboardIcon"),
+            trailing:el(Chevron, {size:"sm"}), onPress:() => { if (!props.on) return; haptic("SELECTION"); openVoiceSounds(); }, disabled:!props.on}) : null);
+    }
+    function VoiceSoundSheet() {
+        const [query, setQuery] = React.useState(""), [server, setServer] = React.useState(""), [width, setWidth] = React.useState(0);
+        const ui = reviewUI(), Text = inspectedExport(5088, "Text"), SearchField = inspectedExport(6739, "SearchField"), Scroll = inspectedExport(6307, "BottomSheetScrollView");
+        const Press = RN.Pressable || RN.TouchableOpacity, Icon = venusIcon(12269, "SoundboardIcon");
+        const s = useThemed("voiceSounds", c => ({top:Object.assign({}, VOICE_SOUND_DARK.top, {backgroundColor:c.MOBILE_ACTIONSHEET_BACKGROUND || c.BACKGROUND_SURFACE_HIGH}),
+            chip:Object.assign({}, VOICE_SOUND_DARK.chip, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}), chipOn:{borderColor:c.BACKGROUND_BRAND},
+            initials:Object.assign({}, VOICE_SOUND_DARK.initials, {color:c.TEXT_DEFAULT}),
+            tile:Object.assign({}, VOICE_SOUND_DARK.tile, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}),
+            tileOn:{borderColor:c.BACKGROUND_BRAND, backgroundColor:c.MENTION_BACKGROUND}, name:Object.assign({}, VOICE_SOUND_DARK.name, {color:c.TEXT_STRONG}),
+            head:VOICE_SOUND_DARK.head}), VOICE_SOUND_DARK);
+        const data = useVoiceSounds(), saved = settings.voiceOptionsExitSound;
+        const pick = sound => { haptic("SELECTION"); setSetting("voiceOptionsExitSound", sound.id === saved ? "" : sound.id); hideReviewSheet(ui, VOICE_SHEET); };
+        const needle = searchFold(query.trim()), inner = width - 32, columns = Math.max(2, Math.floor((inner + VOICE_GAP) / (VOICE_TILE_MIN + VOICE_GAP)));
+        const tileWidth = Math.floor((inner - VOICE_GAP * (columns - 1)) / columns);
+        const tile = sound => el(Press, {key:sound.id, onPress:() => pick(sound), accessibilityRole:"button", accessibilityLabel:sound.name, accessibilityState:{selected:sound.id === saved},
+            style:[s.tile, sound.id === saved ? s.tileOn : null, {width:tileWidth}]}, el(VoiceSoundEmoji, {sound}),
+            Text ? el(Text, {variant:"text-sm/semibold", color:"text-strong", lineClamp:1, style:{flexShrink:1}}, sound.name) : el(RN.Text, {numberOfLines:1, style:s.name}, sound.name));
+        const chip = (guild, label, content, wide) => el(Press, {key:"chip:" + guild, onPress:() => { haptic("SELECTION"); animateLayout(); setServer(guild); }, accessibilityRole:"button",
+            accessibilityLabel:label, accessibilityState:{selected:server === guild}, style:[s.chip, wide ? {minWidth:44, paddingHorizontal:12} : {width:44}, server === guild ? s.chipOn : null]}, content);
+        const initials = label => String(label).split(/\s+/).filter(Boolean).slice(0, 2).map(word => Array.from(word)[0]).join("").toUpperCase();
+        const search = SearchField ? el(SearchField, {key:"search", placeholder:tr("Search sounds"), value:query, onChange:text => setQuery(String(text || ""))}) :
+            ui.TextInput ? el(ui.TextInput, {key:"search", placeholder:tr("Search sounds"), value:query, onChange:text => setQuery(String(text || ""))}) : null;
+        const strip = data.order.length > 1 && !needle ? el(RN.ScrollView, {key:"servers", horizontal:true, showsHorizontalScrollIndicator:false,
+            style:{marginTop:12, flexGrow:0}, contentContainerStyle:{gap:VOICE_GAP}},
+            [chip("", tr("All"), el(RN.Text, {numberOfLines:1, style:s.initials}, tr("All")), true)].concat(data.order.map(guild => {
+                const uri = guild === data.defaultId ? null : serverIconUri(data.guildOf(guild), 96), label = data.name(guild);
+                return chip(guild, label, guild === data.defaultId ? el(Icon, {size:"md"}) : uri ? el(RN.Image, {style:{width:40, height:40}, source:{uri}}) :
+                    el(RN.Text, {style:s.initials}, initials(label)));
+            }))) : null;
+        const sections = [];
+        data.order.forEach(guild => {
+            if (server && !needle && guild !== server) return;
+            const all = data.lists.get(guild).filter(sound => !needle || searchFold(sound.name).includes(needle));
+            if (!all.length) return;
+            const capped = !server && !needle && all.length > columns * VOICE_PEEK;
+            sections.push(el(RN.View, {key:"section:" + guild, style:{gap:8}},
+                el(Press, {onPress:capped ? () => { haptic("SELECTION"); animateLayout(); setServer(guild); } : undefined, disabled:!capped, accessibilityRole:capped ? "button" : undefined,
+                    accessibilityLabel:data.name(guild), style:s.head},
+                    Text ? el(Text, {variant:"text-sm/semibold", color:"text-muted", lineClamp:1, style:{flexShrink:1}}, data.name(guild)) :
+                        el(RN.Text, {numberOfLines:1, style:{color:"#949ba4", fontSize:13, fontWeight:"600", flexShrink:1}}, data.name(guild)),
+                    capped ? el(venusIcon(6906, "ChevronSmallRightIcon"), {size:"xs"}) : null),
+                el(RN.View, {style:{flexDirection:"row", flexWrap:"wrap", gap:VOICE_GAP}}, (capped ? all.slice(0, columns * VOICE_PEEK) : all.slice(0, 60)).map(tile))));
+        });
+        const empty = !data.order.length ? footnote("empty", "Your sounds show up here once Discord has loaded them. Open the soundboard in a voice channel if the list is empty.") :
+            !sections.length ? footnote("none", "No matching sounds") : null;
+        const header = ui.Header ? el(ui.Header, {title:tr("Choose a sound"), trailing:ui.Close ? el(ui.Close, {onPress:() => hideReviewSheet(ui, VOICE_SHEET)}) : undefined}) : undefined;
+        // The search box and the servers stay at the top while the sounds scroll under them.
+        const body = [el(RN.View, {key:"top", style:s.top}, search, strip),
+            el(RN.View, {key:"sounds", style:{paddingHorizontal:16, paddingBottom:24, gap:16}, onLayout:event => { const w = event && event.nativeEvent && event.nativeEvent.layout && event.nativeEvent.layout.width;
+                if (w && Math.abs(w - width) > 0.5) setWidth(w); }}, width ? (empty ? null : sections) : null, empty)];
+        const scrollProps = {stickyHeaderIndices:[0], keyboardShouldPersistTaps:"handled"};
+        return Scroll ? el(ui.ActionSheet || RN.View, {header, scrollable:true}, el(Scroll, scrollProps, body)) :
+            el(ui.ActionSheet || RN.View, {header}, RN.ScrollView ? el(RN.ScrollView, scrollProps, body) : body);
+    }
     // Bring back Tenor GIFs (#83): Discord's GIF picker asks Discord's API for /gifs/search, /gifs/trending and the rest
     // (GIFPickerActionCreators 9732 through HTTP.get, 1295), and since Tenor's API closed to Discord those answers come from
     // Klipy. Venus answers the same requests from Tenor's public v1 API, in the exact shape the picker's store (9731) reads,
@@ -17555,6 +17828,8 @@
                 return exports;
             case 13066: return features.favouriteAnything ? hookComponent(exports, favouriteButton) : exports;
             case 1295: return features.tenorGifs && exports && exports.HTTP ? (hookExport(hookExport(exports.HTTP, "get", tenorGet), "post", tenorPost), exports) : exports;
+            case 5889: if (features.voiceOptions && exports && exports.default) hookExport(exports.default, "disconnect", voiceLeave); return exports;
+            case 10982: return features.voiceOptions ? hookExport(exports, "playSound", voiceSoundPlay) : exports;
             case 9733: return features.tenorGifs ? hookExport(exports, "getSearchPlaceholder", tenorPlaceholder) : exports;
             case 9732: return features.favouriteAnything ? hookExport(exports, "addFavoriteGIF", favouriteAdd) : exports;
             case 9735: return features.favouriteAnything ? hookExport(exports, "useFavoriteGIFsMobile", favouriteList) : exports;
@@ -17596,6 +17871,7 @@
                 if (features.nitroThemes && exports && exports.default) nitroThemeAttach(exports.default);
                 if (features.bulkDelete && exports && exports.default) bulkDeleteInit(exports.default);
                 if (features.experiments && exports && exports.default) experimentsInit(exports.default);
+                if (features.voiceOptions && exports && exports.default) voiceOptionsInit(exports.default);
                 if ((features.messageHighlight || features.bulkDelete) && exports && exports.default && !dispatcher)
                     dispatcher = exports.default.dispatch.bind(exports.default);
                 if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 584) {

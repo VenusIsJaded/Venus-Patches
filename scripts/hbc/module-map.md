@@ -19,7 +19,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 589 | `../discord_common/js/packages/tokens/colors/generated/native/generated-definitions.tsx` | _private, SemanticColors | SemanticColors |
 | 590 | `../discord_common/js/packages/tokens/colors/generated/native/experiment-definitions.tsx` | _private, SemanticColorExperiments | SemanticColorExperiments (Custom themes: experiment overrides win over SemanticColors) |
 | 591 | `../discord_common/js/packages/tokens/colors/generated/raw-color-definitions.tsx` | _private, RawColors | RawColors |
-| 1085 | - | A11Y_RUNTIME_VIOLATION, ACCOUNT_SCHEDULED_FOR_DELETION, MessageTypesSets | Discord Constants |
+| 1085 | - | A11Y_RUNTIME_VIOLATION, ACCOUNT_SCHEDULED_FOR_DELETION, MessageTypesSets, Endpoints | Discord Constants |
 | 1095 | `modules/user_settings/UserSettingsConstants.tsx` | UserSettingsDelay | UserSettingsConstants (Unlock Nitro themes) |
 | 1096 | `../discord_common/js/shared/Constants.tsx` | PRIMARY_NORMAL, PRIMARY_NORMAL_ITALIC, PRIMARY_MEDIUM | Permissions constant |
 | 1111 | `../discord_common/js/shared/lib/TokenManager.tsx` | init, getAnalyticsToken, getToken | TokenManager |
@@ -31,7 +31,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 1209 | `../discord_common/js/packages/protos/discord_protos/discord_users/v1/preloaded_user_settings.tsx` | ClientThemeSettings | ClientThemeSettings proto (Unlock Nitro themes) |
 | 1240 | `../discord_common/js/packages/protos/google/protobuf/wrappers.tsx` | UInt64Value, UInt32Value, FloatValue | Protobuf wrappers (Unlock Nitro themes) |
 | 1264 | - | murmur, noConflict | MurmurHashV3 |
-| 1295 | `../discord_common/js/packages/http-utils/HTTPUtils.tsx` | INVALID_FORM_BODY_ERROR_CODE, convertSkemaError, stringifyErrors | HTTPUtils |
+| 1295 | `../discord_common/js/packages/http-utils/HTTPUtils.tsx` | INVALID_FORM_BODY_ERROR_CODE, convertSkemaError, stringifyErrors, HTTP | HTTPUtils |
 | 1360 | `../discord_common/js/packages/analytics-utils/getSuperProperties.tsx` | browser_user_agent, browser_version, os_sdk_version | SuperProperties |
 | 1390 | `stores/UserStore.tsx` | default, users, ASSISTANT_WUMPUS_VOICE_USER | UserStore |
 | 1401 | `modules/user/UserStoreUtils.tsx` | isStaffEnv, isStaffEnvRawData, getEnv | UserStoreUtils.isStaffEnv (Unlock Discord experiments) |
@@ -81,16 +81,21 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 5108 | `stores/PresenceStore.tsx` | default, sortActivity | PresenceStore |
 | 5112 | `stores/SessionsStore.tsx` | default | SessionsStore |
 | 5113 | `stores/VoiceStateStore.tsx` | default | VoiceStateStore (Badge Completer) |
+| 5117 | `../discord_common/js/packages/media-engine/Constants.tsx` | MediaEngineContextTypes | MediaEngineContextTypes (Voice channel options) |
+| 5243 | `actions/AudioActionCreators.tsx` | default | AudioActionCreators (Voice channel options) |
 | 5300 | `actions/native/AlertActionCreators.tsx` | default | AlertActionCreators |
 | 5377 | `design/components/Stack/native/Stack.native.tsx` | Stack | Stack |
 | 5379 | `design/components/Button/native/Button.native.tsx` | Button | Button |
 | 5384 | `design/components/Button/native/ButtonConstants.native.tsx` | SMALL_BUTTON_HEIGHT | ButtonConstants (Remove anything: header row height) |
 | 5412 | `modules/markup/MarkupChannelMentionRule.tsx` | default, getChannel, parseChannel | MarkupChannelMentionRule |
 | 5421 | `modules/channel/useChannelName.tsx` | default, computeDefaultGroupDmNameFromUserIds, computeDefaultGroupDmName | ChannelNameUtils |
+| 5428 | `modules/soundboard/SoundboardStore.tsx` | default | SoundboardStore (Voice channel options) |
+| 5430 | `modules/soundboard/SoundboardConstants.tsx` | DEFAULT_SOUND_GUILD_ID | SoundboardConstants (Voice channel options) |
 | 5432 | `stores/MessageStore.tsx` | default | MessageStore |
 | 5434 | `modules/messages/MessageRecordUtils.tsx` | createMessageRecord, updateServerMessage, updateMessageRecord | MessageRecordUtils |
 | 5632 | `modules/messages/isMessageMentioned.tsx` | isRawMessageMentioned, isMentioned, mention_roles | isMessageMentioned (Message highlights: role mentions) |
 | 5759 | `stores/SelfPresenceStore.tsx` | default | SelfPresenceStore (Badge Completer) |
+| 5889 | `actions/SelectedChannelActionCreators.tsx` | default | SelectedChannelActionCreators (Voice channel options) |
 | 5930 | `actions/AuthenticationActionCreators.tsx` | default | AuthenticationActionCreators (Account switcher) |
 | 5932 | `stores/ConsentStore.tsx` | default | ConsentStore (Badge Completer) |
 | 5938 | `utils/TrackedHTTPUtils.tsx` | default | TrackedHTTPUtils (Account switcher: sign-up requests go out signed out) |
@@ -151,6 +156,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 7015 | `actions/ChannelActionCreators.tsx` | default | ChannelActionCreators (Hide blocked: Close their DM) |
 | 7018 | `actions/RelationshipActionCreators.tsx` | default, removeFriend, removeRelationship | RelationshipActionCreators (Alert when you're removed) |
 | 7047 | `modules/stickers/StickerSendability.tsx` | SENDABLE, SENDABLE_WITH_PREMIUM, NONSENDABLE | StickerUtils |
+| 7048 | `modules/soundboard/SoundboardActionCreators.tsx` | maybeFetchSoundboardSounds | SoundboardActionCreators (Voice channel options) |
 | 7092 | `design/components/Icon/native/redesign/generated/SettingsIcon.tsx` | SettingsIcon | SettingsIcon |
 | 7094 | `modules/user_settings/core/native/openUserSettings.tsx` | openUserSettings | UserSettingsActionCreators |
 | 7174 | `actions/MessageActionCreators.tsx` | default | MessageActionCreators |
@@ -186,6 +192,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 8212 | `design/components/Icon/native/redesign/generated/GroupIcon.tsx` | GroupIcon | GroupIcon |
 | 8213 | `design/components/Icon/native/redesign/generated/AtIcon.tsx` | AtIcon | AtIcon |
 | 8218 | `design/components/Icon/native/redesign/generated/LockIcon.tsx` | LockIcon | LockIcon |
+| 8224 | `design/components/Icon/native/redesign/generated/VoiceNormalIcon.tsx` | VoiceNormalIcon | VoiceNormalIcon (Voice channel options) |
 | 8229 | `design/components/Icon/native/redesign/generated/AppsIcon.tsx` | AppsIcon | AppsIcon |
 | 8260 | `modules/suspicious_downloads/SuspiciousDownloadUtils.tsx` | isSuspiciousDownload | SuspiciousDownloadUtils (Always trust) |
 | 8299 | `modules/user_profile/native/showUserProfileActionSheet.tsx` | default, showUserProfileActionSheet | showUserProfileActionSheet |
@@ -206,6 +213,9 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 8675 | `design/components/Icon/native/redesign/generated/CalendarIcon.tsx` | CalendarIcon | CalendarIcon |
 | 8768 | `design/components/Icon/native/redesign/generated/BellIcon.tsx` | BellIcon | BellIcon |
 | 8775 | `design/components/SegmentedControl/native/SegmentedControlItem.native.tsx` | SegmentedControlItem | SegmentedControlItem (Remove anything: marks profile tabs) |
+| 8782 | `modules/voice_calls/native/AudioManagerStore.android.tsx` | default | AudioManagerStore (Voice channel options) |
+| 8783 | `../discord_common/js/packages/rtn-codegen/js/NativeAudioManagerModule.tsx` | AudioDeviceType, getInvalidAndroidDevice | NativeAudioManagerModule (Voice channel options) |
+| 8791 | `modules/voice_calls/native/AudioManagerActionCreator.tsx` | setAudioOutputDevice | AudioManagerActionCreator (Voice channel options) |
 | 8792 | `modules/voice_panel/native/shared/FormComponents.tsx` | VoicePanelFormSection, MemberRowItem | VoiceChannelMembers |
 | 8921 | `design/components/Icon/native/redesign/generated/TrophyIcon.tsx` | TrophyIcon | TrophyIcon (Badge Completer) |
 | 8956 | `design/components/Icon/native/redesign/generated/ReactionIcon.tsx` | ReactionIcon | ReactionIcon |
@@ -277,6 +287,8 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 10771 | `design/components/Icon/native/redesign/generated/VideoIcon.tsx` | VideoIcon | VideoIcon |
 | 10782 | `modules/replies/native/replyToMessage.tsx` | default | replyToMessage |
 | 10783 | `modules/messages/canEditMessage.tsx` | default | canEditMessage |
+| 10982 | `modules/sound_playback/SoundUtils.tsx` | createSoundForPack, createSound, playSound | SoundUtils (Voice channel options) |
+| 10986 | `modules/sound_playback/native/SoundUtils.tsx` | MobileAudioSound | MobileAudioSound (Voice channel options) |
 | 10994 | `design/components/Icon/native/redesign/generated/DoorExitIcon.tsx` | DoorExitIcon | DoorExitIcon |
 | 11015 | `design/components/Icon/native/redesign/generated/HandRequestSpeakIcon.tsx` | HandRequestSpeakIcon | HandRequestSpeakIcon (preview Try it button) |
 | 11033 | `lib/pushnotification/PushNotification.tsx` | default | PushNotification |
@@ -284,6 +296,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 11106 | `design/components/Icon/native/redesign/generated/MicrophoneIcon.tsx` | MicrophoneIcon | MicrophoneIcon (preview message bar) |
 | 11191 | `design/components/ThemeContextProvider/native/RootThemeContextProvider.native.tsx` | RootThemeContextProvider, DisableCustomTheme | RootThemeContextProvider (Custom themes re-keys its memoized context) |
 | 11382 | `design/components/Icon/native/redesign/generated/UserIcon.tsx` | UserIcon | UserIcon |
+| 11538 | `design/components/Icon/native/redesign/generated/PhoneIcon.tsx` | PhoneIcon | PhoneIcon (Voice channel options) |
 | 11540 | `design/components/Icon/native/redesign/generated/GiftIcon.tsx` | GiftIcon | GiftIcon |
 | 11587 | `design/components/Icon/native/redesign/generated/ImagesIcon.tsx` | ImagesIcon | ImagesIcon (Bring back Tenor GIFs) |
 | 11624 | `modules/messages/native/createChannelStream.tsx` | default | createChannelStream (Hide blocked or ignored messages) |
@@ -312,6 +325,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 12146 | `modules/chat_input/native/action_buttons/ChatInputRightActions.tsx` | displayName, default | ChatInputGiftButton |
 | 12178 | `design/components/Icon/native/redesign/generated/ChatWarningIcon.tsx` | ChatWarningIcon | ChatWarningIcon |
 | 12208 | `components_native/chat/ChatBeginningRow.tsx` | default | ChatBeginningRow (Remove anything: bot DM Mute / Deauthorize / Report Spam) |
+| 12269 | `design/components/Icon/native/redesign/generated/SoundboardIcon.tsx` | SoundboardIcon | SoundboardIcon (Voice channel options) |
 | 12271 | `design/components/Icon/native/redesign/generated/HeadphonesIcon.tsx` | HeadphonesIcon | HeadphonesIcon (Keep Bluetooth audio clear in calls) |
 | 12274 | `design/components/Icon/native/redesign/generated/StickerIcon.tsx` | StickerIcon | StickerIcon |
 | 12325 | `design/components/Icon/native/redesign/generated/BoostTier1Icon.tsx` | BoostTier1Icon | BoostTier1Icon |
