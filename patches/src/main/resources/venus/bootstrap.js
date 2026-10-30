@@ -13230,6 +13230,7 @@
                 ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(6919, "MobilePhoneIcon")],
                 ["custom", tr("Another language"), translateLanguageName(settings.translateLanguage) + ".", rowIcon(9415, "LanguageIcon")]], true),
             settings.translateTarget === "custom" ? el(TranslateLanguagePicker, {key:"language", on}) : null,
+            el(TranslateSkipPicker, {key:"skip", on}),
             el(Group, {key:"show", title:tr("Display")},
                 // The quoted original always comes with its "Translated from" line, so while it's on that switch shows on and
                 // can't be turned off, instead of reading off while the line still shows in chat.
@@ -13244,6 +13245,54 @@
             footnote("note", settings.translateMode === "manual" ? "Only messages you choose, or chats you translate from the bar, are sent to Google Translate, once each, without your Discord account." :
                 "Only messages on screen are sent to Google Translate, once each, without your Discord account. Hold a message to show its original, or translate your own.")];
         return settingsBody(ui, groups);
+    }
+    // Don't translate (#124): the languages you read, each a row with its own remove button, and Add a language, which
+    // opens a searchable checklist to tick several at once. The list stays in alphabetical order while you tick, so
+    // nothing jumps under your finger. The language you translate into isn't offered: it's never translated anyway.
+    function TranslateSkipPicker(props) {
+        useSettings("translateSkip");
+        const [open, setOpen] = React.useState(false), [query, setQuery] = React.useState("");
+        const ui = reviewUI(), on = !!props.on, Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
+        const CheckboxRow = inspectedExport(6454, "TableCheckboxRow"), SearchField = inspectedExport(7016, "SearchField");
+        const Press = RN.Pressable || RN.TouchableOpacity || RN.View;
+        const shownIn = i18n.shownIn;
+        const all = React.useMemo(() => TRANSLATE_LANGUAGES.map(code => {
+            const local = translateLanguageName(code), own = translateNativeName(code);
+            const english = code === "zh-CN" ? "Chinese Simplified" : code === "zh-TW" ? "Chinese Traditional" : LANGUAGE_NAMES[languageBase(code)] || "";
+            return {code, label:own, sub:local !== own ? local : undefined, search:searchFold(own + " " + local + " " + english + " " + code)};
+        }).sort((a, b) => a.label.localeCompare(b.label)), [shownIn, i18n.version]);
+        if (!Row) return null;
+        const byCode = new Map(all.map(entry => [entry.code, entry]));
+        const picked = translateSkipInfo().list.filter(code => byCode.has(code)), pickedSet = new Set(picked), target = translateTarget();
+        const toggle = code => {
+            if (!on) return;
+            haptic("SELECTION"); animateLayout();
+            setSetting("translateSkip", (pickedSet.has(code) ? picked.filter(c => c !== code) : picked.concat(code)).join(","));
+        };
+        const flip = () => { if (!on) return; haptic("SELECTION"); animateLayout(); setOpen(!open); setQuery(""); };
+        const Remove = venusIcon(6485, "XSmallIcon");
+        const rows = picked.map(code => {
+            const entry = byCode.get(code);
+            return el(Row, {key:code, label:entry.label, subLabel:entry.sub, disabled:!on,
+                trailing:el(Press, {onPress:() => toggle(code), disabled:!on, hitSlop:12, accessibilityRole:"button",
+                    accessibilityLabel:tr("Remove: {name}", {name:entry.label})}, el(Remove, {size:"sm"}))});
+        });
+        const addRow = el(Row, {key:"add", label:tr(open ? "Done" : "Add a language"), onPress:flip, disabled:!on,
+            subLabel:!open && !picked.length ? tr("Languages you read stay as written, even when translating automatically.") : undefined,
+            icon:open ? rowIcon(7101, "CheckmarkSmallIcon") : rowIcon(10621, "PlusLargeIcon"),
+            accessibilityHint:tr(open ? "Close the list" : "Choose a language")});
+        const head = el(Group, {key:"head", title:tr("Don't translate")}, rows.concat([addRow]));
+        if (!open) return el(RN.View, {key:"skip", style:{gap:8}}, head,
+            picked.length ? footnote("hint", "Messages in these languages show as written. Hold one and tap Translate to translate it anyway.") : null);
+        const needle = searchFold(query.trim());
+        const offered = all.filter(entry => !translateSameLanguage(entry.code, target) && (!needle || entry.search.includes(needle)));
+        const onSearch = text => setQuery(String(text || ""));
+        const search = SearchField ? el(SearchField, {key:"search", placeholder:tr("Search languages"), value:query, onChange:onSearch, isDisabled:!on}) :
+            ui.TextInput ? el(ui.TextInput, {key:"search", placeholder:tr("Search languages"), value:query, onChange:onSearch, editable:on}) : null;
+        const list = !offered.length ? el(Row, {key:"none", label:tr("No matching languages"), disabled:true}) :
+            offered.map(entry => CheckboxRow ? el(CheckboxRow, {key:entry.code, label:entry.label, subLabel:entry.sub, checked:pickedSet.has(entry.code), disabled:!on, onPress:() => toggle(entry.code)}) :
+                el(Row, {key:entry.code, label:(pickedSet.has(entry.code) ? "\u2713 " : "") + entry.label, subLabel:entry.sub, disabled:!on, onPress:() => toggle(entry.code)}));
+        return el(RN.View, {key:"skip", style:{gap:12}}, head, el(RN.View, {key:"searchBox", style:{paddingHorizontal:16}}, search), el(Group, {key:"list"}, list));
     }
     // Clear saved translations: forgets every translation, on the phone too, and translates what's on screen again.
     function translateForget() {
