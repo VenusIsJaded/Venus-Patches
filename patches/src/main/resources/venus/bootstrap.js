@@ -3,7 +3,7 @@
     "use strict";
     if (global.__venusPatches) return;
     const features = /*__FEATURES__*/;
-    // Inspected Metro IDs for the SHA-256-pinned 350.8 bundle; never scan or eagerly require modules.
+    // Inspected Metro IDs for the SHA-256-pinned 351.11 bundle; never scan or eagerly require modules.
     // Metro IDs Venus wraps, as a dense table: decorateDefine checks it for all ~17.7k modules at startup, and an
     // indexed read is ~3x cheaper than Set.has on Hermes. 120 is RN's initializer.
     // IDs past the end read as undefined, so a module added in a later bundle is simply left alone.
@@ -59,7 +59,7 @@
     if (features.voiceOptions) { targetModules[584] = 1; targetModules[11372] = 1; targetModules[6145] = 1; }
     const revision = "1.20.0";
     // The Discord build these patches are pinned to (DiscordPatches.kt compatibleWith); shown on the About page.
-    const DISCORD_VERSION = "350.8";
+    const DISCORD_VERSION = "351.11";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -17930,7 +17930,7 @@
             case 2119: return features.hiddenChannels && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "getChannelId", hiddenSelectedChannel)) : exports;
             case 9683: if (features.jumpToTop || features.bulkDelete) chatHeight = exports; return exports;
             case 12921: if (features.jumpToTop) jumpPill = exports.default; return exports;
-            // 350.8's arrow is a registered image asset: Metro exports the asset id itself, not a default.
+            // 351.11's arrow is a registered image asset: Metro exports the asset id itself, not a default.
             case 12922: if (features.jumpToTop) jumpIcon = exports && typeof exports === "object" && "default" in exports ? exports.default : exports; return exports;
             case 12920: return features.jumpToTop ? hookComponent(exports, jumpButton) : exports;
             case 8254: return features.gestures ? hookExport(exports, "handleAddDefaultDoubleTapReaction", doubleTapMessage) : exports;

@@ -1,4 +1,4 @@
-// Stand-ins for the Discord 350.8 design-system components Venus pages are built from, so the real bootstrap.js can be
+// Stand-ins for the Discord 351.11 design-system components Venus pages are built from, so the real bootstrap.js can be
 // drawn in a browser. Not Discord's code: sizes follow Discord's redesign, colors are the real tokens decoded from the
 // APK (tests/ui/setup.sh) and icons are Discord's own PNGs. Close enough to judge layout, spacing, wording and states;
 // Discord's exact row padding and ripple effects only show on a phone.
