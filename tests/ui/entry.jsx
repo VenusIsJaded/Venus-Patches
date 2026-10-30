@@ -51,20 +51,20 @@ const me = { id: "123456789012345678", username: "venus", globalName: "Venus", a
 const store = extra => Object.assign({ addChangeListener() {}, removeChangeListener() {} }, extra);
 const go = route => { const next = new URLSearchParams(location.search); next.set("page", route); location.search = next.toString(); };
 const modules = {
-  17: React, 19: RN, 1162: { default: files },
-  5088: { Text: D.Text }, 5379: { Button: D.Button }, 6897: { FormSwitch: D.FormSwitch }, 6188: { TableRowIcon: D.TableRowIcon },
-  6180: { TableRow: D.TableRow }, 6265: { TableRowGroup: D.TableRowGroup, TableRowGroupTitle: D.TableRowGroupTitle }, 6896: { TableSwitchRow: D.TableSwitchRow },
-  6263: { TableRadioGroup: D.TableRadioGroup }, 6262: { TableRadioRow: D.TableRadioRow }, 6177: { TableCheckboxRow: D.TableCheckboxRow },
-  6739: { SearchField: D.SearchField }, 6286: { TextInput: D.TextInput }, 5377: { Stack: D.Stack }, 5092: { createStyles: D.createStyles },
-  587: { default: { colors: D.colors } }, 4831: { useThemeContext: () => ({ theme: D.themeName }) },
-  1390: { default: store({ getCurrentUser: () => me, getUser: id => id === me.id ? me : null }) },
-  4760: { default: store({ getFriendIDs: () => [], getRelationships: () => ({}) }) },
-  1503: { useStackNavigation: () => ({ navigate: go }) }, 14974: { onRouteSettingOnPress: ({ screen }) => go(screen.route) },
-  5300: { default: { show: o => console.log("DIALOG " + o.title + " | " + o.body) } },
-  4809: { default: { open: (key, o) => console.log("TOAST " + (o && o.text)) } },
-  6889: { Clipboard: { setString() {}, getString: () => Promise.resolve("") } },
+  17: React, 19: RN, 1164: { default: files },
+  5187: { Text: D.Text }, 5479: { Button: D.Button }, 7173: { FormSwitch: D.FormSwitch }, 6465: { TableRowIcon: D.TableRowIcon },
+  6457: { TableRow: D.TableRow }, 6542: { TableRowGroup: D.TableRowGroup, TableRowGroupTitle: D.TableRowGroupTitle }, 7172: { TableSwitchRow: D.TableSwitchRow },
+  6540: { TableRadioGroup: D.TableRadioGroup }, 6539: { TableRadioRow: D.TableRadioRow }, 6454: { TableCheckboxRow: D.TableCheckboxRow },
+  7016: { SearchField: D.SearchField }, 6563: { TextInput: D.TextInput }, 5477: { Stack: D.Stack }, 5191: { createStyles: D.createStyles },
+  587: { default: { colors: D.colors } }, 4926: { useThemeContext: () => ({ theme: D.themeName }) },
+  1392: { default: store({ getCurrentUser: () => me, getUser: id => id === me.id ? me : null }) },
+  4855: { default: store({ getFriendIDs: () => [], getRelationships: () => ({}) }) },
+  1505: { useStackNavigation: () => ({ navigate: go }) }, 15736: { onRouteSettingOnPress: ({ screen }) => go(screen.route) },
+  5400: { default: { show: o => console.log("DIALOG " + o.title + " | " + o.body) } },
+  4904: { default: { open: (key, o) => console.log("TOAST " + (o && o.text)) } },
+  7165: { Clipboard: { setString() {}, getString: () => Promise.resolve("") } },
   // Voice channel options: the sounds Discord's soundboard store has loaded, one list per server (the servers come from scenes.jsx).
-  5428: { default: store({ getSounds: () => SOUNDS }) }, 5430: { DEFAULT_SOUND_GUILD_ID: "0" }, 7048: { maybeFetchSoundboardSounds() {} },
+  5528: { default: store({ getSounds: () => SOUNDS }) }, 5530: { DEFAULT_SOUND_GUILD_ID: "0" }, 7324: { maybeFetchSoundboardSounds() {} },
 };
 const sound = (guildId, i, name, emojiName) => ({ soundId: String(100 + i), guildId, name, emojiName, emojiId: null, available: true });
 const SOUNDS = q.get("sounds") === "0" ? new Map() : new Map([
@@ -102,21 +102,21 @@ function colorTables() {
   modules[591] = { _private: { RawColors: D.tables.raw } };
   modules[589] = { _private: { SemanticColors: D.tables.sem } };
   modules[590] = { _private: { SemanticColorExperiments: JSON.parse(JSON.stringify(d.exp || {})) } };
-  modules[1205] = { default: store({ emitChange() { rerender(); } }) };
+  modules[1207] = { default: store({ emitChange() { rerender(); } }) };
 }
 function boot() {
   colorTables();
-  modules[14839] = { SETTING_RENDERER_CONFIG: { ACCOUNT: { type: "route", IconComponent: D.makeIcon("UserCircleIcon") } } };
-  modules[14971] = { SettingsList: D.makeSettingsList(() => registry) };
-  modules[14974] = { toSettingListItems: node => node };
-  modules[14973] = { renderSettingItem: D.makeSettingItem(() => registry) };
-  modules[14838] = { default: D.makeBlocklistStore() };
-  modules[10664] = { createList: x => x };
+  modules[15602] = { SETTING_RENDERER_CONFIG: { ACCOUNT: { type: "route", IconComponent: D.makeIcon("UserCircleIcon") } } };
+  modules[15733] = { SettingsList: D.makeSettingsList(() => registry) };
+  modules[15736] = { toSettingListItems: node => node };
+  modules[15735] = { renderSettingItem: D.makeSettingItem(() => registry) };
+  modules[15601] = { default: D.makeBlocklistStore() };
+  modules[11084] = { createList: x => x };
   const define = (id, exports) => global.__d((g, r, i, a, module) => { module.exports = exports; }, id, []);
   define(120, { default: () => {} });
-  [17, 19, 1162, 6265, 6896, 14971, 14973, 14974, 14838, 10664, 14839, 591, 589, 590, 1205].concat(S.hooked).forEach(id => define(id, modules[id]));
+  [17, 19, 1164, 6542, 7172, 15733, 15735, 15736, 15601, 11084, 15602, 591, 589, 590, 1207].concat(S.hooked).forEach(id => define(id, modules[id]));
   defined[120].exports.default();
-  registry = defined[14839].exports.SETTING_RENDERER_CONFIG;
+  registry = defined[15602].exports.SETTING_RENDERER_CONFIG;
 }
 
 window.__venusStart = function () {
