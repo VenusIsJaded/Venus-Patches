@@ -611,7 +611,7 @@ fun main(args: Array<String>) {
             check(calls.single().definingClass == "Ljava/lang/Throwable;" && calls.single().name == "toString")
         } else check(calls.isEmpty())
     }
-    println("PASS: 102 pinned HBC targets (none sharing a body with another function), all 7 HBC selection combinations, valid footers, unchanged unrelated bytes, rejection of changed inputs, 137 exact native ABIs and assembled register-safe early-return/Promise/callback guards, native result shapes, 64 dependency selections, cached-bundle pinning, corrupt-header/footer rejection combined prelude compatibility the Quest Completer desktop User-Agent guard, the Force system font guards, the passkey error hint and one branch-safe guard per FileModule bridge (getSize, fileExists, readAsset); no APK patched")
+    println("PASS: 102 pinned HBC targets (none sharing a body with another function), all 7 HBC selection combinations, valid footers, unchanged unrelated bytes, rejection of changed inputs, 139 exact native ABIs and assembled register-safe early-return/Promise/callback guards, native result shapes, 64 dependency selections, cached-bundle pinning, corrupt-header/footer rejection combined prelude compatibility the Quest Completer desktop User-Agent guard, the Force system font guards, the passkey error hint and one branch-safe guard per FileModule bridge (getSize, fileExists, readAsset); no APK patched")
 }
 
 
