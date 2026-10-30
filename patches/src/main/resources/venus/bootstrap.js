@@ -35,7 +35,7 @@
     if (features.splitMessages) selectModules([1087, 1392, 2068, 7445, 9561]);
     if (features.translate) selectModules([584, 1392, 5532, 8013, 9978, 10692]);
     if (features.userNotif) selectModules([584, 1392, 2068, 2090, 2119, 2128, 4855, 5207, 7254, 10002, 14713, 14748]);
-    if (features.accountSwitcher) selectModules([1392, 6194, 6900, 13074, 13075, 13076, 17076, 17520, 17538]);
+    if (features.accountSwitcher) selectModules([584, 1392, 2049, 6194, 6900, 13074, 13075, 13076, 17076, 17520, 17538]);
     if (features.appIcons) selectModules([1392, 4864, 9767, 15066, 16589, 16590, 18079, 18444]);
     if (features.nitroThemes) selectModules([584, 1392, 2049, 4864, 5032, 15066, 16326]);
     if (features.customThemes) selectModules([589, 590, 591, 1207, 4926, 4934, 11577, 10692]);
@@ -75,7 +75,7 @@
         validUser:false, youBarSettings:false, splitMessages:false,
         translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false, translateSkip:"",
         userNotif:false, userNotifFriends:true, userNotifStatus:true, userNotifMessages:true, userNotifTyping:true, userNotifPush:false,
-        accountSwitcher:false, accountSwitcherYouBar:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
+        accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
         fixEmbeds:false, fixEmbedsSites:"", fixEmbedsClean:true, fixEmbedsDark:true, fixEmbedsStyle:"full", fixEmbedsTranslate:"off", fixEmbedsLanguage:"en", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, hideAnything:false, hideAnythingSpots:"", language:"auto", hiddenFeatures:"" };
@@ -92,7 +92,7 @@
             validUser: false, youBarSettings: false, splitMessages: false,
             translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false, translateSkip: "",
             userNotif: false, userNotifFriends: true, userNotifStatus: true, userNotifMessages: true, userNotifTyping: true, userNotifPush: false,
-            accountSwitcher: false, accountSwitcherYouBar: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
+            accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
             fixEmbeds: false, fixEmbedsSites: "", fixEmbedsClean: true, fixEmbedsDark: true, fixEmbedsStyle: "full", fixEmbedsTranslate: "off", fixEmbedsLanguage: "en", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, hideAnything: false, hideAnythingSpots: "", language: "auto", hiddenFeatures: ""
@@ -332,7 +332,7 @@
         if (features.hideAnything && settings.hideAnythingSpots) { const labels = hideRowLabels(); if (labels) extra.hideAnythingLabels = labels; }
         if (features.materialYou && materialYou.system) extra.materialYouSystem = materialYou.system;
         if (features.serverEdit && serverEdits.size) extra.serverEdits = serverEditData(false);
-        if (features.nitroThemes && nitroTheme.preset != null) extra.nitroTheme = {preset:nitroTheme.preset, theme:nitroTheme.theme};
+        if ((features.nitroThemes || features.accountSwitcher) && nitroThemeHasAny()) extra.nitroThemes = nitroThemeData();
         return JSON.stringify(Object.keys(extra).length ? Object.assign({}, settings, extra) : settings);
     }
     function save() {
@@ -595,6 +595,7 @@
         if (features.customThemes && key === "customThemes") { if (value) customThemesRestore(); customThemesApply(); if (features.iconPacks) iconPacksApply(); }
         if (features.customThemes && key === "customThemesBackground") customThemesApply();
         if (features.nitroThemes && key === "nitroThemes") { if (!value) nitroThemeTurnedOff(); nitroThemeRecheck(); }
+        if (features.accountSwitcher && key === "accountSwitcherShare") nitroThemeShareChanged(value);
         if (features.materialYou && key === "materialYou") { if (value) myStart(); customThemesApply(); if (features.iconPacks) iconPacksApply(); }
         if (features.iconPacks && key === "iconPacks") { if (value) iconPacksRestore(); iconPacksApply(); }
         if (features.iconPacks && key === "iconPacksTheme") iconPacksApply();
@@ -640,12 +641,7 @@
                 if (features.materialYou && !materialYou.system && savedPalette && typeof savedPalette === "object" &&
                     ["accent1", "accent2", "accent3", "neutral1", "neutral2"].every(k => Array.isArray(savedPalette[k]) && savedPalette[k].length === 13 && savedPalette[k].every(v => /^#[0-9a-f]{6}$/i.test(v))))
                     materialYou.system = savedPalette;
-                const savedTheme = loaded.nitroTheme;
-                if (features.nitroThemes && nitroTheme.preset == null && savedTheme && typeof savedTheme === "object" && typeof savedTheme.preset === "number" &&
-                    Number.isInteger(savedTheme.preset) && savedTheme.preset >= 0 && savedTheme.preset < 1000) {
-                    nitroTheme.preset = savedTheme.preset;
-                    nitroTheme.theme = typeof savedTheme.theme === "number" && Number.isInteger(savedTheme.theme) ? savedTheme.theme : null;
-                }
+                if ((features.nitroThemes || features.accountSwitcher) && !nitroThemeHasAny()) nitroThemeLoad(loaded);
                 const auth = loaded.reviewAuth;
                 // Restore a saved ReviewDB sign-in (a ReviewDB token, never the Discord token).
                 if (features.reviewDB && !reviewToken && auth && typeof auth.token === "string" && auth.token.length <= 8192 &&
@@ -668,7 +664,7 @@
             }
             status.storage = "ready";
             if (features.nitroThemes && settings.nitroThemes) nitroThemeRecheck();
-            if (features.nitroThemes && nitroTheme.preset != null) later(nitroThemeReapply, 0);
+            if ((features.nitroThemes || features.accountSwitcher) && nitroThemeHasAny()) later(nitroThemeReapply, 0);
             if (!starter.done && Object.keys(FEATURE_ICONS).some(key => features[key] && settings[key])) starter.done = true;
             fontInUse = settings.systemFont;
             fontSourceInUse = settings.systemFontSource; emojiSourceInUse = settings.systemEmojiSource;
@@ -1128,7 +1124,7 @@
     const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
-        userNotif:["Change status", "Start typing", "Send a message", "Phone notifications"], accountSwitcher:["Button on the profile bar", "Create a new account", "Export accounts", "Import accounts"],
+        userNotif:["Change status", "Start typing", "Send a message", "Phone notifications"], accountSwitcher:["Button on the profile bar", "Create a new account", "Export accounts", "Import accounts", "Same theme on every account"],
         hiddenChannels:["Show its details"], serverEdit:["Edit locally", "Name", "Icon", "Server icon", "Choose from your phone", "Use a link"], serverInfo:["Look up friends in the server", "Boosts", "Owner", "Server ID"], customThemes:["Show theme background image", "Browse Revenge themes"],
         messageHighlight:["Brightness", "Left bar width"], iconPacks:["Rosiecord", "Plumpy", "Iconsax", "Material", "MD3", "Solar", "Deco", "Themes+", "Follow theme's icon pack"],
         fixEmbeds:["Remove tracking from links", "X (Twitter)", "Twitter", "Instagram", "TikTok", "Reddit", "Bluesky", "Threads", "Tumblr", "Facebook", "Mastodon", "YouTube", "Twitch", "Spotify", "pixiv", "Bilibili", "DeviantArt", "Fur Affinity", "Pinterest", "PTT",
@@ -8532,28 +8528,99 @@
     // PreloadedUserSettingsActionCreators.updateAsync("appearance") 2049), and Discord's servers drop a gradient an account
     // without Nitro isn't allowed. The next settings sync (USER_SETTINGS_PROTO_UPDATE) or reconnect (CONNECTION_OPEN)
     // then replaced the local copy with the server's, so the gradient vanished and the theme went back to Dark.
-    // Now the gradient and its base theme are kept on this phone (nitroTheme in the settings file), stripped from what
+    // Now the gradient and its base theme are kept on this phone (nitroThemes in the settings file), stripped from what
     // is sent to Discord, and laid back over every copy of your settings that comes in, before any store reads it.
     // Accounts that really have Nitro are left alone: their gradient syncs like before.
-    const nitroTheme = {preset:null, theme:null, attached:false};
-    function nitroThemeOwnsGradient() {
-        if (!enabled("nitroThemes")) return false;
-        const me = currentUser();
-        if (!me) return false;
-        if (typeof premiumOriginal.canUseClientThemes === "function") return !capability("canUseClientThemes", me);
-        return me.premiumType !== 2;
+    //
+    // Each account keeps its own (users[id]). 1.20.0 kept one for the whole phone, and switching accounts lost it: the
+    // CONNECTION_OPEN of the account you switch to reaches the interceptor before UserStore knows that account, so the
+    // Nitro check read the account you were leaving, and the first appearance save on an account whose copy had no
+    // gradient (Discord saves one while signing in) wrote "no gradient" over the one you picked. The check now reads the
+    // account in the payload, and only taking a gradient off (it was there before the change) forgets it.
+    //
+    // Same theme on every account (accountSwitcherShare): one entry for every account (shared), and the base theme
+    // follows you too, on accounts with Nitro as well. Only on this phone.
+    const nitroTheme = {attached:false, users:Object.create(null), shared:null, legacy:null};
+    const NITRO_THEME_USERS = 50;
+    function nitroThemeClean(raw) {
+        if (!raw || typeof raw !== "object") return null;
+        const preset = Number.isInteger(raw.preset) && raw.preset >= 0 && raw.preset < 1000 ? raw.preset : null;
+        const theme = Number.isInteger(raw.theme) && raw.theme >= 0 && raw.theme < 100 ? raw.theme : null;
+        return preset == null && theme == null ? null : {preset, theme};
     }
+    function nitroThemeSharing() { return !!(features.accountSwitcher && enabled("accountSwitcher") && settings.accountSwitcherShare); }
+    function nitroThemeHasAny() { return !!(nitroTheme.shared || nitroTheme.legacy || Object.keys(nitroTheme.users).length); }
+    function nitroThemeEntry(userId) {
+        if (nitroThemeSharing()) return nitroTheme.shared;
+        if (!userId) return null;
+        let entry = nitroTheme.users[userId];
+        // 1.20.0's one gradient for the phone goes to the first account that signs in after updating.
+        if (!entry && nitroTheme.legacy) { entry = nitroTheme.users[userId] = nitroTheme.legacy; nitroTheme.legacy = null; save(); }
+        return entry || null;
+    }
+    function nitroThemeSet(userId, raw) {
+        const entry = nitroThemeClean(raw), same = (a, b) => (a && a.preset) === (b && b.preset) && (a && a.theme) === (b && b.theme) && !a === !b;
+        if (nitroThemeSharing()) {
+            if (same(entry, nitroTheme.shared)) return;
+            nitroTheme.shared = entry;
+        } else {
+            if (!userId || same(entry, nitroTheme.users[userId] || null)) return;
+            delete nitroTheme.users[userId];
+            if (entry) {
+                nitroTheme.users[userId] = entry;
+                const ids = Object.keys(nitroTheme.users);
+                if (ids.length > NITRO_THEME_USERS) delete nitroTheme.users[ids[0]];
+            }
+        }
+        save();
+    }
+    function nitroThemeData() {
+        const out = {};
+        if (Object.keys(nitroTheme.users).length) out.users = Object.assign({}, nitroTheme.users);
+        if (nitroTheme.shared) out.shared = nitroTheme.shared;
+        if (nitroTheme.legacy) out.legacy = nitroTheme.legacy;
+        return out;
+    }
+    function nitroThemeLoad(loaded) {
+        const data = loaded && loaded.nitroThemes;
+        if (data && typeof data === "object") {
+            if (data.users && typeof data.users === "object")
+                Object.keys(data.users).slice(0, NITRO_THEME_USERS).forEach(id => {
+                    const entry = nitroThemeClean(data.users[id]);
+                    if (entry && /^\d{17,20}$/.test(id)) nitroTheme.users[id] = entry;
+                });
+            nitroTheme.shared = nitroThemeClean(data.shared);
+            nitroTheme.legacy = nitroThemeClean(data.legacy);
+        } else if (loaded) {
+            const legacy = loaded.nitroTheme;
+            nitroTheme.legacy = legacy && Number.isInteger(legacy.preset) ? nitroThemeClean(legacy) : null;
+        }
+    }
+    // Whether the account can use gradients by itself (Nitro). A raw gateway user has premium_type, not premiumType.
+    function nitroThemeHasNitro(user) {
+        if (!user) return false;
+        const record = user.premiumType === undefined && user.premium_type !== undefined ? Object.assign({}, user, {premiumType:user.premium_type}) : user;
+        try { if (typeof premiumOriginal.canUseClientThemes === "function") return !!capability("canUseClientThemes", record); } catch (_) {}
+        return record.premiumType === 2;
+    }
+    // Venus keeps this account's look: a gradient unlocked without Nitro, or the look shared to every account.
+    function nitroThemeKeeps(user) { return !!user && (nitroThemeSharing() || enabled("nitroThemes") && !nitroThemeHasNitro(user)); }
+    // Discord drops a gradient from accounts without Nitro, so for those it's left out of what is sent.
+    function nitroThemeStrips(user) { return !!user && enabled("nitroThemes") && !nitroThemeHasNitro(user); }
     function nitroThemeProtoTypes() {
         const A = inspectedExport(1211, "AppearanceSettings"), C = inspectedExport(1211, "ClientThemeSettings"), U = inspectedExport(1242, "UInt32Value");
         return A && C && U && typeof A.create === "function" && typeof C.create === "function" && typeof U.create === "function" ? {A, C, U} : null;
     }
-    // A new appearance message: everything the given one had, plus the gradient and theme kept on this phone.
-    function nitroThemeAppearance(appearance) {
-        const types = nitroThemeProtoTypes();
-        if (!types || nitroTheme.preset == null) return null;
+    // A new appearance message: everything the given one had, plus the gradient and theme kept for this account.
+    function nitroThemeAppearance(appearance, user) {
+        const types = nitroThemeProtoTypes(), entry = types && nitroThemeKeeps(user) ? nitroThemeEntry(user.id) : null;
+        if (!entry) return null;
+        const gradient = entry.preset != null && (enabled("nitroThemes") || nitroThemeHasNitro(user));
+        const theme = typeof entry.theme === "number" && (gradient || nitroThemeSharing());
+        if (!gradient && !theme) return null;
         const fields = Object.assign({}, appearance || {});
-        if (typeof nitroTheme.theme === "number") fields.theme = nitroTheme.theme;
-        fields.clientThemeSettings = types.C.create({backgroundGradientPresetId:types.U.create({value:nitroTheme.preset})});
+        if (theme) fields.theme = entry.theme;
+        if (gradient) fields.clientThemeSettings = types.C.create({backgroundGradientPresetId:types.U.create({value:entry.preset})});
         try { return types.A.create(fields); } catch (_) { return null; }
     }
     function nitroThemeSettingsType() {
@@ -8561,15 +8628,15 @@
         return types && typeof types.PRELOADED_USER_SETTINGS === "number" ? types.PRELOADED_USER_SETTINGS : 1;
     }
     // Flux interceptor (Dispatcher 584): runs before every store, so ThemeStore and ClientThemesBackgroundStore only ever
-    // see your gradient. Returns false so the action always goes on to Discord.
+    // see your look. Returns false so the action always goes on to Discord.
     function nitroThemeIntercept(action) {
-        if (!action || nitroTheme.preset == null || (action.type !== "CONNECTION_OPEN" && action.type !== "USER_SETTINGS_PROTO_UPDATE")) return false;
+        if (!action || action.type !== "CONNECTION_OPEN" && action.type !== "USER_SETTINGS_PROTO_UPDATE" || !nitroThemeHasAny()) return false;
         try {
-            if (!nitroThemeOwnsGradient()) return false;
             if (action.type === "CONNECTION_OPEN") {
-                const proto = action.userSettingsProto;
-                if (proto && typeof proto === "object") {
-                    const appearance = nitroThemeAppearance(proto.appearance);
+                // The account in the payload: while switching accounts, UserStore still holds the one you're leaving.
+                const proto = action.userSettingsProto, user = action.user && action.user.id ? action.user : null;
+                if (proto && typeof proto === "object" && user) {
+                    const appearance = nitroThemeAppearance(proto.appearance, user);
                     if (appearance) proto.appearance = appearance;
                 }
                 return false;
@@ -8579,7 +8646,7 @@
             const proto = incoming.proto;
             // A partial update without appearance leaves the appearance already shown alone.
             if (action.partial && !proto.appearance) return false;
-            const appearance = nitroThemeAppearance(proto.appearance);
+            const appearance = nitroThemeAppearance(proto.appearance, currentUser());
             if (!appearance) return false;
             // Never change the proto object itself: for a local edit it is also what gets sent to Discord.
             const PreloadedUserSettings = inspectedExport(1211, "PreloadedUserSettings");
@@ -8595,38 +8662,42 @@
         nitroTheme.attached = true;
         try { dispatcher.addInterceptor(nitroThemeIntercept); } catch (_) { nitroTheme.attached = false; }
     }
-    function nitroThemeRemember(preset, theme) {
-        const nextPreset = typeof preset === "number" && Number.isFinite(preset) ? preset : null;
-        const nextTheme = nextPreset == null ? null : typeof theme === "number" && Number.isFinite(theme) ? theme : null;
-        if (nitroTheme.preset === nextPreset && nitroTheme.theme === nextTheme) return;
-        nitroTheme.preset = nextPreset; nitroTheme.theme = nextTheme;
-        save();
+    function nitroThemePresetOf(appearance) {
+        const themeSettings = appearance && appearance.clientThemeSettings, id = themeSettings && themeSettings.backgroundGradientPresetId;
+        return id && typeof id === "object" ? (typeof id.value === "number" ? id.value : null) : typeof id === "number" ? id : null;
     }
     // Every appearance edit goes through updateAsync with a function that changes a copy of your appearance settings.
-    // Afterwards, a gradient in it is remembered here and left out of what Discord receives.
+    // Afterwards, the look in it is kept for this account, and a gradient is left out of what Discord receives when
+    // Discord would drop it anyway.
     function nitroThemeUpdateAsync(orig, self, args) {
-        if (args[0] !== "appearance" || typeof args[1] !== "function" || !nitroThemeOwnsGradient()) return orig.apply(self, args);
+        const me = currentUser();
+        if (args[0] !== "appearance" || typeof args[1] !== "function" || !nitroThemeKeeps(me)) return orig.apply(self, args);
         const change = args[1];
         const next = Array.from(args);
         next[1] = function (appearance) {
+            let before = null, beforeTheme;
+            try { before = nitroThemePresetOf(appearance); beforeTheme = appearance && appearance.theme; } catch (_) {}
             const result = change.apply(this, arguments);
             try {
                 if (appearance && typeof appearance === "object") {
-                    const settingsNow = appearance.clientThemeSettings;
-                    const id = settingsNow && settingsNow.backgroundGradientPresetId;
-                    const preset = id && typeof id === "object" ? id.value : typeof id === "number" ? id : null;
-                    nitroThemeRemember(preset, appearance.theme);
-                    if (preset != null) appearance.clientThemeSettings = undefined;
+                    const after = nitroThemePresetOf(appearance), saved = nitroThemeEntry(me.id), touched = after != null || before != null || appearance.theme !== beforeTheme;
+                    // Only a gradient taken off (it was there before the change) is forgotten: a copy that never had one, like
+                    // the one Discord saves as an account signs in, leaves the kept gradient and theme alone.
+                    const preset = after != null ? after : before != null ? null : saved ? saved.preset : null;
+                    const theme = touched || !saved ? appearance.theme : saved.theme;
+                    nitroThemeSet(me.id, preset == null && !nitroThemeSharing() ? null : {preset, theme});
+                    if (after != null && nitroThemeStrips(me)) appearance.clientThemeSettings = undefined;
                 }
             } catch (_) {}
             return result;
         };
         return orig.apply(self, next);
     }
-    // Shows the kept gradient again without asking Discord: a local partial settings update that the interceptor fills in.
+    // Shows the kept look again without asking Discord: a local partial settings update that the interceptor fills in.
     // Used when the settings file finishes loading after Discord already applied the server's copy.
     function nitroThemeReapply() {
-        if (nitroTheme.preset == null || !nitroTheme.attached || !nitroThemeOwnsGradient()) return;
+        const me = currentUser();
+        if (!nitroTheme.attached || !me || !nitroThemeKeeps(me) || !nitroThemeEntry(me.id)) return;
         try {
             const creators = inspectedExport(2049, "PreloadedUserSettingsActionCreators");
             const current = creators && typeof creators.getCurrentValue === "function" ? creators.getCurrentValue() : null;
@@ -8637,14 +8708,36 @@
             dispatcher.dispatch({type:"USER_SETTINGS_PROTO_UPDATE", local:true, partial:true, settings:{type:nitroThemeSettingsType(), proto}});
         } catch (_) {}
     }
-    // Turning the feature off takes the gradient away right here; Discord's own settings show again after the next sync.
+    // Turning the feature off takes the gradients away right here; Discord's own settings show again after the next sync.
+    // A shared base theme stays: it belongs to Same theme on every account.
     function nitroThemeTurnedOff() {
-        if (nitroTheme.preset == null) return;
-        nitroTheme.preset = null; nitroTheme.theme = null;
+        const ids = Object.keys(nitroTheme.users), sharedGradient = nitroTheme.shared && nitroTheme.shared.preset != null;
+        if (!ids.length && !nitroTheme.legacy && !sharedGradient) return;
+        ids.forEach(id => { delete nitroTheme.users[id]; });
+        nitroTheme.legacy = null;
+        if (sharedGradient) nitroTheme.shared = nitroThemeClean({preset:null, theme:nitroTheme.shared.theme});
+        save();
         try {
             const reset = inspectedExport(16220, "resetBackgroundGradientPreset");
             if (typeof reset === "function") reset();
         } catch (_) {}
+    }
+    // Same theme on every account turned on: the look this account shows now becomes every account's. Turned off, each
+    // account goes back to its own kept look from its next sync.
+    function nitroThemeShareChanged(on) {
+        if (!on) return;
+        const me = currentUser();
+        let preset = null, theme = null;
+        try {
+            const creators = inspectedExport(2049, "PreloadedUserSettingsActionCreators");
+            const current = creators && typeof creators.getCurrentValue === "function" ? creators.getCurrentValue() : null;
+            const appearance = current && current.appearance;
+            if (appearance) { preset = nitroThemePresetOf(appearance); theme = typeof appearance.theme === "number" ? appearance.theme : null; }
+        } catch (_) {}
+        const own = me && nitroTheme.users[me.id];
+        if (preset == null && own) { preset = own.preset; if (own.theme != null) theme = own.theme; }
+        nitroTheme.shared = nitroThemeClean({preset, theme});
+        save();
     }
     function nitroThemePicker(orig, self, args) {
         useSettings("nitroThemes");
@@ -11370,6 +11463,8 @@
                 null),
             el(Group, {key:"shortcuts", title:tr("Shortcuts")},
                 switchRow(Switch, "accountSwitcherYouBar", "Button on the profile bar", "Shows a Switch accounts button next to the notifications bell on the bottom bar.", rowIcon(10598, "UserCircleIcon"))),
+            el(Group, {key:"shared", title:tr("Every account")},
+                switchRow(Switch, "accountSwitcherShare", "Same theme on every account", "Your theme and Nitro theme follow you when you switch. Venus settings are always shared.", rowIcon(16320, "PaintPaletteIcon"))),
             footnote("note", "Tap your avatar on the You tab, or hold the You tab, to switch from anywhere. Hold an account above to remove it.")];
         return settingsBody(ui, groups);
     }
@@ -17809,7 +17904,7 @@
             case 16589: case 16590: case 18079: return features.appIcons ? hookComponent(exports, appIconsScreen) : exports;
             case 5032: return features.nitroThemes ? hookThemeBackgroundStore(exports) : exports;
             case 2049: {
-                const creators = features.nitroThemes && exports && exports.PreloadedUserSettingsActionCreators;
+                const creators = (features.nitroThemes || features.accountSwitcher) && exports && exports.PreloadedUserSettingsActionCreators;
                 if (creators && typeof creators.updateAsync === "function") hookExport(creators, "updateAsync", nitroThemeUpdateAsync);
                 return exports;
             }
@@ -17975,7 +18070,7 @@
                 if (features.validUser && exports && exports.default) validInit(exports.default);
                 if (features.quests) questsInit(exports.default);
                 if (features.badges && exports && exports.default) badgesInit(exports.default);
-                if (features.nitroThemes && exports && exports.default) nitroThemeAttach(exports.default);
+                if ((features.nitroThemes || features.accountSwitcher) && exports && exports.default) nitroThemeAttach(exports.default);
                 if (features.bulkDelete && exports && exports.default) bulkDeleteInit(exports.default);
                 if (features.experiments && exports && exports.default) experimentsInit(exports.default);
                 if (features.voiceOptions && exports && exports.default) voiceOptionsInit(exports.default);
