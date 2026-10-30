@@ -12664,6 +12664,8 @@
         // Only "same" means it's already in your language; a translation that broke a mention or emoji just isn't shown.
         if (entry.state !== "done") { if (entry.state === "same") translateNothing(id); else translate.asked.delete(id); return message; }
         translate.asked.delete(id);
+        // Don't translate (#124): a language you read stays as written, unless you translated this one from its menu.
+        if (choice !== true && translateSkipped(entry.language)) return message;
         if (layout.view === undefined || layout.viewOf !== entry || layout.viewVersion !== translate.version) {
             layout.viewOf = entry; layout.viewVersion = translate.version;
             layout.view = translateView(entry, layout, message.content);
@@ -12702,7 +12704,7 @@
             translateSchedule(60);
         }
         if (entry.state === "queued" || entry.state === "sending") { entry.ids.add(id); return message; }
-        if (entry.state !== "done") return message;
+        if (entry.state !== "done" || translate.choice.get(quotedId) !== true && translateSkipped(entry.language)) return message;
         if (layout.preview === undefined || layout.previewOf !== entry) { layout.previewOf = entry; layout.preview = translateNodes(entry.translated, layout); }
         if (!layout.preview) return message;
         return Object.assign({}, message, {referencedMessage:Object.assign({}, message.referencedMessage,
@@ -12716,7 +12718,7 @@
         translate.choice.delete(id);
         // Back to what the mode (or the chat's translate bar) does anyway, and not your own message: nothing to remember.
         const mine = currentUser() && message.author && message.author.id === currentUser().id;
-        if (wanted !== translateDefault(channelId) || mine) {
+        if (wanted !== translateDefault(channelId) || mine || wanted && translateSkipsMessage(id)) {
             if (translate.choice.size >= TRANSLATE_CHOICES) translate.choice.delete(translate.choice.keys().next().value);
             translate.choice.set(id, wanted);
         }
@@ -12731,7 +12733,10 @@
     // Whether this message is (or will be) shown translated: your own only when you asked.
     function translateShownFor(message) {
         const mine = currentUser() && message.author && message.author.id === currentUser().id;
-        return mine ? translate.choice.get(message.id) === true : translateWanted(message.id, message.channel_id || message.channelId);
+        if (mine) return translate.choice.get(message.id) === true;
+        const choice = translate.choice.get(message.id);
+        if (choice === undefined && translateSkipsMessage(message.id)) return false;
+        return translateWanted(message.id, message.channel_id || message.channelId);
     }
     // LongPressMessageActionSheet (9978): one more row, after Discord's own, styled like them.
     function translateSheet(orig, self, args) {
