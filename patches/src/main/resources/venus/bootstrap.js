@@ -5172,7 +5172,7 @@
                 toggle("questsPlay", "Play Quests", "Play time counts without installing or opening the game.", rowIcon(9514, "GameControllerIcon")),
                 toggle("questsActivity", "Activity Quests", "Activity time counts without starting the Activity.", rowIcon(12158, "MagicWandIcon"))),
             el(Group, {key:"enroll", title:tr("New Quests")},
-                toggle("questsEnroll", "Accept new Quests", "Accepts Quests you haven't started, one at a time. Off: only Quests you accept yourself.", rowIcon(7144, "CircleCheckIcon"))),
+                toggle("questsEnroll", "Accept new Quests", "Accepts new Quests for you, one at a time.", rowIcon(7144, "CircleCheckIcon"))),
             footnote("note", "You still claim rewards yourself. Stream Quests need a real stream, so they're skipped. Discord may pause Quests on accounts that complete them automatically.")];
         return settingsBody(ui, groups);
     }
@@ -6102,9 +6102,9 @@
                 presets:BADGE_CYCLE_PRESETS.map(n => ({value:n, label:tr("{n} min", {n})})),
                 hint:"Every 15 minutes reaches all 100 games for the top tier in about a day. After that, games stop switching."}) : null,
             on ? el(Group, {key:"actions", title:tr("Manage")},
-                badges.current && badgeCycleOn() && !badgeVarietyDone() ? actionRow(ui, "next", "Switch to the next game now", null, () => { haptic("SELECTION"); badgeNextGame(); }) : null,
-                actionRow(ui, "refresh", "Refresh badge progress", "Discord can take a day or two to add new play time.", () => { haptic("SELECTION"); badgeRefreshDirectory(true); }),
-                actionRow(ui, "advanced", advanced ? "Hide advanced" : "Advanced", advanced ? null : "Add hours now. Risky.", () => { haptic("SELECTION"); animateLayout(); setAdvanced(!advanced); setGranting(false); })) : null,
+                badges.current && badgeCycleOn() && !badgeVarietyDone() ? actionRow(ui, "next", "Switch to the next game now", null, () => { haptic("SELECTION"); badgeNextGame(); }, false, false, rowIcon(9514, "GameControllerIcon")) : null,
+                actionRow(ui, "refresh", "Refresh badge progress", "Discord can take a day or two to add new play time.", () => { haptic("SELECTION"); badgeRefreshDirectory(true); }, false, false, rowIcon(11630, "RefreshIcon")),
+                actionRow(ui, "advanced", advanced ? "Hide advanced" : "Advanced", advanced ? null : "Add hours now. Risky.", () => { haptic("SELECTION"); animateLayout(); setAdvanced(!advanced); setGranting(false); }, false, false, rowIcon(16625, "WrenchIcon"))) : null,
             on && advanced ? el(RN.View, {key:"advancedBox", style:{gap:10}},
                 groupTitle("advancedTitle", "Add hours now"),
                 granting || badges.granting ? el(BadgeGrantPanel, {key:"panel", s, onClose:() => { animateLayout(); setGranting(false); }}) :
@@ -6635,8 +6635,8 @@
     // The colors Discord draws its own status dots in.
     const STATUS_HEX = {online:"#23a55a", idle:"#f0b232", dnd:"#f23f43", offline:"#80848e", invisible:"#80848e"};
     // A full-width row that does something once, like clearing what a feature saved.
-    function actionRow(ui,key,label,subLabel,onPress,disabled,danger) {
-        return ui.TableRow ? el(ui.TableRow,{key,label:tr(label),subLabel:subLabel && tr(subLabel),onPress,disabled:!!disabled,variant:danger ? "danger" : undefined}) : null;
+    function actionRow(ui,key,label,subLabel,onPress,disabled,danger,icon) {
+        return ui.TableRow ? el(ui.TableRow,{key,label:tr(label),subLabel:subLabel && tr(subLabel),icon,onPress,disabled:!!disabled,variant:danger ? "danger" : undefined}) : null;
     }
     function confirmAction(title,body,confirmText,onConfirm) {
         title=tr(title); body=tr(body); confirmText=tr(confirmText);
@@ -6844,7 +6844,7 @@
             on && !list.length ? statusCard("empty", "Hold a server's icon and tap Edit locally, or pick a server below.", {title:tr("No servers edited yet"), IconComponent:Icon}) : null,
             el(Group, {key:"servers", title:list.length ? pl(list.length, "{n} server edited", "{n} servers edited") : tr("Servers")},
                 list.map(row),
-                Row ? el(Row, {key:"add", label:tr("Edit another server"), icon:rowIcon(9545, "ServerIcon"), arrow:true, disabled:!on, onPress:openServerPicker}) : null),
+                Row ? el(Row, {key:"add", label:tr(list.length ? "Edit another server" : "Pick a server"), icon:rowIcon(9545, "ServerIcon"), arrow:true, disabled:!on, onPress:openServerPicker}) : null),
             list.length ? el(Group, {key:"reset"},
                 actionRow(ui, "reset", "Reset every server", null, () => confirmAction("Reset every server?", "Every server goes back to its real name and icon.", "Reset", serverEditReset), !on, true)) : null,
             footnote("note", "Only this phone sees these. Server settings always show the real name and icon, so nothing changes for the server or anyone in it.")];
@@ -7245,7 +7245,7 @@
                 inputLabel:tr("Volume, 0 to 100"), format:percent, presets:percentSteps, onChange:value => setSetting("voiceOptionsVolumeLevel", value),
                 hint:"0% joins with everyone muted. You can still change it in the call."}) : null,
             radioGroup(ui, "output", "Play calls through", "voiceOptionsOutput", on, [
-                ["default", "Don't change", null],
+                ["default", "Don't change", null, rowIcon(11733, "SparklesIcon")],
                 ["speaker", "Speaker", null, rowIcon(8501, "VoiceNormalIcon")],
                 ["earpiece", "Earpiece", null, rowIcon(12666, "PhoneIcon")],
                 ["bluetooth", "Bluetooth", null, rowIcon(13214, "HeadphonesIcon")],
@@ -8065,7 +8065,7 @@
             el(PresetOrCustom,{key:"limit",title:"Keep up to",value:settings.noDeleteLimit,disabled:!on,min:1,max:MAX_DELETED,placeholder:1000,
                 inputLabel:tr("Messages, 1 to {max}",{max:MAX_DELETED}),format:n => serverNumber(n),onChange:value => setSetting("noDeleteLimit",value),
                 presets:NODELETE_LIMITS.map(n => ({value:n,label:n ? serverNumber(n) : tr("No limit")})),
-                hint:settings.noDeleteLimit ? "When it's full, the oldest is removed first." : "Every deleted message stays until you dismiss or clear it."}),
+                hint:settings.noDeleteLimit ? "When it's full, the oldest is removed first." : null}),
             hasKept || look ? el(Group,{key:"clear",title:tr("Manage")},
                 look ? actionRow(ui,"look","Reset the look","Red at 50% brightness, as Discord draws a highlight.",() => { setSetting("noDeleteColor","default"); setSetting("noDeleteBrightness",50); setHexOpen(false); },!on) : null,
                 hasKept ? actionRow(ui,"clear","Clear kept messages","Removes every deleted message and edit history Venus kept, from chat and from this phone. The message log stays.",
@@ -11467,7 +11467,7 @@
         if (!userNotifWatchedIds().length) return settings.userNotifFriends ? tr("Open your friends list once if Discord hasn't loaded it yet.") : tr("Choose who to watch below.");
         if (!userNotifAnyEvent()) return tr("Turn on at least one thing to be notified about.");
         const countLine = userNotif.shown ? pl(userNotif.shown, "Shown {n} notification since Discord opened.", "Shown {n} notifications since Discord opened.") :
-            tr("No notifications shown yet since Discord opened.");
+            tr("No notifications since Discord opened.");
         return userNotif.last ? countLine + "\n" + tr("Last: {name}", {name:tr(userNotif.last.text, userNotif.last.vars)}) : countLine;
     }
     const USER_NOTIF_DARK = {ring:{backgroundColor:"#2b2d31"}, row:{backgroundColor:"#2b2d31"},
@@ -12208,7 +12208,7 @@
             const fullUser = (active ? me : userStore && userStore.getUser(acc.id)) || acc;
             const displayName = fullUser && (fullUser.globalName || fullUser.global_name || fullUser.username) || acc.username || acc.id;
             const handle = acc.username && acc.username !== displayName ? "@" + acc.username + " \u00b7 " : "";
-            const statusText = active ? tr("Active account \u00b7 Tap for the quick switcher") :
+            const statusText = active ? tr("Signed in") :
                 acc.tokenStatus === invalidStatus ? tr("Session expired \u00b7 Tap to sign in again") :
                 acc.tokenStatus === validatingStatus ? tr("Checking session…") : tr("Tap to switch");
             return el(Row, {key:"acc:" + acc.id, label:displayName, subLabel:handle + statusText,
@@ -17838,7 +17838,7 @@
             el(QuietRepliesPreview, {key:"preview", on}),
             el(Group, {key:"where", title:tr("Turn the ping off in")},
                 switchRow(Switch, "quietRepliesGuilds", "Servers", "Replies in server channels and threads.", rowIcon(9545, "ServerIcon")),
-                switchRow(Switch, "quietRepliesGroups", "Group DMs", "Discord already leaves it off in one-on-one DMs.", rowIcon(8489, "GroupIcon"))),
+                switchRow(Switch, "quietRepliesGroups", "Group DMs", "Replies in group DMs. Discord already does this in one-on-one DMs.", rowIcon(8489, "GroupIcon"))),
             el(Group, {key:"keep", title:tr("Keep the ping")},
                 switchRow(Switch, "quietRepliesMentioned", "When they mentioned you", "Replying to a message that mentions you still pings them, so they see your answer.", rowIcon(8490, "AtIcon"))),
             footnote("note", "Tap @ on the reply bar to ping someone for just one reply.")];
