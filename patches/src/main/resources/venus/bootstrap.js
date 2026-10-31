@@ -7245,16 +7245,17 @@
             const service = fixService(site), open = () => { if (!on || !service) return; haptic("SELECTION"); openFixSite(site.id); };
             if (i) out.push(el(RN.View, {key:"d" + site.id, style:s.divider}));
             const detail = service ? service.name + " \u00b7 " + fixServiceHost(site, service) : tr(site.start === "off" ? "Discord shows its own preview" : "Sent as written");
-            out.push(el(Press, {key:site.id, onPress:open, disabled:!on || !service, accessibilityRole:service ? "button" : undefined, accessibilityLabel:site.name,
-                style:{flexDirection:"row", alignItems:"center", gap:12, paddingHorizontal:16, paddingVertical:12, opacity:on ? 1 : 0.5}},
-                el(RN.View, {style:{opacity:service ? 1 : 0.4}}, fixBadge(site, 40)),
-                el(RN.View, {style:{flex:1, gap:2}},
-                    line(site.name, "text-md/semibold", "text-strong", {color:"#f2f3f5", fontSize:16, fontWeight:"600"}),
-                    line(detail, "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:14})),
-                // Its own settings, while it's on. A dot on the button says something there isn't how it started.
-                service && on ? el(Press, {onPress:open, accessibilityRole:"button", accessibilityLabel:site.name + ", " + tr("Settings"), hitSlop:{top:6, bottom:6, left:6, right:6}, style:s.gear},
-                    el(Gear, {size:"sm"}),
-                    fixOptionsChanged(site) || fixChoices(settings.fixEmbedsSites)[site.id] ? el(RN.View, {style:{position:"absolute", top:5, right:5, width:8, height:8, borderRadius:4, backgroundColor:"#5865f2"}}) : null) : null,
+            // The site and its settings button are one tap target, with the switch beside it (a button can't hold another one).
+            out.push(el(RN.View, {key:site.id, style:{flexDirection:"row", alignItems:"center", gap:12, paddingRight:16, opacity:on ? 1 : 0.5}},
+                el(Press, {onPress:open, disabled:!on || !service, accessibilityRole:service ? "button" : undefined, accessibilityLabel:site.name,
+                    accessibilityHint:service ? tr("Settings") : undefined, style:{flex:1, flexDirection:"row", alignItems:"center", gap:12, paddingLeft:16, paddingVertical:12}},
+                    el(RN.View, {style:{opacity:service ? 1 : 0.4}}, fixBadge(site, 40)),
+                    el(RN.View, {style:{flex:1, gap:2}},
+                        line(site.name, "text-md/semibold", "text-strong", {color:"#f2f3f5", fontSize:16, fontWeight:"600"}),
+                        line(detail, "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:14})),
+                    // Its own settings, while it's on. A dot says something there isn't how it started.
+                    service && on ? el(RN.View, {style:s.gear}, el(Gear, {size:"sm"}),
+                        fixOptionsChanged(site) || fixChoices(settings.fixEmbedsSites)[site.id] ? el(RN.View, {style:{position:"absolute", top:5, right:5, width:8, height:8, borderRadius:4, backgroundColor:"#5865f2"}}) : null) : null),
                 FormSwitch ? el(FormSwitch, {value:!!service, disabled:!on, accessibilityLabel:site.name,
                     onValueChange:value => { animateLayout(); fixSetChoice(site.id, value ? site.services[0].id : "off"); }}) : null));
         };
