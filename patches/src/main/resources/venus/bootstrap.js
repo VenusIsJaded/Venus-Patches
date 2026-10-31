@@ -35,7 +35,7 @@
     if (features.splitMessages) selectModules([1087, 1392, 2068, 7445, 9561]);
     if (features.translate) selectModules([584, 1392, 5532, 8013, 9978, 10692]);
     if (features.userNotif) selectModules([584, 1392, 2068, 2090, 2119, 2128, 4855, 5207, 7254, 10002, 14713, 14748]);
-    if (features.accountSwitcher) selectModules([584, 1392, 2049, 6194, 6900, 13074, 13075, 13076, 17076, 17520, 17538]);
+    if (features.accountSwitcher) selectModules([584, 1392, 2049, 6194, 6900, 13073, 13074, 13075, 13076, 17076, 17520, 17538]);
     if (features.appIcons) selectModules([1392, 4864, 9767, 15066, 16589, 16590, 18079, 18444]);
     if (features.nitroThemes) selectModules([584, 1392, 2049, 4864, 5032, 15066, 16326]);
     if (features.customThemes) selectModules([589, 590, 591, 1207, 4926, 4934, 11577, 10692]);
@@ -78,7 +78,7 @@
         validUser:false, youBarSettings:false, splitMessages:false,
         translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false, translateSkip:"",
         userNotif:false, userNotifFriends:true, userNotifStatus:true, userNotifMessages:true, userNotifTyping:true, userNotifPush:false, userNotifLogStatus:true, userNotifLogMessages:true, userNotifLogTyping:false,
-        accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
+        accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
         fixEmbeds:false, fixEmbedsSites:"", fixEmbedsClean:true, fixEmbedsDark:true, fixEmbedsStyle:"full", fixEmbedsTranslate:"off", fixEmbedsLanguage:"en", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, silentLeave:false, guildLurk:false, guildLurkIds:"", quietReplies:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, hideAnything:false, hideAnythingSpots:"", language:"auto", hiddenFeatures:"" };
@@ -95,7 +95,7 @@
             validUser: false, youBarSettings: false, splitMessages: false,
             translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false, translateSkip: "",
             userNotif: false, userNotifFriends: true, userNotifStatus: true, userNotifMessages: true, userNotifTyping: true, userNotifPush: false, userNotifLogStatus: true, userNotifLogMessages: true, userNotifLogTyping: false,
-            accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
+            accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
             fixEmbeds: false, fixEmbedsSites: "", fixEmbedsClean: true, fixEmbedsDark: true, fixEmbedsStyle: "full", fixEmbedsTranslate: "off", fixEmbedsLanguage: "en", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, silentLeave: false, guildLurk: false, guildLurkIds: "", quietReplies: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, hideAnything: false, hideAnythingSpots: "", language: "auto", hiddenFeatures: ""
@@ -620,6 +620,7 @@
         if (features.customThemes && key === "customThemesBackground") customThemesApply();
         if (features.nitroThemes && key === "nitroThemes") { if (!value) nitroThemeTurnedOff(); nitroThemeRecheck(); }
         if (features.accountSwitcher && key === "accountSwitcherShare") nitroThemeShareChanged(value);
+        if (features.accountSwitcher && (key === "accountSwitcherNotify" || key === "accountSwitcher")) later(accountSwitcherPushResync, 0);
         if (features.materialYou && key === "materialYou") { if (value) myStart(); customThemesApply(); if (features.iconPacks) iconPacksApply(); }
         if (features.iconPacks && key === "iconPacks") { if (value) iconPacksRestore(); iconPacksApply(); }
         if (features.iconPacks && key === "iconPacksTheme") iconPacksApply();
@@ -708,7 +709,7 @@
                 removedSync();
                 if (enabled("removedAlerts") && settings.removedAlertsPush) userNotifCheckPermissions();
             }
-            if (features.accountSwitcher) accountSwitcherSync();
+            if (features.accountSwitcher) { accountSwitcherSync(); if (enabled("accountSwitcher")) later(accountSwitcherPushResync, 0); }
             if (features.customThemes && enabled("customThemes")) customThemesRestore();
             if (features.materialYou && enabled("materialYou")) { myStart(); customThemesApply(); }
             if (features.iconPacks && enabled("iconPacks")) iconPacksRestore();
@@ -1149,7 +1150,7 @@
     const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss deleted message"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
-        userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Create a new account", "Export accounts", "Import accounts", "Same theme on every account"],
+        userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "Same theme on every account"],
         hiddenChannels:["Show its details"], serverEdit:["Edit locally", "Name", "Icon", "Server icon", "Choose from your phone", "Use a link"], serverInfo:["Look up friends in the server", "Boosts", "Owner", "Server ID"], customThemes:["Show theme background image", "Browse Revenge themes"],
         messageHighlight:["Brightness", "Left bar width"], iconPacks:["Rosiecord", "Plumpy", "Iconsax", "Material", "MD3", "Solar", "Deco", "Themes+", "Follow theme's icon pack"],
         fixEmbeds:["Remove tracking from links", "X (Twitter)", "Twitter", "Instagram", "TikTok", "Reddit", "Bluesky", "Threads", "Tumblr", "Facebook", "Mastodon", "YouTube", "Twitch", "Spotify", "pixiv", "Bilibili", "DeviantArt", "Fur Affinity", "Pinterest", "PTT",
@@ -11728,7 +11729,7 @@
     // (YouBarNotificationsButton 17538 / YouBarButton 17537).
     const ACCOUNT_SWITCHER_DEFAULT_LIMIT = 5, ACCOUNT_SWITCHER_RAISED_LIMIT = 50;
     const accountSwitcher = {store:null, origUsers:null, origValidUsers:null, realMaxAccounts:ACCOUNT_SWITCHER_DEFAULT_LIMIT,
-        youBarParts:null, registering:false};
+        youBarParts:null, registering:false, pushOnlyCurrent:false};
     function multiAccountLimit() {
         // MultiAccountStore (13074) and PushNotificationActionCreators (12128) read MAX_ACCOUNTS /
         // MAX_PUSH_SYNC_ACCOUNTS once at module evaluation time during startup (before venus-patches.json
@@ -11841,7 +11842,11 @@
         });
         patched = hookExport(patched, "getValidUsers", function (orig, self, args) {
             const res = orig.apply(self, args);
-            return enabled("accountSwitcher") ? accountSwitcherWithCurrent(res, true) : res;
+            if (!enabled("accountSwitcher")) return res;
+            const list = accountSwitcherWithCurrent(res, true);
+            // A push sync with Notifications from every account off: only the signed-in account (see accountSwitcherPushSync).
+            if (accountSwitcher.pushOnlyCurrent) { const me = currentUser(); return me ? list.filter(u => u && u.id === me.id) : list; }
+            return list;
         });
         patched = hookExport(patched, "getHasLoggedInAccounts", function (orig, self, args) {
             const res = orig.apply(self, args);
@@ -11850,6 +11855,28 @@
         const out = replaceValue(exports, "default", patched);
         if (enabled("accountSwitcher")) accountSwitcherSync();
         return out;
+    }
+    // Notifications from every account (#126). Discord already has multi-account push: with
+    // canUseMultiAccountNotifications (MultiAccountStore 13074, true once Account switcher unlocks multi-account),
+    // NotificationTokenManager (15471) registers the phone through PushNotificationActionCreators.syncDevice (13073),
+    // a PUT /users/@me/devices/sync carrying a push_sync_token for each saved account (getValidUsers, current first).
+    // The server replaces the phone's list on every sync, and Android labels a notification with its account. With the
+    // switch off the same sync sends only the signed-in account, so the others stop notifying here. syncDevice reads
+    // getValidUsers synchronously, before its first await, so the flag only has to hold for the call itself.
+    function accountSwitcherPushSync(orig, self, args) {
+        if (!enabled("accountSwitcher") || settings.accountSwitcherNotify !== false) return orig.apply(self, args);
+        accountSwitcher.pushOnlyCurrent = true;
+        try { return orig.apply(self, args); } finally { accountSwitcher.pushOnlyCurrent = false; }
+    }
+    function hookPushNotificationActions(exports) {
+        const actions = exports && exports.default;
+        if (actions && typeof actions.syncDevice === "function") hookExport(actions, "syncDevice", accountSwitcherPushSync);
+        return exports;
+    }
+    // Sync again right away when the switch changes, instead of at Discord's next start.
+    function accountSwitcherPushResync() {
+        const manager = inspectedExport(15471, "default");
+        try { if (manager && manager.token && manager.canSync && typeof manager.registerToken === "function") manager.registerToken(); } catch (_) {}
     }
     function hookIsStaffForMultiAccount(exports) {
         if (!exports) return exports;
@@ -12296,8 +12323,6 @@
                 offCard("status", venusIcon(8489, "GroupIcon"), "accountSwitcher"),
             el(Group, {key:"accounts", title:tr("Accounts")},
                 accountRows,
-                Row ? el(Row, {key:"add", label:tr("Add account"), subLabel:tr("Sign in to another Discord account on this phone."), icon:rowIcon(5131, "UserPlusIcon"),
-                    arrow:true, disabled:!on || accounts.length >= multiAccountLimit(), onPress:openAddAccountModal}) : null,
                 Row ? el(Row, {key:"register", label:tr("Create a new account"), subLabel:tr("Register a new Discord account right inside the app."), icon:rowIcon(14059, "NewUserIcon"),
                     arrow:true, disabled:!on || accounts.length >= multiAccountLimit(), onPress:openRegister}) : null,
                 Row ? el(Row, {key:"export", label:tr("Export accounts"), subLabel:tr("Save your accounts and their sign-ins to a file, for another phone or a fresh install."), icon:rowIcon(5143, "DownloadIcon"),
@@ -12310,6 +12335,7 @@
             el(Group, {key:"shortcuts", title:tr("Shortcuts")},
                 switchRow(Switch, "accountSwitcherYouBar", "Button on the profile bar", "Shows a Switch accounts button next to the notifications bell on the bottom bar.", rowIcon(10598, "UserCircleIcon"))),
             el(Group, {key:"shared", title:tr("Every account")},
+                switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notified about messages to any of your saved accounts, not just the one you're using. Each notification says which account it's for.", rowIcon(9045, "BellIcon")),
                 switchRow(Switch, "accountSwitcherShare", "Same theme on every account", "Your theme and Nitro theme follow you when you switch. Venus settings are always shared.", rowIcon(16320, "PaintPaletteIcon"))),
             footnote("note", "Tap your avatar on the You tab, or hold the You tab, to switch from anywhere. Hold an account above to remove it.")];
         return settingsBody(ui, groups);
@@ -19030,6 +19056,7 @@
                 if (features.bulkDelete) exports = hookComponent(exports, bulkDeleteChatFooter);
                 return features.customThemes ? hookComponent(exports, chatViewWrapperThemeBackground) : exports;
             case 13074: return features.accountSwitcher ? hookMultiAccountStore(exports) : exports;
+            case 13073: return features.accountSwitcher ? hookPushNotificationActions(exports) : exports;
             case 6900: return features.accountSwitcher ? hookComponent(exports, addAccountLogin) : exports;
             case 17520: return features.accountSwitcher ? hookComponent(exports, manageAccountsModalWithRegister) : exports;
             case 17076: return features.accountSwitcher ? hookRegisterForMultiAccount(exports) : exports;
