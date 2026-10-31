@@ -12328,12 +12328,23 @@
         const state = store.getState() || {}, saved = Array.isArray(state.users) ? state.users.slice() : [];
         const me = currentUser(), statuses = inspectedExport(13074, "MultiAccountTokenStatus");
         const checking = statuses && typeof statuses.VALIDATING === "number" ? statuses.VALIDATING : 1;
+        // TokenManager.setToken(token, userId) makes that token the active sign-in too (it sets the main token before
+        // saving the per-account copy), and saves it. Importing used to leave the last imported account's token as the
+        // active one: requests went out as that account, and the next reconnect (coming back after Discord was in the
+        // background or closed) sent it to the gateway. An old export's token is often expired, so Discord answered
+        // 4004 and signed you out (#137). Keep the signed-in account's own token active after every save.
+        let active = null;
+        try { active = tokens.getToken(); } catch (_) {}
+        if (typeof active !== "string" || !active || !me) return {error:tr("Try again in a moment.")};
         let added = 0, full = false;
         data.accounts.slice(0, 200).forEach(acc => {
             if (!acc || typeof acc !== "object" || !ACCOUNT_ID.test(String(acc.id)) || typeof acc.token !== "string" || !acc.token || acc.token.length > 512 || /\s/.test(acc.token)) return;
             if ((me && me.id === acc.id) || saved.some(u => u && u.id === acc.id)) return;
+            if (acc.token === active) return;
             if (accountSwitcherWithCurrent(saved, false).length >= multiAccountLimit()) { full = true; return; }
             try { tokens.setToken(acc.token, acc.id); } catch (_) { return; }
+            // No user id: only the main token is written back, the imported account keeps its own saved copy.
+            finally { try { if (tokens.getToken() !== active) tokens.setToken(active); } catch (_) {} }
             saved.push({id:acc.id, avatar:typeof acc.avatar === "string" ? acc.avatar : null, username:typeof acc.username === "string" ? acc.username.slice(0, 64) : "",
                 discriminator:typeof acc.discriminator === "string" ? acc.discriminator.slice(0, 4) : "0", tokenStatus:checking});
             added++;
