@@ -74,7 +74,7 @@ private val runtimeAssets = rawResourcePatch {
             "{picker:$pickerSelected,voice:$voiceSelected,copyBios:$copyBiosSelected," +
                 "favouriteAnything:$favouriteAnythingSelected,freeNitro:$freeNitroSelected," +
                 listOf("noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels", "pastelize", "platformIndicators", "reviewDB", "readAll", "quests", "badges", "systemFont",
-                    "systemEmoji", "gestures", "validUser", "youBarSettings", "splitMessages", "translate", "userNotif", "accountSwitcher", "appIcons", "nitroThemes", "customThemes", "materialYou", "iconPacks", "messageHighlight", "serverInfo", "serverEdit", "fixEmbeds", "tenorGifs", "hideBlocked", "bulkDelete", "experiments", "cleanChannels", "noHandsfree", "voiceOptions", "anonFiles", "staffTag", "removedAlerts", "fullImages", "hideAnything", "alwaysTrust", "noConfirmPin", "clickableMentions", "quietReplies")
+                    "systemEmoji", "gestures", "validUser", "youBarSettings", "splitMessages", "translate", "userNotif", "accountSwitcher", "appIcons", "nitroThemes", "customThemes", "materialYou", "iconPacks", "messageHighlight", "serverInfo", "serverEdit", "fixEmbeds", "tenorGifs", "hideBlocked", "bulkDelete", "experiments", "cleanChannels", "noHandsfree", "voiceOptions", "anonFiles", "staffTag", "removedAlerts", "fullImages", "hideAnything", "alwaysTrust", "noConfirmPin", "clickableMentions", "quietReplies", "silentLeave", "guildLurk")
                     .joinToString(",") { "$it:${it in additionalSelections}" } + "}"
         )
         asset.writeText(selected)
@@ -330,6 +330,14 @@ val noConfirmPin = bundledPlugin("noConfirmPin", "Skip pin confirmation",
 @Suppress("unused")
 val clickableMentions = bundledPlugin("clickableMentions", "Tap mentions to open profiles",
     "Tap an @mention in the message bar to see who it is. Based on ClickableMentions by mwittrien.")
+
+@Suppress("unused")
+val silentLeave = bundledPlugin("silentLeave", "Leave group DMs silently",
+    "Leave group DMs without the \"left the group\" message. Based on SilentLeave by coder.gg.")
+
+@Suppress("unused")
+val guildLurk = bundledPlugin("guildLurk", "Preview servers without joining",
+    "Open a server from its ID or invite link and read it without joining. Based on GuildLurk by fshin.")
 
 @Suppress("unused")
 val quietReplies = bundledPlugin("quietReplies", "Reply without pinging",
