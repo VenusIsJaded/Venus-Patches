@@ -192,4 +192,145 @@ object Diagnostics {
 
     private fun header(out: java.lang.StringBuilder, kind: String) {
         val now = System.currentTimeMillis()
-        out.append("Venus crash report\n==================\n")
+        out.append("Venus crash report\n==================\n")        line(out, "Kind", kind)
+        line(out, "When", stamp(now) + " (" + zone() + ")")
+        line(out, "Discord open for", duration(now - startedAt))
+        val c = app
+        if (c != null) {
+            line(out, "Venus Patches", venusRevision(c))
+            line(out, "Discord", discordVersion(c))
+        }
+    }
+
+    private fun section(out: java.lang.StringBuilder, title: String) {
+        out.append("\n--- ").append(title).append(" ---\n")
+    }
+
+    private fun line(out: java.lang.StringBuilder, key: String, value: Any?) {
+        out.append(key).append(": ").append(value?.toString() ?: "unknown").append('\n')
+    }
+
+    /** Everything about the phone, Discord and Venus that can matter: shared by crash reports and Venus's log export. */
+    private fun details(out: java.lang.StringBuilder) {
+        val c = app ?: return
+        section(out, "Discord and Venus")
+        line(out, "Venus Patches", venusRevision(c))
+        line(out, "Discord", discordVersion(c))
+        line(out, "Package", c.packageName)
+        line(out, "Installed by", try { installer(c) } catch (_: Throwable) { null })
+        line(out, "Process", processName())
+        line(out, "Crash screen", if (screenOn) "on" else "off")
+        section(out, "Device")
+        line(out, "Model", Build.MANUFACTURER + " " + Build.MODEL + " (" + Build.DEVICE + ", " + Build.PRODUCT + ")")
+        line(out, "Brand", Build.BRAND)
+        line(out, "Hardware", Build.HARDWARE + ", board " + Build.BOARD)
+        if (Build.VERSION.SDK_INT >= 31) line(out, "Chip", Build.SOC_MANUFACTURER + " " + Build.SOC_MODEL)
+        line(out, "Android", Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + "), security patch " + Build.VERSION.SECURITY_PATCH)
+        line(out, "Build", Build.DISPLAY)
+        line(out, "Fingerprint", Build.FINGERPRINT)
+        line(out, "ABIs", TextUtils.join(", ", Build.SUPPORTED_ABIS))
+        line(out, "Kernel", System.getProperty("os.version"))
+        val props = props()
+        if (props.length > 0) out.append(props)
+        section(out, "Display")
+        try {
+            val m = c.resources.displayMetrics
+            val conf = c.resources.configuration
+            line(out, "Density", m.density.toString() + " (" + m.densityDpi + " dpi)" + (if (m.density * 4f != Math.round(m.density * 4f).toFloat() || m.density != Math.round(m.density).toFloat()) ", not a whole number" else ""))
+            line(out, "Font scale", conf.fontScale.toString() + " (scaled density " + m.scaledDensity + ")")
+            if (Build.VERSION.SDK_INT >= 31) line(out, "Bold text adjustment", conf.fontWeightAdjustment)
+            line(out, "Screen", m.widthPixels.toString() + " x " + m.heightPixels + " px, " + conf.screenWidthDp + " x " + conf.screenHeightDp + " dp, smallest " + conf.smallestScreenWidthDp + " dp")
+            line(out, "Dark mode", if ((conf.uiMode and 0x30) == 0x20) "on" else "off")
+            line(out, "Language", if (Build.VERSION.SDK_INT >= 24) conf.locales.toLanguageTags() else Locale.getDefault().toLanguageTag())
+            line(out, "Layout direction", if (conf.layoutDirection == View.LAYOUT_DIRECTION_RTL) "right to left" else "left to right")
+            val activity = current?.get()
+            if (activity != null && Build.VERSION.SDK_INT >= 30) line(out, "Refresh rate", activity.display?.refreshRate)
+        } catch (_: Throwable) { }
+        section(out, "Memory and storage")
+        try {
+            val am = c.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val mi = ActivityManager.MemoryInfo()
+            am.getMemoryInfo(mi)
+            line(out, "Phone memory", mb(mi.availMem) + " free of " + mb(mi.totalMem) + (if (mi.lowMemory) ", LOW" else "") + ", low at " + mb(mi.threshold))
+            line(out, "Low-RAM device", am.isLowRamDevice)
+            line(out, "App memory class", am.memoryClass.toString() + " MB (large " + am.largeMemoryClass + " MB)")
+            val r = Runtime.getRuntime()
+            line(out, "Java heap", mb(r.totalMemory() - r.freeMemory()) + " used, " + mb(r.maxMemory()) + " max")
+            line(out, "Native heap", mb(Debug.getNativeHeapAllocatedSize()) + " used of " + mb(Debug.getNativeHeapSize()))
+            val pss = Debug.MemoryInfo()
+            Debug.getMemoryInfo(pss)
+            line(out, "Total PSS", mb(pss.totalPss * 1024L))
+            val fs = StatFs(c.filesDir.path)
+            line(out, "Storage", mb(fs.availableBytes) + " free of " + mb(fs.totalBytes))
+        } catch (_: Throwable) { }
+        section(out, "System settings")
+        try {
+            val power = c.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            line(out, "Battery saver", power.isPowerSaveMode)
+            line(out, "Ignores battery optimization", power.isIgnoringBatteryOptimizations(c.packageName))
+            line(out, "Animation scale", android.provider.Settings.Global.getFloat(c.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f))
+            val net = c.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            line(out, "Data saver", when (net.restrictBackgroundStatus) { 3 -> "on"; 2 -> "on, Discord allowed"; else -> "off" })
+            line(out, "Time zone", zone())
+        } catch (_: Throwable) { }
+        section(out, "Venus settings")
+        out.append(venusSettings(c))
+        section(out, "Venus log (most recent " + logSize() + " lines)")
+        out.append(logText(c))
+    }
+
+    private fun threads(out: java.lang.StringBuilder, crashed: Thread?) {
+        section(out, "Threads")
+        try {
+            val all = Thread.getAllStackTraces()
+            val mainThread = Looper.getMainLooper().thread
+            val order = java.util.ArrayList<Thread>()
+            if (all.containsKey(mainThread)) order.add(mainThread)
+            if (crashed != null && crashed !== mainThread && all.containsKey(crashed)) order.add(crashed)
+            for (t in all.keys) if (t !== mainThread && t !== crashed) order.add(t)
+            var shown = 0
+            for (t in order) {
+                if (shown++ >= 80) { out.append("... ").append(order.size - 80).append(" more threads\n"); break }
+                val frames = all.get(t) ?: continue
+                out.append('"').append(t.name).append("\" ").append(t.state).append(if (t.isDaemon) " daemon" else "")
+                    .append(if (t === crashed) "  <- crashed" else "").append('\n')
+                var i = 0
+                while (i < frames.size && i < 30) { out.append("    at ").append(frames[i]).append('\n'); i++ }
+                if (frames.size > 30) out.append("    ... ").append(frames.size - 30).append(" more\n")
+            }
+        } catch (_: Throwable) { out.append("(unavailable)\n") }
+    }
+
+    /** Discord's own lines from Android's log. An app can only ever read the lines from its own user id. */
+    private fun logcat(lines: Int, onlyThisProcess: Boolean = true): String {
+        val args = java.util.ArrayList<String>()
+        args.add("logcat"); args.add("-d"); args.add("-v"); args.add("threadtime"); args.add("-b"); args.add("main,system,crash")
+        args.add("-t"); args.add(lines.toString())
+        if (onlyThisProcess) { args.add("--pid"); args.add(Process.myPid().toString()) }
+        return run(args.toArray(arrayOfNulls<String>(0)), 2 * 1024 * 1024)
+    }
+
+    private fun run(command: Array<String?>, limit: Int): String = try {
+        val p = Runtime.getRuntime().exec(command)
+        val text = readAll(p.inputStream, limit)
+        try { p.destroy() } catch (_: Throwable) { }
+        text
+    } catch (_: Throwable) { "" }
+
+    private val PROPS = arrayOf("ro.product.marketname", "ro.miui.ui.version.name", "ro.mi.os.version.name", "ro.mi.os.version.incremental",
+        "ro.build.version.oneui", "ro.build.version.emui", "ro.build.version.opporom", "ro.vivo.os.version", "ro.board.platform",
+        "ro.hardware.egl", "ro.hardware.vulkan", "debug.hwui.renderer", "ro.sf.lcd_density", "persist.sys.font", "ro.build.characteristics")
+
+    /** ROM details Android's Build doesn't have (MIUI/HyperOS, One UI, the GPU driver), from getprop. */
+    private fun props(): String {
+        val all = run(arrayOf("getprop"), 512 * 1024) as java.lang.String
+        val out = java.lang.StringBuilder()
+        for (key in PROPS) {
+            val at = all.indexOf("[" + key + "]: [")
+            if (at < 0) continue
+            val start = at + key.length + 6
+            val end = all.indexOf("]", start)
+            if (end > start) out.append(key).append(": ").append(all.substring(start, end)).append('\n')
+        }
+        return out.toString()
+    }
