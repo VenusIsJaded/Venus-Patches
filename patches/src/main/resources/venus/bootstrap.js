@@ -7226,37 +7226,37 @@
                     el(RN.View, null, input, tapRipple(state.pulse, "send", {right:10, top:11})),
                     watching ? storyStrip(k, s, story) : null)}));
     }
-    // Sites in three cards by what's shared (posts, videos and music, art): each row has the site's mark, where its links go and
-    // a switch. A site with more than one service opens a choice under it. Sites that start off say why: Discord's own preview works.
-    const FIX_LIST_DARK = {card:{backgroundColor:"#2b2d31", borderRadius:16, overflow:"hidden"}, divider:{height:1, marginLeft:68, backgroundColor:"#ffffff0f"}};
+    // Sites in three cards by what's shared (posts, videos and music, art): each row has the site's mark, where its links go,
+    // a settings button and a switch. Tapping a site that's on opens its own sheet (FixSiteSheet): which service, and the
+    // post style, translation, dark posts and tracking that service can do. Sites that start off say why: Discord's own preview works.
+    const FIX_LIST_DARK = {card:{backgroundColor:"#2b2d31", borderRadius:16, overflow:"hidden"}, divider:{height:1, marginLeft:68, backgroundColor:"#ffffff0f"},
+        gear:{width:36, height:36, borderRadius:18, alignItems:"center", justifyContent:"center", backgroundColor:"#ffffff0f"}};
     function FixSiteList(props) {
         useSettings("fixEmbeds");
-        const [open, setOpen] = React.useState(null), on = !!props.on;
+        const on = !!props.on;
         const s = useThemed("fixSites", c => ({card:Object.assign({}, FIX_LIST_DARK.card, {backgroundColor:c.CARD_BACKGROUND_DEFAULT}),
-            divider:Object.assign({}, FIX_LIST_DARK.divider, {backgroundColor:c.BORDER_SUBTLE})}), FIX_LIST_DARK);
+            divider:Object.assign({}, FIX_LIST_DARK.divider, {backgroundColor:c.BORDER_SUBTLE}),
+            gear:Object.assign({}, FIX_LIST_DARK.gear, {backgroundColor:c.BACKGROUND_MOD_SUBTLE || c.BACKGROUND_SURFACE_HIGH})}), FIX_LIST_DARK);
         const Text = inspectedExport(5187, "Text"), FormSwitch = inspectedExport(7173, "FormSwitch"), Press = RN.Pressable || RN.View;
-        const Down = venusIcon(10859, "ChevronSmallDownIcon");
+        const Gear = venusIcon(7368, "SettingsIcon");
         const line = (value, variant, color, fallback) => Text ? el(Text, {variant, color, lineClamp:1}, value) : el(RN.Text, {style:fallback, numberOfLines:1}, value);
         const rows = fixRows();
         const siteRow = (site, i, out) => {
-            const service = fixService(site), many = site.services.length > 1, expanded = open === site.id && !!service && many && on;
+            const service = fixService(site), open = () => { if (!on || !service) return; haptic("SELECTION"); openFixSite(site.id); };
             if (i) out.push(el(RN.View, {key:"d" + site.id, style:s.divider}));
-            const toggleOpen = () => { if (!on || !service || !many) return; haptic("SELECTION"); animateLayout(); setOpen(expanded ? null : site.id); };
             const detail = service ? service.name + " \u00b7 " + fixServiceHost(site, service) : tr(site.start === "off" ? "Discord shows its own preview" : "Sent as written");
-            out.push(el(Press, {key:site.id, onPress:toggleOpen, disabled:!on || !service || !many, accessibilityRole:many && service ? "button" : undefined,
-                accessibilityLabel:site.name, accessibilityState:{expanded}, style:{flexDirection:"row", alignItems:"center", gap:12, paddingHorizontal:16, paddingVertical:12, opacity:on ? 1 : 0.5}},
+            out.push(el(Press, {key:site.id, onPress:open, disabled:!on || !service, accessibilityRole:service ? "button" : undefined, accessibilityLabel:site.name,
+                style:{flexDirection:"row", alignItems:"center", gap:12, paddingHorizontal:16, paddingVertical:12, opacity:on ? 1 : 0.5}},
                 el(RN.View, {style:{opacity:service ? 1 : 0.4}}, fixBadge(site, 40)),
                 el(RN.View, {style:{flex:1, gap:2}},
                     line(site.name, "text-md/semibold", "text-strong", {color:"#f2f3f5", fontSize:16, fontWeight:"600"}),
                     line(detail, "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:14})),
-                // It opens in place, so a down chevron that flips up, not a "goes to another page" arrow.
-                many && service && on ? el(RN.View, {style:expanded ? {transform:[{rotate:"180deg"}]} : null}, el(Down, {size:"sm"})) : null,
+                // Its own settings, while it's on. A dot on the button says something there isn't how it started.
+                service && on ? el(Press, {onPress:open, accessibilityRole:"button", accessibilityLabel:site.name + ", " + tr("Settings"), hitSlop:{top:6, bottom:6, left:6, right:6}, style:s.gear},
+                    el(Gear, {size:"sm"}),
+                    fixOptionsChanged(site) || fixChoices(settings.fixEmbedsSites)[site.id] ? el(RN.View, {style:{position:"absolute", top:5, right:5, width:8, height:8, borderRadius:4, backgroundColor:"#5865f2"}}) : null) : null,
                 FormSwitch ? el(FormSwitch, {value:!!service, disabled:!on, accessibilityLabel:site.name,
-                    onValueChange:value => { animateLayout(); if (!value && open === site.id) setOpen(null); fixSetChoice(site.id, value ? site.services[0].id : "off"); }}) : null));
-            if (expanded) out.push(el(RN.View, {key:site.id + ":pick", style:{paddingRight:16, paddingBottom:14, paddingLeft:68}},
-                // More than four services don't fit as pills, so they become a list of choices.
-                site.services.length <= 4 ? venusSegmented({key:"fix:" + site.id, value:service.id, onChange:value => fixSetChoice(site.id, value),
-                    items:site.services.map(item => ({value:item.id, label:item.name}))}) : fixServiceChoices(site, service, line)));
+                    onValueChange:value => { animateLayout(); fixSetChoice(site.id, value ? site.services[0].id : "off"); }}) : null));
         };
         const card = (group, title) => {
             const out = [];
@@ -7266,7 +7266,7 @@
         const cards = [card("social", groupTitle("t:social", "Social")), card("video", groupTitle("t:video", "Video and music")), card("art", groupTitle("t:art", "Art"))];
         return el(RN.View, {key:"sites", style:{gap:16}},
             cards,
-            footnote("hint", "Preview not showing? Try another service."));
+            footnote("hint", "Tap a site to pick its service, post style, translation and tracking."));
     }
     // A long list of services as radio rows: the service's name, where links go and a check on the one in use.
     function fixServiceChoices(site, service, line) {
@@ -7280,6 +7280,79 @@
                     line(fixServiceHost(site, item), "text-xs/medium", "text-muted", {color:"#949ba4", fontSize:12})),
                 picked ? popIn("check:" + site.id + ":" + item.id, el(Check, {size:"sm"})) : null);
         }));
+    }
+    // One site's settings, in a sheet so the page stays a plain list of sites. Each part only shows when the service in use can
+    // do it: post styles (FxTwitter, FxBluesky, fxTikTok, phixiv...), translation (FxTwitter, vxTwitter, FxBluesky, phixiv) and
+    // dark posts (fxtumblr). Removing tracking works for every site, since the link itself is cleaned before it's sent.
+    const FIX_SITE_SHEET = "VenusFixSite";
+    const FIX_STYLE_LABELS = {full:"Full post", gallery:"Media", text:"Text", media:"File"};
+    const FIX_STYLE_HINTS = {full:"The text, pictures or video, and likes.", gallery:"Just the picture or video and who posted it, without the text or counts.",
+        text:"Just the text, without pictures or videos.", media:"Only the picture or video file, played right in chat."};
+    function FixSiteSheet(props) {
+        useSettings("fixEmbeds");
+        const ui = reviewUI(), site = fixSite(props.siteId), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
+        const Text = inspectedExport(5187, "Text"), card = useThemed("fixSites", c => ({card:Object.assign({}, FIX_LIST_DARK.card, {backgroundColor:c.CARD_BACKGROUND_DEFAULT})}), FIX_LIST_DARK);
+        const close = () => hideReviewSheet(ui, FIX_SITE_SHEET);
+        const header = ui.Header ? el(ui.Header, {title:site ? site.name : "", trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : undefined;
+        const service = site && fixService(site);
+        const wrap = body => {
+            const content = el(RN.View, {style:{paddingHorizontal:12, paddingBottom:24, gap:20}}, body.filter(Boolean));
+            const Scroll = inspectedExport(6584, "BottomSheetScrollView");
+            return Scroll ? el(ui.ActionSheet || RN.View, {header, scrollable:true}, el(Scroll, null, content)) :
+                el(ui.ActionSheet || RN.View, {header}, RN.ScrollView ? el(RN.ScrollView, null, content) : content);
+        };
+        // Turned off (or the site vanished) while the sheet was open: nothing to set.
+        if (!site || !service) return wrap([footnote("off", "Sent as written")]);
+        const options = fixOptions(site), on = enabled("fixEmbeds");
+        const line = (value, variant, color, fallback) => Text ? el(Text, {variant, color, lineClamp:1}, value) : el(RN.Text, {style:fallback, numberOfLines:1}, value);
+        const styles = service.styles ? FIX_STYLES.filter(look => look === "full" || owns(service.styles, look)) : [];
+        const style = styles.includes(options.style) ? options.style : "full";
+        const lang = options.lang, custom = TRANSLATE_LANGUAGES.includes(lang), name = kind => languageName(localeCode(kind));
+        const RadioGroup = inspectedExport(6540, "TableRadioGroup"), RadioRow = inspectedExport(6539, "TableRadioRow");
+        const mode = custom ? "custom" : lang;
+        const setMode = value => {
+            if (value === mode) return;
+            haptic("SELECTION"); animateLayout();
+            fixSetOption(site.id, "lang", value === "custom" ? (custom ? lang : "en") : value);
+        };
+        const translateChoices = [["off", tr("Off"), tr("Posts show in the language they were written in."), rowIcon(9393, "GlobeEarthIcon")],
+            ["discord", tr("Discord's language"), name("discord") + ".", rowIcon(13827, "ChatSmileIcon")],
+            ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(6919, "MobilePhoneIcon")],
+            ["custom", tr("Another language"), translateLanguageName(custom ? lang : "en") + ".", rowIcon(9415, "LanguageIcon")]];
+        const toggle = (key, label, sub, icon, value, onChange) => Switch ? el(Switch, {key, label:tr(label), subLabel:sub && tr(sub), icon, value, disabled:!on,
+            onValueChange:next => { animateLayout(); onChange(next); }}) : null;
+        const changed = fixOptionsChanged(site) || service.id !== site.services[0].id;
+        return wrap([
+            // Which service links go through: pills for up to four, a list for more. One service needs no choice.
+            site.services.length > 1 ? el(RN.View, {key:"service", style:{gap:8}},
+                groupTitle("t:service", "Service"),
+                site.services.length <= 4 ? venusSegmented({key:"fix:service:" + site.id, value:service.id, disabled:!on, onChange:value => fixSetChoice(site.id, value),
+                    items:site.services.map(item => ({value:item.id, label:item.name}))}) :
+                    el(RN.View, {style:[card.card, {paddingHorizontal:16, paddingVertical:4}]}, fixServiceChoices(site, service, line)),
+                footnote("t:hint", "Preview not showing? Try another service.")) : null,
+            styles.length > 1 ? el(RN.View, {key:"style", style:{gap:8}},
+                groupTitle("t:style", "Post style"),
+                venusSegmented({key:"fix:style:" + site.id, value:style, disabled:!on, onChange:value => fixSetOption(site.id, "style", value),
+                    items:styles.map(look => ({value:look, label:tr(FIX_STYLE_LABELS[look])}))}),
+                footnote("t:styleHint", FIX_STYLE_HINTS[style])) : null,
+            service.dark ? el(Group, {key:"dark", title:tr("Look")},
+                toggle("dark", "Dark Tumblr posts", "Tumblr posts are drawn on a dark background, to match Discord.", rowIcon(13620, "ThemeDarkIcon"), options.dark,
+                    value => fixSetOption(site.id, "dark", value))) : null,
+            service.lang && RadioGroup && RadioRow ? el(RadioGroup, {key:"translate", title:tr("Translate posts"), value:mode, onChange:setMode},
+                translateChoices.map(([value, label, sub, icon]) => el(RadioRow, {key:value, value, label, subLabel:sub, icon, disabled:!on}))) : null,
+            service.lang && custom ? el(TranslateLanguagePicker, {key:"language", on, feature:"fixEmbeds", value:lang, onChange:code => fixSetOption(site.id, "lang", code)}) : null,
+            service.lang && lang !== "off" ? footnote("translateNote", service.lang === "pixiv" ? "pixiv shows titles and tags in English, Chinese or Korean." :
+                "The translation shows with the original under it, for everyone in the chat.") : null,
+            el(Group, {key:"privacy", title:tr("Privacy")},
+                toggle("clean", "Remove tracking from links", "Drops share IDs like ?igsh= and ?si= from the links Venus fixes.", rowIcon(10733, "ShieldIcon"), options.clean,
+                    value => fixSetOption(site.id, "clean", value))),
+            changed ? el(Group, {key:"manage"}, actionRow(ui, "reset", "Reset to defaults", null, () => {
+                animateLayout(); fixResetOptions(site.id); fixSetChoice(site.id, site.services[0].id); }, !on, true)) : null]);
+    }
+    function openFixSite(siteId) {
+        const ui = reviewUI();
+        if (!ui.ActionSheet || typeof ui.showSheet !== "function") return;
+        try { ui.showSheet({key:FIX_SITE_SHEET, content:el(FixSiteSheet, {siteId}), stackingBehavior:"stack"}); } catch (_) {}
     }
     // Laid out by when each part acts: joining (call volume, where calls play), the chimes Discord plays as people come
     // and go, and leaving (a goodbye sound for everyone). Each volume picker only shows once its part is on.
@@ -7330,52 +7403,24 @@
             footnote("note", "What you search for goes to Tenor, without your Discord account. GIFs you pick are sent as tenor.com links, which play for everyone.")];
         return settingsBody(ui, groups);
     }
+    // The page: what's happening, a preview, and the sites. Everything about one site (its service, post style, translation,
+    // dark posts and tracking) lives in that site's own sheet, so the page never fills up with options that only some sites have.
     function FixEmbedsSettings() {
         useSettings("fixEmbeds");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("fixEmbeds"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Icon = venusIcon(13836, "EmbedIcon");
-        const live = fixRows().map(row => fixService(fixEmbeds.sites[row[0]])).filter(Boolean), none = !live.length, tumblr = fixService(fixSite("tumblr"));
-        const changed = settings.fixEmbedsSites !== "" || !settings.fixEmbedsClean || !settings.fixEmbedsDark || settings.fixEmbedsStyle !== "full" || settings.fixEmbedsTranslate !== "off";
-        const name = kind => languageName(localeCode(kind)), style = settings.fixEmbedsStyle, translating = settings.fixEmbedsTranslate !== "off";
-        // Only the looks a site you fix can show get a pill (the one picked always keeps its own, so you can move off it), and the
-        // picker goes away when only Full post is left. Translate posts likewise shows only while a site that translates is on.
-        const looks = {full:true, [style]:true};
-        live.forEach(service => { if (service.styles) Object.keys(service.styles).forEach(look => { looks[look] = true; }); });
-        const styleItems = [{value:"full", label:tr("Full post")}, {value:"gallery", label:tr("Media")}, {value:"text", label:tr("Text")}, {value:"media", label:tr("File")}]
-            .filter(item => looks[item.value]);
-        const darkTumblr = !!(tumblr && tumblr.dark), canTranslate = live.some(service => service.lang);
+        const on = enabled("fixEmbeds"), Group = ui.TableRowGroup || RN.View, Icon = venusIcon(13836, "EmbedIcon");
+        const none = !fixRows().some(row => fixService(fixEmbeds.sites[row[0]]));
+        const changed = settings.fixEmbedsSites !== "" || settings.fixEmbedsOptions !== "";
         const groups = [
             !on ? offCard("status", Icon, "fixEmbeds") : none ? statusCard("status", "Turn on a site below.", {title:tr("No sites turned on"), IconComponent:Icon}) :
                 fixEmbeds.count ? statusCard("status", pl(fixEmbeds.count, "Fixed {n} link since Discord opened.", "Fixed {n} links since Discord opened."),
                     {title:tr("Fixing links"), IconComponent:Icon}) : null,
             el(FixEmbedsPreview, {key:"preview", on}),
             el(FixSiteList, {key:"sites", on}),
-            // How posts look: FxTwitter, FxBluesky, fxTikTok and phixiv each have a subdomain for it (g.fixupx.com...).
-            // Dark Tumblr posts sits here too: only fxtumblr can draw a dark post, so it shows while Tumblr links go through it (#87).
-            styleItems.length > 1 || darkTumblr ? el(RN.View, {key:"style", style:{gap:8}},
-                groupTitle("title", "Post style"),
-                styleItems.length > 1 ? venusSegmented({key:"fix:style", value:style, disabled:!on, onChange:value => setSetting("fixEmbedsStyle", value), items:styleItems}) : null,
-                styleItems.length > 1 ? footnote("hint", style === "gallery" ? "Just the picture or video and who posted it, without the text or counts. X, Bluesky, TikTok and pixiv." :
-                    style === "text" ? "Just the text, without pictures or videos. X and Bluesky." :
-                    style === "media" ? "Only the picture or video file, played right in chat. X, Bluesky and TikTok." :
-                    "The text, pictures or video, and likes. TikTok videos show their caption too.") : null,
-                darkTumblr ? el(RN.View, {key:"dark", style:styleItems.length > 1 ? {marginTop:8} : null}, el(Group, null,
-                    switchRow(Switch, "fixEmbedsDark", "Dark Tumblr posts", "Tumblr posts are drawn on a dark background, to match Discord.", rowIcon(13620, "ThemeDarkIcon")))) : null) : null,
-            // Translated posts: FxTwitter, vxTwitter and FxBluesky translate a post when its link ends in a language (/ja).
-            canTranslate ? radioGroup(ui, "translate", "Translate posts", "fixEmbedsTranslate", on, [
-                ["off", tr("Off"), tr("Posts show in the language they were written in."), rowIcon(9393, "GlobeEarthIcon")],
-                ["discord", tr("Discord's language"), name("discord") + ".", rowIcon(13827, "ChatSmileIcon")],
-                ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(6919, "MobilePhoneIcon")],
-                ["custom", tr("Another language"), translateLanguageName(settings.fixEmbedsLanguage) + ".", rowIcon(9415, "LanguageIcon")]], true) : null,
-            canTranslate && settings.fixEmbedsTranslate === "custom" ? el(TranslateLanguagePicker, {key:"language", on, feature:"fixEmbeds", setting:"fixEmbedsLanguage"}) : null,
-            canTranslate && translating ? footnote("translateNote", "Posts on X and Bluesky show the translation with the original under it, for everyone in the chat. pixiv shows titles and tags in English, Chinese or Korean.") : null,
-            el(Group, {key:"privacy", title:tr("Privacy")},
-                switchRow(Switch, "fixEmbedsClean", "Remove tracking from links", "Drops share IDs like ?igsh= and ?si= from the links Venus fixes.", rowIcon(10733, "ShieldIcon"))),
             changed ? el(Group, {key:"manage", title:tr("Manage")}, actionRow(ui, "reset", "Reset to defaults", "Every site back to how it started.", () =>
                 confirmAction("Reset to defaults?", "Every site goes back to how it started, posts show in full and untranslated, and tracking is removed again.", "Reset", () => {
-                    animateLayout(); setSetting("fixEmbedsSites", ""); setSetting("fixEmbedsClean", true); setSetting("fixEmbedsDark", true);
-                    setSetting("fixEmbedsStyle", "full"); setSetting("fixEmbedsTranslate", "off"); }), !on, true)) : null,
+                    animateLayout(); setSetting("fixEmbedsSites", ""); setSetting("fixEmbedsOptions", ""); }), !on, true)) : null,
             footnote("note", "Only the link changes, and only when you send or edit a message. Links in code or in <angle brackets> are sent as written.")];
         return settingsBody(ui, groups);
     }
