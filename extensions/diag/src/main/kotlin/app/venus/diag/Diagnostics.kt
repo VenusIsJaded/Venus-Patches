@@ -192,7 +192,8 @@ object Diagnostics {
 
     private fun header(out: java.lang.StringBuilder, kind: String) {
         val now = System.currentTimeMillis()
-        out.append("Venus crash report\n==================\n")        line(out, "Kind", kind)
+        out.append("Venus crash report\n==================\n")
+        line(out, "Kind", kind)
         line(out, "When", stamp(now) + " (" + zone() + ")")
         line(out, "Discord open for", duration(now - startedAt))
         val c = app
