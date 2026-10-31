@@ -3684,7 +3684,23 @@
     const READ_ALL_PRESSED_SCALE = {transform:[{scale:0.96}]};
     // Discord's own bold face (Constants 1098), as its Text draws it: a plain RN.Text fell back to Roboto, and to
     // Arial in the UI preview, so the label measured and looked unlike everything around it.
-    const READ_ALL_TEXT_BASE = {fontFamily:"ggsans-Bold, NotoSans-Bold",fontSize:11,lineHeight:13,textAlign:"center",includeFontPadding:false};
+    // No adjustsFontSizeToFit: on Android, ReactTextView.onDraw runs TextLayoutManager.adjustSpannableFontToFit again
+    // with the view's whole-pixel height as an EXACTLY limit, while CustomLineHeightSpan rounds lineHeight up. At a
+    // display density that isn't a whole number (Poco F3 at 2.75: 13 dp = 35.75 px, the line 36 px, the view 35 px) every
+    // size "exceeds" the height, so the label shrank to its 4 dp floor and the pill looked empty (RN #52642, Fabric).
+    // The size is picked here from the label's longest word instead, so nothing is resized after layout.
+    const READ_ALL_TEXT_BASE = {fontFamily:"ggsans-Bold, NotoSans-Bold",textAlign:"center",includeFontPadding:false};
+    const readAllTextSizes = new Map();
+    // 58 dp of room (68 dp pill, 5 dp padding each side) fits about nine bold 11 sp letters on a line.
+    function readAllTextSize(label) {
+        let size = readAllTextSizes.get(label);
+        if (size) return size;
+        const longest = String(label).split(/\s+/).reduce((most, word) => Math.max(most, Array.from(word).length), 0);
+        const fontSize = longest > 10 ? 9 : longest > 9 ? 10 : 11;
+        size = {fontSize};
+        readAllTextSizes.set(label, size);
+        return size;
+    }
     const READ_ALL_FALLBACK_STYLES = {pill:{backgroundColor:"#4e505899"},pressed:{backgroundColor:"#4e5058"},text:{color:"#dbdee1"}};
     function readAllPress() { readAll(settings.readAllMode); }
     // For a moment after it clears something, the pill shows a check instead of its label, then goes back.
@@ -3709,7 +3725,7 @@
                 style:({pressed}) => [READ_ALL_PILL_BASE,styles.pill,
                     pressed ? styles.pressed : null,pressed ? READ_ALL_PRESSED_SCALE : null]},
                 done ? popIn("done",el(venusIcon(7101,"CheckmarkSmallIcon"),{size:"xs",color:styles.text && styles.text.color})) :
-                    el(RN.Text,{numberOfLines:2,adjustsFontSizeToFit:true,minimumFontScale:0.75,allowFontScaling:false,style:[READ_ALL_TEXT_BASE,styles.text]},tr("Read all"))));
+                    el(RN.Text,{numberOfLines:2,allowFontScaling:false,style:[READ_ALL_TEXT_BASE,readAllTextSize(tr("Read all")),styles.text]},tr("Read all"))));
     }
     function readAllBarProps(orig, self, args) {
         const result=orig.apply(self,args);
