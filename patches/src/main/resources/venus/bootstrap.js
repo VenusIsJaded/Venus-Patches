@@ -7286,9 +7286,6 @@
     // do it: post styles (FxTwitter, FxBluesky, fxTikTok, phixiv...), translation (FxTwitter, vxTwitter, FxBluesky, phixiv) and
     // dark posts (fxtumblr). Removing tracking works for every site, since the link itself is cleaned before it's sent.
     const FIX_SITE_SHEET = "VenusFixSite";
-    const FIX_STYLE_LABELS = {full:"Full post", gallery:"Media", text:"Text", media:"File"};
-    const FIX_STYLE_HINTS = {full:"The text, pictures or video, and likes.", gallery:"Just the picture or video and who posted it, without the text or counts.",
-        text:"Just the text, without pictures or videos.", media:"Only the picture or video file, played right in chat."};
     function FixSiteSheet(props) {
         useSettings("fixEmbeds");
         const ui = reviewUI(), site = fixSite(props.siteId), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
@@ -7320,7 +7317,11 @@
             ["discord", tr("Discord's language"), name("discord") + ".", rowIcon(13827, "ChatSmileIcon")],
             ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(6919, "MobilePhoneIcon")],
             ["custom", tr("Another language"), translateLanguageName(custom ? lang : "en") + ".", rowIcon(9415, "LanguageIcon")]];
-        const toggle = (key, label, sub, icon, value, onChange) => Switch ? el(Switch, {key, label:tr(label), subLabel:sub && tr(sub), icon, value, disabled:!on,
+        // Each look's name and what it shows, written out so every text is found for translating.
+        const labels = {full:tr("Full post"), gallery:tr("Media"), text:tr("Text"), media:tr("File")};
+        const hints = {full:tr("The text, pictures or video, and likes."), gallery:tr("Just the picture or video and who posted it, without the text or counts."),
+            text:tr("Just the text, without pictures or videos."), media:tr("Only the picture or video file, played right in chat.")};
+        const toggle = (key, label, sub, icon, value, onChange) => Switch ? el(Switch, {key, label, subLabel:sub, icon, value, disabled:!on,
             onValueChange:next => { animateLayout(); onChange(next); }}) : null;
         const changed = fixOptionsChanged(site) || service.id !== site.services[0].id;
         return wrap([
@@ -7334,10 +7335,10 @@
             styles.length > 1 ? el(RN.View, {key:"style", style:{gap:8}},
                 groupTitle("t:style", "Post style"),
                 venusSegmented({key:"fix:style:" + site.id, value:style, disabled:!on, onChange:value => fixSetOption(site.id, "style", value),
-                    items:styles.map(look => ({value:look, label:tr(FIX_STYLE_LABELS[look])}))}),
-                footnote("t:styleHint", FIX_STYLE_HINTS[style])) : null,
+                    items:styles.map(look => ({value:look, label:labels[look]}))}),
+                footnote("t:styleHint", hints[style])) : null,
             service.dark ? el(Group, {key:"dark", title:tr("Look")},
-                toggle("dark", "Dark Tumblr posts", "Tumblr posts are drawn on a dark background, to match Discord.", rowIcon(13620, "ThemeDarkIcon"), options.dark,
+                toggle("dark", tr("Dark Tumblr posts"), tr("Tumblr posts are drawn on a dark background, to match Discord."), rowIcon(13620, "ThemeDarkIcon"), options.dark,
                     value => fixSetOption(site.id, "dark", value))) : null,
             service.lang && RadioGroup && RadioRow ? el(RadioGroup, {key:"translate", title:tr("Translate posts"), value:mode, onChange:setMode},
                 translateChoices.map(([value, label, sub, icon]) => el(RadioRow, {key:value, value, label, subLabel:sub, icon, disabled:!on}))) : null,
@@ -7345,7 +7346,7 @@
             service.lang && lang !== "off" ? footnote("translateNote", service.lang === "pixiv" ? "pixiv shows titles and tags in English, Chinese or Korean." :
                 "The translation shows with the original under it, for everyone in the chat.") : null,
             el(Group, {key:"privacy", title:tr("Privacy")},
-                toggle("clean", "Remove tracking from links", "Drops share IDs like ?igsh= and ?si= from the links Venus fixes.", rowIcon(10733, "ShieldIcon"), options.clean,
+                toggle("clean", tr("Remove tracking from links"), tr("Drops share IDs like ?igsh= and ?si= from the links Venus fixes."), rowIcon(10733, "ShieldIcon"), options.clean,
                     value => fixSetOption(site.id, "clean", value))),
             changed ? el(Group, {key:"manage"}, actionRow(ui, "reset", "Reset to defaults", null, () => {
                 animateLayout(); fixResetOptions(site.id); fixSetChoice(site.id, site.services[0].id); }, !on, true)) : null]);
