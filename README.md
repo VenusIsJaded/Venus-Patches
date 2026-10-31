@@ -24,7 +24,7 @@ Open **Discord Settings → Venus → Features** to turn things on or off at any
 
 | Group | Feature | What it does |
 | --- | --- | --- |
-| **Messages** | Keep deleted messages | Deleted messages stay in chat, outlined in red, and edits keep their history. Hold one to dismiss it, or its edit history, without restarting. A **Message log** lists every deleted and edited message by day, with search and filters, and you choose what goes in it (deletions, edits, your own, bots). Pick their color, brightness and how many to keep, up to No limit |
+| **Messages** | Keep deleted messages | Deleted messages stay in chat, outlined in red, with **This message was deleted • Dismiss message** under them, and edits keep their history above the message with a **Remove edit history** link. Tap either to clear it without restarting (holding the message offers the same). A **Message log** lists every deleted and edited message by day, with search and filters, and you choose what goes in it (deletions, edits, your own, bots). Pick their color, brightness and how many to keep, up to No limit |
 | | Bulk delete messages | Select multiple messages in chat and delete them all at once |
 | | Hide blocked or ignored messages | Removes the "blocked messages" and "ignored messages" rows from chat, and can hide replies to them too. Can also close your DM with someone as soon as you block them, so they leave the Messages list (no messages are deleted). Based on RemoveBlockedUsers |
 | | Message highlights | Pick bar width, plus the color and brightness of replies and mentions |
