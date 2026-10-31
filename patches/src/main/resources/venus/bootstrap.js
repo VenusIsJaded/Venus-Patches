@@ -68,7 +68,7 @@
     const deferred = new Map();
     // Every feature starts off: nothing changes in Discord until you turn it on. Options inside a feature keep
     // their own defaults, so turning a feature on does what it says straight away.
-    const settings = { picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
+    const settings = { debugLog: false, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
         noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
         jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
         quests:false, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true,
@@ -85,7 +85,7 @@
     let DEFAULT_SETTINGS = null;
     function defaultSettings() {
         return DEFAULT_SETTINGS || (DEFAULT_SETTINGS = Object.freeze({
-            picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
+            debugLog: false, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
             noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
             jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
             quests: false, questsVideo: true, questsPlay: true, questsActivity: true, questsEnroll: true,
@@ -282,6 +282,7 @@
     }
     function languageChanged() {
         i18n.version++; i18n.shownIn = uiLanguage();
+        diagSendStrings();
         notify("*");
         // Only the "Translated from ..." line under a translation is in Venus's language: redraw just those rows,
         // not every message on screen, and nothing while the feature is off or that line isn't shown.
@@ -423,6 +424,7 @@
         return typeof value === "number" && !Number.isFinite(value) ? undefined : value;
     }
     function setSetting(key, value) {
+        if (settings.debugLog || debugLog.early) dlog("I", "settings", key + " = " + dlogText(value));
         // The settings language isn't a feature: it's always there.
         if (key === "language") {
             if (!isLanguage(value)) return false;
@@ -435,6 +437,15 @@
             if (clean === undefined) return false;
             if (settings.hiddenFeatures === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings.hiddenFeatures = clean; dirty.add(key); save(); notify(key); return true;
+        }
+        // Troubleshooting (About): Debug logging and the crash screen belong to Venus itself, not to a feature.
+        if (key === "debugLog" || key === "crashScreen") {
+            if (typeof value !== "boolean") return false;
+            if (settings[key] === value && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings[key] = value; dirty.add(key); save(); notify(key);
+            if (key === "debugLog") { if (value) debugLogStart(); else debugLogStop(); }
+            else diagCall(value ? "screen:on" : "screen:off").catch(() => {});
+            return true;
         }
         if (!owns(settings, key) || !features[featureFor(key)]) return false;
         // Remove anything: which buttons you removed, as a comma-separated list of spots.
@@ -675,6 +686,7 @@
                 }
             }
             status.storage = "ready";
+            debugLogReady();
             if (features.nitroThemes && settings.nitroThemes) nitroThemeRecheck();
             if ((features.nitroThemes || features.accountSwitcher) && nitroThemeHasAny()) later(nitroThemeReapply, 0);
             if (!starter.done && Object.keys(FEATURE_ICONS).some(key => features[key] && settings[key])) starter.done = true;
@@ -1720,6 +1732,296 @@
         if (storage === "waiting" || storage === "loading") return "idle";
         return "dnd";
     }
+    // Troubleshooting (About): the crash screen and Debug logging. Neither is a feature: Debug logging is off until someone
+    // turns it on to track a problem down, and records only on this phone. The crash catcher and the screen itself are
+    // native (extensions/diag, Diagnostics.kt), reached through FileModule.clearFolder with a private prefix.
+    const DIAG_PREFIX = "venus-diag-v1:", DEBUG_LOG_FILE = "venus-log.txt", DEBUG_LOG_MAX = 4000, DEBUG_LOG_EARLY = 400;
+    // early: lines from Discord's start, kept in memory only until the settings are read, then kept or thrown away.
+    const debugLog = {lines:[], early:[], dropped:0, dirty:false, timer:undefined, timerMs:0, installed:false, started:0,
+        console:null, consoleHooks:null, fetch:null, fetchHook:null, xhr:null, xhrHooks:null, errors:null, errorHook:null, flux:false, appState:null, dimensions:null};
+    const diag = {last:null, busy:"", sentStrings:""};
+    const DLOG_HIDDEN = /token|authori[sz]ation|password|secret|cookie|session|fingerprint|email|phone|ticket|nonce|captcha|mfa|^content$|^message$/i;
+    function dlogReplacer(key, value) {
+        if (key && DLOG_HIDDEN.test(key)) return "[hidden]";
+        return typeof value === "string" && value.length > 300 ? value.slice(0, 300) + "..." : value;
+    }
+    function dlogText(value) {
+        if (value == null) return String(value);
+        if (typeof value === "string") return value.length > 2000 ? value.slice(0, 2000) + "..." : value;
+        if (typeof value === "object" && typeof value.message === "string")
+            return String(value.name || "Error") + ": " + value.message + (typeof value.stack === "string" ? "\n" + value.stack.slice(0, 4000) : "");
+        if (typeof value === "object") {
+            try { const text = JSON.stringify(value, dlogReplacer); return text && text.length > 2000 ? text.slice(0, 2000) + "..." : String(text); }
+            catch (_) { return Object.prototype.toString.call(value); }
+        }
+        return String(value);
+    }
+    // Query strings carry signatures and tokens; webhook and interaction links carry a token in the path.
+    function dlogUrl(url) {
+        let text = String(url == null ? "" : url);
+        const query = text.indexOf("?");
+        if (query >= 0) text = text.slice(0, query) + "?...";
+        return text.replace(/\/(webhooks|interactions)\/(\d+)\/[^\/?#]+/g, "/$1/$2/[hidden]").slice(0, 300);
+    }
+    function dlogStamp(ms) {
+        const d = new Date(ms), pad = (n, w) => { let t = String(n); while (t.length < w) t = "0" + t; return t; };
+        return pad(d.getHours(), 2) + ":" + pad(d.getMinutes(), 2) + ":" + pad(d.getSeconds(), 2) + "." + pad(d.getMilliseconds(), 3);
+    }
+    // One line: time, level (E error, W warning, I info, D detail), where it came from and what happened.
+    function dlog(level, tag) {
+        if (!settings.debugLog && !debugLog.early) return;
+        let text = "";
+        for (let i = 2; i < arguments.length; i++) text += (i > 2 ? " " : "") + dlogText(arguments[i]);
+        const line = (dlogStamp(Date.now()) + " " + level + " [" + tag + "] " + text).slice(0, 2400);
+        if (!settings.debugLog) { if (debugLog.early.length < DEBUG_LOG_EARLY) debugLog.early.push(line); return; }
+        debugLog.lines.push(line);
+        if (debugLog.lines.length > DEBUG_LOG_MAX + 200) { const extra = debugLog.lines.length - DEBUG_LOG_MAX; debugLog.lines.splice(0, extra); debugLog.dropped += extra; }
+        debugLogSchedule(level === "E" ? 400 : 5000);
+    }
+    function debugLogSchedule(ms) {
+        debugLog.dirty = true;
+        if (debugLog.timer !== undefined) {
+            if (ms >= debugLog.timerMs) return;
+            if (global.clearTimeout) global.clearTimeout(debugLog.timer);
+        }
+        debugLog.timerMs = ms;
+        debugLog.timer = later(() => { debugLog.timer = undefined; debugLogFlush(); }, ms, false);
+    }
+    // The whole log as one file next to Venus's settings, so a crash report (written natively) can include it.
+    function debugLogFlush() {
+        if (!files || typeof files.writeFile !== "function" || !debugLog.dirty) return Promise.resolve();
+        debugLog.dirty = false;
+        const head = "Venus " + revision + " for Discord " + DISCORD_VERSION + ", recording since " + (debugLog.started ? new Date(debugLog.started).toString() : "-") +
+            (debugLog.dropped ? ", " + debugLog.dropped + " older lines left out" : "") + "\n";
+        const text = head + debugLog.lines.join("\n") + "\n";
+        return Promise.resolve().then(() => files.writeFile("documents", DEBUG_LOG_FILE, text, "utf8")).catch(() => { debugLog.dirty = true; });
+    }
+    function debugLogReady() {
+        if (settings.debugLog) { debugLog.lines = debugLog.early.concat(debugLog.lines); debugLog.early = null; debugLogStart(); }
+        else debugLog.early = null;
+        diagSendStrings();
+    }
+    function dlogEnvironment() {
+        const on = Object.keys(settings).filter(key => settings[key] === true);
+        dlog("I", "venus", "Venus " + revision + " for Discord " + DISCORD_VERSION + ", settings " + status.storage + ", language " + uiLanguage() + " (" + settings.language + ")");
+        dlog("I", "venus", "patched in: " + Object.keys(features).filter(key => features[key]).join(", "));
+        dlog("I", "venus", "turned on: " + (on.length ? on.join(", ") : "nothing"));
+        try {
+            const c = RN && RN.Platform && RN.Platform.constants || {};
+            dlog("I", "device", (c.Manufacturer || "") + " " + (c.Model || "") + " (" + (c.Brand || "") + "), Android " + (c.Release || "?") + " API " + (RN.Platform.Version || "?") +
+                (c.reactNativeVersion ? ", React Native " + [c.reactNativeVersion.major, c.reactNativeVersion.minor, c.reactNativeVersion.patch].join(".") : ""));
+            if (RN.PixelRatio) dlog("I", "device", "density " + RN.PixelRatio.get() + (RN.PixelRatio.get() % 1 ? " (not a whole number)" : "") + ", font scale " + RN.PixelRatio.getFontScale());
+            if (RN.Dimensions) { const w = RN.Dimensions.get("window"), sc = RN.Dimensions.get("screen"); dlog("I", "device", "window " + w.width + "x" + w.height + " dp, screen " + sc.width + "x" + sc.height + " dp"); }
+            if (RN.Appearance && typeof RN.Appearance.getColorScheme === "function") dlog("I", "device", "system appearance " + RN.Appearance.getColorScheme());
+        } catch (error) { dlog("W", "device", dlogText(error)); }
+        try { const h = global.HermesInternal; if (h && typeof h.getRuntimeProperties === "function") dlog("I", "device", "Hermes " + dlogText(h.getRuntimeProperties())); } catch (_) {}
+    }
+    function dlogAction(action) {
+        const bits = [action.type];
+        if (typeof action.guildId === "string") bits.push("guild=" + action.guildId);
+        if (typeof action.channelId === "string") bits.push("channel=" + action.channelId);
+        const keys = Object.keys(action).filter(key => key !== "type");
+        if (keys.length) bits.push("{" + keys.slice(0, 10).join(",") + (keys.length > 10 ? ",..." : "") + "}");
+        return bits.join(" ");
+    }
+    // Everything Discord does that Venus can see: console output, JavaScript errors, every request and how it ended,
+    // every Flux action (types and ids, never their contents), the app going to the background, screen size changes.
+    function debugLogStart() {
+        if (!settings.debugLog || debugLog.installed) return;
+        debugLog.installed = true;
+        if (!debugLog.started) debugLog.started = Date.now();
+        dlog("I", "venus", "Debug logging on");
+        dlogEnvironment();
+        const c = global.console;
+        if (c && !debugLog.consoleHooks) {
+            debugLog.console = {}; debugLog.consoleHooks = {};
+            ["log", "info", "warn", "error", "debug", "trace"].forEach(name => {
+                const original = c[name];
+                if (typeof original !== "function") return;
+                const level = name === "error" ? "E" : name === "warn" ? "W" : name === "debug" || name === "trace" ? "D" : "I";
+                const hook = function () {
+                    try { if (settings.debugLog) dlog.apply(null, [level, "console." + name].concat(Array.prototype.slice.call(arguments))); } catch (_) {}
+                    return original.apply(this, arguments);
+                };
+                debugLog.console[name] = original; debugLog.consoleHooks[name] = hook; c[name] = hook;
+            });
+        }
+        const errors = global.ErrorUtils;
+        if (errors && typeof errors.getGlobalHandler === "function" && typeof errors.setGlobalHandler === "function" && !debugLog.errorHook) {
+            const previous = errors.getGlobalHandler();
+            const hook = function (error, isFatal) {
+                try { dlog("E", "js-error", (isFatal ? "FATAL " : "") + dlogText(error)); debugLogFlush(); } catch (_) {}
+                return typeof previous === "function" ? previous.apply(this, arguments) : undefined;
+            };
+            debugLog.errors = previous; debugLog.errorHook = hook;
+            try { errors.setGlobalHandler(hook); } catch (_) { debugLog.errorHook = null; }
+        }
+        if (typeof global.fetch === "function" && !debugLog.fetchHook) {
+            const original = global.fetch;
+            const hook = function (input, init) {
+                const started = Date.now(), method = String(init && init.method || input && input.method || "GET").toUpperCase();
+                const url = dlogUrl(typeof input === "string" ? input : input && input.url);
+                let result;
+                try { result = original.apply(this, arguments); } catch (error) { dlog("E", "net", "fetch " + method + " " + url + " threw " + dlogText(error)); throw error; }
+                if (settings.debugLog && result && typeof result.then === "function")
+                    result.then(r => dlog(r && r.ok ? "D" : "W", "net", "fetch " + method + " " + url + " -> " + (r && r.status) + " in " + (Date.now() - started) + " ms"),
+                        error => dlog("W", "net", "fetch " + method + " " + url + " failed after " + (Date.now() - started) + " ms: " + dlogText(error)));
+                return result;
+            };
+            debugLog.fetch = original; debugLog.fetchHook = hook; global.fetch = hook;
+        }
+        const X = global.XMLHttpRequest, proto = X && X.prototype;
+        if (proto && typeof proto.open === "function" && typeof proto.send === "function" && !debugLog.xhrHooks) {
+            const open = proto.open, send = proto.send;
+            const hooks = {
+                open: function (method, url) { try { this.__venusLog = {method:String(method || "GET").toUpperCase(), url:dlogUrl(url), at:0}; } catch (_) {} return open.apply(this, arguments); },
+                send: function () {
+                    const info = this.__venusLog, xhr = this;
+                    if (info && settings.debugLog) try {
+                        info.at = Date.now();
+                        xhr.addEventListener("readystatechange", () => {
+                            if (xhr.readyState !== 4) return;
+                            dlog(xhr.status >= 200 && xhr.status < 400 ? "D" : "W", "net", info.method + " " + info.url + " -> " + (xhr.status || "no answer") + " in " + (Date.now() - info.at) + " ms");
+                        });
+                    } catch (_) {}
+                    return send.apply(this, arguments);
+                }};
+            debugLog.xhr = {open, send}; debugLog.xhrHooks = hooks; proto.open = hooks.open; proto.send = hooks.send;
+        }
+        // Discord's Dispatcher (584) has no way to remove an interceptor: once added, it only reads the switch.
+        if (!debugLog.flux) {
+            const dispatcher = inspectedExport(584, "default");
+            if (dispatcher && typeof dispatcher.addInterceptor === "function") try {
+                dispatcher.addInterceptor(action => { if (settings.debugLog && action && action.type) dlog("D", "flux", dlogAction(action)); return false; });
+                debugLog.flux = true;
+            } catch (error) { dlog("W", "flux", "couldn't watch Discord's actions: " + dlogText(error)); }
+        }
+        try {
+            if (RN && RN.AppState && typeof RN.AppState.addEventListener === "function" && !debugLog.appState)
+                debugLog.appState = RN.AppState.addEventListener("change", state => dlog("I", "app", "now " + state));
+            if (RN && RN.Dimensions && typeof RN.Dimensions.addEventListener === "function" && !debugLog.dimensions)
+                debugLog.dimensions = RN.Dimensions.addEventListener("change", sizes => dlog("I", "app", "screen size changed " + dlogText(sizes && sizes.window)));
+        } catch (_) {}
+        debugLogFlush();
+    }
+    // Puts Discord back the way it was. What was recorded stays, so it can still be exported.
+    function debugLogStop() {
+        if (!debugLog.installed) return;
+        debugLog.installed = false;
+        const c = global.console;
+        if (c && debugLog.consoleHooks) Object.keys(debugLog.consoleHooks).forEach(name => { if (c[name] === debugLog.consoleHooks[name]) c[name] = debugLog.console[name]; });
+        debugLog.consoleHooks = null;
+        const errors = global.ErrorUtils;
+        if (errors && debugLog.errorHook) try { if (errors.getGlobalHandler() === debugLog.errorHook) errors.setGlobalHandler(debugLog.errors); } catch (_) {}
+        debugLog.errorHook = null;
+        if (debugLog.fetchHook && global.fetch === debugLog.fetchHook) global.fetch = debugLog.fetch;
+        debugLog.fetchHook = null;
+        const proto = global.XMLHttpRequest && global.XMLHttpRequest.prototype;
+        if (proto && debugLog.xhrHooks) { if (proto.open === debugLog.xhrHooks.open) proto.open = debugLog.xhr.open; if (proto.send === debugLog.xhrHooks.send) proto.send = debugLog.xhr.send; }
+        debugLog.xhrHooks = null;
+        try { if (debugLog.appState && typeof debugLog.appState.remove === "function") debugLog.appState.remove(); } catch (_) {}
+        try { if (debugLog.dimensions && typeof debugLog.dimensions.remove === "function") debugLog.dimensions.remove(); } catch (_) {}
+        debugLog.appState = null; debugLog.dimensions = null;
+        debugLog.lines.push(dlogStamp(Date.now()) + " I [venus] Debug logging off");
+        debugLog.dirty = true; debugLogFlush();
+    }
+    // The Read all pill's label as laid out, and the numbers that decide it (a blank pill at density 2.75).
+    function readAllLayoutLog(event) {
+        try {
+            const box = event && event.nativeEvent && event.nativeEvent.layout, label = tr("Read all");
+            dlog("I", "readAll", "label \"" + label + "\" at " + readAllTextSize(label).fontSize + " sp laid out " + (box ? box.width.toFixed(2) + " x " + box.height.toFixed(2) + " dp" : "?") +
+                ", density " + (RN.PixelRatio ? RN.PixelRatio.get() : "?") + ", font scale " + (RN.PixelRatio ? RN.PixelRatio.getFontScale() : "?"));
+        } catch (_) {}
+    }
+    function diagCall(action, argument) {
+        if (!files || typeof files.clearFolder !== "function") return Promise.reject(new Error("unavailable"));
+        return Promise.resolve().then(() => files.clearFolder(DIAG_PREFIX + action, argument == null ? "" : String(argument)));
+    }
+    // The crash screen is drawn natively before Venus runs, so it gets its texts in Venus's language ahead of time.
+    function diagSendStrings() {
+        if (!files || status.storage === "waiting" || status.storage === "loading") return;
+        const text = JSON.stringify({crashed:tr("Discord crashed"), anr:tr("Discord stopped responding"),
+            intro:tr("Here's what happened. Copy or export it and include it when you report the problem."), what:tr("What went wrong"),
+            report:tr("Full report"), copy:tr("Copy"), share:tr("Share"), export:tr("Export"), close:tr("Close"), copied:tr("Crash report copied"),
+            saved:tr("Saved to Downloads as {name}"), failed:tr("Couldn't save the file. Try Share instead."),
+            partial:tr("Showing part of a long report. Export saves all of it."), preview:tr("Preview")});
+        if (text === diag.sentStrings) return;
+        diag.sentStrings = text;
+        diagCall("strings", text).catch(() => { diag.sentStrings = ""; });
+    }
+    function diagLoadLast() {
+        diagCall("last").then(text => { diag.last = typeof text === "string" ? text : ""; notify("diag"); }, () => { diag.last = ""; notify("diag"); });
+    }
+    // "java.lang.NullPointerException: ... · 2026-10-31 14:02:11", from the report's own lines.
+    function diagSummary(report) {
+        const at = report.indexOf("--- What went wrong ---\n"), when = /\nWhen: ([^\n(]*)/.exec(report);
+        let what = at >= 0 ? report.slice(at + 24).split("\n")[0] : "";
+        if (what.length > 90) what = what.slice(0, 90) + "...";
+        return [what, when ? when[1].trim() : ""].filter(Boolean).join(" \u00b7 ");
+    }
+    function diagShow() {
+        diagCall("show").catch(() => showProblem("Couldn't open the crash screen", tr("Try again in a moment.")));
+    }
+    function diagBusy(kind) { diag.busy = kind; notify("diag"); }
+    // Export logs / Copy logs: Venus's log, the last crash, the phone and Discord, and Discord's own log (logcat),
+    // put together natively (Diagnostics.troubleshootingReport). Works with Debug logging off too, just with less in it.
+    function debugLogExport(toClipboard) {
+        if (diag.busy) return;
+        diagBusy(toClipboard ? "copy" : "export");
+        dlog("I", "venus", toClipboard ? "logs copied" : "logs exported");
+        debugLog.dirty = debugLog.dirty || settings.debugLog;
+        debugLogFlush().then(() => diagCall("report")).then(text => {
+            if (typeof text !== "string" || !text) throw new Error("empty report");
+            const copy = () => {
+                (reviewUI().clipboard || RN.Clipboard).setString(text);
+                diagBusy("");
+                reviewToast(reviewUI(), "Logs copied", venusIcon(5141, "CopyIcon"));
+            };
+            const saveDocuments = inspectedExport(11600, "saveDocuments"), dir = cacheDir();
+            if (toClipboard || !files || typeof saveDocuments !== "function" || !dir) { copy(); return undefined; }
+            const name = "venus-logs-" + backupDate(Date.now()) + ".txt";
+            return Promise.resolve().then(() => files.writeFile("cache", name, text, "utf8"))
+                .then(() => saveDocuments({sourceUris:["file://" + dir + "/" + name], fileName:name, mimeType:"text/plain"}))
+                .then(result => {
+                    const first = Array.isArray(result) ? result[0] : result;
+                    if (first && first.error) throw new Error(String(first.error));
+                    diagBusy("");
+                    reviewToast(reviewUI(), "Logs saved", venusIcon(7144, "CircleCheckIcon"));
+                }, error => {
+                    diagBusy("");
+                    if (!pickerCancelled(error)) showProblem("Couldn't export the logs", tr("Try Copy logs instead."));
+                });
+        }).catch(() => { diagBusy(""); showProblem("Couldn't export the logs", tr("Try again in a moment.")); });
+    }
+    function debugLogClear() {
+        confirmAction("Clear the logs?", "The recorded logs and the last crash are removed from this phone. This can't be undone.", "Clear", () => {
+            debugLog.lines = []; debugLog.dropped = 0; debugLog.started = settings.debugLog ? Date.now() : 0; debugLog.dirty = true;
+            debugLogFlush();
+            diagCall("forget").catch(() => {});
+            diag.last = ""; notify("diag");
+            reviewToast(reviewUI(), "Logs cleared", venusIcon(5148, "TrashIcon"));
+        });
+    }
+    function troubleshootingGroup(ui) {
+        const Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Switch = ui.TableSwitchRow, busy = diag.busy;
+        if (!Row && !Switch) return null;
+        return el(Group, {key:"troubleshooting", title:tr("Troubleshooting")},
+            Switch ? el(Switch, {key:"debugLog", label:tr("Debug logging"),
+                subLabel:tr("Records what Discord and Venus do, so a problem can be tracked down. Discord runs a little slower while it's on."),
+                icon:rowIcon(6393, "ClipboardListIcon"), value:!!settings.debugLog, onValueChange:value => { animateLayout(); setSetting("debugLog", value); }}) : null,
+            Switch ? el(Switch, {key:"crashScreen", label:tr("Crash screen"), subLabel:tr("After Discord crashes, shows what went wrong, with Copy, Share and Export."),
+                icon:rowIcon(6573, "CircleXIcon"), value:!!settings.crashScreen, onValueChange:value => setSetting("crashScreen", value)}) : null,
+            Row ? el(Row, {key:"crash", label:diag.last ? tr("View last crash") : tr("Preview crash screen"),
+                subLabel:diag.last ? diagSummary(diag.last) : tr("See what it looks like. Nothing crashes."),
+                icon:rowIcon(5145, "CircleInformationIcon"), arrow:true, onPress:diagShow}) : null,
+            Row ? el(Row, {key:"export", label:busy === "export" ? tr("Saving…") : tr("Export logs"),
+                subLabel:tr("A text file with the logs, your phone's details and which features are on. Sign-ins are left out."),
+                icon:rowIcon(5143, "DownloadIcon"), disabled:!!busy, onPress:() => debugLogExport(false)}) : null,
+            Row ? el(Row, {key:"copy", label:tr("Copy logs"), subLabel:tr("Paste them into a message or an issue on GitHub."),
+                icon:rowIcon(5141, "CopyIcon"), disabled:!!busy, onPress:() => debugLogExport(true)}) : null,
+            Row ? el(Row, {key:"clear", label:tr("Clear logs"), subLabel:tr("Removes the recorded logs and the last crash."),
+                icon:rowIcon(5148, "TrashIcon"), onPress:debugLogClear}) : null);
+    }
     const ABOUT_DARK = {hero:{backgroundColor:"#2b2d31", borderRadius:16, padding:20, alignItems:"center", gap:6},
         logo:{width:64, height:64, borderRadius:32, alignItems:"center", justifyContent:"center", backgroundColor:"#5865f2", marginBottom:6},
         chip:{flexDirection:"row", alignItems:"center", gap:6, paddingHorizontal:10, paddingVertical:6, borderRadius:14, backgroundColor:"#4e50584d"},
@@ -1727,6 +2029,7 @@
     // About: who you're running, how much of it is on, whether it's healthy, and where to go next.
     function AboutSettings() {
         useSettings();
+        React.useEffect(() => { diagLoadLast(); }, []);
         const ui = reviewUI();
         if (!React || !RN) return null;
         const s = useThemed("about", c => ({hero:Object.assign({}, ABOUT_DARK.hero, {backgroundColor:c.CARD_BACKGROUND_DEFAULT}),
@@ -1767,6 +2070,7 @@
                 linkRow("changes", "What's new", "Changes in each release.", REPO + "/blob/main/CHANGELOG.md", 11733, "SparklesIcon"),
                 linkRow("issues", "Report a problem", "Opens a new issue on GitHub.", REPO + "/issues/new/choose", 12113, "BugIcon"),
                 linkRow("source", "Source code", "Venus Patches on GitHub. Free and open source (GPL-3.0).", REPO, 7972, "LinkExternalSmallIcon")),
+            troubleshootingGroup(ui),
             footnote("note", "Nothing is tracked, and everything works offline except the features that say they use a service.")];
         return settingsBody(ui, groups);
     }
@@ -3858,6 +4162,8 @@
                 dms=acks.length;
             }
         } catch (error) { if (!problem) problem=error; }
+        if (settings.debugLog) dlog(problem ? "W" : "I", "readAll", "mode " + mode + ": " + guilds + " servers, " + dms + " DMs" + (problem ? ", problem: " + dlogText(problem) : "") +
+            ", missing stores: " + (Object.keys(api).filter(key => !api[key]).join(",") || "none"));
         const parts=[];
         if (guilds) parts.push(pl(guilds,"{n} server","{n} servers"));
         if (dms) parts.push(pl(dms,"{n} DM","{n} DMs"));
@@ -3946,7 +4252,7 @@
                 style:({pressed}) => [READ_ALL_PILL_BASE,styles.pill,
                     pressed ? styles.pressed : null,pressed ? READ_ALL_PRESSED_SCALE : null]},
                 done ? popIn("done",el(venusIcon(7101,"CheckmarkSmallIcon"),{size:"xs",color:styles.text && styles.text.color})) :
-                    el(RN.Text,{numberOfLines:2,allowFontScaling:false,style:[READ_ALL_TEXT_BASE,readAllTextSize(tr("Read all")),styles.text]},tr("Read all"))));
+                    el(RN.Text,{numberOfLines:2,allowFontScaling:false,onLayout:settings.debugLog ? readAllLayoutLog : undefined,style:[READ_ALL_TEXT_BASE,readAllTextSize(tr("Read all")),styles.text]},tr("Read all"))));
     }
     function readAllBarProps(orig, self, args) {
         const result=orig.apply(self,args);
@@ -3968,6 +4274,7 @@
                     return section===separator && enabled("readAll") ? el(RN.View,{key:"venus-read-all",style:READ_ALL_WRAP_STYLE},el(ReadAllButton,null),node) : node;
                 }});
             readAllData.set(data, listDataProps);
+            if (settings.debugLog) dlog("I", "readAll", "added to the server bar's separator row (section " + separator + ", " + (enums ? "Discord's" : "fallback") + " section enum)");
         }
         const view=Object.assign({},result,{listDataProps});
         readAllViews.set(result, view);
@@ -18975,6 +19282,7 @@
             if (INSTRUMENTED_MODULES.has(id)) module.exports = instrument(module.exports, 0);
         } catch (error) {
             status.audioError = "Hook unavailable: " + String(error);
+            dlog("E", "hooks", "module " + id + ": " + dlogText(error));
             if (global.console && typeof global.console.warn === "function")
                 global.console.warn("[Venus] Hook unavailable", String(error));
         }
