@@ -12696,7 +12696,7 @@
     // Share and tracking parameters each site adds when you copy a link: who shared it, from which app, and when. They're
     // removed from links Venus fixes, so neither the embed service nor anyone who taps the link sees them. utm_*, si and fbclid go everywhere.
     function fixTrackingTable() {
-        return {x:/^(?:s|t|ref_src|ref_url)$/, instagram:/^(?:igsh|igshid|img_index)$/,
+        return {x:/^(?:s|t|a|ref_src|ref_url)$/, instagram:/^(?:igsh|igshid|img_index)$/,
             tiktok:/^(?:_r|_t|_d|is_from_webapp|sender_device|sender_web_id|web_id|share_app_id|share_link_id|u_code|preview_pb|timestamp|checksum|tt_from|enter_from|source|social_share_type|share_item_id|user_id|sec_user_id)$/,
             reddit:/^(?:share_id|rdt|context|ref|ref_source|ref_campaign)$/, threads:/^(?:xmt|slof)$/, facebook:/^(?:mibextid|rdid|sfnsn|extid|ref|__tn__)$/,
             bilibili:/^(?:spm_id_from|vd_source|share_source|share_medium|share_plat|share_session_id|share_tag|timestamp|unique_k|up_id|bbid|ts)$/,
