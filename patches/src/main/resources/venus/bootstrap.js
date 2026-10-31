@@ -3311,7 +3311,7 @@
         if (typeof url === "string" && url.indexOf(NODELETE_HELP) === 0) { openSettings("VENUS_NODELETE"); return true; }
         const message = data.message, kind = message && message.loggingName;
         if (data.action !== "bindDismissMessage" || (kind !== NODELETE_DISMISS && kind !== NODELETE_HISTORY)) return false;
-        const channelId = String(message.channel_id), id = String(message.id), key = deletedKey(channelId, id);
+        const channelId = String(message.channel_id || message.channelId), id = String(message.id || data.messageId), key = deletedKey(channelId, id);
         if (kind === NODELETE_DISMISS) noDeleteDismiss(key);
         else {
             let live = null;
@@ -6565,12 +6565,13 @@
     // A small chat surface for page previews, in the theme's chat colors (same tokens as the Message highlights one).
     const CHAT_PREVIEW_DARK = {chat:{borderRadius:16, overflow:"hidden", backgroundColor:"#1a1a1e", borderWidth:1, borderColor:"#ffffff14", paddingVertical:8},
         name:{color:"#f2f3f5", fontSize:15, fontWeight:"600"}, text:{color:"#dbdee1", fontSize:15, lineHeight:20}, muted:{color:"#949ba4", fontSize:12},
-        faded:{color:"#949ba4", fontSize:14, textDecorationLine:"line-through"}, quote:{borderLeftWidth:4, borderColor:"#4e5058", paddingLeft:8, marginTop:4}};
+        faded:{color:"#949ba4", fontSize:14, textDecorationLine:"line-through"}, quote:{borderLeftWidth:4, borderColor:"#4e5058", paddingLeft:8, marginTop:4},
+        link:{color:"#00a8fc", fontSize:12, fontWeight:"600"}};
     function useChatPreviewStyles() {
         return useThemed("chatPreview", c => ({chat:Object.assign({}, CHAT_PREVIEW_DARK.chat, {backgroundColor:c.CHANNEL_BACKGROUND_DEFAULT || c.BACKGROUND_BASE_LOWER, borderColor:c.BORDER_SUBTLE}),
             name:Object.assign({}, CHAT_PREVIEW_DARK.name, {color:c.TEXT_STRONG}), text:Object.assign({}, CHAT_PREVIEW_DARK.text, {color:c.TEXT_DEFAULT}),
             muted:Object.assign({}, CHAT_PREVIEW_DARK.muted, {color:c.TEXT_MUTED}), faded:Object.assign({}, CHAT_PREVIEW_DARK.faded, {color:c.TEXT_MUTED}),
-            quote:Object.assign({}, CHAT_PREVIEW_DARK.quote, {borderColor:c.BORDER_STRONG})}), CHAT_PREVIEW_DARK);
+            quote:Object.assign({}, CHAT_PREVIEW_DARK.quote, {borderColor:c.BORDER_STRONG}), link:Object.assign({}, CHAT_PREVIEW_DARK.link, {color:c.TEXT_LINK || "#00a8fc"})}), CHAT_PREVIEW_DARK);
     }
     // One message in a preview: a 40px round letter avatar at 12px margin (64px start guideline), the name, timestamp (+8px) and body.
     function previewMessage(s, key, who, color, time, body, extra) {
@@ -8071,11 +8072,17 @@
             previewScreen(s,"preview","Deleted messages preview",[
             el(RN.View,{key:"edited"},
                 previewMessage(s,"edited","Alex","#3ba55c",tr("Today at 4:01 PM"),el(RN.View,null,
-                    history.map((text,i) => popIn("old:"+i,el(RN.Text,{style:s.faded},text))),
+                    history.length ? popIn("history",el(RN.View,{style:[s.quote,{marginTop:0,marginBottom:4}]},
+                        history.map((text,i) => el(RN.Text,{key:i,style:[s.faded,{fontSize:12}]},text)),
+                        el(RN.Text,{style:s.link},tr("Remove edit history")))) : null,
                     el(RN.Text,{style:s.text},versions[2],el(RN.Text,{style:s.muted}," "+tr("(edited)")))))),
             el(RN.View,{key:"deleted",style:{backgroundColor:red+alpha}},
                 el(RN.View,{style:{position:"absolute",left:0,top:0,bottom:0,width:bar,backgroundColor:red}}),
-                previewMessage(s,"msg","Sam","#eb459e",tr("Today at 4:03 PM"),el(RN.Text,{style:s.text},tr("Oops, wrong chat. Deleting this."))))],
+                previewMessage(s,"msg","Sam","#eb459e",tr("Today at 4:03 PM"),el(RN.View,null,
+                    el(RN.Text,{style:s.text},tr("Oops, wrong chat. Deleting this.")),
+                    el(RN.View,{style:{flexDirection:"row",alignItems:"center",gap:4,marginTop:4}},
+                        el(venusIcon(6929,"EyeIcon"),{size:"xxs",color:s.muted.color}),
+                        el(RN.Text,{style:[s.muted,{flexShrink:1}]},tr("This message was deleted")+" \u2022 ",el(RN.Text,{style:s.link},tr("Dismiss message")))))))],
             {header:previewHeader(k,{title:"general"}),footer:previewInput(k,s,{placeholder:tr("Message {channel}",{channel:"#general"})})}));
     }
     // Keep up to: three sizes and No limit (0), plus any other number.
