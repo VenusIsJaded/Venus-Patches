@@ -1133,10 +1133,10 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
+    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss deleted message"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
-        userNotif:["Change status", "Start typing", "Send a message", "Phone notifications"], accountSwitcher:["Button on the profile bar", "Create a new account", "Export accounts", "Import accounts", "Same theme on every account"],
+        userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Create a new account", "Export accounts", "Import accounts", "Same theme on every account"],
         hiddenChannels:["Show its details"], serverEdit:["Edit locally", "Name", "Icon", "Server icon", "Choose from your phone", "Use a link"], serverInfo:["Look up friends in the server", "Boosts", "Owner", "Server ID"], customThemes:["Show theme background image", "Browse Revenge themes"],
         messageHighlight:["Brightness", "Left bar width"], iconPacks:["Rosiecord", "Plumpy", "Iconsax", "Material", "MD3", "Solar", "Deco", "Themes+", "Follow theme's icon pack"],
         fixEmbeds:["Remove tracking from links", "X (Twitter)", "Twitter", "Instagram", "TikTok", "Reddit", "Bluesky", "Threads", "Tumblr", "Facebook", "Mastodon", "YouTube", "Twitch", "Spotify", "pixiv", "Bilibili", "DeviantArt", "Fur Affinity", "Pinterest", "PTT",
@@ -1637,6 +1637,9 @@
         toggle("people", "silentLeave", "Leave group DMs silently", "Leave group DMs without the \"left the group\" message.");
         withOptions("people", "reviewDB", "VENUS_REVIEWDB", "User and server reviews", "Read and write ReviewDB reviews on profiles and servers.", "Reviews", ReviewSettings);
         withOptions("people", "userNotif", "VENUS_USERNOTIF", "User activity notifications", "Get notified when chosen people change status, type or message.", "Activity notifications", UserNotifSettings);
+        // The two logs open from their feature's page, one level below it, like Discord's own nested settings.
+        if (features.noDelete) { route("VENUS_NODELETE_LOG", "Message log", [], "VENUS_NODELETE", iconFor("noDelete")); next.VENUS_NODELETE_LOG.screen.getComponent = () => MessageLogPage; logScreens.messages = next.VENUS_NODELETE_LOG.screen; }
+        if (features.userNotif) { route("VENUS_USERNOTIF_LOG", "Activity log", [], "VENUS_USERNOTIF", iconFor("userNotif")); next.VENUS_USERNOTIF_LOG.screen.getComponent = () => ActivityLogPage; logScreens.activity = next.VENUS_USERNOTIF_LOG.screen; }
         withOptions("people", "accountSwitcher", "VENUS_ACCOUNTSWITCHER", "Account switcher", "Switch between Discord accounts in one tap.", "Account switcher", AccountSwitcherSettings);
         // Servers
         withOptions("servers", "readAll", "VENUS_READALL", "Read all button", "A button that marks servers and DMs as read.", "Read all", ReadAllSettings);
@@ -2987,7 +2990,7 @@
     const logs = {messages:{name:"messages", feature:"noDelete", entries:[], account:null, state:"idle", revision:0, timer:undefined, writing:false, pending:undefined, wake:undefined},
         activity:{name:"activity", feature:"userNotif", entries:[], account:null, state:"idle", revision:0, timer:undefined, writing:false, pending:undefined, wake:undefined}};
     // Each entry is turned into text once, so a new one doesn't re-serialize the whole log. logRoutes: the log pages' screens.
-    const logTexts = new WeakMap(), logRoutes = {};
+    const logTexts = new WeakMap(), logScreens = {};
     function logClip(text) { return typeof text === "string" ? (text.length > LOG_TEXT ? text.slice(0, LOG_TEXT) + "\u2026" : text) : ""; }
     function logUser(user, id, name) {
         const u = user || {};
@@ -7711,10 +7714,13 @@
                 previewMessage(s,"msg","Sam","#eb459e",tr("Today at 4:03 PM"),el(RN.Text,{style:s.text},tr("Oops, wrong chat. Deleting this."))))],
             {header:previewHeader(k,{title:"general"}),footer:previewInput(k,s,{placeholder:tr("Message {channel}",{channel:"#general"})})}));
     }
-    const NODELETE_LIMITS = [100, 512, 1000, MAX_DELETED];
+    // Keep up to: three sizes and No limit (0), plus any other number.
+    const NODELETE_LIMITS = [500, 1000, 5000, 0];
     function NoDeleteSettings() {
         useSettings();
+        const nav=useVenusNav();
         const [hexOpen, setHexOpen]=React.useState(false), [hexDraft, setHexDraft]=React.useState(""), card=highlightCardStyle();
+        React.useEffect(() => { if (settings.noDelete) logReady(logs.messages); }, [settings.noDelete]);
         const ui=reviewUI();
         if (!React || !RN) return null;
         const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow, on=!!settings.noDelete;
@@ -7724,12 +7730,20 @@
         const kept=deleted.size, changed=edits.size, hasKept=kept>0 || changed>0;
         const summary=hasKept ? tr(settings.noDeleteSave ? "{deleted} and {edited} kept, saved on this phone." : "{deleted} and {edited} kept until Discord restarts.",
             {deleted:count(kept,"deleted message"),edited:count(changed,"edited message")}) : "";
+        const choices=[["noDeleteLogDeleted",tr("Deleted messages"),tr("What they said, who sent them and where."),rowIcon(5148,"TrashIcon"),tr("Deletions")],
+            ["noDeleteLogEdits",tr("Edits"),tr("The text before and after each edit."),rowIcon(10023,"PencilIcon"),tr("Edits")],
+            ["noDeleteLogOwn",tr("Your own messages"),tr("Also log what you delete or edit yourself."),rowIcon(10598,"UserCircleIcon"),tr("Your own")],
+            ["noDeleteLogBots",tr("Bots"),tr("Also log messages from bots and apps."),rowIcon(16003,"PuzzlePieceIcon"),tr("Bots")]];
         const groups=[
             !settings.noDelete ? offCard("status",venusIcon(5148,"TrashIcon"), "noDelete") : hasKept ? statusCard("status",summary,{title:pl(kept+changed,"{n} message kept","{n} messages kept"),
                 IconComponent:venusIcon(5148,"TrashIcon")}) : null,
             el(NoDeletePreview,{key:"preview",edits:!!settings.noDeleteEdits,on:!!settings.noDelete}),
-            el(Group,{key:"edits",title:tr("Edited messages")},toggle("noDeleteEdits","Show edit history","What a message said before it was edited, faded and crossed out above it. Up to 10 versions each.",rowIcon(10023,"PencilIcon"))),
-            el(Group,{key:"save",title:tr("Storage")},toggle("noDeleteSave","Keep after restarting","Deleted and edited messages survive closing Discord. Saved only on this phone, for this account.",rowIcon(5143,"DownloadIcon"))),
+            el(Group,{key:"log",title:tr("Log")},
+                logOpenRow(ui,nav,"open",tr("Message log"),logs.messages,rowIcon(5150,"ClockIcon"),on),
+                logChoicesRow(ui,"choices","noDelete",choices,on)),
+            el(Group,{key:"options",title:tr("In chat")},
+                toggle("noDeleteEdits","Show edit history","What a message said before it was edited, faded and crossed out above it. Up to 10 versions each.",rowIcon(10023,"PencilIcon")),
+                toggle("noDeleteSave","Keep after restarting","Deleted and edited messages survive closing Discord. Saved only on this phone, for this account.",rowIcon(5143,"DownloadIcon"))),
             el(RN.View,{key:"look",style:{gap:8}},
                 groupTitle("title","Look"),
                 el(RN.View,{style:card},
@@ -7740,16 +7754,212 @@
             el(PresetOrCustom,{key:"brightness",title:"Brightness",value:settings.noDeleteBrightness,disabled:!on,min:0,max:100,placeholder:50,
                 inputLabel:tr("Brightness, 0 to 100"),format:n => tr("{n}%",{n}),onChange:value => setSetting("noDeleteBrightness",value),
                 presets:BRIGHTNESS_STEPS.map(n => ({value:n,label:tr("{n}%",{n})})),hint:"0% leaves only the bar."}),
-            el(PresetOrCustom,{key:"limit",title:"Keep up to",value:settings.noDeleteLimit,disabled:!on,min:1,max:MAX_DELETED,placeholder:512,
-                inputLabel:tr("Messages, 1 to {max}",{max:MAX_DELETED}),format:n => String(n),onChange:value => setSetting("noDeleteLimit",value),
-                presets:NODELETE_LIMITS.map(n => ({value:n,label:String(n)})),hint:"When it's full, the oldest is removed first."}),
+            el(PresetOrCustom,{key:"limit",title:"Keep up to",value:settings.noDeleteLimit,disabled:!on,min:1,max:MAX_DELETED,placeholder:1000,
+                inputLabel:tr("Messages, 1 to {max}",{max:MAX_DELETED}),format:n => serverNumber(n),onChange:value => setSetting("noDeleteLimit",value),
+                presets:NODELETE_LIMITS.map(n => ({value:n,label:n ? serverNumber(n) : tr("No limit")})),
+                hint:settings.noDeleteLimit ? "When it's full, the oldest is removed first." : "Every deleted message stays until you dismiss or clear it."}),
             hasKept || look ? el(Group,{key:"clear",title:tr("Manage")},
                 look ? actionRow(ui,"look","Reset the look","Red at 50% brightness, as Discord draws a highlight.",() => { setSetting("noDeleteColor","default"); setSetting("noDeleteBrightness",50); setHexOpen(false); },!on) : null,
-                hasKept ? actionRow(ui,"clear","Clear kept messages","Removes every deleted message and edit history Venus kept, from chat and from this phone.",
+                hasKept ? actionRow(ui,"clear","Clear kept messages","Removes every deleted message and edit history Venus kept, from chat and from this phone. The message log stays.",
                     () => confirmAction("Clear kept messages?","Every deleted message and edit history Venus kept is removed. This can't be undone.","Clear",forgetKept),false,true) : null) : null,
-            footnote("note","Delete a kept message again to hide just that one.")];
+            footnote("note","Hold a kept message to dismiss it, or its edit history, without restarting.")];
         return settingsBody(ui,groups);
         function toggle(key,label,subLabel,icon) { return switchRow(Switch,key,label,subLabel,icon); }
+    }
+    // Discord's settings stack, for opening a page from a row inside a page. Looked up once, so every render calls the same hooks.
+    function useVenusNav() {
+        if (stackNavigation === undefined) stackNavigation = inspectedExport(1505, "useStackNavigation") || null;
+        return stackNavigation ? stackNavigation() : null;
+    }
+    function openVenusScreen(navigation, screen) {
+        if (!navigation || !screen) return;
+        try { global.__r(15736).onRouteSettingOnPress({navigation, screen}); }
+        catch (_) { try { navigation.navigate(screen.route); } catch (__) {} }
+    }
+    // "Message log · 1,204 entries": the row that opens a log.
+    function logOpenRow(ui, nav, key, label, log, icon, on) {
+        const n = log.entries.length;
+        const sub = log.state === "loading" ? tr("Loading\u2026") : n ? serverCount(n, "{n} entry", "{n} entries") : tr("Nothing logged yet");
+        return ui.TableRow ? el(ui.TableRow, {key, label, subLabel:sub, icon, arrow:true, disabled:!on,
+            onPress:() => openVenusScreen(nav, logScreens[log.name])}) : null;
+    }
+    // "What to log": one row, its choices in a sheet, so the page stays short. Choices: [key, label, description, icon, short name].
+    function logChoicesRow(ui, key, feature, choices, on) {
+        const picked = choices.filter(choice => settings[choice[0]]).map(choice => choice[4]);
+        return ui.TableRow ? el(ui.TableRow, {key, label:tr("What to log"), subLabel:picked.length ? picked.join(", ") : tr("Nothing"),
+            icon:rowIcon(12331, "FiltersHorizontalIcon"), arrow:true, disabled:!on, onPress:() => openLogChoices(feature, choices)}) : null;
+    }
+    const LOG_CHOICES_SHEET = "VenusLogChoices";
+    function LogChoicesSheet(props) {
+        useSettings(props.feature);
+        const ui = reviewUI(), Check = inspectedExport(6454, "TableCheckboxRow"), Group = ui.TableRowGroup || RN.View;
+        const flip = key => { haptic("SELECTION"); setSetting(key, !settings[key]); };
+        return el(ui.ActionSheet, {header:ui.Header ? el(ui.Header, {title:tr("What to log"),
+                trailing:ui.Close ? el(ui.Close, {onPress:() => hideReviewSheet(ui, LOG_CHOICES_SHEET)}) : undefined}) : undefined},
+            el(RN.View, {style:{gap:12}},
+                el(Group, null, props.choices.map(([key, label, sub, icon]) => Check ?
+                    el(Check, {key, label, subLabel:sub, icon, checked:!!settings[key], onPress:() => flip(key)}) :
+                    ui.TableRow ? el(ui.TableRow, {key, label:(settings[key] ? "\u2713 " : "") + label, subLabel:sub, icon, onPress:() => flip(key)}) : null)),
+                footnote("note", "Saved only on this phone, for this account. Nothing is uploaded.")));
+    }
+    function openLogChoices(feature, choices) {
+        const ui = reviewUI();
+        if (!ui.ActionSheet || typeof ui.showSheet !== "function") return;
+        try { ui.showSheet({key:LOG_CHOICES_SHEET, content:el(LogChoicesSheet, {feature, choices}), stackingBehavior:"stack"}); } catch (_) {}
+    }
+    // --- The log pages: newest first, by day, each day one rounded card like Discord's own lists.
+    const LOG_PAGE = 50;
+    const LOG_DARK = {card:{backgroundColor:"#2b2d31", borderRadius:16, overflow:"hidden"}, divider:{height:1, marginLeft:64, backgroundColor:"#ffffff0f"},
+        pill:{flexDirection:"row", alignItems:"center", gap:5, paddingHorizontal:8, paddingVertical:3, borderRadius:10, backgroundColor:"#4e50584d"},
+        quote:{borderLeftWidth:3, borderColor:"#4e5058", paddingLeft:10, marginTop:6}, pressed:{backgroundColor:"#ffffff0a"}};
+    function useLogStyles() {
+        return useThemed("venusLog", c => ({card:Object.assign({}, LOG_DARK.card, {backgroundColor:c.CARD_BACKGROUND_DEFAULT}),
+            divider:Object.assign({}, LOG_DARK.divider, {backgroundColor:c.BORDER_SUBTLE}), pill:Object.assign({}, LOG_DARK.pill, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}),
+            quote:Object.assign({}, LOG_DARK.quote, {borderColor:c.BORDER_STRONG}), pressed:{backgroundColor:c.BACKGROUND_MOD_SUBTLE}}), LOG_DARK);
+    }
+    function logLine(value, variant, color, lines, style) {
+        const Text = inspectedExport(5187, "Text");
+        return Text ? el(Text, {variant, color, lineClamp:lines, style}, value) :
+            el(RN.Text, {numberOfLines:lines, style:[{color:color === "text-muted" ? "#949ba4" : "#dbdee1", fontSize:/text-xs/.test(variant) ? 12 : /text-sm/.test(variant) ? 14 : 16}, style]}, value);
+    }
+    function logTime(t) {
+        try { const text = new Date(t).toLocaleTimeString(uiLanguage(), {hour:"numeric", minute:"2-digit"}); if (text && /\d/.test(text)) return text; } catch (_) {}
+        const d = new Date(t); return d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+    }
+    function logDay(t) {
+        const start = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        const days = Math.round((start(new Date()) - start(new Date(t))) / 86400000);
+        return days === 0 ? tr("Today") : days === 1 ? tr("Yesterday") : serverDate(t);
+    }
+    function logWhere(entry) {
+        if (entry.dm) return entry.cn || tr("DM");
+        const channel = entry.cn ? "#" + entry.cn : "";
+        return channel && entry.gn ? channel + " \u00b7 " + entry.gn : channel || entry.gn || "";
+    }
+    function logMatches(entry, query) {
+        const fields = [entry.u && entry.u.n, entry.u && entry.u.h, entry.x, entry.b, entry.cn, entry.gn];
+        for (let i = 0; i < fields.length; i++) if (typeof fields[i] === "string" && fields[i].toLowerCase().indexOf(query) >= 0) return true;
+        return false;
+    }
+    function logDot(color) { return el(RN.View, {style:{width:8, height:8, borderRadius:4, backgroundColor:color}}); }
+    function logBody(entry, s) {
+        const files = entry.f ? pl(entry.f, "{n} attachment", "{n} attachments") : "";
+        switch (entry.k) {
+        case "d": {
+            const red = highlightColorHex(settings.noDeleteColor, "#f23f43");
+            return el(RN.View, {style:[s.quote, {borderColor:red}]},
+                entry.x ? logLine(entry.x, "text-md/normal", "text-default", 8) : null,
+                files ? logLine(files, "text-sm/medium", "text-muted", 1) : !entry.x ? logLine(tr("(no text)"), "text-sm/medium", "text-muted", 1) : null);
+        }
+        case "e":
+            return el(RN.View, {style:[s.quote, {gap:4}]},
+                logLine(entry.b || tr("(no text)"), "text-sm/medium", "text-muted", 6, {textDecorationLine:"line-through"}),
+                logLine(entry.x || tr("(no text)"), "text-md/normal", "text-default", 8));
+        case "s":
+            return el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:6, marginTop:4}},
+                logDot(STATUS_HEX[entry.p] || STATUS_HEX.offline), logLine(userNotifStatusName(entry.p), "text-sm/medium", "text-muted", 1),
+                logLine("\u2192", "text-sm/medium", "text-muted", 1),
+                logDot(STATUS_HEX[entry.s] || STATUS_HEX.offline), logLine(userNotifStatusName(entry.s), "text-sm/semibold", "text-default", 1));
+        case "m":
+            return entry.x || files ? el(RN.View, {style:s.quote},
+                entry.x ? logLine(entry.x, "text-md/normal", "text-default", 6) : null, files ? logLine(files, "text-sm/medium", "text-muted", 1) : null) : null;
+        default: return null;
+        }
+    }
+    const LOG_KINDS = {d:["Deleted", "#f23f43"], e:["Edited", "#5865f2"], m:["Message", "#5865f2"], t:["Typing", "#949ba4"]};
+    function logEntryRow(log, entry, s, divider) {
+        const Press = RN.Pressable || RN.View, kind = LOG_KINDS[entry.k];
+        const color = entry.k === "d" ? highlightColorHex(settings.noDeleteColor, "#f23f43") : kind ? kind[1] : STATUS_HEX[entry.s] || STATUS_HEX.offline;
+        const label = entry.k === "d" ? tr("Deleted") : entry.k === "e" ? tr("Edited") : entry.k === "m" ? tr("Message") : entry.k === "t" ? tr("Typing") : tr("Status");
+        const where = logWhere(entry);
+        const user = {id:entry.u.id, username:entry.u.h || entry.u.n, globalName:entry.u.n, avatar:entry.u.a || null};
+        return el(RN.View, {key:entry.t + ":" + (entry.m || entry.u.id) + ":" + entry.k},
+            divider ? el(RN.View, {style:s.divider}) : null,
+            el(Press, {accessibilityRole:"button", onPress:() => logEntryMenu(log, entry), android_ripple:{color:"#ffffff14"},
+                style:state => [{flexDirection:"row", gap:12, paddingHorizontal:14, paddingVertical:12}, state && state.pressed ? s.pressed : null]},
+                avatarBubble(user, 38),
+                el(RN.View, {style:{flex:1, minWidth:0}},
+                    el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:8}},
+                        el(RN.View, {style:{flexShrink:1}}, logLine(entry.u.n, "text-md/semibold", "text-strong", 1)),
+                        entry.u.b ? el(RN.View, {style:{paddingHorizontal:4, borderRadius:4, backgroundColor:"#5865f2"}}, logLine(tr("APP"), "text-xxs/bold", "always-white", 1, {color:"#ffffff"})) : null,
+                        logLine(logTime(entry.t), "text-xs/medium", "text-muted", 1),
+                        el(RN.View, {style:{flex:1}}),
+                        el(RN.View, {style:s.pill}, logDot(color), logLine(label, "text-xs/semibold", "text-muted", 1))),
+                    where ? logLine(where, "text-xs/medium", "text-muted", 1) : null,
+                    logBody(entry, s))));
+    }
+    function logEntryMenu(log, entry) {
+        const ui = reviewUI(), text = entry.x || entry.b || "", options = [];
+        if (text) options.push({label:tr("Copy Text"), IconComponent:venusIcon(5141, "CopyIcon"), onPress:() => {
+            try { (ui.clipboard || RN.Clipboard).setString(text); } catch (_) {}
+            reviewToast(ui, "Message copied", venusIcon(5141, "CopyIcon"));
+        }});
+        if (entry.c && entry.k !== "s") options.push({label:entry.m ? tr("Go to message") : tr("Go to chat"), IconComponent:venusIcon(10604, "ArrowSmallRightIcon"), onPress:() => logGo(entry)});
+        options.push({label:tr("Remove from log"), IconComponent:venusIcon(5148, "TrashIcon"), isDestructive:true, onPress:() => logRemove(log, entry)});
+        const title = entry.u.n;
+        if (typeof ui.simpleSheet === "function") try { ui.simpleSheet({key:"VenusLogEntry", header:{title, onClose:() => hideReviewSheet(ui, "VenusLogEntry")}, options}); return; } catch (_) {}
+        if (RN.Alert) RN.Alert.alert(title, undefined, options.map(o => ({text:o.label, style:o.isDestructive ? "destructive" : "default", onPress:o.onPress})).concat([{text:tr("Cancel"), style:"cancel"}]));
+    }
+    // Settings sits on top of the chat (the root "settings" screen openSettings opens), so it's closed first.
+    function logGo(entry) {
+        try {
+            const ref = inspectedExport(5073, "getRootNavigationRef"), nav = ref && ref();
+            const state = nav && typeof nav.getRootState === "function" ? nav.getRootState() : null, top = state && state.routes && state.routes[state.index];
+            if (top && top.name === "settings" && typeof nav.goBack === "function") nav.goBack();
+        } catch (_) {}
+        const go = inspectedExport(1114, "transitionTo");
+        if (typeof go === "function") later(() => { try { go("/channels/" + (entry.g || "@me") + "/" + entry.c + (entry.m ? "/" + entry.m : "")); } catch (_) {} }, 250);
+    }
+    function VenusLogPage(props) {
+        const log = props.log;
+        useSettings(log.feature);
+        const [filter, setFilter] = React.useState("all"), [query, setQuery] = React.useState(""), [limit, setLimit] = React.useState(LOG_PAGE);
+        React.useEffect(() => { logReady(log); }, []);
+        const s = useLogStyles(), ui = reviewUI();
+        if (!RN) return null;
+        const Group = ui.TableRowGroup || RN.View, SearchField = inspectedExport(7016, "SearchField"), Button = inspectedExport(5479, "Button");
+        const choice = props.filters.find(f => f[0] === filter) || props.filters[0], kinds = choice[2];
+        const text = typeof query === "string" ? query.trim().toLowerCase() : "", entries = log.entries;
+        // Newest first, only as many as are shown: a log of 100,000 entries costs the same to draw as one of 50.
+        const shown = [];
+        let more = false;
+        for (let i = entries.length - 1; i >= 0; i--) {
+            const entry = entries[i];
+            if (kinds && kinds.indexOf(entry.k) < 0 || text && !logMatches(entry, text)) continue;
+            if (shown.length >= limit) { more = true; break; }
+            shown.push(entry);
+        }
+        const days = [];
+        shown.forEach(entry => { const day = logDay(entry.t), last = days[days.length - 1]; if (last && last.day === day) last.items.push(entry); else days.push({day, items:[entry]}); });
+        const on = enabled(log.feature), loading = log.state === "loading" && !entries.length;
+        const search = entries.length > 0 ? (SearchField ? el(SearchField, {key:"search", placeholder:tr("Search the log"), value:query, onChange:t => { setQuery(String(t || "")); setLimit(LOG_PAGE); }}) :
+            ui.TextInput ? el(ui.TextInput, {key:"search", placeholder:tr("Search the log"), value:query, onChange:t => { setQuery(String(t || "")); setLimit(LOG_PAGE); }}) : null) : null;
+        const groups = [
+            !on ? offCard("off", props.icon, log.feature) : null,
+            entries.length ? el(RN.View, {key:"top", style:{gap:12}},
+                venusSegmented({key:"filter:" + log.name, value:filter, onChange:value => { setFilter(value); setLimit(LOG_PAGE); }, items:props.filters.map(f => ({value:f[0], label:f[1]}))}),
+                search) : null,
+            loading ? statusCard("loading", "Loading\u2026") :
+            !shown.length ? VenusStatusCard({key:"empty", IconComponent:props.icon, title:entries.length ? tr("No matching entries") : tr("Nothing logged yet"),
+                body:entries.length ? tr("Try another filter or search.") : props.empty}) : null,
+            ...days.map(day => el(RN.View, {key:"day:" + day.day, style:{gap:8}},
+                groupTitle("title", day.day),
+                el(RN.View, {style:s.card}, day.items.map((entry, i) => logEntryRow(log, entry, s, i > 0))))),
+            more ? el(RN.View, {key:"more", style:{alignItems:"center"}},
+                Button ? el(Button, {text:tr("Show older"), variant:"secondary", size:"md", onPress:() => setLimit(limit + LOG_PAGE * 2)}) : null) : null,
+            entries.length ? el(Group, {key:"manage", title:tr("Manage")},
+                actionRow(ui, "clear", "Clear log", "Removes every entry from this phone. Kept messages stay in chat.",
+                    () => confirmAction("Clear the log?", "Every entry is removed from this phone. This can't be undone.", "Clear", () => { logClear(log); reviewToast(ui, "Log cleared", venusIcon(5148, "TrashIcon")); }), false, true)) : null,
+            footnote("note", "Saved only on this phone, for this account. Nothing is uploaded. Tap an entry to copy it, open it or remove it.")];
+        return settingsBody(ui, groups, {keyboardShouldPersistTaps:"handled"});
+    }
+    function MessageLogPage() {
+        return el(VenusLogPage, {log:logs.messages, icon:venusIcon(5150, "ClockIcon"), empty:tr("Deleted and edited messages show up here as they happen."),
+            filters:[["all", tr("All"), null], ["d", tr("Deleted"), ["d"]], ["e", tr("Edited"), ["e"]]]});
+    }
+    function ActivityLogPage() {
+        return el(VenusLogPage, {log:logs.activity, icon:venusIcon(5150, "ClockIcon"), empty:tr("What the people you watch do shows up here as it happens."),
+            filters:[["all", tr("All"), null], ["s", tr("Status"), ["s"]], ["m", tr("Messages"), ["m"]], ["t", tr("Typing"), ["t"]]]});
     }
     // Clear kept messages: every kept deletion leaves chat and the saved file, and so does edit history.
     // Removals go through Discord's own dispatch, bound before Venus hooked it, so they aren't kept again.
@@ -10955,6 +11165,8 @@
         button:{width:32, height:32, borderRadius:16, alignItems:"center", justifyContent:"center", backgroundColor:"#4e50584d"}};
     function UserNotifSettings() {
         useSettings("userNotif");
+        const nav = useVenusNav();
+        React.useEffect(() => { if (settings.userNotif) logReady(logs.activity); }, [settings.userNotif]);
         const ui = reviewUI();
         const [query, setQuery] = React.useState(""), [idDraft, setIdDraft] = React.useState(""), [, redraw] = React.useState(0);
         React.useEffect(() => {
@@ -11065,6 +11277,12 @@
                 settings.userNotifPush && userNotif.permissionGranted === false && Row ?
                     el(Row, {key:"perm", label:tr("Allow notification permission"), subLabel:tr("Android notifications are turned off for Discord. Tap to check or open system settings."),
                         icon:rowIcon(10654, "BellSlashIcon"), variant:"danger", arrow:true, disabled:!on, onPress:() => userNotifRequestPermissions(true)}) : null),
+            el(Group, {key:"log", title:tr("Log")},
+                logOpenRow(ui, nav, "open", tr("Activity log"), logs.activity, rowIcon(5150, "ClockIcon"), on),
+                logChoicesRow(ui, "choices", "userNotif", [
+                    ["userNotifLogStatus", tr("Status changes"), tr("Online, Idle, Do Not Disturb or Offline."), rowIcon(10598, "UserCircleIcon"), tr("Status")],
+                    ["userNotifLogMessages", tr("Messages"), tr("What they send, and where."), rowIcon(8471, "ChatIcon"), tr("Messages")],
+                    ["userNotifLogTyping", tr("Typing"), tr("Once a minute per person and chat."), rowIcon(13747, "KeyboardIcon"), tr("Typing")]], on)),
             el(RN.View, {key:"who", style:{gap:8}},
                 groupTitle("title", "Who to watch"),
                 venusSegmented({key:"choice", value:allFriends ? "all" : "picked", disabled:!on, onChange:setWho,
