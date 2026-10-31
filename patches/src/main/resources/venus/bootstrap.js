@@ -52,6 +52,7 @@
     if (features.alwaysTrust) selectModules([8537, 8766]);
     if (features.noConfirmPin) selectModules([5400, 1128]);
     if (features.clickableMentions) selectModules([1392, 2068, 2119, 12337]);
+    if (features.quietReplies) selectModules([1392, 5532, 9990]);
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
     if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
     if (features.experiments) selectModules([584, 1392, 1403]);
@@ -78,7 +79,7 @@
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsClean:true, fixEmbedsDark:true, fixEmbedsStyle:"full", fixEmbedsTranslate:"off", fixEmbedsLanguage:"en", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, hideAnything:false, hideAnythingSpots:"", language:"auto", hiddenFeatures:"" };
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsClean:true, fixEmbedsDark:true, fixEmbedsStyle:"full", fixEmbedsTranslate:"off", fixEmbedsLanguage:"en", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, quietReplies:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, hideAnything:false, hideAnythingSpots:"", language:"auto", hiddenFeatures:"" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
     function defaultSettings() {
@@ -95,7 +96,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsClean: true, fixEmbedsDark: true, fixEmbedsStyle: "full", fixEmbedsTranslate: "off", fixEmbedsLanguage: "en", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, hideAnything: false, hideAnythingSpots: "", language: "auto", hiddenFeatures: ""
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsClean: true, fixEmbedsDark: true, fixEmbedsStyle: "full", fixEmbedsTranslate: "off", fixEmbedsLanguage: "en", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, quietReplies: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, hideAnything: false, hideAnythingSpots: "", language: "auto", hiddenFeatures: ""
         }));
     }
     // Backup and restore (#68): when you last saved a backup, and whether a restore is being applied right now.
@@ -1054,7 +1055,7 @@
     const featureFor = key => {
         const cached = featureTable[key];
         if (cached !== undefined) return cached;
-        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : key === "noDeleteSave" || key === "noDeleteLimit" || key === "noDeleteEdits" || key === "noDeleteColor" || key === "noDeleteBrightness" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : key;
+        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : key === "noDeleteSave" || key === "noDeleteLimit" || key === "noDeleteEdits" || key === "noDeleteColor" || key === "noDeleteBrightness" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : key;
     };
     // Section titles are read whenever Discord draws the list, so they follow the language too. "Venus" is a name.
     function section(label, keys) {
@@ -1089,7 +1090,7 @@
         hiddenChannels:[8495, "LockIcon"], systemFont:[16730, "LettersIcon"], systemEmoji:[13827, "ChatSmileIcon"],
         youBarSettings:[7368, "SettingsIcon"], quests:[13929, "QuestsIcon"],
         badges:[9211, "TrophyIcon"], userNotif:[9045, "BellIcon"], accountSwitcher:[8489, "GroupIcon"], appIcons:[8506, "AppsIcon"],
-        customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"]};
+        customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], quietReplies:[10654, "BellSlashIcon"]};
     const venusIcons = new Map();
     function venusIcon(id, name, fallback) {
         const slot = id + ":" + name;
@@ -1136,6 +1137,7 @@
         alwaysTrust:["AlwaysTrust", "Always Trust", "Leaving Discord", "Untrusted domain", "Suspicious file", "Dangerous download", "Links", "Downloads"],
         noConfirmPin:["NoConfirmPin", "Pin", "Unpin", "Pinned messages"],
         clickableMentions:["ClickableMentions", "Mentions", "Profile", "Message bar"],
+        quietReplies:["Ping", "Pings", "Mention", "Mentions", "Reply", "Replies", "@ ON", "@ OFF", "Notification", "Servers", "Group DMs", "When they mentioned you", "Silent replies", "No ping"],
         fullImages:["High-res profile pictures", "HighResProfileImages", "Avatars", "Profile pictures", "Banners", "Uncompressed", "Uncompressed images", "Original", "Full quality", "Lossless", "Compression", "Blurry", "Thumbnail", "Resolution", "Pictures", "Photos"],
         removedAlerts:["Removed", "Unfriend", "Friend", "Kicked", "Banned", "Server", "Left", "Alert", "Notifier", "Relationship", "Connection", "Removed connection alerts", "Relationship notifier", "Notify"],
         cleanChannels:["Emoji", "Symbols and dividers", "Fancy letters", "Spaces instead of dashes", "Spaces in channel names", "general chat", "Categories", "Channel names", "Decorations"],
@@ -1606,6 +1608,7 @@
         toggle("sending", "noTyping", "Hide typing indicator", "Others won't see when you're typing.");
         toggle("sending", "picker", "Show file sizes when attaching", "Photos and videos in the picker show their size.");
         toggle("sending", "anonFiles", "Anonymous file names", "Files you send get a random name instead of the one on your phone.");
+        withOptions("sending", "quietReplies", "VENUS_QUIETREPLIES", "Reply without pinging", "Replies start with the ping off, so nobody gets pinged unless you turn it on.", "Reply without pinging", QuietRepliesSettings);
         toggle("sending", "clickableMentions", "Tap mentions to open profiles", "Tap an @mention in the message bar to see who it is.");
         // People
         withOptions("people", "pastelize", "VENUS_PASTELIZE", "Pastel name colors", "Names without a role color get a soft pastel one.", "Pastel names",
@@ -5814,9 +5817,10 @@
         return el(RN.View, {key:key || "bar", style:k.bar},
             Icon ? popIn("icon:" + text, el(Icon, {size:"xs", color:k.icon.color})) : null,
             el(RN.Text, {style:[s.muted, {flex:1, fontSize:14, fontWeight:"500"}], numberOfLines:1}, text),
-            mention ? el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:3}},
-                el(At, {size:"xxs", color:k.brandFg.color}),
-                el(RN.Text, {style:[k.brandFg, {fontSize:12, fontWeight:"700"}]}, "ON")) : null,
+            // mention === "off": the toggle as Reply without pinging leaves it, muted. It pops when it flips.
+            mention ? popIn("mention:" + mention, el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:3}},
+                el(At, {size:"xxs", color:mention === "off" ? k.iconMuted.color : k.brandFg.color}),
+                el(RN.Text, {style:[mention === "off" ? s.muted : k.brandFg, {fontSize:12, fontWeight:"700"}]}, mention === "off" ? "OFF" : "ON"))) : null,
             mention && onClose ? el(RN.View, {style:[k.barDivider, {marginHorizontal:8}]}) : null,
             onClose ? el(Press, {onPress:onClose, accessibilityRole:"button", accessibilityLabel:tr("Cancel"), hitSlop:{top:8, bottom:8, left:8, right:8}},
                 el(X, {size:"xs", color:k.icon.color})) : null);
@@ -16986,6 +16990,101 @@
     function alwaysTrustFile(orig, self, args) {
         return enabled("alwaysTrust") && settings.alwaysTrustFiles ? null : orig.apply(self, args);
     }
+    // Reply without pinging (#128): every way Discord starts a reply (Reply in a message's menu, swipe to reply, Double-tap to
+    // reply, the notification center and ICYMI) goes through PendingReplyActionCreators (9990), and PendingReplyStore (7633)
+    // turns the ping on whenever shouldMention isn't false. So the reply simply starts with shouldMention:false where you
+    // asked for it. Discord's own @ ON/OFF toggle on the reply bar still flips it for that one reply, and a reply that
+    // already starts quiet (your own message, a one-on-one DM) is left as Discord made it.
+    function quietReplyCreate(orig, self, args) {
+        const params = args[0];
+        if (!params || params.shouldMention === false || !enabled("quietReplies") || !quietReplyWanted(params.channel, params.message, params.messageId))
+            return orig.apply(self, args);
+        const next = Array.from(args);
+        next[0] = Object.assign({}, params, {shouldMention:false});
+        return orig.apply(self, next);
+    }
+    function quietReplyWanted(channel, message, messageId) {
+        if (!channel) return false;
+        let group = false;
+        try { group = typeof channel.isGroupDM === "function" ? !!channel.isGroupDM() : channel.type === 3; } catch (_) {}
+        // A one-on-one DM never needs a ping (Discord already starts those quiet); servers and group DMs follow their switch.
+        if (channel.guild_id ? !settings.quietRepliesGuilds : group && !settings.quietRepliesGroups) return false;
+        return !(settings.quietRepliesMentioned && quietReplyMentionsMe(channel, message, messageId));
+    }
+    // Whether the message being replied to pinged you: @you, @everyone or one of your roles (MessageRecord.mentioned),
+    // or your ID in its mentions when Discord hasn't worked that out.
+    function quietReplyMentionsMe(channel, message, messageId) {
+        let msg = message;
+        if (!msg && messageId) {
+            const store = msgStore || inspectedExport(5532, "default");
+            try { msg = store && typeof store.getMessage === "function" ? store.getMessage(channel.id, messageId) : null; } catch (_) { msg = null; }
+        }
+        if (!msg) return false;
+        if (msg.mentioned === true) return true;
+        const me = currentUser(), list = msg.mentions;
+        if (!me || !list || typeof list.length !== "number") return false;
+        for (let i = 0; i < list.length && i < 100; i++) {
+            const entry = list[i];
+            if (entry === me.id || entry && entry.id === me.id) return true;
+        }
+        return false;
+    }
+    // The preview: a server chat where you reply to Sam. With the ping off for servers it plays out, the reply bar showing
+    // @ OFF and the sent reply quoting "Sam" with no @; otherwise it stays on Discord's own reply bar, @ ON.
+    function QuietRepliesPreview(props) {
+        useSettings("quietReplies");
+        const s = useChatPreviewStyles(), k = usePreviewChrome();
+        const quiet = !!props.on && !!settings.quietRepliesGuilds;
+        const blank = {replying:false, draft:"", sent:false};
+        const [state, setState] = React.useState(blank);
+        const update = change => setState(st => Object.assign({}, st, change));
+        const story = useStory(quiet, () => {
+            const steps = [[0, () => setState(blank), tr("Sam asks if anyone wants to play")],
+                [1200, () => { animateLayout(); update({replying:true}); }, tr("You reply to Sam")],
+                [900, () => {}, tr("The ping starts off, so Sam won't get a notification")]];
+            typeSteps(tr("I'm in!"), text => update({draft:text}), 110).forEach(step => steps.push(step));
+            steps.push([600, () => { animateLayout(); update({replying:false, draft:"", sent:true}); }, tr("Sent without a ping")], [1600, () => {}]);
+            return steps;
+        }, []);
+        const view = quiet ? state : {replying:true, draft:"", sent:false};
+        const Spine = {borderColor:k.iconMuted.color};
+        const quote = el(RN.View, {style:{flexDirection:"row", alignItems:"center", paddingHorizontal:12, paddingTop:4, marginBottom:-2}},
+            el(RN.View, {style:[{width:28, height:10, marginLeft:19, marginRight:4, marginTop:6, borderLeftWidth:2, borderTopWidth:2, borderTopLeftRadius:6}, Spine]}),
+            el(RN.View, {style:{width:16, height:16, borderRadius:8, backgroundColor:"#eb459e", alignItems:"center", justifyContent:"center", marginRight:4}},
+                el(RN.Text, {style:{color:"#ffffff", fontSize:9, fontWeight:"700"}}, "S")),
+            el(RN.Text, {style:[s.muted, {fontWeight:"600", marginRight:4}], numberOfLines:1}, "Sam"),
+            el(RN.Text, {style:[s.muted, {flex:1}], numberOfLines:1}, tr("Anyone up for a game later?")));
+        const picked = view.replying;
+        const theirs = el(RN.View, {key:"theirs", style:picked ? {backgroundColor:"#5865f21f"} : null},
+            picked ? el(RN.View, {style:{position:"absolute", left:0, top:0, bottom:0, width:2, backgroundColor:"#5865f2"}}) : null,
+            previewMessage(s, "theirs", "Sam", "#eb459e", tr("Today at 4:01 PM"), el(RN.Text, {style:s.text}, tr("Anyone up for a game later?"))));
+        const mine = view.sent ? el(RN.View, {key:"mine"}, popIn("mine", el(RN.View, null, quote,
+            previewMessage(s, "mine", tr("You"), "#5865f2", tr("Today at 4:02 PM"), el(RN.Text, {style:s.text}, tr("I'm in!")))))) : null;
+        const bar = view.replying ? previewBar(k, s, null, tr("Replying to {name}", {name:"Sam"}), null, "bar", quiet ? "off" : true) : null;
+        return el(RN.View, {key:"preview"},
+            previewScreen(s, "chat", "Reply pings preview", [theirs, mine],
+                {header:previewHeader(k, {title:"general"}),
+                 footer:el(RN.View, {key:"foot"}, previewInput(k, s, {bar, text:view.draft, placeholder:tr("Message {channel}", {channel:"#general"})}),
+                    quiet ? storyStrip(k, s, story) : null)}));
+    }
+    function QuietRepliesSettings() {
+        useSettings("quietReplies");
+        const ui = reviewUI();
+        if (!React || !RN) return null;
+        const on = enabled("quietReplies"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
+        const Icon = venusIcon(10654, "BellSlashIcon");
+        const any = !!(settings.quietRepliesGuilds || settings.quietRepliesGroups);
+        const groups = [
+            !on ? offCard("status", Icon, "quietReplies") : !any ? statusCard("status", "Turn on at least one option below.", {title:tr("Every reply pings"), IconComponent:Icon}) : null,
+            el(QuietRepliesPreview, {key:"preview", on}),
+            el(Group, {key:"where", title:tr("Turn the ping off in")},
+                switchRow(Switch, "quietRepliesGuilds", "Servers", "Replies in server channels and threads.", rowIcon(9545, "ServerIcon")),
+                switchRow(Switch, "quietRepliesGroups", "Group DMs", "Discord already leaves it off in one-on-one DMs.", rowIcon(8489, "GroupIcon"))),
+            el(Group, {key:"keep", title:tr("Keep the ping")},
+                switchRow(Switch, "quietRepliesMentioned", "When they mentioned you", "Replying to a message that mentions you still pings them, so they see your answer.", rowIcon(8490, "AtIcon"))),
+            footnote("note", "Tap @ on the reply bar to ping someone for just one reply.")];
+        return settingsBody(ui, groups);
+    }
     function AlwaysTrustSettings() {
         useSettings("alwaysTrust");
         const ui = reviewUI();
@@ -18054,10 +18153,11 @@
             case 2068: channelStore = exports.default; return exports;
             case 12849: return features.noTyping ? replaceValue(exports, "default", hookExport(hookExport(exports.default, "startTyping", typing), "stopTyping", typing)) : exports;
             case 1128: if (features.quickDelete || features.noConfirmPin) locale = exports; return exports;
+            case 9990: return features.quietReplies ? hookExport(hookExport(exports, "createPendingReply", quietReplyCreate), "createShallowPendingReply", quietReplyCreate) : exports;
             case 5400: return features.quickDelete || features.noConfirmPin ? replaceValue(exports, "default", hookExport(exports.default, "show", quickConfirm)) : exports;
             case 5534: if (features.noDelete) { messageRecords = exports; restoreDeleted(); } return exports;
             case 1392:
-                if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments))
+                if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments || features.quietReplies))
                     userStore = exports.default;
                 if (features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels) restoreDeleted();
                 return exports;
