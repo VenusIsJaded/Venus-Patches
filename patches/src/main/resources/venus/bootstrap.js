@@ -19,7 +19,7 @@
     if (features.freeNitro) selectModules([1392, 2068, 6243, 6286, 4864, 15066, 7323, 7445]);
     if (features.noTyping) targetModules[12849] = 1;
     if (features.quickDelete) selectModules([5400, 1128]);
-    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978]);
+    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978, 11114]);
     if (features.jumpToTop) selectModules([12920, 12921, 12922, 9683, 7445, 5532]);
     if (features.hiddenChannels) selectModules([1087, 1098, 1114, 2068, 2119, 4843, 7517, 4845, 5521, 7445, 584, 1392, 17357, 8495, 6291, 6362, 14975, 7748, 14788, 17190, 8727]);
     if (features.pastelize) selectModules([8013, 1266, 2128]);
@@ -1147,7 +1147,7 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss deleted message"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
+    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "Same theme on every account"],
@@ -3269,6 +3269,7 @@
     // Earlier versions sit above the message in one quote bar, each as small grey struck-through text: Discord's
     // own native block quote, subtext and strikethrough nodes, so it follows the theme and font like any message.
     // Plain text only, so an old version can never ping anyone or open a link.
+    // Its last line is a small "Remove edit history" link that removes it on the spot (#130).
     function editHistoryNodes(entry) {
         if (entry.view) return entry.view;
         const lines = [];
@@ -3276,8 +3277,48 @@
             if (index) lines.push({type:"br"});
             lines.push({type:"subtext", content:[{type:"s", content:[{type:"text", content:version.content || "(empty)"}]}]});
         });
+        lines.push({type:"br"}, {type:"subtext", content:[noDeleteLink(tr("Remove edit history"), NODELETE_HISTORY, entry.channelId, entry.id, "")]});
         entry.view = {type:"blockQuote", content:lines};
         return entry.view;
+    }
+    // Tappable links in a kept message use the native renderer's own dismiss link (LinkContextData.BindDismissMessage),
+    // marked by its loggingName so the tap reaches noDeleteTapLink instead of Discord's ephemeral-message dismiss.
+    const NODELETE_DISMISS = "venus-nodelete-dismiss", NODELETE_HISTORY = "venus-nodelete-history", NODELETE_HELP = "venus://nodelete";
+    function noDeleteLink(label, kind, channelId, id, username) {
+        return {type:"link", content:[{type:"text", content:label}],
+            target:{action:"bindDismissMessage", message:{id:String(id), channel_id:String(channelId), loggingName:kind, author:{username:String(username || "")}}}};
+    }
+    // "This message was deleted \u2022 Dismiss message" under a kept deleted message: the native line Discord draws under an
+    // ephemeral message ("Only you can see this \u2022 Dismiss message"), with the same eye icon. Its "?" opens this feature's page.
+    const noDeleteIndications = new Map();
+    function noDeleteIndication(source, channelId, id) {
+        const author = source && source.author, username = author && (author.username || author.globalName) || "";
+        const text = tr("This message was deleted") + " \u2022 ", dismiss = tr("Dismiss message"), key = channelId + ":" + id;
+        const hit = noDeleteIndications.get(key);
+        if (hit && hit.text === text && hit.dismiss === dismiss) return hit.value;
+        const value = {content:[{type:"text", content:text}, noDeleteLink(dismiss, NODELETE_DISMISS, channelId, id, username)],
+            helpArticleLink:NODELETE_HELP, helpButtonAccessibilityLabel:tr("Keep deleted messages")};
+        if (noDeleteIndications.size > 500) noDeleteIndications.clear();
+        noDeleteIndications.set(key, {text, dismiss, value});
+        return value;
+    }
+    // MessagesHandlers.handleTapLink: the two links above and the "?" (a URL tap). Anything else goes on to Discord.
+    function noDeleteTapLink(event) {
+        if (!enabled("noDelete")) return false;
+        const data = event && event.nativeEvent && event.nativeEvent.data;
+        if (!data) return false;
+        const node = data.node, url = data.url || node && typeof node.target === "string" && node.target;
+        if (typeof url === "string" && url.indexOf(NODELETE_HELP) === 0) { openSettings("VENUS_NODELETE"); return true; }
+        const message = data.message, kind = message && message.loggingName;
+        if (data.action !== "bindDismissMessage" || (kind !== NODELETE_DISMISS && kind !== NODELETE_HISTORY)) return false;
+        const channelId = String(message.channel_id), id = String(message.id), key = deletedKey(channelId, id);
+        if (kind === NODELETE_DISMISS) noDeleteDismiss(key);
+        else {
+            let live = null;
+            try { if (msgStore && typeof msgStore.getMessage === "function") live = msgStore.getMessage(channelId, id); } catch (_) {}
+            noDeleteHideHistory(key, live);
+        }
+        return true;
     }
     function withEditHistory(message, channelId, id) {
         if (!edits.size || !settings.noDeleteEdits || !message || !Array.isArray(message.content)) return message;
@@ -3430,8 +3471,8 @@
         if (count) entry.f = count;
         logAdd(logs.messages, entry);
     }
-    // A kept message's hold menu (LongPressMessageActionSheet 9978): Dismiss for a deleted message, Hide edit history
-    // for an edited one, so neither needs a restart to go away (#130).
+    // A kept message's hold menu (LongPressMessageActionSheet 9978): Dismiss for a deleted message, Remove edit history
+    // for an edited one, first in the menu, besides the links in the chat (#130).
     function noDeleteSheet(orig, self, args) {
         const tree = orig.apply(self, args), props = args[0], message = props && props.message;
         if (!enabled("noDelete") || !React || !tree || !message || !message.id) return tree;
@@ -3440,14 +3481,14 @@
         const key = deletedKey(channelId, String(message.id));
         const kept = deleted.has(key), history = !kept && !!settings.noDeleteEdits && edits.has(key);
         if (!kept && !history) return tree;
-        const label = kept ? tr("Dismiss deleted message") : tr("Hide edit history"), Icon = venusIcon(6927, "EyeSlashIcon");
+        const label = kept ? tr("Dismiss deleted message") : tr("Remove edit history"), Icon = venusIcon(6927, "EyeSlashIcon");
         let added = false;
         return cloneTree(tree, function (node, nodeProps) {
             if (added || !Array.isArray(nodeProps.children)) return nodeProps;
             const rows = nodeProps.children.filter(child => child && child.props && typeof child.props.label === "string" && typeof child.props.onPress === "function");
             if (!rows.length || nodeProps.children.some(child => child && child.key === "venus-nodelete")) return nodeProps;
             added = true;
-            const template = rows[rows.length - 1], icon = template.props.icon;
+            const template = rows[0], icon = template.props.icon;
             const row = React.cloneElement(template, {key:"venus-nodelete", label, arrow:false, variant:undefined, disabled:false,
                 icon:icon && icon.props && "IconComponent" in icon.props ? React.cloneElement(icon, {IconComponent:Icon}) : icon,
                 onPress:function () {
@@ -3456,7 +3497,7 @@
                     if (typeof props.onClose === "function") try { props.onClose(); } catch (_) {}
                     if (kept) noDeleteDismiss(key); else noDeleteHideHistory(key, message);
                 }});
-            const index = nodeProps.children.indexOf(template) + 1;
+            const index = nodeProps.children.indexOf(template);
             return Object.assign({}, nodeProps, {children:nodeProps.children.slice(0, index).concat([row], nodeProps.children.slice(index))});
         }, 0, () => added);
     }
@@ -3480,7 +3521,7 @@
             update(content + "\u200b"); later(() => update(content), 120);
         }
         notify("noDelete");
-        reviewToast(reviewUI(), "Edit history hidden", venusIcon(6927, "EyeSlashIcon"));
+        reviewToast(reviewUI(), "Edit history removed", venusIcon(6927, "EyeSlashIcon"));
     }
     function deleteMessage(orig, self, args) {
         const key = deletedKey(args[0], args[1]), event = deleted.get(key);
@@ -4396,6 +4437,11 @@
                 try { if (features.bulkDelete && bulkDeleteInterceptTap(event)) return undefined; } catch (_) {}
                 gesture.tapping++;
                 try { return dbl.apply(this, arguments); } finally { gesture.tapping--; }
+            };
+            const link = handlers && handlers.handleTapLink;
+            if (typeof link === "function" && features.noDelete) handlers.handleTapLink = function (event) {
+                try { if (noDeleteTapLink(event)) return undefined; } catch (_) {}
+                return link.apply(this, arguments);
             };
             const hold = handlers && handlers.handleLongPressMessage;
             if (typeof hold === "function") handlers.handleLongPressMessage = function (event) {
@@ -7603,6 +7649,9 @@
         }
         const bucket = deleted.size && noDeleteOn && deletedByChannel.get(channelId);
         const isDeletedRow = !!(bucket && bucket.has(deletedKey(channelId,id)));
+        // "This message was deleted \u2022 Dismiss message" under it, in Discord's own ephemeral-message line.
+        if (isDeletedRow && !next.message.ephemeralIndication)
+            next = Object.assign({},next,{message:Object.assign({},next.message,{ephemeralIndication:noDeleteIndication(source,String(channelId),String(id))})});
         const needHighlightCheck = highlightOn || features.messageHighlight;
         const isMentionRow = !isDeletedRow && needHighlightCheck && highlightMentioned(source, next.message);
         if (features.messageHighlight && (isDeletedRow || isMentionRow || next.backgroundHighlight))
@@ -8071,7 +8120,7 @@
                 look ? actionRow(ui,"look","Reset the look","Red at 50% brightness, as Discord draws a highlight.",() => { setSetting("noDeleteColor","default"); setSetting("noDeleteBrightness",50); setHexOpen(false); },!on) : null,
                 hasKept ? actionRow(ui,"clear","Clear kept messages","Removes every deleted message and edit history Venus kept, from chat and from this phone. The message log stays.",
                     () => confirmAction("Clear kept messages?","Every deleted message and edit history Venus kept is removed. This can't be undone.","Clear",forgetKept),false,true) : null) : null,
-            footnote("note","Hold a kept message to dismiss it, or its edit history, without restarting.")];
+            footnote("note","Tap Dismiss message under a deleted message, or Remove edit history above an edited one, to clear it without restarting.")];
         return settingsBody(ui,groups);
         function toggle(key,label,subLabel,icon) { return switchRow(Switch,key,label,subLabel,icon); }
     }
@@ -11707,13 +11756,13 @@
     // Opens Venus settings, not Discord's. openUserSettings (6801) opens the settings navigator on the screen it's
     // given, and every settings route node, VENUS_PLUGINS too, is one of that navigator's screens (15736
     // getSettingScreens), so Back goes to Discord's settings like when you open Venus from there.
-    function openSettings() {
+    function openSettings(target) {
         // Ensure SettingsRendererConfig (15602) and SettingListRenderer (15733) are initialized before
         // opening SettingsNavigator so VENUS_PLUGINS is registered even on first tap after app restart
         // and SettingsList is non-null so the page never renders a blank black screen (#58).
         if (!status.menu) inspectedExport(15602, "SETTING_RENDERER_CONFIG");
         if (!SettingsList) SettingsList = inspectedExport(15733, "SettingsList");
-        const screen = status.menu ? "VENUS_PLUGINS" : undefined;
+        const screen = status.menu ? (typeof target === "string" ? target : "VENUS_PLUGINS") : undefined;
         const open = inspectedExport(7370, "openUserSettings");
         try { if (typeof open === "function") { open(screen ? {screen} : undefined); return; } } catch (_) {}
         try { const ref = inspectedExport(5073, "getRootNavigationRef"); const nav = ref && ref(); if (nav) nav.navigate("settings", screen ? {screen} : undefined); } catch (_) {}
@@ -19275,7 +19324,7 @@
             case 13762: return features.gestures ? hookExport(exports, "DoubleTapEmojiEditNudge", hideWhenGestures) : exports;
             case 9738: return features.gestures ? hookExport(exports, "maybeShowDoubleTapReminderToast", (orig, self, args) => enabled("gestures") ? undefined : orig.apply(self, args)) : exports;
             case 12935: return features.gestures ? hookExport(exports, "DoubleTapToReactChatInputBanner", hideWhenGestures) : exports;
-            case 11114: return (features.gestures || features.bulkDelete) ? hookTapHandlers(exports) : exports;
+            case 11114: return (features.gestures || features.bulkDelete || features.noDelete) ? hookTapHandlers(exports) : exports;
             case 7445: {
                 let actions = exports.default;
                 if (!actions) return exports;
