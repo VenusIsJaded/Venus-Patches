@@ -12335,7 +12335,7 @@
             el(Group, {key:"shortcuts", title:tr("Shortcuts")},
                 switchRow(Switch, "accountSwitcherYouBar", "Button on the profile bar", "Shows a Switch accounts button next to the notifications bell on the bottom bar.", rowIcon(10598, "UserCircleIcon"))),
             el(Group, {key:"shared", title:tr("Every account")},
-                switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notified about messages to any of your saved accounts, not just the one you're using. Each notification says which account it's for.", rowIcon(9045, "BellIcon")),
+                switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notifications for all your saved accounts, not just the one you're using. Each one shows which account it's for.", rowIcon(9045, "BellIcon")),
                 switchRow(Switch, "accountSwitcherShare", "Same theme on every account", "Your theme and Nitro theme follow you when you switch. Venus settings are always shared.", rowIcon(16320, "PaintPaletteIcon"))),
             footnote("note", "Tap your avatar on the You tab, or hold the You tab, to switch from anywhere. Hold an account above to remove it.")];
         return settingsBody(ui, groups);
