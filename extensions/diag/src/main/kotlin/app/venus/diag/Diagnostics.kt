@@ -502,3 +502,332 @@ object Diagnostics {
         out.append(if (log.length > 0) log else "(unavailable)\n")
         return cap(out.toString(), MAX_REPORT)
     }
+
+    // ---------------------------------------------------------------- the crash screen
+
+    /** English labels; Venus settings sends its own language's (venus-crash-strings.json), read when the page opens. */
+    private fun labels(c: Context): JSONObject {
+        val out = JSONObject()
+        out.put("crashed", "Discord crashed")
+        out.put("anr", "Discord stopped responding")
+        out.put("intro", "Here's what happened. Copy or export it and include it when you report the problem.")
+        out.put("what", "What went wrong")
+        out.put("report", "Full report")
+        out.put("copy", "Copy")
+        out.put("share", "Share")
+        out.put("export", "Export")
+        out.put("close", "Close")
+        out.put("copied", "Crash report copied")
+        out.put("saved", "Saved to Downloads as {name}")
+        out.put("failed", "Couldn't save the file. Try Share instead.")
+        out.put("partial", "Showing part of a long report. Export saves all of it.")
+        out.put("preview", "Preview")
+        try {
+            val file = File(folder(c), STRINGS)
+            if (file.isFile && file.length() < 64 * 1024) {
+                val saved = JSONObject(read(file))
+                val keys = saved.keys()
+                while (keys.hasNext()) { val key = keys.next(); val value = saved.optString(key, ""); if (value.length > 0 && out.has(key)) out.put(key, value) }
+            }
+        } catch (_: Throwable) { }
+        return out
+    }
+
+    private fun showPending() {
+        val c = app ?: return
+        if (showing) return
+        val activity = current?.get() ?: return
+        if (activity.isFinishing || activity.isDestroyed) return
+        val file = File(folder(c), PENDING)
+        if (!file.isFile) return
+        val text = try { read(file) } catch (_: Throwable) { null }
+        try { file.delete() } catch (_: Throwable) { }
+        if (text == null || text.length == 0 || !screenOn) return
+        show(activity, text, false)
+    }
+
+    private fun field(report: String, key: String): String {
+        val raw = report as java.lang.String
+        val at = raw.indexOf("\n" + key + ": ")
+        if (at < 0) return ""
+        val start = at + key.length + 3
+        val end = raw.indexOf("\n", start)
+        return if (end < 0) report.substring(start) else report.substring(start, end)
+    }
+
+    /** The first lines under "What went wrong": the exception and where it was thrown. */
+    private fun summary(report: String): String {
+        val raw = report as java.lang.String
+        val at = raw.indexOf("--- What went wrong ---\n")
+        if (at < 0) return ""
+        val start = at + 24
+        var end = raw.indexOf("\nThread: ", start)
+        val next = raw.indexOf("\n--- ", start)
+        if (end < 0 || (next >= 0 && next < end)) end = next
+        if (end < 0) end = Math.min(report.length, start + 600)
+        val text = report.substring(start, end)
+        return if (text.length > 600) text.substring(0, 600) + "…" else text
+    }
+
+    private fun show(activity: Activity, report: String, preview: Boolean) {
+        try {
+            showing = true
+            val s = labels(activity)
+            val density = activity.resources.displayMetrics.density
+            fun dp(v: Int): Int = (v * density + 0.5f).toInt()
+            fun round(color: Int, radius: Int, edge: Int): GradientDrawable {
+                val d = GradientDrawable()
+                d.setColor(color)
+                d.cornerRadius = dp(radius).toFloat()
+                if (edge != 0) d.setStroke(dp(1), edge)
+                return d
+            }
+            fun label(text: String, size: Float, color: Int, bold: Boolean): TextView {
+                val t = TextView(activity)
+                t.text = text
+                t.textSize = size
+                t.setTextColor(color)
+                t.typeface = if (bold) Typeface.create("sans-serif-medium", Typeface.BOLD) else Typeface.create("sans-serif", Typeface.NORMAL)
+                t.includeFontPadding = false
+                t.setLineSpacing(dp(3).toFloat(), 1f)
+                return t
+            }
+            val anr = (field(report, "Kind") as java.lang.String).indexOf("ANR") >= 0
+
+            val dialog = Dialog(activity, android.R.style.Theme_DeviceDefault_NoActionBar)
+            val root = LinearLayout(activity)
+            root.orientation = LinearLayout.VERTICAL
+            root.setBackgroundColor(BG)
+
+            // Header: a red badge, the title and when it happened, and Close.
+            val header = LinearLayout(activity)
+            header.orientation = LinearLayout.HORIZONTAL
+            header.gravity = Gravity.CENTER_VERTICAL
+            header.setPadding(dp(20), dp(20), dp(12), dp(8))
+            val badge = TextView(activity)
+            badge.text = "!"
+            badge.gravity = Gravity.CENTER
+            badge.textSize = 22f
+            badge.setTextColor(Color.WHITE)
+            badge.typeface = Typeface.DEFAULT_BOLD
+            badge.background = round(RED, 24, 0)
+            header.addView(badge, LinearLayout.LayoutParams(dp(48), dp(48)))
+            val titles = LinearLayout(activity)
+            titles.orientation = LinearLayout.VERTICAL
+            val titleRow = LinearLayout(activity)
+            titleRow.orientation = LinearLayout.HORIZONTAL
+            titleRow.gravity = Gravity.CENTER_VERTICAL
+            titleRow.addView(label(s.optString(if (anr) "anr" else "crashed"), 20f, TEXT, true))
+            if (preview) {
+                val tag = label(s.optString("preview"), 11f, Color.WHITE, true)
+                tag.background = round(BRAND, 10, 0)
+                tag.setPadding(dp(8), dp(3), dp(8), dp(3))
+                val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                lp.leftMargin = dp(8)
+                titleRow.addView(tag, lp)
+            }
+            titles.addView(titleRow)
+            val whenText = field(report, "When")
+            val sub = label(whenText + (if (field(report, "Discord open for").length > 0) " · " + field(report, "Discord open for") else ""), 13f, MUTED, false)
+            sub.setPadding(0, dp(4), 0, 0)
+            titles.addView(sub)
+            val titlesLp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            titlesLp.leftMargin = dp(14)
+            header.addView(titles, titlesLp)
+            val close = label("✕", 18f, MUTED, true)
+            close.gravity = Gravity.CENTER
+            close.contentDescription = s.optString("close")
+            close.background = RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), null, round(Color.WHITE, 20, 0))
+            close.setOnClickListener { dialog.dismiss() }
+            header.addView(close, LinearLayout.LayoutParams(dp(40), dp(40)))
+            root.addView(header)
+
+            val scroll = ScrollView(activity)
+            scroll.isFillViewport = true
+            val body = LinearLayout(activity)
+            body.orientation = LinearLayout.VERTICAL
+            body.setPadding(dp(16), dp(8), dp(16), dp(16))
+            val intro = label(s.optString("intro"), 14f, MUTED, false)
+            intro.setPadding(dp(4), 0, dp(4), dp(16))
+            body.addView(intro)
+
+            // What went wrong: the exception and the line it came from, in a card with a red edge.
+            val what = summary(report)
+            if (what.length > 0) {
+                val card = LinearLayout(activity)
+                card.orientation = LinearLayout.VERTICAL
+                card.background = round(CARD, 16, 0x40F23F43)
+                card.setPadding(dp(16), dp(14), dp(16), dp(16))
+                card.addView(label(s.optString("what").toUpperCase(Locale.getDefault()), 11f, RED, true))
+                val mono = label(what, 13f, TEXT, false)
+                mono.typeface = Typeface.MONOSPACE
+                mono.setTextIsSelectable(true)
+                mono.setPadding(0, dp(8), 0, 0)
+                card.addView(mono)
+                body.addView(card)
+            }
+
+            // Chips: the versions and the phone, so a screenshot alone already says the most important part.
+            val chips = LinearLayout(activity)
+            chips.orientation = LinearLayout.VERTICAL
+            chips.setPadding(0, dp(12), 0, 0)
+            for (pair in arrayOf(arrayOf("Venus", field(report, "Venus Patches")), arrayOf("Discord", field(report, "Discord")),
+                    arrayOf(Build.MANUFACTURER, Build.MODEL + " · Android " + Build.VERSION.RELEASE))) {
+                if (pair[1].length == 0) continue
+                val chip = LinearLayout(activity)
+                chip.orientation = LinearLayout.HORIZONTAL
+                chip.background = round(CARD, 12, CARD_EDGE)
+                chip.setPadding(dp(14), dp(10), dp(14), dp(10))
+                chip.addView(label(pair[0], 13f, MUTED, true), LinearLayout.LayoutParams(dp(84), ViewGroup.LayoutParams.WRAP_CONTENT))
+                val v = label(pair[1], 13f, TEXT, false)
+                v.isSingleLine = true
+                v.ellipsize = TextUtils.TruncateAt.END
+                chip.addView(v, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                lp.bottomMargin = dp(6)
+                chips.addView(chip, lp)
+            }
+            body.addView(chips)
+
+            // The full report, monospace and selectable. Very long reports show their start; Export keeps all of it.
+            val reportTitle = label(s.optString("report").toUpperCase(Locale.getDefault()), 11f, MUTED, true)
+            reportTitle.setPadding(dp(4), dp(14), 0, dp(8))
+            body.addView(reportTitle)
+            if (report.length > MAX_SHOWN) {
+                val note = label(s.optString("partial"), 12f, MUTED, false)
+                note.setPadding(dp(4), 0, dp(4), dp(8))
+                body.addView(note)
+            }
+            val log = label(if (report.length > MAX_SHOWN) report.substring(0, MAX_SHOWN) + "\n…" else report, 11f, MONO, false)
+            log.typeface = Typeface.MONOSPACE
+            log.setLineSpacing(dp(2).toFloat(), 1f)
+            log.setTextIsSelectable(true)
+            log.background = round(0xFF111214.toInt(), 14, CARD_EDGE)
+            log.setPadding(dp(14), dp(14), dp(14), dp(14))
+            body.addView(log)
+            scroll.addView(body)
+            root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+
+            // Actions: Copy and Share beside each other, Export filled in the brand color.
+            val bar = LinearLayout(activity)
+            bar.orientation = LinearLayout.HORIZONTAL
+            bar.setPadding(dp(16), dp(12), dp(16), dp(16))
+            bar.setBackgroundColor(BG)
+            fun button(text: String, fill: Int, action: () -> Unit): TextView {
+                val b = label(text, 15f, Color.WHITE, true)
+                b.gravity = Gravity.CENTER
+                b.background = RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), round(fill, 24, 0), null)
+                b.setOnClickListener { try { action() } catch (_: Throwable) { } }
+                val lp = LinearLayout.LayoutParams(0, dp(48), 1f)
+                lp.leftMargin = dp(4); lp.rightMargin = dp(4)
+                bar.addView(b, lp)
+                return b
+            }
+            button(s.optString("copy"), NEUTRAL) {
+                val clip = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clip.setPrimaryClip(ClipData.newPlainText("Venus crash report", cap(report, MAX_CLIP)))
+                if (Build.VERSION.SDK_INT < 33) Toast.makeText(activity, s.optString("copied"), Toast.LENGTH_SHORT).show()
+            }
+            button(s.optString("share"), NEUTRAL) { share(activity, report) }
+            button(s.optString("export"), BRAND) {
+                val name = export(activity, report)
+                Toast.makeText(activity, if (name != null) (s.optString("saved") as java.lang.String).replace("{name}", name) else s.optString("failed"), Toast.LENGTH_LONG).show()
+                if (name == null) share(activity, report)
+            }
+            root.addView(bar)
+
+            root.setOnApplyWindowInsetsListener { view, insets ->
+                if (Build.VERSION.SDK_INT >= 30) {
+                    val bars = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+                    view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+                } else view.setPadding(insets.systemWindowInsetLeft, insets.systemWindowInsetTop, insets.systemWindowInsetRight, insets.systemWindowInsetBottom)
+                insets
+            }
+            dialog.setContentView(root)
+            dialog.setOnDismissListener { showing = false }
+            val window = dialog.window
+            if (window != null) {
+                window.setBackgroundDrawable(ColorDrawable(BG))
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                window.statusBarColor = BG
+                window.navigationBarColor = BG
+            }
+            dialog.show()
+        } catch (_: Throwable) { showing = false }
+    }
+
+    private fun share(activity: Activity, report: String) {
+        val send = Intent(Intent.ACTION_SEND)
+        send.type = "text/plain"
+        send.putExtra(Intent.EXTRA_SUBJECT, "Venus crash report")
+        send.putExtra(Intent.EXTRA_TEXT, cap(report, MAX_SHARED))
+        activity.startActivity(Intent.createChooser(send, null))
+    }
+
+    /** Saves the whole report as a text file in Downloads (Android 10+), and returns its name, or null when it can't. */
+    private fun export(c: Context, report: String): String? {
+        if (Build.VERSION.SDK_INT < 29) return null
+        return try {
+            val name = "venus-crash-" + SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date()) + ".txt"
+            val values = ContentValues()
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+            val uri = c.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return null
+            val out = c.contentResolver.openOutputStream(uri) ?: return null
+            try { out.write((report as java.lang.String).getBytes(StandardCharsets.UTF_8)) } finally { out.close() }
+            name
+        } catch (_: Throwable) { null }
+    }
+
+    // ---------------------------------------------------------------- bridge for Venus settings
+
+    /**
+     * FileModule.clearFolder(storageDir, path, promise) with storageDir = "venus-diag-v1:<action>". Discord only ever
+     * passes "cache" or "documents", so its own calls fall through. Slow work (logcat, getprop) runs off the JS thread.
+     */
+    @JvmStatic
+    fun dispatch(request: String, argument: String?, promise: Promise): Boolean {
+        if (!(request as java.lang.String).startsWith(PREFIX)) return false
+        val action = request.substring(PREFIX.length)
+        val c = app
+        if (c == null) { promise.reject("VENUS_DIAG", "Not ready"); return true }
+        when (action) {
+            "report" -> Thread(object : Runnable { override fun run() {
+                try { promise.resolve(troubleshootingReport()) } catch (error: Throwable) { promise.reject("VENUS_DIAG", error.toString()) }
+            } }, "venus-report").start()
+            "last" -> {
+                val file = File(folder(c), LAST)
+                promise.resolve(try { if (file.isFile) read(file) else "" } catch (_: Throwable) { "" })
+            }
+            "forget" -> { try { File(folder(c), LAST).delete() } catch (_: Throwable) { }; promise.resolve("ok") }
+            "screen:on", "screen:off" -> { screenOn = action == "screen:on"; promise.resolve("ok") }
+            "strings" -> {
+                try { if (argument != null && argument.length < 64 * 1024) write(File(folder(c), STRINGS), JSONObject(argument).toString()) } catch (_: Throwable) { }
+                promise.resolve("ok")
+            }
+            "show" -> {
+                val file = File(folder(c), LAST)
+                val sample = try { if (file.isFile) read(file) else "" } catch (_: Throwable) { "" }
+                main.post(object : Runnable { override fun run() {
+                    val activity = current?.get()
+                    if (activity == null || showing) { promise.reject("VENUS_DIAG", "No screen to show it on"); return }
+                    show(activity, if (sample.length > 0) sample else sampleReport(), sample.length == 0)
+                    promise.resolve("ok")
+                } })
+            }
+            else -> promise.reject("VENUS_DIAG", "Unknown request")
+        }
+        return true
+    }
+
+    /** What the crash screen looks like, for "Preview" when nothing has crashed yet. Nothing is thrown. */
+    private fun sampleReport(): String {
+        val out = java.lang.StringBuilder(16 * 1024)
+        header(out, "Preview")
+        section(out, "What went wrong")
+        out.append("java.lang.IllegalStateException: This is a preview. Nothing crashed.\n  at app.venus.diag.Diagnostics.preview(Diagnostics.kt)\n")
+        details(out)
+        return out.toString()
+    }
+}
