@@ -13469,11 +13469,11 @@
     function translateSameLanguage(code, target) {
         return code === target || languageBase(code) !== "zh" && languageBase(code) === languageBase(target);
     }
-    // A message drawn lately whose saved translation is from a language you don't translate.
+    // A message drawn lately that has a translation but is shown as written anyway: its language is one you don't
+    // translate, or it's a word Google may have guessed wrong. Its menu offers Translate.
     function translateSkipsMessage(id) {
-        if (!settings.translateSkip) return false;
         const shown = translate.shown.get(id), entry = shown && shown.key && translate.cache.get(shown.key);
-        return !!entry && entry.state === "done" && translateSkipped(entry.language);
+        return !!entry && entry.state === "done" && (translateSkipped(entry.language) || translateUnsure(entry));
     }
     const translateForeignPlans = new Map();
     function translateForeignPlan(base) {
@@ -13598,7 +13598,7 @@
             if (!text || text.length > TRANSLATE_SAVED_BYTES || generation !== translate.generation) return;
             const saved = JSON.parse(text);
             if (!saved || saved.version !== 1 || !Array.isArray(saved.entries)) return;
-            let restored = 0;
+            let restored = 0, dropped = 0;
             // Messages you translated, or kept original, from the hold menu. A choice made since Discord opened wins.
             if (Array.isArray(saved.choices)) saved.choices.slice(-TRANSLATE_CHOICES).forEach(item => {
                 if (Array.isArray(item) && item.length === 2 && typeof item[0] === "string" && /^\d{1,20}$/.test(item[0]) && typeof item[1] === "boolean" &&
@@ -13607,12 +13607,15 @@
             saved.entries.slice(-TRANSLATE_SAVED).forEach(item => {
                 if (!Array.isArray(item) || item.length !== 4 || !item.every(part => typeof part === "string")) return;
                 const [target, text, translated, language] = item, key = translateKey(target, text), known = translate.cache.get(key);
+                // Earlier versions saved blank answers and English given back unchanged as translations: they're asked for again.
+                if (translateVerdict(text, translated, language, target) !== "done") { dropped++; return; }
                 if (known && known.state !== "queued") return;
                 if (known) { known.state = "done"; known.translated = translated; known.language = language; known.layout = null; known.ids.clear(); known.restored = true; restored++; return; }
                 translateRemember(key, {state:"done", text, target, translated, language, layout:null, ids:new Set(), restored:true});
                 restored++;
             });
             if (restored) translateChanged();
+            if (dropped) translatePersist();
         }).catch(() => {}).then(() => { translate.restoring = false; translate.restored = true; if (enabled("translate")) translateSchedule(0); });
     }
     function translatePersist() {
@@ -13726,6 +13729,8 @@
     // The translation back as Discord's own nodes. Every tag must come back exactly once and nested the same way,
     // or the original is shown: a mention can never be lost, doubled or turned into text.
     const TRANSLATE_TAG = /<a\s+i\s*=\s*"?(\d+)"?\s*\/>|<g\s+i\s*=\s*"?(\d+)"?\s*>|<\/g\s*>/g;
+    const TRANSLATE_TAG_ANY = /<a\s+i\s*=\s*"?\d+"?\s*\/>|<g\s+i\s*=\s*"?\d+"?\s*>|<\/g\s*>/g;
+    const TRANSLATE_HAS_LETTER = new RegExp(TRANSLATE_LETTER.source);
     function translateNodes(translated, layout) {
         const used = new Set(), root = [], stack = [{children:root, index:-1}];
         const text = value => {
@@ -13808,7 +13813,8 @@
         if (entry.state !== "done") { if (entry.state === "same") translateNothing(id); else translate.asked.delete(id); return message; }
         translate.asked.delete(id);
         // Don't translate (#124): a language you read stays as written, unless you translated this one from its menu.
-        if (choice !== true && translateSkipped(entry.language)) return message;
+        // So does a word Google may have guessed wrong (translateUnsure).
+        if (choice !== true && (translateSkipped(entry.language) || translateUnsure(entry))) return message;
         if (layout.view === undefined || layout.viewOf !== entry || layout.viewVersion !== translate.version) {
             layout.viewOf = entry; layout.viewVersion = translate.version;
             layout.view = translateView(entry, layout, message.content);
@@ -13847,9 +13853,9 @@
             translateSchedule(60);
         }
         if (entry.state === "queued" || entry.state === "sending") { entry.ids.add(id); return message; }
-        if (entry.state !== "done" || translate.choice.get(quotedId) !== true && translateSkipped(entry.language)) return message;
+        if (entry.state !== "done" || translate.choice.get(quotedId) !== true && (translateSkipped(entry.language) || translateUnsure(entry))) return message;
         if (layout.preview === undefined || layout.previewOf !== entry) { layout.previewOf = entry; layout.preview = translateNodes(entry.translated, layout); }
-        if (!layout.preview) return message;
+        if (!layout.preview || !layout.preview.length) return message;
         return Object.assign({}, message, {referencedMessage:Object.assign({}, message.referencedMessage,
             {message:Object.assign({}, quoted, {content:layout.preview})})});
     }
@@ -13949,7 +13955,8 @@
     }
     function translateView(entry, layout, original) {
         let view = translateNodes(entry.translated, layout);
-        if (!view) return null;
+        // Never a message with only the note under it.
+        if (!view || !view.length) return null;
         if (settings.translateNote || settings.translateOriginal) view = view.concat([{type:"br"}, {type:"subtext", content:[{type:"text",
             content:tr(settings.translateOriginal ? "Translated from {language}. Original:" : "Translated from {language}", {language:languageName(entry.language)})}]}]);
         // A quote can't hold a quote or a code block, so those originals just follow on the next line.
@@ -13992,19 +13999,59 @@
             if (!response.ok) { const error = new Error("HTTP " + response.status); error.status = response.status; throw error; }
             const result = await response.json();
             if (!Array.isArray(result)) throw new Error("unreadable answer");
-            // One text comes back as [text, language] in an array of one; several as one pair each.
-            return texts.map((_, i) => {
-                const item = result[i];
-                if (Array.isArray(item)) return {text:String(item[0] == null ? "" : item[0]), language:typeof item[1] === "string" ? item[1] : ""};
-                if (typeof item === "string") return {text:item, language:""};
-                return null;
-            });
+            // One text comes back as [text, language] in an array of one; several as one pair each. A lone flat pair is
+            // read as one text too. Any other count is never matched up by position: a text Google left out would hand
+            // every message after it the next one's translation, so the batch is asked for again, in smaller parts.
+            const items = texts.length === 1 && result.length === 2 && typeof result[0] === "string" && typeof result[1] === "string" ? [result] : result;
+            if (items.length !== texts.length) { if (texts.length === 1) return [null]; throw new Error("unreadable answer"); }
+            return items.map(translateAnswer);
         });
         const timeout = new Promise((resolve, reject) => {
             if (global.setTimeout) timer = global.setTimeout(() => { reject(new Error("no answer")); if (controller) controller.abort(); }, TRANSLATE_TIMEOUT_MS);
         });
         try { return await Promise.race([task, timeout]); }
         finally { if (timer !== undefined && global.clearTimeout) global.clearTimeout(timer); }
+    }
+    // One text of Google's answer: {text, language}, or null when it holds no text at all. A missing translation used
+    // to be read as "", which showed a blank message with only "Translated from another language" under it.
+    function translateAnswer(item) {
+        for (let depth = 0; Array.isArray(item) && Array.isArray(item[0]) && depth < 3; depth++) item = item[0];
+        if (typeof item === "string") return {text:item, language:""};
+        if (!Array.isArray(item) || typeof item[0] !== "string") return null;
+        const language = typeof item[1] === "string" && /^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})?$/.test(item[1]) ? item[1] : "";
+        return {text:item[0], language};
+    }
+    // What a translation is worth showing as: "done", "same" (already in your language, or given back as it was) or
+    // "failed" (nothing readable came back). Google often hands short English back unchanged but "detected" as another
+    // language ("Ppt" from Malay), or with only its case or spacing changed: those are the same message, never a translation.
+    function translateVerdict(text, translated, language, target) {
+        if (typeof translated !== "string") return "failed";
+        if (translated === text || language && languageBase(language) === languageBase(target)) return "same";
+        // An empty answer, or one with no letters left, would draw the message blank.
+        if (!TRANSLATE_HAS_LETTER.test(translated.replace(TRANSLATE_TAG_ANY, ""))) return "failed";
+        return translateFold(translated) === translateFold(text) ? "same" : "done";
+    }
+    // A text with tags, case, spacing, punctuation and stretched letters ("sameee") taken out, to compare two of them.
+    function translateFold(text) {
+        return unescapeTranslate(text.replace(TRANSLATE_TAG_ANY, " ")).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").toLowerCase()
+            .replace(/[\s!-\/:-@\[-`{-~\u00a1\u00bf\u2018-\u201f\u2026\u3001\u3002\uff01\uff0c\uff1f]+/g, "").replace(/(.)\1+/g, "$1");
+    }
+    // A one-word Latin message that the phone doesn't see as another language (#82's check): Google's guess for those is
+    // often wrong ("copium" from Latin, "bruh" from Indonesian), so it stays as written unless you translate it from its
+    // menu. Words the check knows ("hola", "obrigado"), longer messages and other scripts still translate.
+    function translateUnsure(entry) {
+        const slot = entry.target + "|" + (settings.translateSkip || "");
+        if (entry.unsureFor === slot) return entry.unsure;
+        let unsure = false;
+        if (typeof entry.text === "string" && LATIN_LETTERS[languageBase(entry.target)] !== undefined) {
+            const plain = unescapeTranslate(entry.text.replace(TRANSLATE_TAG_ANY, " ")).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+            if (!TRANSLATE_SCRIPTS.some(script => script[1].test(plain))) {
+                const words = plain.toLowerCase().replace(/https?:\/\/\S+|:[\w~]+:/g, " ").match(/[a-z\u00c0-\u024f\u1e00-\u1eff']+/g) || [];
+                unsure = words.length <= 1 && !translateLooksForeign(plain);
+            }
+        }
+        entry.unsureFor = slot; entry.unsure = unsure;
+        return unsure;
     }
     function translateNext() {
         if (!enabled("translate")) return;
@@ -14028,13 +14075,14 @@
                 const entry = translate.cache.get(key), result = results[i];
                 if (!entry) return;
                 const ids = entry.ids; entry.ids = new Set();
-                // Missing from the answer: asked for again, not given up on.
-                if (!result) { entry.state = "queued"; translate.queue.push(key); return; }
+                // Missing from the answer: asked for again once, then given up on until Discord restarts.
+                if (!result && (entry.tries = (entry.tries || 0) + 1) < 2) { entry.state = "queued"; entry.ids = ids; translate.queue.push(key); return; }
+                const verdict = result ? translateVerdict(entry.text, result.text, result.language, target) : "failed";
                 // Already in your language, or given back unchanged: nothing to show, and it's never asked for again.
                 // The row isn't redrawn, so a message you asked for from the hold menu says so now instead of never.
-                if (result.text === entry.text || result.language && languageBase(result.language) === languageBase(target)) { entry.state = "same"; entry.layout = null; ids.forEach(translateNothing); return; }
-                // A translation that lost, doubled or moved a mention or emoji out of its formatting is never shown.
-                if (!translateNodes(result.text, entry.layout)) { entry.state = "failed"; entry.layout = null; ids.forEach(id => translate.asked.delete(id)); return; }
+                if (verdict === "same") { entry.state = "same"; entry.layout = null; ids.forEach(translateNothing); return; }
+                // Nothing readable, or a translation that lost, doubled or moved a mention or emoji out of its formatting, is never shown.
+                if (verdict !== "done" || !translateNodes(result.text, entry.layout)) { entry.state = "failed"; entry.layout = null; ids.forEach(id => translate.asked.delete(id)); return; }
                 entry.translated = result.text; entry.language = result.language; entry.state = "done"; entry.layout = null; translate.translated++;
                 // Only rows that change are redrawn: one in your language looks the same as before.
                 ids.forEach(id => redraw.add(id));
