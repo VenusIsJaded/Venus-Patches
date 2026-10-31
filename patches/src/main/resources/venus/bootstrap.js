@@ -14266,7 +14266,8 @@
     // Picking one closes the list again, so the rest of the page is never pushed far down.
     function TranslateLanguagePicker(props) {
         useSettings(props.feature || "translate");
-        const key = props.setting || "translateLanguage";
+        // value and onChange instead of a setting: Fix link previews keeps each site's language inside one setting.
+        const key = props.setting || "translateLanguage", value = props.onChange ? props.value : settings[key];
         const [query, setQuery] = React.useState(""), [open, setOpen] = React.useState(false), ui = reviewUI(), on = !!props.on;
         const RadioGroup = inspectedExport(6540, "TableRadioGroup"), RadioRow = inspectedExport(6539, "TableRadioRow");
         const SearchField = inspectedExport(7016, "SearchField"), Group = ui.TableRowGroup || RN.View;
@@ -14279,25 +14280,26 @@
         const needle = searchFold(query.trim());
         const shown = needle ? all.filter(entry => entry.search.includes(needle)) : all;
         const toggle = () => { if (!on) return; haptic("SELECTION"); animateLayout(); setOpen(!open); setQuery(""); };
-        const pick = value => {
-            if (value !== settings[key]) { haptic("SELECTION"); setSetting(key, value); }
+        const pick = next => {
+            if (next !== value) { haptic("SELECTION"); if (props.onChange) props.onChange(next); else setSetting(key, next); }
             animateLayout(); setOpen(false); setQuery("");
         };
-        const current = all.find(entry => entry.code === settings[key]);
+        const current = all.find(entry => entry.code === value);
         const Chevron = venusIcon(open ? 10859 : 7182, open ? "ChevronSmallDownIcon" : "ChevronSmallRightIcon");
         const subLabel = props.note ? (current && current.sub ? current.sub + " \u00b7 " : "") + props.note : current && current.sub;
-        const head = ui.TableRow ? el(ui.TableRow, {key:"current", label:current ? current.label : settings[key], subLabel,
+        const head = ui.TableRow ? el(ui.TableRow, {key:"current", label:current ? current.label : value, subLabel,
             icon:rowIcon(9415, "LanguageIcon"), trailing:el(Chevron, {size:"sm"}), onPress:toggle, disabled:!on,
             accessibilityHint:tr(open ? "Close the list" : "Choose a language")}) : null;
-        if (!open) return el(Group, {key:"language", title:tr("Language")}, head);
+        const title = props.title === null ? undefined : tr(props.title || "Language");
+        if (!open) return el(Group, {key:"language", title}, head);
         const search = SearchField ? el(SearchField, {key:"search", placeholder:tr("Search languages"), value:query, onChange:text => setQuery(String(text || "")), isDisabled:!on}) :
             ui.TextInput ? el(ui.TextInput, {key:"search", placeholder:tr("Search languages"), value:query, onChange:text => setQuery(String(text || "")), editable:on}) : null;
         const rows = !shown.length ? (ui.TableRow ? el(ui.TableRow, {key:"none", label:tr("No matching languages"), disabled:true}) : null) :
-            RadioGroup && RadioRow ? el(RadioGroup, {key:"list", value:settings[key], onChange:pick},
+            RadioGroup && RadioRow ? el(RadioGroup, {key:"list", value, onChange:pick},
                 shown.map(entry => el(RadioRow, {key:entry.code, value:entry.code, label:entry.label, subLabel:entry.sub, disabled:!on}))) :
             el(Group, {key:"list"}, shown.map(entry => ui.TableRow && el(ui.TableRow, {key:entry.code, label:entry.label, subLabel:entry.sub,
-                trailing:entry.code === settings[key] ? el(venusIcon(7101, "CheckmarkSmallIcon"), {size:"sm"}) : undefined, disabled:!on, onPress:() => pick(entry.code)})));
-        return el(RN.View, {key:"language", style:{gap:12}}, el(Group, {key:"head", title:tr("Language")}, head),
+                trailing:entry.code === value ? el(venusIcon(7101, "CheckmarkSmallIcon"), {size:"sm"}) : undefined, disabled:!on, onPress:() => pick(entry.code)})));
+        return el(RN.View, {key:"language", style:{gap:12}}, el(Group, {key:"head", title}, head),
             el(RN.View, {style:{paddingHorizontal:16}}, search), rows);
     }
     function TranslateSettings() {
