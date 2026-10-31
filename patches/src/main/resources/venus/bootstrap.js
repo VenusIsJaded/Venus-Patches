@@ -19,7 +19,7 @@
     if (features.freeNitro) selectModules([1392, 2068, 6243, 6286, 4864, 15066, 7323, 7445]);
     if (features.noTyping) targetModules[12849] = 1;
     if (features.quickDelete) selectModules([5400, 1128]);
-    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013]);
+    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978]);
     if (features.jumpToTop) selectModules([12920, 12921, 12922, 9683, 7445, 5532]);
     if (features.hiddenChannels) selectModules([1087, 1098, 1114, 2068, 2119, 4843, 7517, 4845, 5521, 7445, 584, 1392, 17357, 8495, 6291, 6362, 14975, 7748, 14788, 17190, 8727]);
     if (features.pastelize) selectModules([8013, 1266, 2128]);
@@ -69,14 +69,14 @@
     // Every feature starts off: nothing changes in Discord until you turn it on. Options inside a feature keep
     // their own defaults, so turning a feature on does what it says straight away.
     const settings = { picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
-        noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 512, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50,
+        noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
         jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
         quests:false, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true,
         badges:false, badgesGameTime:true, badgesUniqueGames:true, badgesCycleMinutes:15, badgesGamesAtOnce:2, systemFont:false, systemFontSource:"phone",
         systemEmoji:false, systemEmojiSource:"phone", gestures:false, gestureOwn:"edit", gestureTripleDelete:true,
         validUser:false, youBarSettings:false, splitMessages:false,
         translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false, translateSkip:"",
-        userNotif:false, userNotifFriends:true, userNotifStatus:true, userNotifMessages:true, userNotifTyping:true, userNotifPush:false,
+        userNotif:false, userNotifFriends:true, userNotifStatus:true, userNotifMessages:true, userNotifTyping:true, userNotifPush:false, userNotifLogStatus:true, userNotifLogMessages:true, userNotifLogTyping:false,
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
@@ -86,14 +86,14 @@
     function defaultSettings() {
         return DEFAULT_SETTINGS || (DEFAULT_SETTINGS = Object.freeze({
             picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
-            noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 512, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50,
+            noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
             jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
             quests: false, questsVideo: true, questsPlay: true, questsActivity: true, questsEnroll: true,
             badges: false, badgesGameTime: true, badgesUniqueGames: true, badgesCycleMinutes: 15, badgesGamesAtOnce: 2, systemFont: false, systemFontSource: "phone",
             systemEmoji: false, systemEmojiSource: "phone", gestures: false, gestureOwn: "edit", gestureTripleDelete: true,
             validUser: false, youBarSettings: false, splitMessages: false,
             translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false, translateSkip: "",
-            userNotif: false, userNotifFriends: true, userNotifStatus: true, userNotifMessages: true, userNotifTyping: true, userNotifPush: false,
+            userNotif: false, userNotifFriends: true, userNotifStatus: true, userNotifMessages: true, userNotifTyping: true, userNotifPush: false, userNotifLogStatus: true, userNotifLogMessages: true, userNotifLogTyping: false,
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
@@ -126,7 +126,8 @@
     const activeJobs = new Map();
     let jobCounter = 0;
     const PREFS = "venus-patches.json";
-    const MAX_DELETED = 5000, ARCHIVE_BYTES = 32 * 1024 * 1024;
+    // Keep up to takes any number up to MAX_DELETED, or 0 for No limit; the saved file keeps the newest ARCHIVE_BYTES of it.
+    const MAX_DELETED = 999999, ARCHIVE_BYTES = 64 * 1024 * 1024;
     // What the Read all button clears: servers, DMs, or both.
     const READ_ALL_MODES = ["guilds", "dms", "both"];
     // What double-tapping your own message does: edit it, or reply like anyone else's.
@@ -358,7 +359,9 @@
         Promise.resolve().then(persist);
     }
     // Typing 0 in the maximum box used to jump it to 512; anything below 1 now means the lowest, 1.
-    function deleteLimit(value) { const n = Math.floor(Number(value)); return Number.isFinite(n) ? Math.max(1, Math.min(MAX_DELETED, n)) : 512; }
+    function deleteLimit(value) { const n = Math.floor(Number(value)); return n === 0 ? 0 : Number.isFinite(n) ? Math.max(1, Math.min(MAX_DELETED, n)) : 0; }
+    // How many deleted messages stay in chat: the Keep up to number, or all of them with No limit (0).
+    function keepCap() { return settings.noDeleteLimit > 0 ? settings.noDeleteLimit : Infinity; }
     // 1.18.0 moved the deleted messages color from Message highlights to Keep deleted messages: a settings file or
     // backup from before keeps the color you picked.
     // 1.20.0 folded Spaces in channel names into Clean channel names: someone who only had spaces on keeps exactly that
@@ -1063,7 +1066,7 @@
     const featureFor = key => {
         const cached = featureTable[key];
         if (cached !== undefined) return cached;
-        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : key === "noDeleteSave" || key === "noDeleteLimit" || key === "noDeleteEdits" || key === "noDeleteColor" || key === "noDeleteBrightness" ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : key;
+        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : key;
     };
     // Section titles are read whenever Discord draws the list, so they follow the language too. "Venus" is a name.
     function section(label, keys) {
@@ -2430,7 +2433,7 @@
     const deleted = new Map(), deletedByChannel = new Map();
     // Edit history: "channel:id" -> {channelId, id, versions:[{content, at}]}, oldest version first.
     const edits = new Map();
-    const MAX_EDITED = 2000, MAX_VERSIONS = 10, MAX_VERSION_TEXT = 4000;
+    const MAX_EDITED = 20000, MAX_VERSIONS = 10, MAX_VERSION_TEXT = 4000;
     let archiveTimer;
     const hiddenViews = new Map(), hiddenNames = new Map(), hiddenScans = new Map();
     let hiddenAccount, hiddenNamesVersion = 0;
@@ -2647,6 +2650,10 @@
             // up to 5000 others. The same text as JSON.stringify of the whole archive.
             const parts = [];
             if (settings.noDeleteSave) deleted.forEach(entry => { const text = archiveText(entry); if (text) parts.push(text); });
+            // With No limit the file could outgrow what can be read back: it keeps the newest messages that fit.
+            let size = 0, first = parts.length;
+            while (first > 0 && size + parts[first - 1].length + 1 < ARCHIVE_BYTES / 2) size += parts[--first].length + 1;
+            if (first) parts.splice(0, first);
             // Edit history rides in the same file. Older releases ignore the extra key, so nothing breaks either way.
             const history = [];
             if (settings.noDeleteSave && settings.noDeleteEdits) edits.forEach(entry => { const text = editText(entry); if (text) history.push(text); });
@@ -2691,7 +2698,7 @@
                 else saved.messages.forEach(entry => {
                     if (!entry || typeof entry.id !== "string" || typeof entry.channelId !== "string" || !entry.message || entry.message.id !== entry.id || entry.message.channel_id !== entry.channelId || !entry.message.author) { changed = true; return; }
                     const key = deletedKey(entry.channelId,entry.id);
-                    if (deleted.size < settings.noDeleteLimit && !deleted.has(key)) {
+                    if (deleted.size < keepCap() && !deleted.has(key)) {
                         try { entry.message = Object.assign({},entry.message); keepDeleted(key,{type:"MESSAGE_DELETE",channelId:entry.channelId,id:entry.id,raw:entry.message,message:markDeleted(messageRecords.createMessageRecord(entry.message))}); restored++; }
                         catch (_) { changed = true; /* Invalid individual records do not poison the archive. */ }
                     } else changed = true;
@@ -2775,7 +2782,7 @@
     function trimDeleted() {
         // Lowering the maximum from 5000 to 1 used to send up to 4999 separate deletes.
         const removed = [];
-        while (deleted.size > settings.noDeleteLimit) {
+        while (deleted.size > keepCap()) {
             const pending = dropDeleted(deleted.keys().next().value);
             if (!pending) break;
             removed.push(pending);
@@ -2861,7 +2868,8 @@
         if (features.bulkDelete && bulkDelete.removing.size && bulkDelete.removing.has(key)) return false;
         const message = msgStore && msgStore.getMessage(event.channelId,event.id);
         if (!retainable(message, event)) return false;
-        while (deleted.size >= settings.noDeleteLimit) {
+        logMessage("d", message, event.channelId, message.content || "");
+        while (deleted.size >= keepCap()) {
             const pending = dropDeleted(deleted.keys().next().value);
             if (!pending) break;
             orig.call(self,{type:"MESSAGE_DELETE",channelId:pending.channelId,id:pending.id});
@@ -2891,7 +2899,7 @@
         const event = args[0];
         if (!event || !DISPATCH_EVENTS.has(event.type)) return orig.apply(self, args);
         if (features.hiddenChannels) channelMetadataEvent(event);
-        if (event.type === "LOGOUT") { clearDeleted(false); edits.clear(); archiveRestored = false; clearReviewAuth(); }
+        if (event.type === "LOGOUT") { clearDeleted(false); edits.clear(); archiveRestored = false; clearReviewAuth(); logForget(logs.messages); }
         if (!features.noDelete) return orig.apply(self, args);
         if (RESTORE_EVENTS.has(event.type)) Promise.resolve().then(restoreDeleted);
         // Views are keyed by the store's own ChannelMessages identity, so unrelated events
@@ -2907,7 +2915,7 @@
             if (ids.size) forgetChannels(ids);
         }
         if (!enabled("noDelete")) return orig.apply(self, args);
-        if (event.type === "MESSAGE_UPDATE" && settings.noDeleteEdits) rememberEdit(event.message);
+        if (event.type === "MESSAGE_UPDATE" && (settings.noDeleteEdits || settings.noDeleteLogEdits)) rememberEdit(event.message);
         if (event.type === "MESSAGE_DELETE" && event.channelId && event.id) {
             // Your own deletion of a message we were already showing: remove it for real.
             const kept = rememberDeleted(event, orig, self);
@@ -2932,6 +2940,8 @@
         try { current = msgStore.getMessage(update.channel_id, update.id); } catch (_) { return; }
         const before = current && current.content;
         if (typeof before !== "string" || before === update.content) return;
+        logMessage("e", current, update.channel_id, update.content, before);
+        if (!settings.noDeleteEdits) return;
         const key = deletedKey(update.channel_id, update.id);
         let entry = edits.get(key);
         if (entry) edits.delete(key);
@@ -2969,6 +2979,199 @@
         const content = joined && joined.view === view && joined.source === message.content ? joined.value :
             (entry.joined = {view, source:message.content, value:[view].concat(message.content)}).value;
         return Object.assign({}, message, {content});
+    }
+    // Message log (Keep deleted messages) and Activity log (User activity notifications): every deleted or edited message,
+    // and what the people you watch did, oldest first. No limit while Discord runs; saved on this phone, one file per
+    // account, which keeps the newest 64 MB (hundreds of thousands of entries).
+    const LOG_BYTES = 64 * 1024 * 1024, LOG_TEXT = 4000;
+    const logs = {messages:{name:"messages", feature:"noDelete", entries:[], account:null, state:"idle", revision:0, timer:undefined, writing:false, pending:undefined, wake:undefined},
+        activity:{name:"activity", feature:"userNotif", entries:[], account:null, state:"idle", revision:0, timer:undefined, writing:false, pending:undefined, wake:undefined}};
+    // Each entry is turned into text once, so a new one doesn't re-serialize the whole log. logRoutes: the log pages' screens.
+    const logTexts = new WeakMap(), logRoutes = {};
+    function logClip(text) { return typeof text === "string" ? (text.length > LOG_TEXT ? text.slice(0, LOG_TEXT) + "\u2026" : text) : ""; }
+    function logUser(user, id, name) {
+        const u = user || {};
+        const out = {id:String(u.id || id || ""), n:String(name || u.globalName || u.global_name || u.username || id || "?")};
+        if (typeof u.username === "string" && u.username) out.h = u.username;
+        if (typeof u.avatar === "string" && u.avatar) out.a = u.avatar;
+        if (u.bot) out.b = 1;
+        return out;
+    }
+    // Where it happened, by name, so the log still reads right after a channel is renamed or deleted.
+    function logPlace(entry, channelId, guildId) {
+        entry.c = String(channelId || "");
+        let channel = null;
+        try { channel = channelId ? receivedChannel(channelId) : null; } catch (_) {}
+        const gId = guildId || channel && (channel.guild_id || channel.guildId);
+        if (gId) {
+            entry.g = String(gId);
+            const guilds = inspectedExport(2090, "default");
+            let guild = null;
+            try { guild = guilds && typeof guilds.getGuild === "function" ? guilds.getGuild(gId) : null; } catch (_) {}
+            if (guild && typeof guild.name === "string") entry.gn = guild.name;
+        } else entry.dm = 1;
+        const name = channel && typeof channel.name === "string" ? channel.name.trim() : "";
+        if (name) entry.cn = gId && features.cleanChannels ? channelNameFormat(channel, name) : name;
+        return entry;
+    }
+    function logValid(entry) { return !!entry && typeof entry === "object" && typeof entry.k === "string" && typeof entry.t === "number" && !!entry.u && typeof entry.u.id === "string"; }
+    function logFile(log) { return "venus-log-" + log.name + "-" + log.account + ".json"; }
+    // The signed-in account's log, read from this phone the first time it's needed. False while nobody is signed in.
+    function logReady(log) {
+        const me = currentUser(), account = me && typeof me.id === "string" ? me.id : null;
+        if (!account) return false;
+        if (log.account !== account) {
+            log.account = account; log.entries = []; log.state = "loading"; log.revision++;
+            logLoad(log, account);
+        }
+        return true;
+    }
+    function logLoad(log, account) {
+        let constants = null;
+        try { constants = files && typeof files.getConstants === "function" ? files.getConstants() : null; } catch (_) {}
+        if (!constants || typeof constants.DocumentsDirPath !== "string") { log.state = "unsaved"; return; }
+        const path = constants.DocumentsDirPath.replace(/\/$/, "") + "/" + logFile(log);
+        let readable = false;
+        Promise.resolve().then(() => files.fileExists(path)).then(exists => exists ? files.readFile(path, "utf8") : null).then(text => {
+            readable = true;
+            if (log.account !== account) return;
+            const saved = text ? JSON.parse(text) : null;
+            const old = saved && Array.isArray(saved.entries) ? saved.entries.filter(logValid) : [];
+            const added = log.entries.length;
+            log.entries = old.concat(log.entries); log.state = "ready"; log.revision++;
+            if (added) logPersist(log);
+            logWake(log);
+        }).catch(() => {
+            if (log.account !== account) return;
+            // A damaged file is replaced by what's logged from now on; one that couldn't be read at all is left alone.
+            log.state = readable ? "ready" : "unsaved"; log.revision++;
+            if (readable && log.entries.length) logPersist(log);
+            logWake(log);
+        });
+    }
+    function logPersist(log) {
+        if (log.state !== "ready" || !files || log.timer !== undefined) return;
+        log.timer = later(() => { log.timer = undefined; logWrite(log); }, 2000);
+    }
+    function logText(entry) {
+        let text = logTexts.get(entry);
+        if (text === undefined) { try { text = JSON.stringify(entry); } catch (_) { text = ""; } logTexts.set(entry, text); }
+        return text;
+    }
+    function logWrite(log) {
+        if (log.state !== "ready" || !files || !log.account) return;
+        // Newest first until the file is full, so a log too big to save loses its oldest entries, never new ones.
+        const parts = [];
+        let size = 0;
+        for (let i = log.entries.length - 1; i >= 0; i--) {
+            const text = logText(log.entries[i]);
+            if (!text) continue;
+            if (size + text.length + 1 > LOG_BYTES) break;
+            parts.push(text); size += text.length + 1;
+        }
+        parts.reverse();
+        log.pending = {name:logFile(log), text:"{\"version\":1,\"entries\":[" + parts.join(",") + "]}"};
+        if (log.writing) return;
+        log.writing = true;
+        const write = () => {
+            const job = log.pending; log.pending = undefined;
+            return Promise.resolve().then(() => files.writeFile("documents", job.name, job.text, "utf8")).catch(() => {})
+                .then(() => { if (log.pending !== undefined) return write(); log.writing = false; });
+        };
+        Promise.resolve().then(write);
+    }
+    // A burst (a purge, everyone coming online at once) redraws an open log once, not once per entry.
+    function logWake(log) {
+        if (log.wake !== undefined) return;
+        log.wake = later(() => { log.wake = undefined; notify(log.feature); }, 300);
+    }
+    function logAdd(log, entry) {
+        if (!logReady(log)) return;
+        log.entries.push(entry); log.revision++;
+        logPersist(log); logWake(log);
+    }
+    function logRemove(log, entry) {
+        const index = log.entries.lastIndexOf(entry);
+        if (index < 0) return;
+        log.entries.splice(index, 1); log.revision++;
+        logPersist(log); notify(log.feature);
+    }
+    // Clearing is what you asked for, so it also replaces a saved file that couldn't be read.
+    function logClear(log) {
+        log.entries = []; log.revision++;
+        if (log.account && files) { log.state = "ready"; logWrite(log); }
+        notify(log.feature);
+    }
+    // Signing out: anything not yet saved is written first, and the next account starts from its own log.
+    function logForget(log) {
+        if (log.state === "ready" && log.timer !== undefined) logWrite(log);
+        log.account = null; log.entries = []; log.state = "idle"; log.revision++;
+    }
+    function logMessage(kind, message, channelId, content, before) {
+        if (!message || !(kind === "d" ? settings.noDeleteLogDeleted : settings.noDeleteLogEdits)) return;
+        const author = message.author, me = currentUser();
+        if (!author || !author.id) return;
+        if (!settings.noDeleteLogOwn && me && author.id === me.id) return;
+        if (!settings.noDeleteLogBots && author.bot) return;
+        const entry = logPlace({k:kind, t:Date.now(), m:String(message.id), u:logUser(author), x:logClip(content)}, channelId, message.guild_id || message.guildId);
+        if (kind === "e") entry.b = logClip(before);
+        const sent = message.timestamp, at = typeof sent === "string" ? Date.parse(sent) : sent && typeof sent.valueOf === "function" ? Number(sent.valueOf()) : NaN;
+        if (isFinite(at)) entry.st = at;
+        const count = Array.isArray(message.attachments) ? message.attachments.length : 0;
+        if (count) entry.f = count;
+        logAdd(logs.messages, entry);
+    }
+    // A kept message's hold menu (LongPressMessageActionSheet 9978): Dismiss for a deleted message, Hide edit history
+    // for an edited one, so neither needs a restart to go away (#130).
+    function noDeleteSheet(orig, self, args) {
+        const tree = orig.apply(self, args), props = args[0], message = props && props.message;
+        if (!enabled("noDelete") || !React || !tree || !message || !message.id) return tree;
+        const channelId = String(message.channel_id || message.channelId || props.channel && props.channel.id || "");
+        if (!channelId) return tree;
+        const key = deletedKey(channelId, String(message.id));
+        const kept = deleted.has(key), history = !kept && !!settings.noDeleteEdits && edits.has(key);
+        if (!kept && !history) return tree;
+        const label = kept ? tr("Dismiss deleted message") : tr("Hide edit history"), Icon = venusIcon(6927, "EyeSlashIcon");
+        let added = false;
+        return cloneTree(tree, function (node, nodeProps) {
+            if (added || !Array.isArray(nodeProps.children)) return nodeProps;
+            const rows = nodeProps.children.filter(child => child && child.props && typeof child.props.label === "string" && typeof child.props.onPress === "function");
+            if (!rows.length || nodeProps.children.some(child => child && child.key === "venus-nodelete")) return nodeProps;
+            added = true;
+            const template = rows[rows.length - 1], icon = template.props.icon;
+            const row = React.cloneElement(template, {key:"venus-nodelete", label, arrow:false, variant:undefined, disabled:false,
+                icon:icon && icon.props && "IconComponent" in icon.props ? React.cloneElement(icon, {IconComponent:Icon}) : icon,
+                onPress:function () {
+                    const sheets = reviewUI().sheets;
+                    try { if (sheets && typeof sheets.hideActionSheet === "function") sheets.hideActionSheet("MessageLongPressActionSheet"); } catch (_) {}
+                    if (typeof props.onClose === "function") try { props.onClose(); } catch (_) {}
+                    if (kept) noDeleteDismiss(key); else noDeleteHideHistory(key, message);
+                }});
+            const index = nodeProps.children.indexOf(template) + 1;
+            return Object.assign({}, nodeProps, {children:nodeProps.children.slice(0, index).concat([row], nodeProps.children.slice(index))});
+        }, 0, () => added);
+    }
+    function noDeleteDismiss(key) {
+        const entry = dropDeleted(key);
+        if (!entry) return;
+        invalidateDeleted(); persistDeleted();
+        // Discord's own dispatch, bound before Venus hooked it, so the removal isn't kept again.
+        if (dispatcher) try { dispatcher({type:"MESSAGE_DELETE", channelId:entry.channelId, id:entry.id}); } catch (_) {}
+        notify("noDelete");
+        reviewToast(reviewUI(), "Deleted message dismissed", venusIcon(6927, "EyeSlashIcon"));
+    }
+    function noDeleteHideHistory(key, message) {
+        const entry = edits.get(key);
+        if (!entry) return;
+        edits.delete(key); persistDeleted();
+        // A row is drawn again only when its message changes: a zero-width space for a moment, then the real text.
+        const content = message && typeof message.content === "string" ? message.content : null;
+        if (dispatcher && content !== null) {
+            const update = text => { try { dispatcher({type:"MESSAGE_UPDATE", message:{id:entry.id, channel_id:entry.channelId, content:text}}); } catch (_) {} };
+            update(content + "\u200b"); later(() => update(content), 120);
+        }
+        notify("noDelete");
+        reviewToast(reviewUI(), "Edit history hidden", venusIcon(6927, "EyeSlashIcon"));
     }
     function deleteMessage(orig, self, args) {
         const key = deletedKey(args[0], args[1]), event = deleted.get(key);
@@ -10193,7 +10396,8 @@
         return true;
     }
     function userNotifHasTargets() {
-        return !!(enabled("userNotif") && (settings.userNotifStatus || settings.userNotifMessages || settings.userNotifTyping) &&
+        return !!(enabled("userNotif") && (settings.userNotifStatus || settings.userNotifMessages || settings.userNotifTyping ||
+            settings.userNotifLogStatus || settings.userNotifLogMessages || settings.userNotifLogTyping) &&
             (settings.userNotifFriends || userNotif.ids.size > 0));
     }
     function backgroundNeeded() {
@@ -10502,6 +10706,15 @@
         notify("userNotif");
     }
     // Every server that loads at startup used to walk the whole friends list again; now it's done once after them.
+    // One line in the Activity log; the name is the one you see for them (friend nickname first).
+    function userNotifLog(kind, id, user, channelId, guildId, extra) {
+        let known = null;
+        try { known = userStore && userStore.getUser(id); } catch (_) {}
+        const entry = {k:kind, t:Date.now(), u:logUser(known || user, id, userNotifPersonName(id, known || user))};
+        if (channelId) logPlace(entry, channelId, guildId);
+        if (extra) for (const key in extra) if (extra[key] !== undefined) entry[key] = extra[key];
+        logAdd(logs.activity, entry);
+    }
     function userNotifSeedSoon() {
         if (userNotif.seedQueued) return;
         userNotif.seedQueued = true;
@@ -10529,7 +10742,7 @@
         } catch (_) {}
     }
     function userNotifPresence(update) {
-        if (!update || !enabled("userNotif") || !settings.userNotifStatus) return;
+        if (!update || !enabled("userNotif") || !(settings.userNotifStatus || settings.userNotifLogStatus)) return;
         const user = update.user, id = user && user.id || update.userId;
         const nextStatus = typeof update.status === "string" ? update.status : "";
         if (!id || !nextStatus || !userNotifWatched(id)) return;
@@ -10548,19 +10761,23 @@
         if (userNotif.statuses.size >= 2000 && !userNotif.statuses.has(id))
             userNotif.statuses.delete(userNotif.statuses.keys().next().value);
         userNotif.statuses.set(id, nextStatus);
-        if (!prev || prev === nextStatus || !userNotifAllowed(id, "status:" + nextStatus)) return;
+        if (!prev || prev === nextStatus) return;
+        if (settings.userNotifLogStatus) userNotifLog("s", id, user, null, null, {s:nextStatus, p:prev});
+        if (!settings.userNotifStatus || !userNotifAllowed(id, "status:" + nextStatus)) return;
         userNotifShow("{name} is now {status}", {name:userNotifPersonName(id, user), status:userNotifStatusName(nextStatus)});
     }
     function userNotifMessage(event) {
-        if (!enabled("userNotif") || !settings.userNotifMessages || !event || event.optimistic) return;
+        if (!enabled("userNotif") || !(settings.userNotifMessages || settings.userNotifLogMessages) || !event || event.optimistic) return;
         const message = event.message;
         if (!message || message.state === "SENDING") return;
         const author = message.author, id = author && author.id;
         const channelId = message.channel_id || message.channelId || event.channelId;
         if (!id || !userNotifWatched(id)) return;
         // They sent it, so the next time they start typing is news again.
-        userNotif.cooldowns.delete(id + ":typing:" + channelId);
-        if (userNotifInView(channelId) || !userNotifAllowed(id, "message")) return;
+        userNotif.cooldowns.delete(id + ":typing:" + channelId); userNotif.cooldowns.delete(id + ":logTyping:" + channelId);
+        if (settings.userNotifLogMessages) userNotifLog("m", id, author, channelId, message.guild_id || message.guildId || event.guildId,
+            {m:String(message.id || ""), x:logClip(message.content), f:Array.isArray(message.attachments) && message.attachments.length || undefined});
+        if (!settings.userNotifMessages || userNotifInView(channelId) || !userNotifAllowed(id, "message")) return;
         const name = userNotifPersonName(id, author);
         const place = userNotifPlace(channelId, message.guild_id || message.guildId || event.guildId);
         if (place.isDm) userNotifShow("{name} sent you a DM", {name});
@@ -10569,9 +10786,12 @@
         else userNotifShow("{name} sent a message", {name});
     }
     function userNotifTyping(event) {
-        if (!enabled("userNotif") || !settings.userNotifTyping || !event) return;
+        if (!enabled("userNotif") || !(settings.userNotifTyping || settings.userNotifLogTyping) || !event) return;
         const id = event.userId || event.user && event.user.id, channelId = event.channelId || event.channel_id;
-        if (!id || !userNotifWatched(id) || userNotifInView(channelId) || !userNotifAllowed(id, "typing:" + channelId, USER_NOTIF_TYPING_MS)) return;
+        if (!id || !userNotifWatched(id)) return;
+        if (settings.userNotifLogTyping && userNotifAllowed(id, "logTyping:" + channelId, USER_NOTIF_TYPING_MS))
+            userNotifLog("t", id, event.user, channelId, event.guildId || event.guild_id, null);
+        if (!settings.userNotifTyping || userNotifInView(channelId) || !userNotifAllowed(id, "typing:" + channelId, USER_NOTIF_TYPING_MS)) return;
         const name = userNotifPersonName(id, event.user);
         const place = userNotifPlace(channelId, event.guildId || event.guild_id);
         if (place.isDm) userNotifShow("{name} is typing in your DM", {name});
@@ -10583,7 +10803,7 @@
         if (!event || !enabled("userNotif")) return;
         switch (event.type) {
         case "PRESENCE_UPDATES":
-            if (settings.userNotifStatus && Array.isArray(event.updates)) for (let i = 0; i < event.updates.length; i++) userNotifPresence(event.updates[i]);
+            if ((settings.userNotifStatus || settings.userNotifLogStatus) && Array.isArray(event.updates)) for (let i = 0; i < event.updates.length; i++) userNotifPresence(event.updates[i]);
             return;
         case "PRESENCE_UPDATE": userNotifPresence(event); return;
         case "MESSAGE_CREATE": userNotifMessage(event); return;
@@ -10610,7 +10830,7 @@
             if (event.guild && event.guild.id) { userNotif.subscribedGuilds.delete(String(event.guild.id)); userNotifSubscribeGuilds(); }
             return;
         case "LOGOUT":
-            userNotif.statuses.clear(); userNotif.cooldowns.clear(); userNotif.subscribedGuilds.clear(); userNotif.shown = 0; userNotif.last = null; notify("userNotif");
+            userNotif.statuses.clear(); userNotif.cooldowns.clear(); userNotif.subscribedGuilds.clear(); userNotif.shown = 0; userNotif.last = null; logForget(logs.activity); notify("userNotif");
             return;
         }
     }
@@ -18187,6 +18407,7 @@
             case 8590: if (features.badges && exports && exports.default) badgesAttachStore(exports.default); return exports;
             case 9978:
                 if (features.translate) exports = hookComponent(exports, translateSheet);
+                if (features.noDelete) exports = hookComponent(exports, noDeleteSheet);
                 return features.bulkDelete ? hookComponent(exports, bulkDeleteSheet) : exports;
             case 9561: return features.splitMessages ? maxLengthModule(exports) : exports;
             case 17538: return (features.youBarSettings || features.accountSwitcher) ? hookComponent(exports, youBarButtons) : exports;
