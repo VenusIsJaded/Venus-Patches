@@ -53,6 +53,7 @@
     if (features.noConfirmPin) selectModules([5400, 1128]);
     if (features.clickableMentions) selectModules([1392, 2068, 2119, 12337]);
     if (features.silentLeave) selectModules([2068, 7290]);
+    if (features.guildLurk) targetModules[13422] = 1;
     if (features.quietReplies) selectModules([1392, 5532, 9990]);
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
     if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
@@ -17938,10 +17939,63 @@
             if (!id) { reviewToast(ui, "That invite doesn't work", info); return false; }
             // Already a member, or already previewing it: just open it.
             if (guildLurkGuild(id) || guildLurkIsLurking(id)) { guildLurkRemember(id); guildLurkGo(id); return true; }
-            const actions = inspectedExport(6377, "default");
-            if (!actions || typeof actions.joinGuild !== "function") throw new Error("joinGuild unavailable");
-            return Promise.resolve(actions.joinGuild(id, {lurker:true})).then(() => { guildLurkRemember(id); guildLurkGo(id); return true; });
+            return guildLurkJoin(id).then(done => { if (done) guildLurkGo(id); return done; });
         }).catch(() => { reviewToast(ui, "This server doesn't allow previews", info); return false; });
+    }
+    // Joins as a lurker (Discord's own joinGuild with lurker:true), remembers the server, and says so when Discord refuses.
+    function guildLurkJoin(id) {
+        const ui = reviewUI(), info = venusIcon(5145, "CircleInformationIcon");
+        if (!enabled("guildLurk")) return Promise.resolve(false);
+        if (guildLurkGuild(id) || guildLurkIsLurking(id)) { guildLurkRemember(id); return Promise.resolve(true); }
+        const actions = inspectedExport(6377, "default");
+        if (!actions || typeof actions.joinGuild !== "function") { reviewToast(ui, "This server doesn't allow previews", info); return Promise.resolve(false); }
+        haptic("SELECTION");
+        return Promise.resolve().then(() => actions.joinGuild(id, {lurker:true})).then(() => { guildLurkRemember(id); return true; },
+            () => { reviewToast(ui, "This server doesn't allow previews", info); return false; });
+    }
+    // The join screen of an invite (InviteDetails 13422) draws Accept and Decline in Discord's ButtonGroup (6214). Venus adds
+    // a Preview button there, made with Discord's own Button (5479) at the same size as Accept, for servers that allow
+    // previews (PREVIEW_ENABLED or DISCOVERABLE in the invite's guild features). It opens the server as a lurker, closes the
+    // invite screen and takes you there. Not shown when you're already a member or the invite was accepted.
+    function invitePreviewable(invite) {
+        const guild = invite && invite.guild, id = guild && guild.id;
+        if (typeof id !== "string" || !/^\d{17,20}$/.test(id) || invite.state === "ACCEPTED" || invite.state === "ACCEPTING") return null;
+        const list = guild.features;
+        const features = Array.isArray(list) ? list : list && typeof list.has === "function" ? Array.from(list) : null;
+        return !features || features.includes("PREVIEW_ENABLED") || features.includes("DISCOVERABLE") ? id : null;
+    }
+    function InvitePreviewButton(props) {
+        const [busy, setBusy] = React.useState(false);
+        const Button = inspectedExport(5479, "Button");
+        if (!Button) return null;
+        const press = () => {
+            if (busy) return;
+            setBusy(true);
+            guildLurkJoin(props.guildId).then(done => {
+                setBusy(false);
+                if (!done) return;
+                try { if (typeof props.onClose === "function") props.onClose(); } catch (_) {}
+                guildLurkGo(props.guildId);
+            });
+        };
+        return el(Button, {variant:"secondary", size:props.size || "lg", text:tr("Preview"), accessibilityLabel:tr("Preview servers without joining"),
+            icon:venusIcon(6929, "EyeIcon"), onPress:press, loading:busy, disabled:busy});
+    }
+    function invitePreviewDetails(orig, self, args) {
+        const result = orig.apply(self, args), props = args[0];
+        if (!enabled("guildLurk") || !React || !props || props.isGuildMember || props.isRegistration) return result;
+        const guildId = invitePreviewable(props.invite), Group = inspectedExport(6214, "ButtonGroup");
+        if (!guildId || !Group || !result) return result;
+        let added = false;
+        return cloneTree(result, (node, nodeProps) => {
+            if (added || node.type !== Group) return nodeProps;
+            const kids = React.Children.toArray(nodeProps.children);
+            if (!kids.length) return nodeProps;
+            added = true;
+            const first = kids[0] && kids[0].props || {};
+            kids.splice(1, 0, el(InvitePreviewButton, {key:"venus-preview", guildId, size:first.size, onClose:props.onPressClose}));
+            return Object.assign({}, nodeProps, {children:kids});
+        }, 0, () => added);
     }
     function GuildLurkSettings() {
         useSettings("guildLurk");
@@ -19046,6 +19100,7 @@
             case 1417: return features.fullImages ? hookFullAvatars(exports) : exports;
             case 8766: return features.alwaysTrust && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "isTrustedDomain", alwaysTrustDomain)) : exports;
             case 8537: return features.alwaysTrust ? hookExport(exports, "isSuspiciousDownload", alwaysTrustFile) : exports;
+            case 13422: return features.guildLurk ? hookComponent(exports, invitePreviewDetails) : exports;
             case 7290: return features.silentLeave && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "closePrivateChannel", silentLeaveClose)) : exports;
             case 12337: return features.clickableMentions && exports && exports.default ? replaceValue(exports, "default", propsComponent(exports.default, clickableMentionsProps)) : exports;
             case 7293: return features.removedAlerts ? hookRemovedMine(exports, ["removeFriend", "removeRelationship"]) : exports;

@@ -448,6 +448,8 @@ BOOTSTRAP_MODULES = [
     (7579, 'modules/replies/ReferencedMessageStore.tsx', ['default'], 'ReferencedMessageStore (Hide blocked or ignored messages: replies)'),
     (12809, 'modules/messages/native/createChannelStream.tsx', ['default'], 'createChannelStream (Hide blocked or ignored messages)'),
     (11619, 'design/components/Icon/native/redesign/generated/ChatShieldIcon.tsx', ['ChatShieldIcon'], 'ChatShieldIcon (Hide blocked or ignored messages)'),
+    (13422, 'modules/accept_invite/native/InviteDetails.tsx', ['ACCEPT', 'DECLINE', 'default'], 'InviteDetails (Preview servers without joining: Preview button on the join screen)'),
+    (6214, 'design/components/ButtonGroup/native/ButtonGroup.native.tsx', ['ButtonGroup'], 'ButtonGroup (the join screen\'s Accept and Decline)'),
     (7290, 'actions/ChannelActionCreators.tsx', ['default'], 'ChannelActionCreators (Hide blocked: Close their DM; Leave group DMs silently: closePrivateChannel)'),
     (8537, 'modules/suspicious_downloads/SuspiciousDownloadUtils.tsx', ['isSuspiciousDownload'], 'SuspiciousDownloadUtils (Always trust)'),
     (8766, 'stores/MaskedLinkStore.tsx', ['default'], 'MaskedLinkStore (Always trust)'),
