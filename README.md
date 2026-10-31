@@ -24,7 +24,7 @@ Open **Discord Settings → Venus → Features** to turn things on or off at any
 
 | Group | Feature | What it does |
 | --- | --- | --- |
-| **Messages** | Keep deleted messages | Deleted messages stay in chat, outlined in red, and edits keep their history. Pick their color, brightness and how many to keep |
+| **Messages** | Keep deleted messages | Deleted messages stay in chat, outlined in red, and edits keep their history. Hold one to dismiss it, or its edit history, without restarting. A **Message log** lists every deleted and edited message by day, with search and filters, and you choose what goes in it (deletions, edits, your own, bots). Pick their color, brightness and how many to keep, up to No limit |
 | | Bulk delete messages | Select multiple messages in chat and delete them all at once |
 | | Hide blocked or ignored messages | Removes the "blocked messages" and "ignored messages" rows from chat, and can hide replies to them too. Can also close your DM with someone as soon as you block them, so they leave the Messages list (no messages are deleted). Based on RemoveBlockedUsers |
 | | Message highlights | Pick bar width, plus the color and brightness of replies and mentions |
@@ -54,7 +54,7 @@ Open **Discord Settings → Venus → Features** to turn things on or off at any
 | | Copy profile bios | Hold a bio to select and copy it |
 | | Leave group DMs silently | Leave a group DM without the "left the group" message the others would see. Works from every place you can leave: the group's menu, its header and `/leave`. Normal DMs are unchanged. Based on SilentLeave by coder.gg |
 | | User and server reviews | Read and write reviews, from ReviewDB |
-| | User activity notifications | Shows a notice when chosen friends or users change status, start typing or send a message. Nothing shows for the chat you have open, and typing is announced once a minute per person and chat |
+| | User activity notifications | Shows a notice when chosen friends or users change status, start typing or send a message. Nothing shows for the chat you have open, and typing is announced once a minute per person and chat. An **Activity log** keeps what they did, by day, with search and filters; choose what it records separately from what notifies you |
 | | Account switcher | Switch between up to 50 Discord accounts from the profile bar or Venus settings. Create a new account from Discord's Add account screen or the Account switcher page, without logging out. Export your saved accounts to a file and import them on another phone or a fresh install, without signing in again. Venus settings are shared by every account, and **Same theme on every account** makes your theme and Nitro theme follow you too |
 | **Servers** | Read all button | Marks servers, DMs or both as read in one tap |
 | | Show hidden channels | Channels you can't open appear with a lock. Only a tap opens their details menu, which you can turn off |
