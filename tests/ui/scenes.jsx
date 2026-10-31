@@ -26,6 +26,7 @@
 //                      the Activity and Wishlist tabs, both Member Since dates, Roles, Connections and the note (mode=off: no removal mode)
 //   scene=removeMenu   the same profile with its ⋯ menu open
 //   scene=removeHeaders  the Messages tab header and a server's channel list header, laid out from the heights Discord measures
+//   scene=removeMessage  your message's hold menu: quick reactions and every row, with Translate and Select Messages added by Venus
 //   scene=removeGuild  the server menu: Community Server pill, Boost / Invite / Notifications, its rows and switches, Server Emoji
 //   scene=longEdit     Send long messages: saving an edit past Discord's limit (the alert that explains why it wasn't sent)
 // Edge cases: friends=0 (none of your friends are in Game Night), owner=me (you own it), desc=0 (no description).
@@ -60,19 +61,19 @@ export const SCENE_SETTINGS = {
   youBar: { youBarSettings: true, accountSwitcher: true }, translateBar: { translate: true, translateMode: "manual" },
   messageMenu: { translate: true }, bulkDelete: { bulkDelete: true }, longMessageFailed: { splitMessages: true }, longEdit: { splitMessages: true },
   removeMode: { hideAnything: true }, removeProfile: { hideAnything: true }, removeMenu: { hideAnything: true },
-  removeHeaders: { hideAnything: true }, removeGuild: { hideAnything: true },
+  removeHeaders: { hideAnything: true }, removeGuild: { hideAnything: true }, removeMessage: { hideAnything: true, translate: true, bulkDelete: true },
 };
 
 // The stand-in modules: Discord's stores the sheet reads, its sheets, and the two guild-bar modules Venus hooks.
-export const hooked = [1392, 5207, 17433, 2090, 1417, 17439, 14101, 1087, 2068, 4845, 1114, 17538, 10692, 5532, 9978, 14995, 7445, 9683,
+export const hooked = [1392, 5207, 17433, 2090, 1417, 17439, 14101, 1087, 2068, 4845, 1114, 17538, 10692, 5532, 9978, 13759, 14995, 7445, 9683,
   15590, 17157, 13780, 14204, 9419, 12892, 12897, 12901, 12909, 12908,
   14015, 15046, 10858, 14197, 8805, 11678, 11679, 10939, 7158, 14182, 17156, 17263, 12942, 14988, 14994, 14925, 14998];
 let host = null; // the Scene, once drawn: shows and hides sheets
 // Discord's own text for the message keys Remove anything matches labels by (en-GB, from the APK), served as intl (1128) in
 // the remove* scenes, so labels are found the way they are in Discord.
-const EN_TEXT = {"/AXYnE": "Copy User ID", "2QmKZ2": "Server Tag", "3fe7U5": "Connections", "4lTDZq": "Mutual Servers", "5h0QOP": "Search", "7815ae": "Add Friend", "7UgSGP": "Allow Message Requests", "7lZ31J": "Wishlist", "8pOYUE": "Change Friend Nickname", "8wXU9B": "Unignore", "Aen9eh": "Report Server", "BGYkaH": "Add Friend Nickname", "DisZzB": "View Per-server Profile", "Dv8gFT": "Leave Hub", "FB2ZZV": "Show All Channels", "GISTta": "View Main Profile", "HcoRu0": "Notifications", "J2TBi3": "Leave Server", "K7iRig": "Community Server", "KXNTgb": "Allow Direct Messages", "LPJmL/": "Roles", "LXw470": "Main", "PHjkRE": "Apps", "PKQB/H": "Edit Per-server Profile", "PdRCRg": "More Options", "Q60n1E": "Server Emoji", "QvQeLv": "Copy User Info", "Sd8Ixw": "Invite to Server", "TbHyMG": "Report This User for Abuse", "Uj0md3": "Boost", "UwOLJO": "Hide Muted Channels", "VINpSK": "Invite", "WqhZss": "Copy Link", "XyHpKH": "Unblock", "a6XYD9": "Member Since", "bHa9kN": "Ring", "chq59f": "Activity", "e6RscS": "Mark as Read", "h9mGOP": "Channels & Roles", "jhJzez": "Report App", "l4Emac": "Block", "l6w3Vj": "Badges", "mQKv+v": "Note (only visible to you)", "n5zMI+": "Remove from Group", "tlopTM": "Events", "xNdRDO": "Shop This Look", "y5MwJy": "Copy Username", "ygslb0": "Stop Ringing", "ytCpKs": "Ignore", "zROXEV": "Message"};
+const EN_TEXT = {"fsBWmS": "Edit Message", "5IEsGx": "Reply", "I3ltXO": "Forward", "rBIGBL": "Create Thread", "39d0Wj": "View Thread", "JrGD7E": "Copy Text", "RpE9k7": "Mark Unread", "CvQ18w": "Pin Message", "Bse+F/": "Unpin Message", "tpxJto": "Bookmark Message", "SvXS1Z": "Remove Bookmark", "mJ3P0N": "Create Reminder", "vrbqs1": "Edit Reminder", "P8tvKG": "Mention", "Xrt5Po": "Copy Message Link", "zBoHlf": "Copy Message ID", "S/xNKV": "Save Image", "JVuuz3": "Save Video", "vbAEaA": "Save File", "8xHmxo": "Copy Image Link", "92CPQ+": "Copy Media Link", "MFGE51": "Publish", "wUIMqa": "Remove Embeds", "4sxKOb": "Remove Embed", "ZbtGBm": "Remove All Reactions", "n5EBAJ": "Report to Discord", "+78Pfm": "Report", "xwMqD7": "Delete Message", "/AXYnE": "Copy User ID", "2QmKZ2": "Server Tag", "3fe7U5": "Connections", "4lTDZq": "Mutual Servers", "5h0QOP": "Search", "7815ae": "Add Friend", "7UgSGP": "Allow Message Requests", "7lZ31J": "Wishlist", "8pOYUE": "Change Friend Nickname", "8wXU9B": "Unignore", "Aen9eh": "Report Server", "BGYkaH": "Add Friend Nickname", "DisZzB": "View Per-server Profile", "Dv8gFT": "Leave Hub", "FB2ZZV": "Show All Channels", "GISTta": "View Main Profile", "HcoRu0": "Notifications", "J2TBi3": "Leave Server", "K7iRig": "Community Server", "KXNTgb": "Allow Direct Messages", "LPJmL/": "Roles", "LXw470": "Main", "PHjkRE": "Apps", "PKQB/H": "Edit Per-server Profile", "PdRCRg": "More Options", "Q60n1E": "Server Emoji", "QvQeLv": "Copy User Info", "Sd8Ixw": "Invite to Server", "TbHyMG": "Report This User for Abuse", "Uj0md3": "Boost", "UwOLJO": "Hide Muted Channels", "VINpSK": "Invite", "WqhZss": "Copy Link", "XyHpKH": "Unblock", "a6XYD9": "Member Since", "bHa9kN": "Ring", "chq59f": "Activity", "e6RscS": "Mark as Read", "h9mGOP": "Channels & Roles", "jhJzez": "Report App", "l4Emac": "Block", "l6w3Vj": "Badges", "mQKv+v": "Note (only visible to you)", "n5zMI+": "Remove from Group", "tlopTM": "Events", "xNdRDO": "Shop This Look", "y5MwJy": "Copy Username", "ygslb0": "Stop Ringing", "ytCpKs": "Ignore", "zROXEV": "Message"};
 const T_ = k => EN_TEXT[k] || k;
-const removeScene = /^remove(Profile|Menu|Headers|Guild)$/.test(q.get("scene") || "");
+const removeScene = /^remove(Profile|Menu|Headers|Guild|Message)$/.test(q.get("scene") || "");
 export function setHost(next) { host = next; } // a settings page can host sheets too
 export function modules(store, me) {
   const user = id => id === me.id ? me : allPeople.find(p => p.id === id) || null;
@@ -125,7 +126,7 @@ export function modules(store, me) {
     // useChatBottomManagerUIStore: the message bar's measured height, which the selection bar fills.
     9683: { useBestActiveChatInputContainerHeight: () => COMPOSER, useChatInputContainerHeight: () => COMPOSER, useSmallSuggestionBarHeight: () => 0 },
     // LongPressMessageActionSheet: a message's hold menu, Discord's rows that Venus adds Translate after.
-    9978: { default: MessageMenu },
+    9978: { default: MessageMenu }, 13759: { default: EmojiRow },
     // GuildActionSheetJoinRequestRow: the server sheet's last row, which Venus turns into its Reviews row.
     14995: { default: () => null },
     // MessageActionCreators: sendMessage resolves the first part and rejects the second, the way Discord's does when a send
@@ -288,14 +289,26 @@ function Profile({ defined }) {
     </RN.View>
   </RN.View>;
 }
-// Discord's message hold menu: the message, then a group of rows.
-const MESSAGE_ROWS = [["Reply", "ArrowAngleLeftUpIcon"], ["Forward", "ArrowAngleRightUpIcon"], ["Copy Text", "CopyIcon"], ["Mark Unread", "ChatMarkUnreadIcon"]];
+// Discord's message hold menu (LongPressMessageActionSheet): the quick reactions (EmojiRow) in its header, then its rows in
+// groups, labelled with Discord's own messages the way Discord labels them, so Remove anything finds them by message key.
+const MESSAGE_GROUPS = [[["fsBWmS", "PencilIcon"], ["5IEsGx", "ArrowAngleLeftUpIcon"], ["I3ltXO", "ArrowAngleRightUpIcon"], ["rBIGBL", "ThreadIcon"]],
+  [["JrGD7E", "CopyIcon"], ["RpE9k7", "ChatMarkUnreadIcon"], ["CvQ18w", "PinIcon"], ["tpxJto", "BookmarkOutlineIcon"], ["mJ3P0N", "ClockIcon", true], ["PHjkRE", "AppsIcon", true],
+    ["P8tvKG", "AtIcon"], ["Xrt5Po", "LinkIcon"]],
+  [["xwMqD7", "TrashIcon", false, "danger"]]];
+const REACTIONS = ["🔥", "✅", "❤️", "🤮", "🩷", "🤡"];
+function EmojiRow() {
+  const cell = { flex: 1, aspectRatio: 1, maxWidth: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: D.tok("BACKGROUND_MOD_SUBTLE") };
+  return <RN.View style={{ flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingBottom: 12 }}>
+    {REACTIONS.map(e => <RN.View key={e} style={cell}><RN.Text style={{ fontSize: 22 }}>{e}</RN.Text></RN.View>)}
+    <RN.View style={cell}>{React.createElement(D.makeIcon("ReactionIcon"), { size: "md" })}</RN.View>
+  </RN.View>;
+}
 function MessageMenu(p) {
-  const rows = MESSAGE_ROWS.map(([label, icon]) => <D.TableRow key={label} label={label} icon={<D.TableRowIcon IconComponent={D.makeIcon(icon)} />} onPress={() => {}} />);
-  return <ActionSheet>
+  const Row = r => <D.TableRow key={r[0]} label={T_(r[0])} arrow={!!r[2]} variant={r[3]} icon={<D.TableRowIcon IconComponent={D.makeIcon(r[1])} variant={r[3]} />} onPress={() => {}} />;
+  const Emoji = global.__r(13759).default;
+  return <ActionSheet header={<Emoji message={p.message} />}>
     <RN.View style={{ paddingHorizontal: 16, paddingBottom: 24, gap: 16 }}>
-      <D.Text variant="text-md/normal" color="text-default" numberOfLines={2}>{p.message.content}</D.Text>
-      <D.TableRowGroup>{rows}</D.TableRowGroup>
+      {MESSAGE_GROUPS.map((g, i) => <D.TableRowGroup key={i}>{g.map(Row)}</D.TableRowGroup>)}
     </RN.View>
   </ActionSheet>;
 }
@@ -522,8 +535,10 @@ export function Scene({ name, defined, registry }) {
     }; setTimeout(hold, 50); }
   }, []);
   if (name === "removeMode" && !sheets.length) return <RemoveMode defined={defined} registry={registry} />;
-  if (/^remove(Profile|Menu|Headers|Guild)$/.test(name) && !sheets.length) return <RemoveScene defined={defined} registry={registry} dim={name === "removeGuild"}>
-    {name === "removeHeaders" ? <HeadersScreen defined={defined} /> : name === "removeGuild" ? <GuildMenuSheet defined={defined} /> : <ProfileScreen defined={defined} />}</RemoveScene>;
+  if (/^remove(Profile|Menu|Headers|Guild|Message)$/.test(name) && !sheets.length) return <RemoveScene defined={defined} registry={registry} dim={name === "removeGuild"}>
+    {name === "removeHeaders" ? <HeadersScreen defined={defined} /> : name === "removeGuild" ? <GuildMenuSheet defined={defined} /> :
+      name === "removeMessage" ? <RN.View style={{ marginTop: 24 }}>{React.createElement(defined[9978].exports.default, { message: SPANISH[2], channel: { id: CHAT }, onClose() {} })}</RN.View> :
+      <ProfileScreen defined={defined} />}</RemoveScene>;
   if (name === "reviews") return <Profile defined={defined} />;
   if (name === "youBar") return <YouBar defined={defined} />;
   if (name === "translateBar" || name === "bulkDelete" && !sheets.length) return <Chat defined={defined} />;

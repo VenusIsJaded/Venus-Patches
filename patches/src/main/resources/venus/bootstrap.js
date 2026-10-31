@@ -58,7 +58,7 @@
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
     if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
     if (features.experiments) selectModules([584, 1392, 1403]);
-    if (features.hideAnything) selectModules([14015, 15735, 15736, 9419, 10331, 16133, 16225, 12892, 12897, 12901, 12908, 12909, 13780, 14204, 15590, 17157, 15046, 8805, 9052, 10858, 12942, 14988, 14994, 14925, 14998, 11678, 11679, 14197, 10939, 7158, 14182, 14101, 17156, 17263, 13151, 12000, 10838, 17949, 16773, 17265, 17881, 17869, 11164]);
+    if (features.hideAnything) selectModules([14015, 15735, 15736, 9419, 10331, 16133, 16225, 12892, 12897, 12901, 12908, 12909, 13780, 14204, 15590, 17157, 15046, 8805, 9052, 10858, 12942, 14988, 14994, 14925, 14998, 11678, 11679, 14197, 10939, 7158, 14182, 14101, 17156, 17263, 13151, 12000, 10838, 17949, 16773, 17265, 17881, 17869, 11164, 9978, 13759, 12696, 10650, 13769, 8494, 9873]);
     if (features.voiceOptions) { targetModules[584] = 1; targetModules[11372] = 1; targetModules[6145] = 1; }
     const revision = "1.20.0";
     // The Discord build these patches are pinned to (DiscordPatches.kt compatibleWith); shown on the About page.
@@ -1146,7 +1146,7 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss deleted message"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
+    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss deleted message"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Create a new account", "Export accounts", "Import accounts", "Same theme on every account"],
@@ -9546,7 +9546,15 @@
         ["server.memberCount", "server", 8489, "GroupIcon"], ["server.community", "server", 9393, "GlobeEarthIcon"],
         ["guild.icon", "guild", 9545, "ServerIcon"], ["guild.online", "guild", 10598, "UserCircleIcon"], ["guild.members", "guild", 8489, "GroupIcon"],
         ["guild.reviews", "guild", 9851, "StarIcon"], ["guild.serverTag", "guild", 9365, "TagIcon"],
-        ["you.status", "you", 8471, "ChatIcon"], ["you.friends", "you", 8489, "GroupIcon"], ["you.orbs", "you", 9331, "OrbsIcon"]];
+        ["you.status", "you", 8471, "ChatIcon"], ["you.friends", "you", 8489, "GroupIcon"], ["you.orbs", "you", 9331, "OrbsIcon"],
+        ["message.reactions", "message", 9252, "ReactionIcon"], ["message.edit", "message", 10023, "PencilIcon"], ["message.reply", "message", 12274, "ArrowAngleLeftUpIcon"],
+        ["message.forward", "message", 12696, "ArrowAngleRightUpIcon"], ["message.thread", "message", 8473, "ThreadIcon"], ["message.translate", "message", 9415, "LanguageIcon"],
+        ["message.copyText", "message", 5141, "CopyIcon"], ["message.markUnread", "message", 10650, "ChatMarkUnreadIcon"], ["message.pin", "message", 10641, "PinIcon"],
+        ["message.bookmark", "message", 13769, "BookmarkOutlineIcon"], ["message.reminder", "message", 5150, "ClockIcon"], ["message.apps", "message", 8506, "AppsIcon"],
+        ["message.mention", "message", 8490, "AtIcon"], ["message.copyLink", "message", 5137, "LinkIcon"], ["message.copyId", "message", 10316, "IdIcon"],
+        ["message.save", "message", 5143, "DownloadIcon"], ["message.copyMedia", "message", 5137, "LinkIcon"], ["message.publish", "message", 8494, "AnnouncementsIcon"],
+        ["message.removeEmbeds", "message", 10806, "XSmallBoldIcon"], ["message.removeReactions", "message", 9252, "ReactionIcon"], ["message.report", "message", 9873, "FlagIcon"],
+        ["message.delete", "message", 5148, "TrashIcon"], ["message.select", "message", 7144, "CircleCheckIcon"]];
     // Spots that are Discord's own buttons and rows are named with Discord's own message (any language); English if it's missing.
     const DISCORD_SPOTS = {"profile.guildTag":["2QmKZ2", "Server Tag"], "profile.addFriend":["7815ae", "Add Friend"], "profile.message":["zROXEV", "Message"],
         "profile.activity":["chq59f", "Activity"], "profile.wishlist":["7lZ31J", "Wishlist"], "profile.badges":["l6w3Vj", "Badges"],
@@ -9572,6 +9580,20 @@
         "menu.invite":"Invite to Server", "menu.ring":"Ring", "menu.copyUsername":"Copy Username", "menu.copyLink":"Copy Link", "menu.copyId":"Copy User ID",
         "menu.copyInfo":"Copy User Info", "menu.apps":"Apps", "menu.shopLook":"Shop This Look", "menu.removeFromGroup":"Remove from Group",
         "menu.ignore":"Ignore", "menu.block":"Block", "menu.report":"Report User Profile"};
+    // A message's hold menu (LongPressMessageActionSheet 9978) labels its rows with Discord's own messages; these are their keys
+    // (every state for rows that flip, like Pin / Unpin, or that change with the attachment, like Save Image / Video / File).
+    const MESSAGE_SPOTS = {"message.edit":["fsBWmS"], "message.reply":["5IEsGx"], "message.forward":["I3ltXO"], "message.thread":["rBIGBL", "39d0Wj"],
+        "message.copyText":["JrGD7E"], "message.markUnread":["RpE9k7"], "message.pin":["CvQ18w", "Bse+F/"], "message.bookmark":["tpxJto", "SvXS1Z"],
+        "message.reminder":["mJ3P0N", "vrbqs1"], "message.apps":["PHjkRE"], "message.mention":["P8tvKG"], "message.copyLink":["Xrt5Po"], "message.copyId":["zBoHlf"],
+        "message.save":["S/xNKV", "JVuuz3", "vbAEaA"], "message.copyMedia":["8xHmxo", "92CPQ+"], "message.publish":["MFGE51"], "message.removeEmbeds":["wUIMqa", "4sxKOb"],
+        "message.removeReactions":["ZbtGBm"], "message.report":["n5EBAJ", "+78Pfm"], "message.delete":["xwMqD7"]};
+    const MESSAGE_FALLBACK = {"message.edit":"Edit Message", "message.reply":"Reply", "message.forward":"Forward", "message.thread":"Create Thread",
+        "message.copyText":"Copy Text", "message.markUnread":"Mark Unread", "message.pin":"Pin Message", "message.bookmark":"Bookmark Message",
+        "message.reminder":"Create Reminder", "message.apps":"Apps", "message.mention":"Mention", "message.copyLink":"Copy Message Link", "message.copyId":"Copy Message ID",
+        "message.save":"Save Image", "message.copyMedia":"Copy Media Link", "message.publish":"Publish", "message.removeEmbeds":"Remove Embeds",
+        "message.removeReactions":"Remove All Reactions", "message.report":"Report to Discord", "message.delete":"Delete Message"};
+    // Rows Venus adds to that menu, by the key it gives them.
+    const MESSAGE_VENUS_ROWS = {"venus-translate":"message.translate", "venus-bulk-delete":"message.select"};
     // A message in Discord's language (intl 1126), or "" when it isn't there.
     function discordText(hash) {
         try { const m = global.__r(1128), msg = m && m.t && m.t[hash]; return msg != null && m.intl ? String(m.intl.string(msg) || "") : ""; } catch (_) { return ""; }
@@ -9591,20 +9613,21 @@
         hiddenSpots().forEach(key => { if (/^row\./.test(key) && rowLabels.has(key.slice(4))) { out[key.slice(4)] = rowLabels.get(key.slice(4)); any = true; } });
         return any ? out : null;
     }
-    const HIDE_PLACES = ["chat", "attach", "dm", "details", "messages", "profile", "menu", "server", "guild", "you"];
+    const HIDE_PLACES = ["chat", "attach", "message", "dm", "details", "messages", "profile", "menu", "server", "guild", "you"];
     const HIDE_SPOT_KEYS = Object.create(null);
     HIDE_SPOTS.forEach(spot => { HIDE_SPOT_KEYS[spot[0]] = spot; });
     // Modules hooked for it (also selected in targetModules).
     const HIDE_HOOKED = {14015:1, 15735:1, 15736:1, 10331:1, 16133:1, 16225:1, 12892:1, 12897:1, 12901:1, 12908:1, 12909:1, 13780:1, 14204:1, 15590:1, 17157:1, 9419:1,
         15046:1, 8805:1, 9052:1, 10858:1, 12942:1, 14988:1, 14994:1, 14925:1, 14998:1,
         11678:1, 11679:1, 14197:1, 10939:1, 7158:1, 14182:1, 14101:1, 17156:1, 17263:1,
-        13151:1, 12000:1, 10838:1, 17949:1, 16773:1, 17265:1, 17881:1, 17869:1, 11164:1};
+        13151:1, 12000:1, 10838:1, 17949:1, 16773:1, 17265:1, 17881:1, 17869:1, 11164:1, 9978:1, 13759:1};
     const hideEdit = {on:false, top:false, last:null};
     // Labels of the profile menu's removable items while removal mode draws them (ContextMenuItem only gets the label).
     const hideMenuLabels = new Map();
     // Written out so every label is a plain tr() call the language check can see.
     function hideSpotTitle(key) {
         if (MENU_SPOTS[key]) { for (const hash of MENU_SPOTS[key]) { const text = discordText(hash); if (text) return text; } return MENU_FALLBACK[key]; }
+        if (MESSAGE_SPOTS[key]) { for (const hash of MESSAGE_SPOTS[key]) { const text = discordText(hash); if (text) return text; } return MESSAGE_FALLBACK[key]; }
         if (DISCORD_SPOTS[key]) return discordText(DISCORD_SPOTS[key][0]) || DISCORD_SPOTS[key][1];
         if (/^settings\./.test(key)) return settingTitle(key.slice(9));
         if (/^row\./.test(key)) { const label = rowLabels.get(key.slice(4)); return label ? tr(label) : key.slice(4); }
@@ -9635,11 +9658,14 @@
             case "guild.online": return tr("Online count");
             case "guild.members": case "server.memberCount": return tr("Member count");
             case "guild.reviews": return tr("Reviews");
+            case "message.reactions": return tr("Quick reactions");
+            case "message.translate": return tr("Translate");
+            case "message.select": return tr("Select Messages");
         }
         return key;
     }
     function hidePlaceTitle(place) {
-        return place === "menu" ? tr("Profile menu") : place === "settings" ? tr("Settings") : place === "options" ? tr("Venus options") : place === "chat" ? tr("Message bar") : place === "attach" ? tr("Attach menu") : place === "dm" ? tr("Direct messages") : place === "messages" ? tr("Messages tab") :
+        return place === "message" ? tr("Message menu") : place === "menu" ? tr("Profile menu") : place === "settings" ? tr("Settings") : place === "options" ? tr("Venus options") : place === "chat" ? tr("Message bar") : place === "attach" ? tr("Attach menu") : place === "dm" ? tr("Direct messages") : place === "messages" ? tr("Messages tab") :
             place === "profile" ? tr("Other people's profiles") : place === "server" ? tr("Channel list") : place === "guild" ? tr("Server menu") : place === "details" ? tr("Channel details") : tr("Your profile");
     }
     function hideSpotsText(raw) {
@@ -9709,8 +9735,13 @@
             accessibilityLabel:tr("Remove: {name}", {name:hideSpotTitle(props.spot)})},
             X ? el(X, {size:"xxs", color:"#ffffff"}) : el(RN.Text, {style:HIDE_MARK.x}, "\u2715"));
     }
+    // A full-width strip at the top of a sheet (the message menu's quick reactions): the outline and X stay inside the sheet,
+    // which can clip anything drawn past its edges.
+    const HIDE_HEAD = {cover:Object.assign({}, HIDE_MARK.cover, {top:-4, left:8, right:8, bottom:4}),
+        badge:Object.assign({}, HIDE_MARK.badge, {top:-10, right:0})};
     // Rows with a switch or a picture at the end keep their X clear of it.
     const HIDE_TRAIL = {right:76};
+    const HIDE_ARROW = {right:44};
     function HideMark(props) {
         const base = props.base, key = props.spot;
         // Only once it's laid out with a size: a button that draws nothing (a tag someone doesn't have) gets no floating X.
@@ -9730,10 +9761,11 @@
             const size = event && event.nativeEvent && event.nativeEvent.layout, next = !!size && size.width > 1 && size.height > 1;
             if (next !== shown) setShown(next);
         };
-        const badge = props.inset ? (props.trail ? [HIDE_INSET.badge, HIDE_TRAIL] : HIDE_INSET.badge) : HIDE_MARK.badge;
+        const badge = props.inset ? (props.trail ? [HIDE_INSET.badge, HIDE_TRAIL] : props.arrow ? [HIDE_INSET.badge, HIDE_ARROW] : HIDE_INSET.badge) :
+            props.head ? HIDE_HEAD.badge : HIDE_MARK.badge;
         return el(RN.View, {style:layout ? [{position:"relative"}, layout] : {position:"relative"}, collapsable:false, onLayout},
             own ? React.cloneElement(base, {onLayout:undefined}) : base,
-            shown ? el(RN.View, {pointerEvents:"none", style:props.inset ? HIDE_INSET.cover : HIDE_MARK.cover,
+            shown ? el(RN.View, {pointerEvents:"none", style:props.inset ? HIDE_INSET.cover : props.head ? HIDE_HEAD.cover : HIDE_MARK.cover,
                 importantForAccessibility:"no-hide-descendants", accessibilityElementsHidden:true}) : null,
             shown ? el(HideBadge, {spot:key, before:props.before, style:badge}) : null);
     }
@@ -9743,8 +9775,9 @@
     const HIDE_ROW_SPOTS = {"guild.markRead":1, "guild.serverTag":1, "guild.channelsRoles":1, "guild.report":1, "guild.leave":1,
         "guild.serverProfile":2, "guild.showAll":2, "guild.hideMuted":2, "guild.dms":2, "guild.requests":2};
     function hideMarkFor(node, key) {
-        const row = HIDE_ROW_SPOTS[key];
-        return el(HideMark, {key:node && node.key != null ? node.key : key, spot:key, base:node, inset:!!row, trail:row === 2});
+        // A message menu row is a row too; one with a chevron (Create Reminder, Apps) keeps its X clear of it.
+        const row = HIDE_ROW_SPOTS[key] || (key !== "message.reactions" && key.indexOf("message.") === 0 ? (node && node.props && node.props.arrow ? 3 : 1) : 0);
+        return el(HideMark, {key:node && node.key != null ? node.key : key, spot:key, base:node, inset:!!row, trail:row === 2, arrow:row === 3});
     }
     // Discord's Settings list (SettingsList 15733) reads its rows through toSettingListItems (15736) and redraws when its
     // blocklist (SettingBlocklistStore 15601) changes, so removed rows are left out there and a fresh blocklist redraws it.
@@ -9876,6 +9909,38 @@
             const edit = hideEditing();
             return edit || settings.hideAnythingSpots ? hideWalk(rendered, 0, classify, edit, gone) : rendered;
         };
+    }
+    // A message's hold menu (LongPressMessageActionSheet 9978): each row is an ActionSheetRow with Discord's own label, matched
+    // by message key in any language, and the rows Venus adds by their keys. A group whose rows are all gone goes too. The
+    // quick reactions above them are their own component (EmojiRow 13759).
+    let messageLabels = null;
+    function messageMenuLabels() {
+        const probe = discordText("5IEsGx");
+        if (messageLabels && messageLabels.probe === probe) return messageLabels.map;
+        const map = new Map();
+        Object.keys(MESSAGE_SPOTS).forEach(key => MESSAGE_SPOTS[key].forEach(hash => { const text = discordText(hash); if (text && !map.has(text)) map.set(text, key); }));
+        messageLabels = {probe, map};
+        return map;
+    }
+    function messageSpot(node) {
+        const props = node.props;
+        if (typeof props.label !== "string" || typeof props.onPress !== "function") return null;
+        if (node.key != null && MESSAGE_VENUS_ROWS[node.key]) return MESSAGE_VENUS_ROWS[node.key];
+        return messageMenuLabels().get(props.label) || null;
+    }
+    function quickReactions(orig, self, args) {
+        useSettings("hideAnything");
+        const rendered = orig.apply(self, args);
+        if (!rendered || !enabled("hideAnything")) return rendered;
+        if (spotHidden("message.reactions")) return null;
+        return hideEditing() ? el(HideMark, {key:rendered.key != null ? rendered.key : "message.reactions", spot:"message.reactions", base:rendered, head:true}) : rendered;
+    }
+    // The sheet itself always stays (its quick reactions sit in its header): with every row removed, only the rows go.
+    const messageMenuTree = hideTree(messageSpot);
+    function messageMenu(orig, self, args) {
+        let root = null;
+        const out = messageMenuTree(function () { return root = orig.apply(this, arguments); }, self, args);
+        return out === null && root && root.props ? React.cloneElement(root, {children:null}) : out;
     }
     // The DM header (PrivateChannelButtons 13780): pressables holding the call (or hang up / join), video and search icons.
     let hideDmIcons = null;
@@ -10559,6 +10624,8 @@
             case 17881: return hookComponent(exports, detailsBar);
             case 17869: return hookExport(exports, "useSearchSegmentedControlState", searchTabsState);
             case 11164: return hookExport(exports, "default", memberListAction);
+            case 9978: return hookComponent(exports, messageMenu);
+            case 13759: return hookComponent(exports, quickReactions);
             case 16133: return hideQuestHooks(exports);
             case 16225: return hideQuestDock(exports);
         }

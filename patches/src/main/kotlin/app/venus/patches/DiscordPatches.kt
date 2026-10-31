@@ -749,7 +749,7 @@ val messageGestures = bundledPlugin("gestures", "Double-tap to reply",
 
 @Suppress("unused")
 val removeAnything = bundledPlugin("hideAnything", "Remove anything",
-    "Tap a button you never use to remove it, right where it is: turn on removal mode, then tap the red X on the voice message, attach, gift, call, video, search, Quests, Shop or Nitro buttons, the Quests banner, attach menu items, profile menu items, Settings rows and more. Bring them back any time in Venus.")
+    "Tap a button you never use to remove it, right where it is: turn on removal mode, then tap the red X on the voice message, attach, gift, call, video, search, Quests, Shop or Nitro buttons, the Quests banner, attach menu items, message menu rows and quick reactions, profile menu items, Settings rows and more. Bring them back any time in Venus.")
 
 @Suppress("unused")
 val validUser = bundledPlugin("validUser", "Fix unknown mentions",
