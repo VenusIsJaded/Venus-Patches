@@ -11630,7 +11630,7 @@
             if (!knownUser(idText) && typeof getUser === "function") try { Promise.resolve(getUser(idText)).catch(() => {}); } catch (_) {}
             setIdDraft("");
         };
-        const idInput = inputWithButton(ui, "input", {value:idText, keyboardType:"number-pad", maxLength:20, placeholder:tr("17 to 20 digit user ID"),
+        const idInput = inputWithButton(ui, "input", {value:idText, keyboardType:"number-pad", maxLength:20, placeholder:tr("User ID"),
             onSubmitEditing:addById, returnKeyType:"done", editable:on, isDisabled:!on}, onIdText, "Add", addById, !on || !validDraft);
         const removeButton = id => el(Press, {style:[theme.button, {opacity:on ? 1 : 0.5}], accessibilityRole:"button", accessibilityLabel:tr("Stop watching"),
             disabled:!on, hitSlop:{top:6, bottom:6, left:6, right:6}, onPress:on ? () => userNotifSetId(id, false) : undefined}, el(venusIcon(6485, "XSmallIcon"), {size:"sm"}));
@@ -11640,7 +11640,8 @@
             return Row ? el(Row, {key:"id:" + id, label:entry.name, subLabel:sub, icon:avatarBubble(entry.user || {id, username:"#"}, 32, known ? entry.status : null, rowColor),
                 trailing:removeButton(id), disabled:!on}) : null;
         });
-        const watchedUsers = userNotifWatchedIds().slice(0, 4).map(lookup).map(e => e.user || {id:e.id, username:e.name});
+        // Someone added by ID who hasn't loaded yet is a "#" here too, like their own row, not the first digit of the ID.
+        const watchedUsers = userNotifWatchedIds().slice(0, 4).map(lookup).map(e => e.user || {id:e.id, username:e.name !== e.id ? e.name : "#"});
         const groups = [
             on ? VenusStatusCard({key:"status", title:userNotifSummaryTitle(), IconComponent:venusIcon(9045, "BellIcon"),
                 leading:userNotifAnyEvent() && watchedUsers.length ? avatarPile(watchedUsers, ringColor) : null, body:userNotifSummary()}) :
@@ -11669,17 +11670,20 @@
             allFriends ? null : el(RN.View, {key:"friends", style:{gap:8}},
                 searchBox,
                 el(Group, {title:pickedFriendsCount ? pl(pickedFriendsCount, "Friends \u00b7 {n} picked", "Friends \u00b7 {n} picked") : tr("Friends")}, friendRows)),
-            el(Group, {key:"ids", title:tr("People who aren't your friends")},
-                el(RN.View, {key:"input", style:{padding:12}}, idInput),
-                customRows),
-            userNotif.ids.size || !allFriends ? el(Group, {key:"manage", title:tr("Manage")},
+            // The caveat sits under the group it's about, not at the bottom of the page.
+            el(RN.View, {key:"ids", style:{gap:8}},
+                el(Group, {title:tr("People who aren't your friends")},
+                    el(RN.View, {key:"input", style:{padding:12}}, idInput),
+                    customRows),
+                footnote("idsHint", "Discord only sends what they do in servers you share.")),
+            // Only when there's someone to clear: with nobody chosen, the switch above already turns All friends back on.
+            userNotif.ids.size ? el(Group, {key:"manage", title:tr("Manage")},
                 // With All friends already on, resetting only forgets who was picked or added by ID.
                 actionRow(ui, "reset", "Reset chosen people", allFriends ? pl(userNotif.ids.size, "Clears {n} person you picked or added by ID.", "Clears {n} people you picked or added by ID.") :
                     tr("Switches All friends back on and clears {count}.", {count:pl(userNotif.ids.size, "{n} chosen person", "{n} chosen people")}),
                     () => confirmAction("Reset chosen people?", allFriends ? "The people you picked and added by ID will be cleared." :
                         "Your picked friends and custom user IDs will be cleared, and All friends will be turned back on.", "Reset", userNotifClearIds),
-                    false, true)) : null,
-            footnote("note", "Notifications show as banners while Discord is open. For people who aren't your friends, Discord only sends what happens in servers you share.")];
+                    false, true)) : null];
         return settingsBody(ui, groups, {keyboardShouldPersistTaps:"handled"});
     }
 
