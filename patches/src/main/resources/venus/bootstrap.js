@@ -81,7 +81,7 @@
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsClean:true, fixEmbedsDark:true, fixEmbedsStyle:"full", fixEmbedsTranslate:"off", fixEmbedsLanguage:"en", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, silentLeave:false, guildLurk:false, guildLurkIds:"", quietReplies:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, hideAnything:false, hideAnythingSpots:"", language:"auto", hiddenFeatures:"" };
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, silentLeave:false, guildLurk:false, guildLurkIds:"", quietReplies:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, hideAnything:false, hideAnythingSpots:"", language:"auto", hiddenFeatures:"" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
     function defaultSettings() {
@@ -98,7 +98,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsClean: true, fixEmbedsDark: true, fixEmbedsStyle: "full", fixEmbedsTranslate: "off", fixEmbedsLanguage: "en", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, silentLeave: false, guildLurk: false, guildLurkIds: "", quietReplies: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, hideAnything: false, hideAnythingSpots: "", language: "auto", hiddenFeatures: ""
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, silentLeave: false, guildLurk: false, guildLurkIds: "", quietReplies: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, hideAnything: false, hideAnythingSpots: "", language: "auto", hiddenFeatures: ""
         }));
     }
     // Backup and restore (#68): when you last saved a backup, and whether a restore is being applied right now.
@@ -135,9 +135,8 @@
     const GESTURE_OWN_MODES = ["edit", "reply"];
     // Which language Translate messages translates into: Discord's own language, the phone's, or one you pick (#79).
     const TRANSLATE_TARGETS = ["discord", "phone", "custom"];
-    // Fix link previews: how posts look (the full post, only its media, only its text, or the file itself), and which
-    // language services that can translate a post write it in.
-    const FIX_STYLES = ["full", "gallery", "text", "media"], FIX_TRANSLATE = ["off", "discord", "phone", "custom"];
+    // Fix link previews: how a site's posts look (the full post, only its media, only its text, or the file itself).
+    const FIX_STYLES = ["full", "gallery", "text", "media"];
     // The languages you can pick for "Another language", as Google Translate codes (#79). Chinese comes in both scripts.
     const TRANSLATE_LANGUAGES = ["af", "ar", "bg", "bn", "ca", "cs", "cy", "da", "de", "el", "en", "eo", "es", "et", "fa", "fi", "fil", "fr",
         "ga", "gl", "gu", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "jv", "ka", "kk", "km", "ko", "la", "lt", "lv", "mk", "ml", "mn",
@@ -389,6 +388,11 @@
             raw.hideAnythingSpots = spots.join(",");
             raw.hideAnything = true;
         }
+        // 1.21.0 moved Fix link previews' Post style, Translate posts, Dark Tumblr posts and Remove tracking from the page into
+        // each site's own settings: every site that can use an old choice keeps it.
+        if (raw && typeof raw === "object" && raw.fixEmbedsOptions === undefined && (raw.fixEmbedsClean === false || raw.fixEmbedsDark === false ||
+            typeof raw.fixEmbedsStyle === "string" && raw.fixEmbedsStyle !== "full" || typeof raw.fixEmbedsTranslate === "string" && raw.fixEmbedsTranslate !== "off"))
+            raw.fixEmbedsOptions = fixOptionsFromGlobal(raw);
         if (raw && typeof raw === "object" && raw.noDeleteColor === undefined && typeof raw.messageHighlightDeletedColor === "string")
             raw.noDeleteColor = raw.messageHighlightDeletedColor;
         if (raw && typeof raw === "object" && raw.dashless === true && raw.cleanChannelsSpaces === undefined) {
@@ -406,7 +410,6 @@
         if (!owns(settings, key) || typeof value !== typeof settings[key]) return undefined;
         if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
             key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
-            key === "fixEmbedsStyle" && !FIX_STYLES.includes(value) || key === "fixEmbedsTranslate" && !FIX_TRANSLATE.includes(value) || key === "fixEmbedsLanguage" && !TRANSLATE_LANGUAGES.includes(value) ||
             (key === "systemFontSource" || key === "systemEmojiSource") && !FONT_SOURCES.includes(value) ||
             key === "messageHighlightThickness" && !HIGHLIGHT_THICKNESSES.includes(value) || key === "language" && !isLanguage(value)) return undefined;
         if (key === "messageHighlightPingColor" || key === "noDeleteColor") return isHighlightColor(value) ? normalizeHighlightColor(value) : undefined;
@@ -416,6 +419,7 @@
         if (key === "badgesCycleMinutes") return badgeCycleMinutes(value);
         if (key === "badgesGamesAtOnce") return badgeAtOnce(value);
         if (key === "fixEmbedsSites") return fixSitesText(value);
+        if (key === "fixEmbedsOptions") return fixOptionsClean(value);
         if (key === "translateSkip") return translateSkipText(value);
         if (key === "guildLurkIds") return guildLurkText(value);
         if (key === "hiddenFeatures") return hiddenFeaturesText(value);
@@ -502,10 +506,11 @@
             if (settings.tenorGifsSource === value && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings.tenorGifsSource = value; dirty.add(key); save(); notify(key); return true;
         }
-        if (key === "fixEmbedsStyle" || key === "fixEmbedsTranslate" || key === "fixEmbedsLanguage") {
-            if (!(key === "fixEmbedsStyle" ? FIX_STYLES : key === "fixEmbedsTranslate" ? FIX_TRANSLATE : TRANSLATE_LANGUAGES).includes(value)) return false;
-            if (settings[key] === value && status.storage !== "loading" && status.storage !== "waiting") return true;
-            settings[key] = value; dirty.add(key); save(); notify(key); return true;
+        if (key === "fixEmbedsOptions") {
+            const clean = fixOptionsClean(value);
+            if (clean === undefined) return false;
+            if (settings.fixEmbedsOptions === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.fixEmbedsOptions = clean; dirty.add(key); save(); notify(key); return true;
         }
         if (key === "translateSkip") {
             const clean = translateSkipText(value);
@@ -7193,8 +7198,8 @@
             el(RN.View, {style:{width:44, height:44, borderRadius:22, alignItems:"center", justifyContent:"center", backgroundColor:"#00000080"}},
                 el(FIX_VIDEO[siteId] ? Play : Picture, {size:"sm", color:"#ffffff"})));
         // What the embed shows follows Post style, where the service has it; a translated post says what it was translated from.
-        const look = live && live.styles && owns(live.styles, settings.fixEmbedsStyle) ? settings.fixEmbedsStyle : "full";
-        const textShown = look === "full" || look === "text", mediaShown = look !== "text", translated = !!(live && fixLanguageFor(live));
+        const style = fixOptions(site).style, look = live && live.styles && owns(live.styles, style) ? style : "full";
+        const textShown = look === "full" || look === "text", mediaShown = look !== "text", translated = !!(live && fixLanguageFor(site, live));
         const embed = el(RN.View, {style:[f.embed, {marginTop:6, borderRadius:8, borderWidth:1, borderLeftWidth:4, borderLeftColor:site.color, padding:12, maxWidth:320}]},
             el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:6, marginBottom:4}}, fixBadge(site, 16),
                 el(RN.Text, {style:[s.muted, {fontWeight:"600"}], numberOfLines:1}, site.name)),
@@ -12704,7 +12709,7 @@
             pinterest:/^(?:invite_code|sender|sfo|mweb_unauth_id)$/, deviantart:/^(?:ga_\w+|_gl)$/};
     }
     const FIX_TRACKING_ANY = /^(?:utm_\w+|si|fbclid|gclid|mc_cid|mc_eid)$/;
-    const fixEmbeds = {hosts:null, sites:null, rows:null, tracking:null, parsed:null, parsedFrom:null, count:0, pending:0};
+    const fixEmbeds = {hosts:null, sites:null, rows:null, tracking:null, parsed:null, parsedFrom:null, options:null, optionsFrom:null, count:0, pending:0};
     // One host lookup per link instead of a regex per site.
     function fixTables() {
         const hosts = Object.create(null), sites = Object.create(null), rows = fixSiteRows();
@@ -12747,12 +12752,74 @@
         if (choice === site.start) delete choices[siteId]; else choices[siteId] = choice;
         setSetting("fixEmbedsSites", fixChoicesText(choices));
     }
+    // Each site's own settings, saved as only what differs from how every site starts: tracking removed, dark posts where the
+    // service can draw them, the full post and no translation. "x:style=gallery;lang=ja,tumblr:dark=0,reddit:clean=0".
+    // A setting the site's service can't use is kept but does nothing, so switching back to a service that can brings it back.
+    const FIX_OPTION_DEFAULTS = {style:"full", clean:true, dark:true, lang:"off"}, FIX_OPTION_NAMES = ["style", "clean", "dark", "lang"];
+    function fixOptionValue(name, value) {
+        if (name === "style") return FIX_STYLES.includes(value) && value !== "full" ? value : undefined;
+        if (name === "clean" || name === "dark") return value === "0" ? false : undefined;
+        if (name === "lang") return value === "discord" || value === "phone" || TRANSLATE_LANGUAGES.includes(value) ? value : undefined;
+        return undefined;
+    }
+    function fixOptionsParse(raw) {
+        if (fixEmbeds.optionsFrom === raw && fixEmbeds.options) return fixEmbeds.options;
+        if (!fixEmbeds.sites) fixTables();
+        const out = Object.create(null);
+        String(raw || "").split(",").forEach(part => {
+            const at = part.indexOf(":"), id = part.slice(0, at);
+            if (at <= 0 || !fixEmbeds.sites[id]) return;
+            part.slice(at + 1).split(";").forEach(pair => {
+                const eq = pair.indexOf("="), name = pair.slice(0, eq), value = eq > 0 ? fixOptionValue(name, pair.slice(eq + 1)) : undefined;
+                if (value !== undefined) (out[id] || (out[id] = {}))[name] = value;
+            });
+        });
+        fixEmbeds.optionsFrom = raw; fixEmbeds.options = out;
+        return out;
+    }
+    function fixOptionsText(all) {
+        return fixRows().map(row => {
+            const own = all[row[0]];
+            const pairs = own ? FIX_OPTION_NAMES.filter(name => owns(own, name) && own[name] !== FIX_OPTION_DEFAULTS[name]).map(name => name + "=" + (own[name] === false ? "0" : own[name])) : [];
+            return pairs.length ? row[0] + ":" + pairs.join(";") : "";
+        }).filter(Boolean).join(",");
+    }
+    // The options written the one way they're saved; unknown sites or values are dropped. Undefined for anything else.
+    function fixOptionsClean(raw) { return typeof raw === "string" && raw.length <= 1200 ? fixOptionsText(fixOptionsParse(raw)) : undefined; }
+    function fixOptions(site) { return Object.assign({}, FIX_OPTION_DEFAULTS, fixOptionsParse(settings.fixEmbedsOptions)[site.id]); }
+    function fixOptionsChanged(site) { return !!fixOptionsParse(settings.fixEmbedsOptions)[site.id]; }
+    function fixSetOption(siteId, name, value) {
+        const all = Object.assign({}, fixOptionsParse(settings.fixEmbedsOptions)), own = Object.assign({}, all[siteId]);
+        if (value === FIX_OPTION_DEFAULTS[name]) delete own[name]; else own[name] = value;
+        all[siteId] = own;
+        setSetting("fixEmbedsOptions", fixOptionsText(all));
+    }
+    function fixResetOptions(siteId) {
+        const all = Object.assign({}, fixOptionsParse(settings.fixEmbedsOptions));
+        delete all[siteId];
+        setSetting("fixEmbedsOptions", fixOptionsText(all));
+    }
+    // Settings from before 1.21.0: one Post style, Translate posts, Dark Tumblr posts and Remove tracking for every site.
+    function fixOptionsFromGlobal(raw) {
+        if (!fixEmbeds.sites) fixTables();
+        const all = Object.create(null), mode = raw.fixEmbedsTranslate;
+        const lang = mode === "custom" ? (TRANSLATE_LANGUAGES.includes(raw.fixEmbedsLanguage) ? raw.fixEmbedsLanguage : null) : mode === "discord" || mode === "phone" ? mode : null;
+        fixRows().forEach(row => {
+            const site = fixEmbeds.sites[row[0]], own = {}, can = test => site.services.some(test);
+            if (raw.fixEmbedsClean === false) own.clean = false;
+            if (raw.fixEmbedsDark === false && can(service => service.dark)) own.dark = false;
+            if (FIX_STYLES.includes(raw.fixEmbedsStyle) && raw.fixEmbedsStyle !== "full" && can(service => service.styles && owns(service.styles, raw.fixEmbedsStyle))) own.style = raw.fixEmbedsStyle;
+            if (lang && can(service => service.lang)) own.lang = lang;
+            all[site.id] = own;
+        });
+        return fixOptionsText(all);
+    }
     // Where a service sends links, for the list: "fixupx.com".
     function fixServiceHost(site, service) {
         const to = typeof service.to === "string" ? service.to.replace(/^https:\/\//, "") : service.to[site.hosts[0]] || "";
-        // With the look picked under Post style, so the row shows where links really go: "g.fixupx.com".
+        // With the site's post style, so the row shows where links really go: "g.fixupx.com".
         const host = to.split("/")[0].replace("*.", "");
-        return (typeof service.to === "string" ? "" : fixStylePrefix(service, host)) + host;
+        return (typeof service.to === "string" ? "" : fixStylePrefix(site, service, host)) + host;
     }
     function fixClean(site, query) {
         const own = fixEmbeds.tracking[site.id], kept = query.split("&").filter(pair => {
@@ -12764,15 +12831,14 @@
     }
     // The subdomain that asks the service for the look you picked ("g.fixupx.com"). Only on the service's own two-part host:
     // vm.tnktok.com or fxreddit.seria.moe can't take one. Looks a service doesn't have send the full post.
-    function fixStylePrefix(service, to) {
-        const styles = service.styles;
+    function fixStylePrefix(site, service, to) {
+        const styles = service.styles, style = fixOptions(site).style;
         if (!styles || to.split("/")[0].split(".").length !== 2) return "";
-        return owns(styles, settings.fixEmbedsStyle) ? styles[settings.fixEmbedsStyle] : styles.full || "";
+        return owns(styles, style) ? styles[style] : styles.full || "";
     }
-    // The language posts are translated into, as a Google code like Translate messages uses, or null while it's off.
-    function fixTargetLanguage() {
-        const mode = settings.fixEmbedsTranslate;
-        if (mode === "custom") return TRANSLATE_LANGUAGES.includes(settings.fixEmbedsLanguage) ? settings.fixEmbedsLanguage : null;
+    // The language a site's posts are translated into (its lang option), as a Google code like Translate messages uses, or null.
+    function fixTargetLanguage(mode) {
+        if (TRANSLATE_LANGUAGES.includes(mode)) return mode;
         if (mode !== "discord" && mode !== "phone") return null;
         const parts = localeCode(mode).split("-"), base = parts[0].toLowerCase();
         return base === "zh" ? (/^(TW|HK|MO|Hant)$/i.test(parts[1] || "") ? "zh-TW" : "zh-CN") : base === "nb" || base === "nn" ? "no" : base === "iw" ? "he" : base;
@@ -12781,9 +12847,9 @@
     // phixiv only has English, Chinese and Korean (Japanese is pixiv's own).
     const FIX_LANGUAGE_CODES = {fx:{"zh-CN":"zh-cn", "zh-TW":"zh-tw", fil:"tl"}, vx:{"zh-CN":"zh-hans", "zh-TW":"zh-hant", no:"nb", fil:"tl", pt:null, km:null},
         bsky:{no:"nb", fil:null, "zh-CN":"zh-cn", "zh-TW":"zh-tw"}, pixiv:{en:"en", "zh-CN":"zh", "zh-TW":"zh_tw", ko:"ko"}};
-    function fixLanguageFor(service) {
+    function fixLanguageFor(site, service) {
         if (!service.lang) return null;
-        const code = fixTargetLanguage();
+        const code = fixTargetLanguage(fixOptions(site).lang);
         if (!code) return null;
         const table = FIX_LANGUAGE_CODES[service.lang];
         if (owns(table, code)) return table[code];
@@ -12808,22 +12874,23 @@
         if (!path || !path.test(body)) return null;
         const service = fixService(site);
         if (!service) return null;
+        const options = fixOptions(site);
         let address = body;
         const hash = address.indexOf("#"), fragment = hash < 0 ? "" : address.slice(hash);
         let noHash = hash < 0 ? address : address.slice(0, hash);
-        if (clean !== false && settings.fixEmbedsClean) {
+        if (clean !== false && options.clean) {
             const q = noHash.indexOf("?");
             if (q >= 0) noHash = noHash.slice(0, q) + fixClean(site, noHash.slice(q + 1));
         }
         // Translated posts: FxTwitter, vxTwitter and FxBluesky add the language after the post (/status/20/ja), phixiv in front.
-        const language = fixLanguageFor(service);
+        const language = fixLanguageFor(site, service);
         if (language) {
             const q = noHash.indexOf("?"), path = q < 0 ? noHash : noHash.slice(0, q), query = q < 0 ? "" : noHash.slice(q);
             if (service.at && service.at.test(path)) noHash = (service.lang === "pixiv" ? path.replace(/^\/(?:[a-z]{2}(?:_[a-z]{2})?\/)?/, "/" + language + "/") :
                 path.replace(/\/$/, "") + "/" + language) + query;
         }
         // Dark posts (#87): fxtumblr draws the post on a dark background.
-        if (service.dark && settings.fixEmbedsDark && !new RegExp("[?&]" + service.dark + "(?:[=&]|$)").test(noHash))
+        if (service.dark && options.dark && !new RegExp("[?&]" + service.dark + "(?:[=&]|$)").test(noHash))
             noHash += (noHash.indexOf("?") < 0 ? "?" : "&") + service.dark;
         address = noHash + fragment;
         let fixed;
@@ -12831,7 +12898,7 @@
             part === "url" ? encodeURIComponent("https://" + bare + address) : part === "host" ? bare : address);
         else {
             const to = service.to[key].replace("*", blog);
-            fixed = "https://" + fixStylePrefix(service, to) + to + address;
+            fixed = "https://" + fixStylePrefix(site, service, to) + to + address;
         }
         return {site, service, link:fixed + (tail ? tail[0] : "")};
     }
