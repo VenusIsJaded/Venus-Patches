@@ -7832,7 +7832,8 @@
         return days === 0 ? tr("Today") : days === 1 ? tr("Yesterday") : serverDate(t);
     }
     function logWhere(entry) {
-        if (entry.dm) return entry.cn || tr("DM");
+        // A one-on-one DM is named after the person, who is already the row's title.
+        if (entry.dm) return entry.cn && entry.cn !== entry.u.n ? entry.cn : tr("DM");
         const channel = entry.cn ? "#" + entry.cn : "";
         return channel && entry.gn ? channel + " \u00b7 " + entry.gn : channel || entry.gn || "";
     }
@@ -7948,17 +7949,17 @@
             more ? el(RN.View, {key:"more", style:{alignItems:"center"}},
                 Button ? el(Button, {text:tr("Show older"), variant:"secondary", size:"md", onPress:() => setLimit(limit + LOG_PAGE * 2)}) : null) : null,
             entries.length ? el(Group, {key:"manage", title:tr("Manage")},
-                actionRow(ui, "clear", "Clear log", "Removes every entry from this phone. Kept messages stay in chat.",
+                actionRow(ui, "clear", "Clear log", props.clearHint,
                     () => confirmAction("Clear the log?", "Every entry is removed from this phone. This can't be undone.", "Clear", () => { logClear(log); reviewToast(ui, "Log cleared", venusIcon(5148, "TrashIcon")); }), false, true)) : null,
             footnote("note", "Saved only on this phone, for this account. Nothing is uploaded. Tap an entry to copy it, open it or remove it.")];
         return settingsBody(ui, groups, {keyboardShouldPersistTaps:"handled"});
     }
     function MessageLogPage() {
-        return el(VenusLogPage, {log:logs.messages, icon:venusIcon(5150, "ClockIcon"), empty:tr("Deleted and edited messages show up here as they happen."),
+        return el(VenusLogPage, {log:logs.messages, icon:venusIcon(5150, "ClockIcon"), clearHint:tr("Removes every entry from this phone. Kept messages stay in chat."), empty:tr("Deleted and edited messages show up here as they happen."),
             filters:[["all", tr("All"), null], ["d", tr("Deleted"), ["d"]], ["e", tr("Edited"), ["e"]]]});
     }
     function ActivityLogPage() {
-        return el(VenusLogPage, {log:logs.activity, icon:venusIcon(5150, "ClockIcon"), empty:tr("What the people you watch do shows up here as it happens."),
+        return el(VenusLogPage, {log:logs.activity, icon:venusIcon(5150, "ClockIcon"), clearHint:tr("Removes every entry from this phone."), empty:tr("What the people you watch do shows up here as it happens."),
             filters:[["all", tr("All"), null], ["s", tr("Status"), ["s"]], ["m", tr("Messages"), ["m"]], ["t", tr("Typing"), ["t"]]]});
     }
     // Clear kept messages: every kept deletion leaves chat and the saved file, and so does edit history.

@@ -5,6 +5,7 @@
 //   set={"readAllMode":"dms"} any other saved settings, as JSON
 //   fresh=1                   a fresh install: nothing saved yet (shows Start with the essentials)
 //   theme=dark|light|midnight|darker   lang=de   search=pin   (search: typed into the Features search bar)
+//   log=1                     the Message log and Activity log have made-up entries (page=VENUS_NODELETE_LOG, VENUS_USERNOTIF_LOG)
 //   tap=Custom                 taps the element with that accessibility label or text once the page is drawn (a|b taps a, then b)
 //   scene=serverMenu|readAll   instead of a settings page, a Discord screen with what Venus adds to it, on made-up
 //                              data (tests/ui/scenes.jsx); sheets Venus opens (Server info, Read all) slide up over it
@@ -41,9 +42,32 @@ const installed = (q.get("installed") || "").split(",").filter(Boolean);
 const themesText = installed.length ? Promise.all(installed.map(f => fetch("themes/" + f).then(r => r.text()).then(t => {
   const spec = JSON.parse(t.replace(/^\uFEFF/, "")); spec.url = spec.id = "https://example.com/" + f; return spec; })))
   .then(list => JSON.stringify({ version: 1, active: list[0].id, themes: list })) : null;
+// log=1: the Message log and Activity log have a day and a half of made-up entries (Keep deleted messages, User activity notifications).
+const H = 3600000, T0 = Date.now(), who = (id, n, h, b) => Object.assign({ id: "12000000000000000" + id, n, h }, b ? { b: 1 } : null);
+const alex = who("01", "Alex", "alex"), sam = who("02", "Sam", "sam_"), jordan = who("03", "Jordan", "jordan"), bot = who("09", "Carl-bot", "carlbot", true);
+const gn = { g: "1100000000000000001", gn: "Game Night" };
+const LOGS = {
+  messages: [
+    Object.assign({ k: "d", t: T0 - 30 * H, m: "1", u: jordan, x: "anyone else think the new map is way too dark?", c: "11", cn: "general" }, gn),
+    Object.assign({ k: "e", t: T0 - 27 * H, m: "2", u: alex, b: "ill be there at 8", x: "ill be there at 9, traffic is awful", c: "12", cn: "plans" }, gn),
+    { k: "d", t: T0 - 5 * H, m: "3", u: sam, x: "", f: 2, c: "21", dm: 1, cn: "Sam" },
+    Object.assign({ k: "d", t: T0 - 3 * H, m: "4", u: bot, x: "Reminder: game night starts in 30 minutes!", c: "13", cn: "announcements" }, gn),
+    Object.assign({ k: "e", t: T0 - 2 * H, m: "5", u: jordan, b: "See you at 6", x: "See you at 7", c: "11", cn: "general" }, gn),
+    Object.assign({ k: "d", t: T0 - 0.4 * H, m: "6", u: sam, x: "Oops, wrong chat. Deleting this.", c: "11", cn: "general" }, gn),
+  ],
+  activity: [
+    { k: "s", t: T0 - 26 * H, u: alex, s: "online", p: "offline" },
+    Object.assign({ k: "m", t: T0 - 25 * H, m: "7", u: alex, x: "who's up for ranked tonight?", c: "11", cn: "general" }, gn),
+    { k: "s", t: T0 - 6 * H, u: jordan, s: "dnd", p: "online" },
+    { k: "t", t: T0 - 1.5 * H, u: sam, c: "21", dm: 1, cn: "Sam" },
+    { k: "m", t: T0 - 1.4 * H, m: "8", u: sam, x: "did you see the patch notes??", c: "21", dm: 1, cn: "Sam" },
+    { k: "s", t: T0 - 0.2 * H, u: sam, s: "idle", p: "online" },
+  ],
+};
+const logText = path => { const m = q.get("log") === "1" && /venus-log-(messages|activity)-\d+\.json$/.exec(path); return m ? JSON.stringify({ version: 1, entries: LOGS[m[1]] }) : null; };
 const files = { getConstants: () => ({ DocumentsDirPath: "/docs", CacheDirPath: "/cache" }), getSize() {},
-  fileExists: path => Promise.resolve(/venus-patches\.json$/.test(path) ? !!settingsText : /venus-themes\.json$/.test(path) && !!themesText),
-  readFile: path => /venus-patches\.json$/.test(path) ? Promise.resolve(settingsText) : /venus-themes\.json$/.test(path) && themesText ? themesText : Promise.reject(new Error("none")),
+  fileExists: path => Promise.resolve(/venus-patches\.json$/.test(path) ? !!settingsText : /venus-themes\.json$/.test(path) ? !!themesText : !!logText(path)),
+  readFile: path => /venus-patches\.json$/.test(path) ? Promise.resolve(settingsText) : /venus-themes\.json$/.test(path) && themesText ? themesText : logText(path) ? Promise.resolve(logText(path)) : Promise.reject(new Error("none")),
   writeFile: () => Promise.resolve(), getVideoDimensions: () => Promise.resolve(),
   readAsset: name => fetch("i18n/" + name.split(":").pop() + ".json").then(r => r.text()) };
 
