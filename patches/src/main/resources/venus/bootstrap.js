@@ -7329,9 +7329,16 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("fixEmbeds"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Icon = venusIcon(13836, "EmbedIcon");
-        const none = !fixRows().some(row => fixService(fixEmbeds.sites[row[0]])), tumblr = fixService(fixSite("tumblr"));
+        const live = fixRows().map(row => fixService(fixEmbeds.sites[row[0]])).filter(Boolean), none = !live.length, tumblr = fixService(fixSite("tumblr"));
         const changed = settings.fixEmbedsSites !== "" || !settings.fixEmbedsClean || !settings.fixEmbedsDark || settings.fixEmbedsStyle !== "full" || settings.fixEmbedsTranslate !== "off";
         const name = kind => languageName(localeCode(kind)), style = settings.fixEmbedsStyle, translating = settings.fixEmbedsTranslate !== "off";
+        // Only the looks a site you fix can show get a pill (the one picked always keeps its own, so you can move off it), and the
+        // picker goes away when only Full post is left. Translate posts likewise shows only while a site that translates is on.
+        const looks = {full:true, [style]:true};
+        live.forEach(service => { if (service.styles) Object.keys(service.styles).forEach(look => { looks[look] = true; }); });
+        const styleItems = [{value:"full", label:tr("Full post")}, {value:"gallery", label:tr("Media")}, {value:"text", label:tr("Text")}, {value:"media", label:tr("File")}]
+            .filter(item => looks[item.value]);
+        const darkTumblr = !!(tumblr && tumblr.dark), canTranslate = live.some(service => service.lang);
         const groups = [
             !on ? offCard("status", Icon, "fixEmbeds") : none ? statusCard("status", "Turn on a site below.", {title:tr("No sites turned on"), IconComponent:Icon}) :
                 fixEmbeds.count ? statusCard("status", pl(fixEmbeds.count, "Fixed {n} link since Discord opened.", "Fixed {n} links since Discord opened."),
@@ -7339,27 +7346,26 @@
             el(FixEmbedsPreview, {key:"preview", on}),
             el(FixSiteList, {key:"sites", on}),
             // How posts look: FxTwitter, FxBluesky, fxTikTok and phixiv each have a subdomain for it (g.fixupx.com...).
-            el(RN.View, {key:"style", style:{gap:8}},
+            // Dark Tumblr posts sits here too: only fxtumblr can draw a dark post, so it shows while Tumblr links go through it (#87).
+            styleItems.length > 1 || darkTumblr ? el(RN.View, {key:"style", style:{gap:8}},
                 groupTitle("title", "Post style"),
-                venusSegmented({key:"fix:style", value:style, disabled:!on, onChange:value => setSetting("fixEmbedsStyle", value),
-                    items:[{value:"full", label:tr("Full post")}, {value:"gallery", label:tr("Media")}, {value:"text", label:tr("Text")}, {value:"media", label:tr("File")}]}),
-                footnote("hint", style === "gallery" ? "Just the picture or video and who posted it, without the text or counts. X, Bluesky, TikTok and pixiv." :
+                styleItems.length > 1 ? venusSegmented({key:"fix:style", value:style, disabled:!on, onChange:value => setSetting("fixEmbedsStyle", value), items:styleItems}) : null,
+                styleItems.length > 1 ? footnote("hint", style === "gallery" ? "Just the picture or video and who posted it, without the text or counts. X, Bluesky, TikTok and pixiv." :
                     style === "text" ? "Just the text, without pictures or videos. X and Bluesky." :
                     style === "media" ? "Only the picture or video file, played right in chat. X, Bluesky and TikTok." :
-                    "The text, pictures or video, and likes. TikTok videos show their caption too.")),
+                    "The text, pictures or video, and likes. TikTok videos show their caption too.") : null,
+                darkTumblr ? el(RN.View, {key:"dark", style:styleItems.length > 1 ? {marginTop:8} : null}, el(Group, null,
+                    switchRow(Switch, "fixEmbedsDark", "Dark Tumblr posts", "Tumblr posts are drawn on a dark background, to match Discord.", rowIcon(13620, "ThemeDarkIcon")))) : null) : null,
             // Translated posts: FxTwitter, vxTwitter and FxBluesky translate a post when its link ends in a language (/ja).
-            radioGroup(ui, "translate", "Translate posts", "fixEmbedsTranslate", on, [
+            canTranslate ? radioGroup(ui, "translate", "Translate posts", "fixEmbedsTranslate", on, [
                 ["off", tr("Off"), tr("Posts show in the language they were written in."), rowIcon(9393, "GlobeEarthIcon")],
                 ["discord", tr("Discord's language"), name("discord") + ".", rowIcon(13827, "ChatSmileIcon")],
                 ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(6919, "MobilePhoneIcon")],
-                ["custom", tr("Another language"), translateLanguageName(settings.fixEmbedsLanguage) + ".", rowIcon(9415, "LanguageIcon")]], true),
-            settings.fixEmbedsTranslate === "custom" ? el(TranslateLanguagePicker, {key:"language", on, feature:"fixEmbeds", setting:"fixEmbedsLanguage"}) : null,
-            translating ? footnote("translateNote", "Posts on X and Bluesky show the translation with the original under it, for everyone in the chat. pixiv shows titles and tags in English, Chinese or Korean.") : null,
+                ["custom", tr("Another language"), translateLanguageName(settings.fixEmbedsLanguage) + ".", rowIcon(9415, "LanguageIcon")]], true) : null,
+            canTranslate && settings.fixEmbedsTranslate === "custom" ? el(TranslateLanguagePicker, {key:"language", on, feature:"fixEmbeds", setting:"fixEmbedsLanguage"}) : null,
+            canTranslate && translating ? footnote("translateNote", "Posts on X and Bluesky show the translation with the original under it, for everyone in the chat. pixiv shows titles and tags in English, Chinese or Korean.") : null,
             el(Group, {key:"privacy", title:tr("Privacy")},
                 switchRow(Switch, "fixEmbedsClean", "Remove tracking from links", "Drops share IDs like ?igsh= and ?si= from the links Venus fixes.", rowIcon(10733, "ShieldIcon"))),
-            // Only fxtumblr can draw a dark post, so the switch shows while Tumblr links go through it (#87).
-            tumblr && tumblr.dark ? el(Group, {key:"look", title:tr("Look")},
-                switchRow(Switch, "fixEmbedsDark", "Dark Tumblr posts", "Tumblr posts are drawn on a dark background, to match Discord.", rowIcon(13620, "ThemeDarkIcon"))) : null,
             changed ? el(Group, {key:"manage", title:tr("Manage")}, actionRow(ui, "reset", "Reset to defaults", "Every site back to how it started.", () =>
                 confirmAction("Reset to defaults?", "Every site goes back to how it started, posts show in full and untranslated, and tracking is removed again.", "Reset", () => {
                     animateLayout(); setSetting("fixEmbedsSites", ""); setSetting("fixEmbedsClean", true); setSetting("fixEmbedsDark", true);
