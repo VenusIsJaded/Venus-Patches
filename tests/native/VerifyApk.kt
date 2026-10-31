@@ -219,7 +219,7 @@ fun main(args: Array<String>) {
     ZipFile(apk).use { zip -> checkPackaging(zip, some) }
     checkManifest(apk)
     // Every Venus extension the .mpp carries made it into the APK's DEX.
-    for (pkg in listOf("audio", "chat", "emoji", "extension", "font", "i18n", "monet"))
+    for (pkg in listOf("audio", "chat", "diag", "emoji", "extension", "font", "i18n", "monet"))
         check(allClasses.keys.any { it.startsWith("Lapp/venus/$pkg/") }) { "No app.venus.$pkg classes in the APK" }
     if ("signed" in args.drop(1)) {
         val verification = ApkVerifier.Builder(apk).setMinCheckedPlatformVersion(26).build().verify()
@@ -323,8 +323,8 @@ fun checkManifest(apk: File) {
             if (event == AndroidBinXmlParser.EVENT_START_ELEMENT) when (parser.name) {
                 "manifest" -> {
                     pkg = attr("package")
-                    check(attr("versionCode") == "350008" && attr("versionName") == "350.8 - Stable") {
-                        "Manifest is ${attr("versionName")} (${attr("versionCode")}), not Discord 350.8 - Stable"
+                    check(attr("versionCode") == "351011" && attr("versionName") == "351.11 - Stable") {
+                        "Manifest is ${attr("versionName")} (${attr("versionCode")}), not Discord 351.11 - Stable"
                     }
                 }
                 "provider" -> attr("authorities")?.split(";")?.filter { !it.startsWith("$pkg.") }?.let { stray += it }
@@ -334,6 +334,6 @@ fun checkManifest(apk: File) {
         }
         check(pkg != null && Regex("^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$").matches(pkg)) { "Bad package name $pkg" }
         check(stray.isEmpty()) { "Not renamed to $pkg: $stray" }
-        println("Manifest: $pkg, Discord 350.8 - Stable, providers and permissions under $pkg")
+        println("Manifest: $pkg, Discord 351.11 - Stable, providers and permissions under $pkg")
     }
 }

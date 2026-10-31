@@ -18,8 +18,8 @@ internal val discord = Compatibility(
     apkFileType = ApkFileType.APKM,
     appIconColor = 0x5865F2,
     targets = listOf(AppTarget(
-        version = "350.8 - Stable",
-        versionCode = 350008,
+        version = "351.11 - Stable",
+        versionCode = 351011,
         minSdk = 26
     ))
 )
@@ -74,7 +74,7 @@ private val runtimeAssets = rawResourcePatch {
             "{picker:$pickerSelected,voice:$voiceSelected,copyBios:$copyBiosSelected," +
                 "favouriteAnything:$favouriteAnythingSelected,freeNitro:$freeNitroSelected," +
                 listOf("noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels", "pastelize", "platformIndicators", "reviewDB", "readAll", "quests", "badges", "systemFont",
-                    "systemEmoji", "gestures", "validUser", "youBarSettings", "splitMessages", "translate", "userNotif", "accountSwitcher", "appIcons", "nitroThemes", "customThemes", "materialYou", "iconPacks", "messageHighlight", "serverInfo", "serverEdit", "fixEmbeds", "tenorGifs", "hideBlocked", "bulkDelete", "experiments", "cleanChannels", "noHandsfree", "voiceOptions", "anonFiles", "staffTag", "removedAlerts", "fullImages", "hideAnything", "alwaysTrust", "noConfirmPin", "clickableMentions")
+                    "systemEmoji", "gestures", "validUser", "youBarSettings", "splitMessages", "translate", "userNotif", "accountSwitcher", "appIcons", "nitroThemes", "customThemes", "materialYou", "iconPacks", "messageHighlight", "serverInfo", "serverEdit", "fixEmbeds", "tenorGifs", "hideBlocked", "bulkDelete", "experiments", "cleanChannels", "noHandsfree", "voiceOptions", "anonFiles", "staffTag", "removedAlerts", "fullImages", "hideAnything", "alwaysTrust", "noConfirmPin", "clickableMentions", "quietReplies", "silentLeave", "guildLurk")
                     .joinToString(",") { "$it:${it in additionalSelections}" } + "}"
         )
         asset.writeText(selected)
@@ -223,6 +223,63 @@ internal val settingsLanguages = bytecodePatch {
     }
 }
 
+internal const val DIAGNOSTICS = "Lapp/venus/diag/Diagnostics;"
+/** Instructions [diagnosticsBridge] adds before Discord's own clearFolder code, counting the nop its label lands on. */
+internal const val DIAGNOSTICS_BRIDGE_SIZE = 9
+
+/**
+ * Lets Venus settings read crash reports, the phone's details and Discord's logcat, and preview the crash screen.
+ * clearFolder(storageDir, path, promise): p1 is the folder, p2 the path, p3 the Promise. Discord only ever passes "cache"
+ * or "documents" as the folder, so a request with the private prefix can't be one of its own. No other Venus guard uses it.
+ */
+internal fun diagnosticsBridge(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    if (method.parameterTypes.map { it.toString() } != listOf("Ljava/lang/String;", "Ljava/lang/String;", PROMISE) || method.returnType != "V" ||
+        (method.implementation?.registerCount ?: 0) - 4 < 2)
+        throw PatchException("FileModule.clearFolder ABI changed")
+    requireUnpatched(method, "venus-")
+    method.addInstructions(0, """
+        const-string v0, "venus-diag-v1:"
+        invoke-virtual {p1, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+        move-result v0
+        if-eqz v0, :venus_clear_folder
+        invoke-static {p1, p2, p3}, $DIAGNOSTICS->dispatch(Ljava/lang/String;Ljava/lang/String;$PROMISE)Z
+        move-result v1
+        if-eqz v1, :venus_clear_folder
+        return-void
+        :venus_clear_folder
+        nop
+    """)
+}
+
+/** Installs the crash catcher right after Application.onCreate's super call, before Discord starts anything else. */
+internal fun readDiagnostics(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val first = method.implementation?.instructions?.firstOrNull()
+    val target = (first as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString()
+    if (first?.opcode != com.android.tools.smali.dexlib2.Opcode.INVOKE_SUPER || target != "Landroid/app/Application;->onCreate()V")
+        throw PatchException("MainApplication.onCreate no longer starts with super.onCreate()")
+    method.addInstructions(1, "invoke-static {p0}, $DIAGNOSTICS->init(Landroid/content/Context;)V")
+}
+
+/** Hidden helper of Venus settings: the crash screen and the bridge to troubleshooting logs. */
+internal val diagnostics = bytecodePatch {
+    dependsOn(discordBundleGuard)
+    extendWith("extensions/diag.mpe")
+    execute {
+        diagnosticsBridge(Fingerprint(
+            definingClass = FILE_MODULE,
+            name = "clearFolder",
+            returnType = "V",
+            parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", PROMISE)
+        ).method)
+        readDiagnostics(Fingerprint(
+            definingClass = "Lcom/discord/MainApplication;",
+            name = "onCreate",
+            returnType = "V",
+            parameters = listOf()
+        ).method)
+    }
+}
+
 @Suppress("unused")
 val venusSettings = bytecodePatch(
     name = "Venus settings",
@@ -230,7 +287,7 @@ val venusSettings = bytecodePatch(
 ) {
     compatibleWith(discord)
     section(PLUGINS)
-    dependsOn(runtimeAssets, packagedDiscordBundle, passkeyErrorHint, settingsLanguages)
+    dependsOn(runtimeAssets, packagedDiscordBundle, passkeyErrorHint, settingsLanguages, diagnostics)
 }
 
 
@@ -273,6 +330,18 @@ val noConfirmPin = bundledPlugin("noConfirmPin", "Skip pin confirmation",
 @Suppress("unused")
 val clickableMentions = bundledPlugin("clickableMentions", "Tap mentions to open profiles",
     "Tap an @mention in the message bar to see who it is. Based on ClickableMentions by mwittrien.")
+
+@Suppress("unused")
+val silentLeave = bundledPlugin("silentLeave", "Leave group DMs silently",
+    "Leave group DMs without the \"left the group\" message. Based on SilentLeave by coder.gg.")
+
+@Suppress("unused")
+val guildLurk = bundledPlugin("guildLurk", "Preview servers without joining",
+    "Open a server from its ID or invite link and read it without joining. Based on GuildLurk by fshin.")
+
+@Suppress("unused")
+val quietReplies = bundledPlugin("quietReplies", "Reply without pinging",
+    "Replies start with the ping off, so nobody gets pinged unless you turn it on.")
 
 @Suppress("unused")
 val copyBios = rawResourcePatch(
@@ -867,7 +936,7 @@ internal const val QUEST_DESKTOP_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x
 internal const val QUEST_AGENT_GUARD_SIZE = 14
 
 /**
- * Discord's OkHttp interceptor replaces every request's User-Agent with Discord-Android/350008;RNA.
+ * Discord's OkHttp interceptor replaces every request's User-Agent with Discord-Android/351011;RNA.
  * A request that already says it's the Windows desktop app passes through untouched; everything else is unchanged.
  * Locals v0-v2 are free: the interceptor has 5 registers and 2 of them are parameters.
  */

@@ -4,13 +4,13 @@ Extra features and privacy options for Discord on Android, built into the app wi
 
 [**Add to Morphe**](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [What's new](CHANGELOG.md) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-**Works with:** Discord **350.8 - Stable** (the original APKM).
+**Works with:** Discord **351.11 - Stable** (the original APKM).
 
 ## Install
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager/releases).
 2. Tap **[Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches)**. You can also add `https://github.com/VenusIsJaded/Venus-Patches` as a source.
-3. Choose the **original** Discord 350.8 APKM. Don't pick an APK you've already patched.
+3. Choose the **original** Discord 351.11 APKM. Don't pick an APK you've already patched.
 4. Every patch except **Custom branding** is selected for you, under **Features** and **Privacy**. Leave **Venus settings** on, then patch and install.
 5. Open **Discord Settings → Venus → Features** and turn on the ones you want. They all start off.
 
@@ -24,11 +24,11 @@ Open **Discord Settings → Venus → Features** to turn things on or off at any
 
 | Group | Feature | What it does |
 | --- | --- | --- |
-| **Messages** | Keep deleted messages | Deleted messages stay in chat, outlined in red, and edits keep their history. Pick their color, brightness and how many to keep |
+| **Messages** | Keep deleted messages | Deleted messages stay in chat, outlined in red, and edits keep their history. Hold one to dismiss it, or its edit history, without restarting. A **Message log** lists every deleted and edited message by day, with search and filters, and you choose what goes in it (deletions, edits, your own, bots). Pick their color, brightness and how many to keep, up to No limit |
 | | Bulk delete messages | Select multiple messages in chat and delete them all at once |
 | | Hide blocked or ignored messages | Removes the "blocked messages" and "ignored messages" rows from chat, and can hide replies to them too. Can also close your DM with someone as soon as you block them, so they leave the Messages list (no messages are deleted). Based on RemoveBlockedUsers |
 | | Message highlights | Pick bar width, plus the color and brightness of replies and mentions |
-| | Translate messages | Messages in other languages show in yours, automatically or only when you ask: a whole chat from a bar that appears when it has messages in another language, or one message from its menu. Translate into Discord's language, your phone's, or any of 70 others |
+| | Translate messages | Messages in other languages show in yours, automatically or only when you ask: a whole chat from a bar that appears when it has messages in another language, or one message from its menu. Translate into Discord's language, your phone's, or any of 70 others. Languages you read can go on a **Don't translate** list, so they stay as written even when translating automatically (hold one to translate it anyway) |
 | | Double-tap to reply | Double-tap a message to reply, or your own to edit it |
 | | Load full-quality images | Pictures in chat and full screen load the file that was uploaded instead of Discord's smaller, compressed copy. Choose chat, full screen or both, and whether GIFs load whole too. Profile pictures and banners load at a high resolution, so they stay sharp in profiles and full screen. Pictures over 16 megapixels stay as Discord sends them so the app doesn't run out of memory. Based on Uncompressed Discord Images by Knewest and HighResProfileImages by Kawtious |
 | | Skip delete confirmation | Messages and link previews are removed with no "Are you sure?" |
@@ -45,26 +45,29 @@ Open **Discord Settings → Venus → Features** to turn things on or off at any
 | | Show file sizes when attaching | Photos and videos in the picker show their size |
 | | Anonymous file names | Files you send get a random name like `k3Vq9TzL0b.jpg` instead of the one on your phone, so names like `IMG_20261027_142233.jpg` or `Bank statement March.pdf` never reach Discord. The file type stays, so previews and players still work. Spoilers stay spoilers. Based on Anonymous File Names by k1ng_op |
 | | Tap mentions to open profiles | Tap an @mention you typed in the message bar to open that person's profile, to check you picked the right one. Typing never opens one. Based on ClickableMentions by mwittrien |
+| | Reply without pinging | Replies start with the ping off, so the person you answer isn't pinged unless you tap **@** on the reply bar to turn it on for that reply. Works everywhere you start a reply: a message's menu, swipe to reply, Double-tap to reply and notifications. Choose servers, group DMs or both (Discord already starts one-on-one DMs without a ping), and optionally keep the ping when the message you're answering mentioned you |
 | **People** | Pastel name colors | Names without a role color get a soft pastel color |
 | | Show device indicators | Desktop, mobile, web, console or VR icons next to names |
 | | Show owner and mod tags | Shows an Owner, Admin, Manager or Mod tag next to people's names in chat, worked out from the roles you can see. Pick who gets one and whether owners get a crown. Based on StaffTag by mwittrien |
 | | Alert when you're removed | Get a heads-up when a friend unfriends you, or a server kicks or bans you, and catch up on anything that happened while Discord was closed. Choose friends, servers or both, and whether to also get a phone notification. Things you remove or leave yourself never alert. Based on RemovedConnectionAlerts by iyu46. |
 | | Fix unknown mentions | @unknown-user mentions show the person's name |
 | | Copy profile bios | Hold a bio to select and copy it |
+| | Leave group DMs silently | Leave a group DM without the "left the group" message the others would see. Works from every place you can leave: the group's menu, its header and `/leave`. Normal DMs are unchanged. Based on SilentLeave by coder.gg |
 | | User and server reviews | Read and write reviews, from ReviewDB |
-| | User activity notifications | Shows a notice when chosen friends or users change status, start typing or send a message. Nothing shows for the chat you have open, and typing is announced once a minute per person and chat |
-| | Account switcher | Switch between up to 50 Discord accounts from the profile bar or Venus settings. Create a new account from Discord's Add account screen or the Account switcher page, without logging out. Export your saved accounts to a file and import them on another phone or a fresh install, without signing in again |
+| | User activity notifications | Shows a notice when chosen friends or users change status, start typing or send a message. Nothing shows for the chat you have open, and typing is announced once a minute per person and chat. An **Activity log** keeps what they did, by day, with search and filters; choose what it records separately from what notifies you |
+| | Account switcher | Switch between up to 50 Discord accounts from the profile bar or Venus settings. Create a new account from Discord's Add account screen or the Account switcher page, without logging out. Export your saved accounts to a file and import them on another phone or a fresh install, without signing in again. Venus settings are shared by every account, and **Same theme on every account** makes your theme and Nitro theme follow you too |
 | **Servers** | Read all button | Marks servers, DMs or both as read in one tap |
 | | Show hidden channels | Channels you can't open appear with a lock. Only a tap opens their details menu, which you can turn off |
 | | Server info | Hold a server's icon to see live details: who's online, channels, roles, emojis, boost progress, the owner, your friends there, when it was made and when you joined |
 | | Edit servers locally | Give any server your own name and icon, from a picture on your phone or a link. Hold a server's icon and tap **Edit locally**, or pick one on the Venus page, which lists every server you've edited and resets them. Only this phone sees it: Discord's own server settings always show the real name and icon, so nothing is ever saved to the server. Backups keep names and icon links; pictures from your phone stay on it. Based on EditServers by mwittrien |
 | | Clean channel names | Removes emoji, dividers and symbols (🎫┃, ✦, 「」) and fancy fonts (𝐂𝐎𝐌𝐌𝐔𝐍𝐈𝐓𝐘) from channel and category names, each with its own switch, and can show "general chat" instead of "general-chat". Only how names look changes: links, mentions and search still use the real name, and a name made only of emoji stays as it is |
+| | Preview servers without joining | Paste a server ID, an invite link or a server link and read the server as a guest, with Discord's own preview mode: you aren't a member, you don't show in its member list, and you join if you want to send messages. An invite's join screen gets a **Preview** button next to Accept, for servers that allow it. Only servers that allow previews (like Discoverable communities) open this way; Discord refuses the rest, and Venus tells you. The servers you previewed stay listed for one-tap reopening. Based on GuildLurk by fshin |
 | **Appearance** | Use your phone's font | Replaces Discord's font everywhere |
 | | Use your phone's emojis | Your phone's emojis instead of Discord's, or the emojis from a color emoji font you import (like Twemoji or Noto Color Emoji) |
 | | Remove anything | Turn on **removal mode** and go anywhere in Discord: every button you can remove gets a dashed outline and a red ✕. Tap the ✕, say yes, and it's gone right away, with Undo on the floating bar. Buttons keep working while removal mode is on (menus open, Block blocks); only the ✕ removes. What's left closes up: the Messages tab and channel list headers shrink when all their buttons are gone, a profile's tab bar goes when only Main is left, and the ⋯ button goes for anyone whose menu has nothing left in it. Covers the voice message, attach, Apps and gift buttons in the message bar; call, video call and search in DMs; search, message requests, Add Friends and new message on the Messages tab; Apps, Polls and Photos in the attach menu; the ⋯ button, server tag, badges, mutual servers, Add Friend, Message, Call, the Activity and Wishlist tabs, either Member Since date, Roles, Connections and the note on profiles; Search, Invite and Events above a server's channel list; the server menu's Community Server pill, Boost, Invite and Notifications, Mark as Read, Channels & Roles, Edit Per-server Profile, Show All Channels, Hide Muted Channels, Allow Direct Messages, Allow Message Requests, Report Server, Leave Server and Server Emoji; Quests, Shop, Nitro and the Quests banner on your profile; any item in a profile's ⋯ menu (Add Friend Nickname, Invite to Server, Copy Username, Apps, Ignore, Block, Report…); any row in Discord's Settings, Venus rows included; and single switches on Venus pages. Venus → Remove anything lists what you removed, to bring each back, plus a switch for every button |
 | | Venus button on profile bar | A shortcut to Venus, next to the notifications bell |
 | | Unlock app icons | Use any Discord app icon in Settings without Nitro |
-| | Unlock Nitro themes | Use Discord's gradient themes in Settings > Appearance without Nitro. Only this phone sees them |
+| | Unlock Nitro themes | Use Discord's gradient themes in Settings > Appearance without Nitro. Each account keeps its own, so switching accounts never loses it. Only this phone sees them |
 | | Material You colors | Colors Discord to match your wallpaper, in light and dark, like Android 12+ apps. Or pick one of five colors or any color; choose how much the backgrounds take the tint. Wallpaper colors need Android 12 or newer |
 | | Custom themes | Install Revenge and Vendetta color themes from a link, then pick one from a gallery that previews each in its own colors |
 | | Icon packs | Replace Discord's icons across the app with built-in community icon packs (Rosiecord Plumpy, Rosiecord Iconsax, MD3, Solar, Deco, Material Two Tone, Iconsax Bulk) or a custom icon pack link |
@@ -86,7 +89,7 @@ Open **Discord Settings → Venus → Features** to turn things on or off at any
 
 **Backup and restore** keeps your Venus setup safe when you patch again, reinstall or move to a new phone. **Save to a file** opens Android's Save to screen so you can keep the backup in Downloads, Drive or anywhere else, and **Copy to clipboard** lets you paste it into a note. **Restore from a file** or **Paste from clipboard** brings every feature, option, watched person and installed theme back after asking first. Backups are small JSON files and never include your ReviewDB sign-in, saved accounts or kept deleted messages. **Reset to defaults** turns every feature off again.
 
-**About** shows your version, how many features are on (in total and per group), whether everything is working, and links to what's new and to report a problem. Venus settings animate gently as you use them, and follow Android's **Remove animations** setting.
+**About** shows your version, how many features are on (in total and per group), whether everything is working, and links to what's new and to report a problem. Its **Troubleshooting** section has **Debug logging** (off by default), which records what Discord and Venus do — console output, JavaScript errors, every request with its status and timing, Discord's actions, and which settings change — only on your phone, with sign-ins, tokens and message text left out. **Export logs** and **Copy logs** put that log together with your phone's details, Discord's own system log and the last crash, ready to attach to an issue. When Discord crashes, stops responding or crashes natively, the **Crash screen** shows what went wrong the next time it opens, with **Copy**, **Share** and **Export** to Downloads; **Preview crash screen** shows it without crashing anything. Venus settings animate gently as you use them, and follow Android's **Remove animations** setting.
 
 ### Custom branding
 
