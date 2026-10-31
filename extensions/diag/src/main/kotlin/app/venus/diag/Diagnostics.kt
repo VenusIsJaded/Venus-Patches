@@ -159,7 +159,7 @@ object Diagnostics {
         var root = error
         var depth = 0
         while (root.cause != null && root.cause !== root && depth < 20) { root = root.cause!!; depth++ }
-        val where = if (root.stackTrace.isNotEmpty()) root.stackTrace[0].toString() else ""
+        val where = if (root.stackTrace.size > 0) root.stackTrace[0].toString() else ""
         val out = java.lang.StringBuilder(64 * 1024)
         header(out, if (isJavaScript(error)) "JavaScript error" else "Java crash")
         section(out, "What went wrong")
@@ -173,7 +173,7 @@ object Diagnostics {
         out.append(trace.toString())
         details(out)
         threads(out, thread)
-        val log = logcat(1500)
+        val log = logcat(1500, true)
         section(out, "Logcat (this process, last 1500 lines)")
         out.append(if (log.length > 0) log else "(unavailable)\n")
         return out.toString()
@@ -236,7 +236,7 @@ object Diagnostics {
         try {
             val m = c.resources.displayMetrics
             val conf = c.resources.configuration
-            line(out, "Density", m.density.toString() + " (" + m.densityDpi + " dpi)" + (if (m.density * 4f != Math.round(m.density * 4f).toFloat() || m.density != Math.round(m.density).toFloat()) ", not a whole number" else ""))
+            line(out, "Density", m.density.toString() + " (" + m.densityDpi + " dpi)" + (if (m.density != Math.round(m.density).toFloat()) ", not a whole number" else ""))
             line(out, "Font scale", conf.fontScale.toString() + " (scaled density " + m.scaledDensity + ")")
             if (Build.VERSION.SDK_INT >= 31) line(out, "Bold text adjustment", conf.fontWeightAdjustment)
             line(out, "Screen", m.widthPixels.toString() + " x " + m.heightPixels + " px, " + conf.screenWidthDp + " x " + conf.screenHeightDp + " dp, smallest " + conf.smallestScreenWidthDp + " dp")
@@ -275,7 +275,7 @@ object Diagnostics {
         } catch (_: Throwable) { }
         section(out, "Venus settings")
         out.append(venusSettings(c))
-        section(out, "Venus log (most recent " + logSize() + " lines)")
+        section(out, "Venus debug log")
         out.append(logText(c))
     }
 
@@ -302,7 +302,7 @@ object Diagnostics {
     }
 
     /** Discord's own lines from Android's log. An app can only ever read the lines from its own user id. */
-    private fun logcat(lines: Int, onlyThisProcess: Boolean = true): String {
+    private fun logcat(lines: Int, onlyThisProcess: Boolean): String {
         val args = java.util.ArrayList<String>()
         args.add("logcat"); args.add("-d"); args.add("-v"); args.add("threadtime"); args.add("-b"); args.add("main,system,crash")
         args.add("-t"); args.add(lines.toString())
@@ -333,4 +333,172 @@ object Diagnostics {
             if (end > start) out.append(key).append(": ").append(all.substring(start, end)).append('\n')
         }
         return out.toString()
+    }
+
+    // ---------------------------------------------------------------- native crashes and ANRs (Android 11+)
+
+    private fun checkExitReasons(c: Context) {
+        if (Build.VERSION.SDK_INT < 30) return
+        try {
+            val am = c.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val list = am.getHistoricalProcessExitReasons(c.packageName, 0, 8)
+            val seenFile = File(folder(c), SEEN)
+            val firstRun = !seenFile.isFile
+            var seen = 0L
+            if (!firstRun) seen = try { java.lang.Long.parseLong(read(seenFile)) } catch (_: Throwable) { 0L }
+            var newest = seen
+            var reported = false
+            for (info in list) {
+                if (info.timestamp > newest) newest = info.timestamp
+                if (firstRun || reported || info.timestamp <= seen || info.processName != c.packageName) continue
+                val reason = info.reason
+                if (reason != ApplicationExitInfo.REASON_CRASH_NATIVE && reason != ApplicationExitInfo.REASON_ANR) continue
+                save(exitReport(info))
+                reported = true
+            }
+            write(seenFile, java.lang.Long.toString(newest))
+            if (reported) main.postDelayed(object : Runnable { override fun run() { showPending() } }, 400)
+        } catch (_: Throwable) { }
+    }
+
+    private fun exitReport(info: ApplicationExitInfo): String {
+        val anr = info.reason == ApplicationExitInfo.REASON_ANR
+        val out = java.lang.StringBuilder(64 * 1024)
+        header(out, if (anr) "Discord stopped responding (ANR)" else "Native crash")
+        section(out, "What went wrong")
+        val description = info.description
+        out.append(if (description != null && description.length > 0) description else if (anr) "Application Not Responding" else "Native crash").append('\n')
+        line(out, "Happened at", stamp(info.timestamp))
+        line(out, "Process", info.processName + " (pid " + info.pid + ")")
+        line(out, "Signal or status", info.status)
+        line(out, "Memory then", "PSS " + mb(info.pss * 1024L) + ", RSS " + mb(info.rss * 1024L))
+        line(out, "Importance", info.importance)
+        if (anr) {
+            section(out, "Thread dump from Android")
+            val traces = try { val input = info.traceInputStream; if (input == null) "" else readAll(input, 400 * 1024) } catch (_: Throwable) { "" }
+            out.append(if (traces.length > 0) traces else "(Android didn't keep one)\n")
+        } else {
+            out.append("Android keeps the native stack as a tombstone only system tools can read; the log below has what Discord's process wrote before it ended.\n")
+        }
+        details(out)
+        section(out, "Logcat (Discord, every process, last 2000 lines)")
+        val log = logcat(2000, false)
+        out.append(if (log.length > 0) log else "(unavailable)\n")
+        return out.toString()
+    }
+
+    // ---------------------------------------------------------------- small helpers (Java APIs only)
+
+    private fun stamp(ms: Long): String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date(ms))
+
+    private fun zone(): String = TimeZone.getDefault().id
+
+    private fun duration(ms: Long): String {
+        if (ms < 0 || startedAt == 0L) return "unknown"
+        val seconds = ms / 1000
+        val h = seconds / 3600
+        val m = (seconds % 3600) / 60
+        val s = seconds % 60
+        return (if (h > 0) h.toString() + " h " else "") + (if (h > 0 || m > 0) m.toString() + " min " else "") + s + " s"
+    }
+
+    private fun mb(bytes: Long): String = (bytes / 1048576L).toString() + " MB"
+
+    private fun firstLine(text: String): String {
+        val at = (text as java.lang.String).indexOf('\n'.code)
+        return if (at < 0) text else text.substring(0, at)
+    }
+
+    private fun readAll(input: InputStream, limit: Int): String {
+        val buffer = ByteArrayOutputStream()
+        val chunk = ByteArray(16 * 1024)
+        try {
+            while (true) {
+                val n = input.read(chunk)
+                if (n < 0) break
+                if (buffer.size() < limit) buffer.write(chunk, 0, Math.min(n, limit - buffer.size()))
+            }
+        } finally { try { input.close() } catch (_: Throwable) { } }
+        return String(buffer.toByteArray(), StandardCharsets.UTF_8)
+    }
+
+    private fun read(file: File): String = readAll(java.io.FileInputStream(file), MAX_REPORT)
+
+    private fun write(file: File, text: String) {
+        val out = FileOutputStream(file)
+        try { out.write((text as java.lang.String).getBytes(StandardCharsets.UTF_8)) } finally { out.close() }
+    }
+
+    /** Keeps the start (what went wrong, the stack) and the end (the newest log lines) of a long text. */
+    private fun cap(text: String, max: Int): String {
+        if (text.length <= max) return text
+        val head = max * 3 / 5
+        val tail = max - head
+        return text.substring(0, head) + "\n\n... " + ((text.length - max) / 1024) + " KB left out ...\n\n" + text.substring(text.length - tail)
+    }
+
+    private fun prefs(c: Context): String? = try {
+        val file = File(c.filesDir, PREFS)
+        if (file.isFile && file.length() < 4 * 1024 * 1024) read(file) else null
+    } catch (_: Throwable) { null }
+
+    private fun crashScreenSetting(c: Context): Boolean {
+        val text = prefs(c) ?: return true
+        return (text as java.lang.String).indexOf("\"crashScreen\":false") < 0
+    }
+
+    /** Which Venus features are on and how they're set. Never sign-ins, tokens, accounts or anything else private. */
+    private fun venusSettings(c: Context): String {
+        val text = prefs(c) ?: return "(no settings file yet)\n"
+        return try {
+            val saved = JSONObject(text)
+            val on = java.lang.StringBuilder()
+            val options = java.lang.StringBuilder()
+            val keys = saved.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val lower = (key as java.lang.String).toLowerCase(Locale.ROOT) as java.lang.String
+                if (lower.indexOf("auth") >= 0 || lower.indexOf("token") >= 0 || lower.indexOf("account") >= 0 || lower.indexOf("ids") >= 0 ||
+                    lower.indexOf("grant") >= 0 || lower.indexOf("seen") >= 0 || lower.indexOf("users") >= 0) continue
+                val value = saved.opt(key)
+                if (value is Boolean) { if (value) { if (on.length > 0) on.append(", "); on.append(key) } }
+                else if (value is Number || (value is String && value.length <= 60)) {
+                    if (options.length > 0) options.append(", ")
+                    options.append(key).append('=').append(value.toString())
+                }
+            }
+            "On: " + (if (on.length > 0) on.toString() else "nothing") + "\nOptions: " + options + "\n"
+        } catch (error: Throwable) { "(couldn't read the settings file: " + error + ")\n" }
+    }
+
+    private fun logText(c: Context): String = try {
+        val file = File(c.filesDir, JS_LOG)
+        if (file.isFile && file.length() > 0) cap(read(file), 400 * 1024) + "\n" else "(Debug logging is off, or nothing was recorded yet)\n"
+    } catch (_: Throwable) { "(unavailable)\n" }
+
+    private fun venusRevision(c: Context): String = try {
+        JSONObject(readAll(c.assets.open("venus/injection.json"), 4096)).optString("revision", "unknown")
+    } catch (_: Throwable) { "unknown" }
+
+    private fun discordVersion(c: Context): String = try {
+        val info = c.packageManager.getPackageInfo(c.packageName, 0)
+        info.versionName + " (" + (if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode.toLong()) + ")"
+    } catch (_: Throwable) { "unknown" }
+
+    private fun installer(c: Context): String? =
+        if (Build.VERSION.SDK_INT >= 30) c.packageManager.getInstallSourceInfo(c.packageName).installingPackageName
+        else c.packageManager.getInstallerPackageName(c.packageName)
+
+    private fun processName(): String = if (Build.VERSION.SDK_INT >= 28) Application.getProcessName() else Process.myPid().toString()
+
+    /** The whole troubleshooting report Venus settings exports: the phone, Discord, Venus's log and Discord's logcat. */
+    private fun troubleshootingReport(): String {
+        val out = java.lang.StringBuilder(128 * 1024)
+        header(out, "Troubleshooting report")
+        details(out)
+        threads(out, null)
+        section(out, "Logcat (this process, last 3000 lines)")
+        val log = logcat(3000, true)
+        out.append(if (log.length > 0) log else "(unavailable)\n")
+        return cap(out.toString(), MAX_REPORT)
     }
