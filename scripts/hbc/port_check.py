@@ -452,6 +452,7 @@ BOOTSTRAP_MODULES = [
     (8537, 'modules/suspicious_downloads/SuspiciousDownloadUtils.tsx', ['isSuspiciousDownload'], 'SuspiciousDownloadUtils (Always trust)'),
     (8766, 'stores/MaskedLinkStore.tsx', ['default'], 'MaskedLinkStore (Always trust)'),
     (12337, 'modules/chat_input/native/ChatInputNativeComponent.tsx', ['displayName', 'default'], 'ChatInputNativeComponent (Tap mentions to open profiles)'),
+    (9990, 'modules/replies/PendingReplyActionCreators.tsx', ['createPendingReply', 'createShallowPendingReply'], 'PendingReplyActionCreators (Reply without pinging)'),
 ]
 
 

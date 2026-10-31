@@ -45,6 +45,7 @@ Open **Discord Settings → Venus → Features** to turn things on or off at any
 | | Show file sizes when attaching | Photos and videos in the picker show their size |
 | | Anonymous file names | Files you send get a random name like `k3Vq9TzL0b.jpg` instead of the one on your phone, so names like `IMG_20261027_142233.jpg` or `Bank statement March.pdf` never reach Discord. The file type stays, so previews and players still work. Spoilers stay spoilers. Based on Anonymous File Names by k1ng_op |
 | | Tap mentions to open profiles | Tap an @mention you typed in the message bar to open that person's profile, to check you picked the right one. Typing never opens one. Based on ClickableMentions by mwittrien |
+| | Reply without pinging | Replies start with the ping off, so the person you answer isn't pinged unless you tap **@** on the reply bar to turn it on for that reply. Works everywhere you start a reply: a message's menu, swipe to reply, Double-tap to reply and notifications. Choose servers, group DMs or both (Discord already starts one-on-one DMs without a ping), and optionally keep the ping when the message you're answering mentioned you |
 | **People** | Pastel name colors | Names without a role color get a soft pastel color |
 | | Show device indicators | Desktop, mobile, web, console or VR icons next to names |
 | | Show owner and mod tags | Shows an Owner, Admin, Manager or Mod tag next to people's names in chat, worked out from the roles you can see. Pick who gets one and whether owners get a crown. Based on StaffTag by mwittrien |
