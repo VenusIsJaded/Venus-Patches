@@ -223,6 +223,63 @@ internal val settingsLanguages = bytecodePatch {
     }
 }
 
+internal const val DIAGNOSTICS = "Lapp/venus/diag/Diagnostics;"
+/** Instructions [diagnosticsBridge] adds before Discord's own clearFolder code, counting the nop its label lands on. */
+internal const val DIAGNOSTICS_BRIDGE_SIZE = 9
+
+/**
+ * Lets Venus settings read crash reports, the phone's details and Discord's logcat, and preview the crash screen.
+ * clearFolder(storageDir, path, promise): p1 is the folder, p2 the path, p3 the Promise. Discord only ever passes "cache"
+ * or "documents" as the folder, so a request with the private prefix can't be one of its own. No other Venus guard uses it.
+ */
+internal fun diagnosticsBridge(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    if (method.parameterTypes.map { it.toString() } != listOf("Ljava/lang/String;", "Ljava/lang/String;", PROMISE) || method.returnType != "V" ||
+        (method.implementation?.registerCount ?: 0) - 4 < 2)
+        throw PatchException("FileModule.clearFolder ABI changed")
+    requireUnpatched(method, "venus-")
+    method.addInstructions(0, """
+        const-string v0, "venus-diag-v1:"
+        invoke-virtual {p1, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+        move-result v0
+        if-eqz v0, :venus_clear_folder
+        invoke-static {p1, p2, p3}, $DIAGNOSTICS->dispatch(Ljava/lang/String;Ljava/lang/String;$PROMISE)Z
+        move-result v1
+        if-eqz v1, :venus_clear_folder
+        return-void
+        :venus_clear_folder
+        nop
+    """)
+}
+
+/** Installs the crash catcher right after Application.onCreate's super call, before Discord starts anything else. */
+internal fun readDiagnostics(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val first = method.implementation?.instructions?.firstOrNull()
+    val target = (first as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString()
+    if (first?.opcode != com.android.tools.smali.dexlib2.Opcode.INVOKE_SUPER || target != "Landroid/app/Application;->onCreate()V")
+        throw PatchException("MainApplication.onCreate no longer starts with super.onCreate()")
+    method.addInstructions(1, "invoke-static {p0}, $DIAGNOSTICS->init(Landroid/content/Context;)V")
+}
+
+/** Hidden helper of Venus settings: the crash screen and the bridge to troubleshooting logs. */
+internal val diagnostics = bytecodePatch {
+    dependsOn(discordBundleGuard)
+    extendWith("extensions/diag.mpe")
+    execute {
+        diagnosticsBridge(Fingerprint(
+            definingClass = FILE_MODULE,
+            name = "clearFolder",
+            returnType = "V",
+            parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", PROMISE)
+        ).method)
+        readDiagnostics(Fingerprint(
+            definingClass = "Lcom/discord/MainApplication;",
+            name = "onCreate",
+            returnType = "V",
+            parameters = listOf()
+        ).method)
+    }
+}
+
 @Suppress("unused")
 val venusSettings = bytecodePatch(
     name = "Venus settings",
@@ -230,7 +287,7 @@ val venusSettings = bytecodePatch(
 ) {
     compatibleWith(discord)
     section(PLUGINS)
-    dependsOn(runtimeAssets, packagedDiscordBundle, passkeyErrorHint, settingsLanguages)
+    dependsOn(runtimeAssets, packagedDiscordBundle, passkeyErrorHint, settingsLanguages, diagnostics)
 }
 
 

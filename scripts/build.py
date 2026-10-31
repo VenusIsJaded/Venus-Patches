@@ -752,6 +752,27 @@ def build():
     run("java", "-Xmx384m", "-cp", TOOLS / "r8.jar", "com.android.tools.r8.D8",
         "--release", "--min-api", "26", "--lib", TOOLS / "android.jar",
         "--classpath", stubs, "--output", audio_dex, audio_classes)
+    # Crash screen and troubleshooting logs (part of Venus settings): Java-only rules again.
+    diag_classes = BUILD / "diag-classes.jar"
+    run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        *sorted((ROOT / "extensions/diag/src/main/kotlin").rglob("*.kt")), "-d", diag_classes)
+    with zipfile.ZipFile(diag_classes) as native:
+        for name in native.namelist():
+            if not name.endswith(".class"):
+                continue
+            content = native.read(name)
+            for unsafe in (b"kotlin/text/", b"kotlin/collections/", b"kotlin/Result", b"kotlin/Unit", b"kotlin/io/", b"kotlin/ranges/",
+                           b"kotlin/jvm/functions/"):
+                if unsafe in content:
+                    raise SystemExit(f"Unsafe host Kotlin helper in {name}: {unsafe.decode()}; use Java APIs")
+    diag_dex = BUILD / "diag-dex"
+    diag_dex.mkdir(exist_ok=True)
+    for stale in diag_dex.glob("classes*.dex"):
+        stale.unlink()
+    run("java", "-Xmx384m", "-cp", TOOLS / "r8.jar", "com.android.tools.r8.D8",
+        "--release", "--min-api", "26", "--lib", TOOLS / "android.jar",
+        "--classpath", stubs, "--output", diag_dex, diag_classes)
     check_languages()
     classes = BUILD / "classes.jar"
     sources = sorted((ROOT / "patches/src/main/kotlin").rglob("*.kt"))
@@ -807,6 +828,7 @@ def build():
         add("extensions/monet.mpe", (monet_dex / "classes.dex").read_bytes())
         add("extensions/chat.mpe", (chat_dex / "classes.dex").read_bytes())
         add("extensions/audio.mpe", (audio_dex / "classes.dex").read_bytes())
+        add("extensions/diag.mpe", (diag_dex / "classes.dex").read_bytes())
         for path in sorted(dex.glob("classes*.dex")):
             add(path.name, path.read_bytes())
     run("java", "-Xmx256m", "-cp", f"{bundle}:{TOOLS / 'morphe.jar'}:{TOOLS / 'gson.jar'}",
