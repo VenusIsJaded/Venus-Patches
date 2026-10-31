@@ -310,7 +310,7 @@ object Diagnostics {
         return run(args.toArray(arrayOfNulls<String>(0)), 2 * 1024 * 1024)
     }
 
-    private fun run(command: Array<String?>, limit: Int): String = try {
+    private fun run(command: Array<out String?>, limit: Int): String = try {
         val p = Runtime.getRuntime().exec(command)
         val text = readAll(p.inputStream, limit)
         try { p.destroy() } catch (_: Throwable) { }
@@ -658,7 +658,7 @@ object Diagnostics {
                 card.orientation = LinearLayout.VERTICAL
                 card.background = round(CARD, 16, 0x40F23F43)
                 card.setPadding(dp(16), dp(14), dp(16), dp(16))
-                card.addView(label(s.optString("what").toUpperCase(Locale.getDefault()), 11f, RED, true))
+                card.addView(label((s.optString("what") as java.lang.String).toUpperCase(Locale.getDefault()), 11f, RED, true))
                 val mono = label(what, 13f, TEXT, false)
                 mono.typeface = Typeface.MONOSPACE
                 mono.setTextIsSelectable(true)
@@ -690,7 +690,7 @@ object Diagnostics {
             body.addView(chips)
 
             // The full report, monospace and selectable. Very long reports show their start; Export keeps all of it.
-            val reportTitle = label(s.optString("report").toUpperCase(Locale.getDefault()), 11f, MUTED, true)
+            val reportTitle = label((s.optString("report") as java.lang.String).toUpperCase(Locale.getDefault()), 11f, MUTED, true)
             reportTitle.setPadding(dp(4), dp(14), 0, dp(8))
             body.addView(reportTitle)
             if (report.length > MAX_SHOWN) {
@@ -713,27 +713,27 @@ object Diagnostics {
             bar.orientation = LinearLayout.HORIZONTAL
             bar.setPadding(dp(16), dp(12), dp(16), dp(16))
             bar.setBackgroundColor(BG)
-            fun button(text: String, fill: Int, action: () -> Unit): TextView {
+            fun button(text: String, fill: Int, action: Runnable): TextView {
                 val b = label(text, 15f, Color.WHITE, true)
                 b.gravity = Gravity.CENTER
                 b.background = RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), round(fill, 24, 0), null)
-                b.setOnClickListener { try { action() } catch (_: Throwable) { } }
+                b.setOnClickListener { try { action.run() } catch (_: Throwable) { } }
                 val lp = LinearLayout.LayoutParams(0, dp(48), 1f)
                 lp.leftMargin = dp(4); lp.rightMargin = dp(4)
                 bar.addView(b, lp)
                 return b
             }
-            button(s.optString("copy"), NEUTRAL) {
+            button(s.optString("copy"), NEUTRAL, Runnable {
                 val clip = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clip.setPrimaryClip(ClipData.newPlainText("Venus crash report", cap(report, MAX_CLIP)))
                 if (Build.VERSION.SDK_INT < 33) Toast.makeText(activity, s.optString("copied"), Toast.LENGTH_SHORT).show()
-            }
-            button(s.optString("share"), NEUTRAL) { share(activity, report) }
-            button(s.optString("export"), BRAND) {
+            })
+            button(s.optString("share"), NEUTRAL, Runnable { share(activity, report) })
+            button(s.optString("export"), BRAND, Runnable {
                 val name = export(activity, report)
                 Toast.makeText(activity, if (name != null) (s.optString("saved") as java.lang.String).replace("{name}", name) else s.optString("failed"), Toast.LENGTH_LONG).show()
                 if (name == null) share(activity, report)
-            }
+            })
             root.addView(bar)
 
             root.setOnApplyWindowInsetsListener { view, insets ->
