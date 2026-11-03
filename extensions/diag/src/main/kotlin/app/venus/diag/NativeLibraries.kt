@@ -67,11 +67,16 @@ object NativeLibraries {
             var own: String? = null
             val each = folders.iterator()
             while (each.hasNext()) {
-                val folder = each.next()
-                if (folder is String && folder.indexOf(BASE) > 0) { own = folder; break }
+                val folder = each.next() as? String ?: continue
+                // java.lang.String's own indexOf: Kotlin's String.indexOf(String) compiles to kotlin.text.StringsKt,
+                // which Discord's process doesn't have (scripts/build.py rejects it).
+                @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "CAST_NEVER_SUCCEEDS")
+                val raw = folder as java.lang.String
+                if (raw.indexOf(BASE) > 0) { own = folder; break }
             }
             val baseFolder = own ?: return
-            val at = baseFolder.indexOf(BASE)
+            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "CAST_NEVER_SUCCEEDS")
+            val at = (baseFolder as java.lang.String).indexOf(BASE)
             val apk = baseFolder.substring(0, at + BASE.length - 2)
             // "lib/<abi>" inside base.apk; only a base.apk that ships React Native itself means a second copy.
             val entry = baseFolder.substring(at + BASE.length) + PROBE
