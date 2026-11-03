@@ -338,32 +338,6 @@ internal object HbcPrelude {
         return result
     }
 
-    /**
-     * Splits the compacted runtime into its eval'd header and the two lazily eval'd chunks (the string literals longer
-     * than [CHUNK_MIN] characters that scripts/build.py prints). The header becomes `(function($vc0,$vc1){...})` with
-     * each literal replaced by its parameter, whose value is exactly the string the literal stood for. Anything else
-     * (not two chunks, an escape this decoder doesn't know, a name already in use) keeps the runtime as one segment.
-     */
-    internal fun splitChunks(source: String): List<String> {
-        val whole = listOf(source)
-        if (source.contains("\$vc0") || source.contains("\$vc1")) return whole
-        val found = ArrayList<IntArray>()
-        var i = source.indexOf('"')
-        while (i >= 0) {
-            var k = i + 1
-            while (k < source.length && source[k] != '"') k += if (source[k] == '\\') 2 else 1
-            if (k >= source.length) return whole
-            if (k - i > CHUNK_MIN) found.add(intArrayOf(i, k + 1))
-            i = source.indexOf('"', k + 1)
-        }
-        if (found.size != 2) return whole
-        val chunks = found.map { decodeLiteral(source, it[0] + 1, it[1] - 1) ?: return whole }
-        val header = StringBuilder("(function(\$vc0,\$vc1){")
-        header.append(source, 0, found[0][0]).append("\$vc0")
-        header.append(source, found[0][1], found[1][0]).append("\$vc1")
-        header.append(source, found[1][1], source.length).append("\n})")
-        return listOf(header.toString(), chunks[0], chunks[1])
-    }
     private const val CHUNK_MIN = 50000
 
     /** First bytes of the epilogue, so the runtime only ever decodes the one Venus wrote. */
@@ -399,6 +373,11 @@ internal object HbcPrelude {
             last = range[1]
         }
         header.append(source, last, source.length)
+        // Probe the epilogue before anything else runs: without it the prelude throws here, its Catch leaves Discord
+        // exactly as shipped, and nothing is decorated that would later fail to load its chunk mid-startup.
+        val strict = header.indexOf("\"use strict\";")
+        if (strict < 0) return whole
+        header.insert(strict + 13, "$EPILOGUE_READER(0,$EPILOGUE_LENGTH);")
         return Pair(header.toString(), bytes.toByteArray())
     }
 

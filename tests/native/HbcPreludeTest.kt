@@ -13,9 +13,15 @@ fun main(args: Array<String>) {
     val directory = File(args[1]).apply { mkdirs() }
     val original = input.readBytes()
     fun sha1(bytes: ByteArray) = MessageDigest.getInstance("SHA-1").digest(bytes)
+    // The header's file length ends at the SHA-1 footer; Venus's epilogue (the runtime's lazy chunks) may follow it.
+    fun declared(bytes: ByteArray) = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getInt(32)
     fun checkFooter(file: File) {
         val bytes = file.readBytes()
-        check(sha1(bytes.copyOf(bytes.size - 20)).contentEquals(bytes.copyOfRange(bytes.size - 20, bytes.size)))
+        val end = declared(bytes)
+        check(end <= bytes.size && sha1(bytes.copyOf(end - 20)).contentEquals(bytes.copyOfRange(end - 20, end)))
+        if (end < bytes.size) check(String(bytes, end, HbcPrelude.EPILOGUE_MARKER.length, Charsets.US_ASCII) == HbcPrelude.EPILOGUE_MARKER) {
+            "Bytes after the footer aren't Venus's epilogue"
+        }
     }
     val cases = mutableListOf(
         "normal" to "globalThis.__venusProbe = 42; print('HBC98_PRELUDE_PASS');",
@@ -54,8 +60,9 @@ fun main(args: Array<String>) {
             raf.write(byteArrayOf(147.toByte(), 14, 118, 14))
         }
         val fixture = output.readBytes()
-        val footer = sha1(fixture.copyOf(fixture.size - 20))
-        RandomAccessFile(output, "rw").use { it.seek(fixture.size.toLong() - 20); it.write(footer) }
+        val end = declared(fixture)
+        val footer = sha1(fixture.copyOf(end - 20))
+        RandomAccessFile(output, "rw").use { it.seek(end.toLong() - 20); it.write(footer) }
         println("Fixture: ${output.path}")
     }
     val invalid = File(directory, "invalid.hbc")

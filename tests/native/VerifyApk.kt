@@ -46,7 +46,11 @@ fun main(args: Array<String>) {
         fun number(key: String) = Regex("\"$key\":([0-9]+)").find(metadata)!!.groupValues[1].toInt()
         val hbc = zip.getInputStream(zip.getEntry("assets/index.android.bundle")).readBytes()
         val header = ByteBuffer.wrap(hbc).order(ByteOrder.LITTLE_ENDIAN)
-        check(header.getInt(8) == 98 && header.getInt(32) == hbc.size && header.getInt(36) == 0)
+        // The declared length ends at the SHA-1 footer; only Venus's epilogue (the runtime's lazy chunks) may follow.
+        val declared = header.getInt(32)
+        check(header.getInt(8) == 98 && declared <= hbc.size && header.getInt(36) == 0)
+        if (declared < hbc.size) check(String(hbc, declared, app.venus.patches.HbcPrelude.EPILOGUE_MARKER.length, Charsets.US_ASCII) ==
+            app.venus.patches.HbcPrelude.EPILOGUE_MARKER) { "Bytes after the bundle's footer aren't Venus's epilogue" }
         val large = (((header.getInt(132) ushr 14) and 255) shl 24) or (header.getInt(128) and 0x1ffffff)
         val offset = header.getInt(large)
         check(offset == number("codeOffset"))
@@ -66,8 +70,8 @@ fun main(args: Array<String>) {
         check(hash.digest().joinToString("") { "%02x".format(it) } ==
             app.venus.patches.HbcPrelude.GLOBAL_SHA256) { "Discord's own global code changed under the prelude" }
         val footer = MessageDigest.getInstance("SHA-1")
-        footer.update(hbc, 0, hbc.size - 20)
-        check(footer.digest().contentEquals(hbc.copyOfRange(hbc.size - 20, hbc.size)))
+        footer.update(hbc, 0, declared - 20)
+        check(footer.digest().contentEquals(hbc.copyOfRange(declared - 20, declared)))
     }
     val dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault())
     val instances = dex.dexEntryNames.flatMap { name ->
