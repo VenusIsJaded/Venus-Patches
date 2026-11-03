@@ -200,9 +200,13 @@ fun main(args: Array<String>) {
     }
     check(soSources.size == 1) { "Expected one DirectApkSoSource definition, got ${soSources.size}" }
     val soCode = soSources.single().methods.single { it.name == "<init>" }.implementation!!.instructions.toList()
-    check(soCode.last().opcode == Opcode.RETURN_VOID && ((soCode[soCode.size - 2] as? ReferenceInstruction)?.reference
-        as? MethodReference)?.let { it.definingClass == "Lapp/venus/diag/NativeLibraries;" && it.name == "soLoaderFolders" } == true) {
-        "DirectApkSoSource no longer hands its folders to NativeLibraries before returning"
+    val soStore = soCode.indexOfLast { it.opcode == Opcode.IPUT_OBJECT && (it as ReferenceInstruction).reference.toString() == "Lcom/facebook/soloader/c;->c:Ljava/util/HashSet;" }
+    val soCall = soCode.getOrNull(soStore + 1)
+    check(soStore > 0 && soCode.getOrNull(soStore + 2)?.opcode == Opcode.RETURN_VOID && soCall?.opcode == Opcode.INVOKE_STATIC && ((soCall as ReferenceInstruction).reference as MethodReference).let {
+        it.definingClass == "Lapp/venus/diag/NativeLibraries;" && it.name == "soLoaderFolders" && it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/util/HashSet;")
+    } && (soCall as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC ==
+        (soCode[soStore] as com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction).registerA) {
+        "DirectApkSoSource no longer hands the folder set it stores to NativeLibraries"
     }
     val promises = dex.dexEntryNames.sumOf { name ->
         dex.getEntry(name)!!.dexFile.classes.count { it.type == "Lcom/facebook/react/bridge/Promise;" }

@@ -271,26 +271,34 @@ internal const val DIRECT_APK_SO_SOURCE = "Lcom/facebook/soloader/c;"
  * every library itself, over base.apk while the stock splits stay installed. Android's loader then takes
  * libreactnative, libfbjni and libc++_shared from base.apk and SoLoader takes them from split_config.<abi>.apk, and two
  * React Native copies crashed Discord on launch ("'AppState' could not be found"). [NativeLibraries.soLoaderFolders]
- * trims SoLoader's folders to base.apk's when base.apk ships React Native and splits exist; on any other install there
- * are no splits and nothing changes. Added at the end of the constructor, after it filled `c`; 6 registers, 2 of them
- * parameters, so v0 is free there.
+ * trims SoLoader's folders to base.apk's when base.apk ships React Native and split folders exist; a normal or Shizuku
+ * install has one folder and nothing changes.
+ *
+ * The call goes right after the constructor stores its folder set (`iput-object vX, p0, c`) and passes only that
+ * register: the store just proved to the verifier that it holds a HashSet. Never pass p1 (the Context) from there: the
+ * constructor reuses it for the split paths, and a String[] handed over as a Context made ART reject the whole class
+ * (VerifyError on launch). Not before the store either: the null check and the split loop both jump straight to it,
+ * so code placed in front of it was skipped on exactly the mount path.
  */
 internal fun oneNativeLibraryCopy(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
     val implementation = method.implementation ?: throw PatchException("DirectApkSoSource has no constructor code")
     val code = implementation.instructions.toList()
-    fun reads(field: String) = code.any {
-        ((it as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString()) == field
+    val field = "$DIRECT_APK_SO_SOURCE->c:Ljava/util/HashSet;"
+    val store = code.indexOfLast {
+        it.opcode == com.android.tools.smali.dexlib2.Opcode.IPUT_OBJECT &&
+            (it as com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction).reference.toString() == field
     }
-    if (method.parameterTypes.map { it.toString() } != listOf("Landroid/content/Context;") ||
-        !reads("Landroid/content/pm/ApplicationInfo;->splitSourceDirs:[Ljava/lang/String;") ||
-        !reads("$DIRECT_APK_SO_SOURCE->c:Ljava/util/HashSet;") || implementation.registerCount - 2 < 1 ||
-        implementation.registerCount > 16 || code.last().opcode != com.android.tools.smali.dexlib2.Opcode.RETURN_VOID)
+    if (method.parameterTypes.map { it.toString() } != listOf("Landroid/content/Context;") || store < 0 ||
+        code.none { (it as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString() ==
+            "Landroid/content/pm/ApplicationInfo;->splitSourceDirs:[Ljava/lang/String;" })
         throw PatchException("SoLoader's DirectApkSoSource ABI changed")
+    val set = (code[store] as com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction).registerA
+    if (set > 15) throw PatchException("DirectApkSoSource keeps its folder set in v$set, out of invoke-static's reach")
+    // The store must be the last thing before the constructor returns, so the call after it runs on every path.
+    if (code.getOrNull(store + 1)?.opcode != com.android.tools.smali.dexlib2.Opcode.RETURN_VOID || store + 2 != code.size)
+        throw PatchException("DirectApkSoSource no longer returns right after storing its folder set")
     requireUnpatched(method, "venus-")
-    method.addInstructions(code.size - 1, """
-        iget-object v0, p0, $DIRECT_APK_SO_SOURCE->c:Ljava/util/HashSet;
-        invoke-static {v0, p1}, $NATIVE_LIBRARIES->soLoaderFolders(Ljava/util/HashSet;Landroid/content/Context;)V
-    """)
+    method.addInstructions(store + 1, "invoke-static {v$set}, $NATIVE_LIBRARIES->soLoaderFolders(Ljava/util/HashSet;)V")
 }
 
 /** Hidden helper of Venus settings: the crash screen and the bridge to troubleshooting logs. */
