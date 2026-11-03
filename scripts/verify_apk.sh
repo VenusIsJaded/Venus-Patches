@@ -11,7 +11,8 @@ APKM="${1:-$(python3 scripts/hbc/find_apkm.py)}"
 [ -f "$APKM" ] || { echo "usage: sh scripts/verify_apk.sh Discord.apkm" >&2; exit 2; }
 MPP=$(ls patches/build/libs/*.mpp 2>/dev/null | head -1)
 [ -n "$MPP" ] && [ -f patches/build/classes.jar ] || { echo "Run python3 scripts/build.py first" >&2; exit 2; }
-OUT=work/verify
+# Absolute: Morphe CLI 2.0 resolves the input inside its own temporary folder, so relative paths fail to open.
+OUT="$(pwd)/work/verify"
 export JAVA_OPTS=-Xmx384m
 if [ -n "$REUSE" ] && [ -f "$OUT/patched.apk" ] && [ -f "$OUT/patch.log" ]; then
   echo "Reusing $OUT/patched.apk"
