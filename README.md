@@ -16,6 +16,8 @@ Extra features and privacy options for Discord on Android, patched in with **[Mo
 
 You can also import `patches-<version>.mpp` from [Releases](https://github.com/VenusIsJaded/Venus-Patches/releases) under **Sources → + → Local**.
 
+> **Root mount installs** keep using the installed Discord's own native libraries: Morphe turns on **Root mount support** by itself, so the patched app doesn't load a second copy of them and crash on launch. Install the same Discord version from the same APKM before mounting.
+
 > The patched app is signed with your key, so you may need to uninstall official Discord first (which deletes its local data), unless you use [Custom branding](#custom-branding). Keep the same signing key so updates install over the top.
 
 ## Features
