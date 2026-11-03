@@ -61,7 +61,9 @@ object VoiceProcessor {
                     try {
                         worker.execute {
                             try { promise.resolve(convert(context.applicationContext, uri, id, cancelled).toString()) }
-                            catch (error: Exception) {
+                            // Throwable, not Exception: an Error here (OutOfMemoryError on a long file, a codec's
+                            // LinkageError) escaped this pool thread and Android killed Discord, leaving the send waiting.
+                            catch (error: Throwable) {
                                 promise.reject("VENUS_AUDIO", error.message ?: "Audio conversion failed")
                             } finally { jobs.remove(id, cancelled) }
                         }
@@ -72,7 +74,7 @@ object VoiceProcessor {
                 }
                 else -> throw IllegalArgumentException("Unknown audio action")
             }
-        } catch (error: Exception) {
+        } catch (error: Throwable) {
             promise.reject("VENUS_AUDIO", error.message ?: "Invalid audio request")
         }
         return true
