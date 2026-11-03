@@ -342,6 +342,8 @@ internal object HbcPrelude {
 
     /** First bytes of the epilogue, so the runtime only ever decodes the one Venus wrote. */
     const val EPILOGUE_MARKER = "VENUS-CHUNKS-1"
+    /** [EPILOGUE_MARKER]'s length, spelled out so the reader below stays a compile-time constant. */
+    private const val EPILOGUE_LENGTH = 14
 
     /**
      * Moves every string literal longer than [CHUNK_MIN] characters (the lazily eval'd chunks scripts/build.py prints)
@@ -390,7 +392,6 @@ internal object HbcPrelude {
         "for(let k=0;k<l.length;k++){const e=l[k];if(!e||e.length<b||String.fromCharCode.apply(null,e.subarray(0,$EPILOGUE_LENGTH))!=='$EPILOGUE_MARKER')continue;" +
         "const p=[];for(let i=a;i<b;i+=8192)p.push(String.fromCharCode.apply(null,e.subarray(i,i+8192<b?i+8192:b)));return p.join('')}" +
         "throw new Error('Venus: the runtime chunks are missing from the bundle')})"
-    private const val EPILOGUE_LENGTH = 14
 
     /** A JSON-style string body (what JSON.stringify prints) to its value; null for anything else or non-ASCII. */
     private fun decodeLiteral(source: String, start: Int, end: Int): String? {
