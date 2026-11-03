@@ -23,6 +23,11 @@
 * **Discord - Send long messages:** Fixed long forum posts and scheduled message edits skipping Discord's length check and then being refused when sent
 * **Discord - Send long messages:** Fixed a sticker sent with long typed text being refused, losing both the sticker and the text
 
+### ⚡ Performance Improvements
+
+* **Discord - Venus settings:** Do less work for every Venus text it draws
+* **Discord - Show file sizes when attaching:** Faster file size labels while scrolling the media picker
+
 ## [1.21.0](https://github.com/VenusIsJaded/Venus-Patches/compare/v1.20.0...v1.21.0) (2026-11-02)
 
 ### 🚀 Updated App Support
