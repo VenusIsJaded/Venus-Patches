@@ -262,6 +262,37 @@ internal fun readDiagnostics(method: app.morphe.patcher.util.proxy.mutableTypes.
     method.addInstructions(1, "invoke-static {p0}, $DIAGNOSTICS->init(Landroid/content/Context;)V")
 }
 
+internal const val NATIVE_LIBRARIES = "Lapp/venus/diag/NativeLibraries;"
+/** React Native's DirectApkSoSource (minified to `c` in 351.11): maps native libraries straight from the APKs. */
+internal const val DIRECT_APK_SO_SOURCE = "Lcom/facebook/soloader/c;"
+
+/**
+ * Root mount installs: one copy of Discord's native libraries, not two. A mount lays the patched APK, which carries
+ * every library itself, over base.apk while the stock splits stay installed. Android's loader then takes
+ * libreactnative, libfbjni and libc++_shared from base.apk and SoLoader takes them from split_config.<abi>.apk, and two
+ * React Native copies crashed Discord on launch ("'AppState' could not be found"). [NativeLibraries.soLoaderFolders]
+ * trims SoLoader's folders to base.apk's when base.apk ships React Native and splits exist; on any other install there
+ * are no splits and nothing changes. Added at the end of the constructor, after it filled `c`; 6 registers, 2 of them
+ * parameters, so v0 is free there.
+ */
+internal fun oneNativeLibraryCopy(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val implementation = method.implementation ?: throw PatchException("DirectApkSoSource has no constructor code")
+    val code = implementation.instructions.toList()
+    fun reads(field: String) = code.any {
+        ((it as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString()) == field
+    }
+    if (method.parameterTypes.map { it.toString() } != listOf("Landroid/content/Context;") ||
+        !reads("Landroid/content/pm/ApplicationInfo;->splitSourceDirs:[Ljava/lang/String;") ||
+        !reads("$DIRECT_APK_SO_SOURCE->c:Ljava/util/HashSet;") || implementation.registerCount - 2 < 1 ||
+        implementation.registerCount > 16 || code.last().opcode != com.android.tools.smali.dexlib2.Opcode.RETURN_VOID)
+        throw PatchException("SoLoader's DirectApkSoSource ABI changed")
+    requireUnpatched(method, "venus-")
+    method.addInstructions(code.size - 1, """
+        iget-object v0, p0, $DIRECT_APK_SO_SOURCE->c:Ljava/util/HashSet;
+        invoke-static {v0, p1}, $NATIVE_LIBRARIES->soLoaderFolders(Ljava/util/HashSet;Landroid/content/Context;)V
+    """)
+}
+
 /** Hidden helper of Venus settings: the crash screen and the bridge to troubleshooting logs. */
 internal val diagnostics = bytecodePatch {
     dependsOn(discordBundleGuard)
@@ -278,6 +309,12 @@ internal val diagnostics = bytecodePatch {
             name = "onCreate",
             returnType = "V",
             parameters = listOf()
+        ).method)
+        oneNativeLibraryCopy(Fingerprint(
+            definingClass = DIRECT_APK_SO_SOURCE,
+            name = "<init>",
+            returnType = "V",
+            parameters = listOf("Landroid/content/Context;")
         ).method)
     }
 }
