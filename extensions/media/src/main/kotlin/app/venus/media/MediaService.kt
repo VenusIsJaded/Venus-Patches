@@ -38,19 +38,33 @@ class MediaService : Service() {
         return START_NOT_STICKY
     }
 
+    /**
+     * Whether startForeground has gone through since this service was created. A service started with
+     * startForegroundService that is stopped before it calls startForeground crashes the whole app ("Context.
+     * startForegroundService() did not then call Service.startForeground()"), so [stop] makes good on it first.
+     */
+    private var foregroundCalled = false
+
     /** Shows the current media notification as this service's own. False when there's nothing to show any more. */
     fun promote(): Boolean {
         val notification = BackgroundMedia.currentNotification() ?: return false
-        return try {
-            // Decoding needs the CPU while the screen is off; released as soon as the sound pauses.
+        if (!enterForeground(notification)) return false
+        // Decoding needs the CPU while the screen is off; released as soon as the sound pauses. Taken after
+        // startForeground, so a wake lock Android refuses can never skip the call Android requires.
+        try {
             if (wake == null) wake = getSystemService(android.os.PowerManager::class.java)
                 ?.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "venus:media")?.also { it.setReferenceCounted(false) }
             wake?.acquire(4 * 60 * 60 * 1000L)
-            if (Build.VERSION.SDK_INT >= 29) startForeground(BackgroundMedia.NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-            else startForeground(BackgroundMedia.NOTIFICATION_ID, notification)
-            true
-        } catch (_: Throwable) { false }
+        } catch (_: Throwable) { }
+        return true
     }
+
+    private fun enterForeground(notification: android.app.Notification): Boolean = try {
+        if (Build.VERSION.SDK_INT >= 29) startForeground(BackgroundMedia.NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        else startForeground(BackgroundMedia.NOTIFICATION_ID, notification)
+        foregroundCalled = true
+        true
+    } catch (_: Throwable) { false }
 
     /** Paused: the notification stays, but can be swiped away and no longer keeps Discord running. */
     fun demote() {
@@ -68,6 +82,9 @@ class MediaService : Service() {
     /** The sound ended or Discord came back: take the notification down with the service. */
     fun stop() {
         releaseWake()
+        // Stopped before startForeground ran (promote failed, or the sound ended between onCreate and onStartCommand):
+        // Android would kill Discord for it, so the placeholder goes up for a moment and comes straight down below.
+        if (!foregroundCalled) BackgroundMedia.currentNotification()?.let { enterForeground(it) }
         try {
             if (Build.VERSION.SDK_INT >= 24) {
                 stopForeground(STOP_FOREGROUND_REMOVE)
