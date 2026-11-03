@@ -35,6 +35,7 @@ internal object HbcPrelude {
         // field that records the result (function size, exception range, jump, file length) is 32-bit.
         require(source.isNotEmpty()) { "Empty bootstrap" }
         var result: Result
+        var epilogueBytes: ByteArray? = null
         RandomAccessFile(file, "rw").use { raf ->
             fun intAt(offset: Long): Int { raf.seek(offset); return Integer.reverseBytes(raf.readInt()) }
             fun putInt(offset: Long, value: Int) { raf.seek(offset); raf.writeInt(Integer.reverseBytes(value)) }
@@ -75,10 +76,13 @@ internal object HbcPrelude {
             val words = java.nio.ByteBuffer.wrap(entries).order(java.nio.ByteOrder.LITTLE_ENDIAN)
             val storageSize = intAt(60)
             val storageBytes = ByteArray(storageSize).also { raf.seek(storage); raf.readFully(it) }
-            // The runtime's two lazily eval'd chunks are huge string literals that never run at boot, yet the boot-time
-            // eval had to scan them as part of the runtime's text. Build them as their own strings and pass them to the
-            // header as parameters (splitChunks), so that eval only scans the ~7 KB header.
-            val segments = splitChunks(source)
+            // The runtime's lazily eval'd chunks (~930 KB of its ~950 KB) no longer go through the prelude at all: they're
+            // appended after the bundle's declared end (Hermes keeps those bytes as the module's epilogue) and decoded
+            // only when first used. Rebuilding them from ~380k existing strings on every launch was most of Venus's
+            // cold-boot cost: HBC98 VM, real 351.11 bundle, 58 -> 38 ms p10 user CPU per cold boot (1.5x).
+            val moved = moveChunksToEpilogue(source)
+            val segments = listOf(moved.first)
+            val epilogue = moved.second
             val segmentStart = IntArray(segments.size + 1)
             for (s in segments.indices) segmentStart[s + 1] = segmentStart[s] + segments[s].length
             val n = segmentStart[segments.size]
@@ -318,13 +322,19 @@ internal object HbcPrelude {
             putInt(small + 4, ((newHeader.toInt() ushr 24) and 255) shl 14)
             putInt(32, (raf.length() + 20).toInt())
             result = Result(prelude.size, original.size, bodyOffset)
+            epilogueBytes = epilogue
         }
         val digest = MessageDigest.getInstance("SHA-1")
         file.inputStream().use { input ->
             val buffer = ByteArray(65536)
             while (true) { val read = input.read(buffer); if (read < 0) break; digest.update(buffer, 0, read) }
         }
-        FileOutputStream(file, true).use { it.write(digest.digest()) }
+        FileOutputStream(file, true).use { out ->
+            out.write(digest.digest())
+            // After the footer, outside the header's file length: Hermes accepts a buffer longer than the file it
+            // describes and hands the rest to HermesInternal.getEpilogues(). Nothing else in the bundle moves.
+            if (epilogueBytes != null) out.write(epilogueBytes)
+        }
         return result
     }
 
@@ -355,6 +365,53 @@ internal object HbcPrelude {
         return listOf(header.toString(), chunks[0], chunks[1])
     }
     private const val CHUNK_MIN = 50000
+
+    /** First bytes of the epilogue, so the runtime only ever decodes the one Venus wrote. */
+    const val EPILOGUE_MARKER = "VENUS-CHUNKS-1"
+
+    /**
+     * Moves every string literal longer than [CHUNK_MIN] characters (the lazily eval'd chunks scripts/build.py prints)
+     * out of the runtime: each becomes a small expression that decodes the same text from the bundle's epilogue the
+     * first time it runs, and the bytes go into the returned epilogue after [EPILOGUE_MARKER]. Anything this can't
+     * prove safe (non-ASCII, an escape it doesn't know, no chunks) keeps the runtime whole, with no epilogue.
+     */
+    internal fun moveChunksToEpilogue(source: String): Pair<String, ByteArray?> {
+        val whole = Pair<String, ByteArray?>(source, null)
+        val found = ArrayList<IntArray>()
+        var i = source.indexOf('"')
+        while (i >= 0) {
+            var k = i + 1
+            while (k < source.length && source[k] != '"') k += if (source[k] == '\\') 2 else 1
+            if (k >= source.length) return whole
+            if (k - i > CHUNK_MIN) found.add(intArrayOf(i, k + 1))
+            i = source.indexOf('"', k + 1)
+        }
+        if (found.isEmpty()) return whole
+        val chunks = found.map { decodeLiteral(source, it[0] + 1, it[1] - 1) ?: return whole }
+        val bytes = ByteArrayOutputStream(EPILOGUE_MARKER.length + chunks.sumOf { it.length })
+        bytes.write(EPILOGUE_MARKER.toByteArray(Charsets.US_ASCII))
+        val header = StringBuilder(source.length - chunks.sumOf { it.length })
+        var last = 0
+        for ((index, range) in found.withIndex()) {
+            val start = bytes.size()
+            bytes.write(chunks[index].toByteArray(Charsets.US_ASCII))
+            header.append(source, last, range[0]).append(EPILOGUE_READER).append('(').append(start).append(',').append(bytes.size()).append(')')
+            last = range[1]
+        }
+        header.append(source, last, source.length)
+        return Pair(header.toString(), bytes.toByteArray())
+    }
+
+    /**
+     * Decodes bytes [a, b) of Venus's epilogue (ASCII) into a string. 8 KB per fromCharCode.apply call is the fastest
+     * slice on HBC98 (4.3 ms for the 305 KB settings chunk; 1 KB 6.6 ms, 32 KB 6.9 ms). Throws when the epilogue is
+     * missing, which [inject]'s callers treat like any other failure to load that chunk.
+     */
+    private const val EPILOGUE_READER = "(function(a,b){const h=globalThis.HermesInternal,l=h&&typeof h.getEpilogues==='function'?h.getEpilogues():[];" +
+        "for(let k=0;k<l.length;k++){const e=l[k];if(!e||e.length<b||String.fromCharCode.apply(null,e.subarray(0,$EPILOGUE_LENGTH))!=='$EPILOGUE_MARKER')continue;" +
+        "const p=[];for(let i=a;i<b;i+=8192)p.push(String.fromCharCode.apply(null,e.subarray(i,i+8192<b?i+8192:b)));return p.join('')}" +
+        "throw new Error('Venus: the runtime chunks are missing from the bundle')})"
+    private const val EPILOGUE_LENGTH = 14
 
     /** A JSON-style string body (what JSON.stringify prints) to its value; null for anything else or non-ASCII. */
     private fun decodeLiteral(source: String, start: Int, end: Int): String? {
