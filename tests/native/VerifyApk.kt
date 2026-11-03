@@ -193,6 +193,17 @@ fun main(args: Array<String>) {
     }
     check(processors.size == 1) { "Expected one native conversion extension" }
     check(processors.single().methods.any { it.name == "dispatch" })
+    // Root mounts: SoLoader's DirectApkSoSource hands its folders to NativeLibraries right before it returns, so a
+    // mounted base.apk and the stock splits never load two copies of React Native.
+    val soSources = dex.dexEntryNames.flatMap { name ->
+        dex.getEntry(name)!!.dexFile.classes.filter { it.type == "Lcom/facebook/soloader/c;" }
+    }
+    check(soSources.size == 1) { "Expected one DirectApkSoSource definition, got ${soSources.size}" }
+    val soCode = soSources.single().methods.single { it.name == "<init>" }.implementation!!.instructions.toList()
+    check(soCode.last().opcode == Opcode.RETURN_VOID && ((soCode[soCode.size - 2] as? ReferenceInstruction)?.reference
+        as? MethodReference)?.let { it.definingClass == "Lapp/venus/diag/NativeLibraries;" && it.name == "soLoaderFolders" } == true) {
+        "DirectApkSoSource no longer hands its folders to NativeLibraries before returning"
+    }
     val promises = dex.dexEntryNames.sumOf { name ->
         dex.getEntry(name)!!.dexFile.classes.count { it.type == "Lcom/facebook/react/bridge/Promise;" }
     }
