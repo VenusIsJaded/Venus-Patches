@@ -39,9 +39,7 @@ fi
 # example by a compatibility filter, fails here instead of passing VerifyApk with its hooks missing.
 python3 - "$OUT/patch.log" <<'PY'
 import json, re, sys
-# Root mount support only applies to root mount installs (it leaves lib/ out), so a normal patch run never applies it.
-MOUNT_ONLY = {"Root mount support"}
-listed = {p["name"] for p in json.load(open("patches-list.json"))["patches"]} - MOUNT_ONLY
+listed = {p["name"] for p in json.load(open("patches-list.json"))["patches"]}
 applied = set(re.findall(r"Applied: (.+?)\s*$", open(sys.argv[1]).read(), re.M))
 missing, extra = sorted(listed - applied), sorted(applied - listed)
 if missing or extra:

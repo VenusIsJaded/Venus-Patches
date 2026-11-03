@@ -1923,38 +1923,6 @@
       "options": []
     },
     {
-      "name": "Root mount support",
-      "description": "Leaves Discord's native libraries in the installed app, so a root mount install doesn't crash on launch. Only for root mount installs, where it's turned on by itself.",
-      "default": false,
-      "category": "Features",
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.discord",
-          "name": "Discord",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#5865F2",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "351.11 - Stable",
-              "versionCodes": {
-                "ARM64_V8A": 351011,
-                "ARMEABI_V7A": 351011,
-                "X86_64": 351011,
-                "X86": 351011
-              },
-              "isExperimental": false,
-              "minSdk": 26,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Send Nitro stickers and emojis as links",
       "description": "Sends Nitro emojis and stickers as links that show as the image.",
       "default": true,
