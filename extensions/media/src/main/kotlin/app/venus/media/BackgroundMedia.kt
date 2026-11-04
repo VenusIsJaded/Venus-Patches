@@ -469,7 +469,10 @@ object BackgroundMedia {
             }
         }
         val media = session ?: MediaSession(context, "Venus").also { session = it }
-        media.setCallback(SessionCallback)
+        // Without a Handler Android posts on Looper.myLooper() of whichever thread called, and Handler's constructor
+        // dereferences it (MediaSession.setCallback -> CallbackMessageHandler -> Handler(null): NullPointerException on
+        // a thread with no Looper). The main handler also keeps every callback on the thread this object's state lives on.
+        media.setCallback(SessionCallback, main)
         media.isActive = true
         registerReceiver()
         registerNoisy(true)
