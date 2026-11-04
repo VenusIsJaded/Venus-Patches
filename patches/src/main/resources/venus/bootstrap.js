@@ -69,7 +69,7 @@
     if (features.compressUploads) selectModules([8023, 8046, 10006]);
     if (features.timeoutDuration) selectModules([2119, 2128, 8013]);
     if (features.dndBanners) selectModules([6015, 13511, 13523]);
-    if (features.landscapeFull) targetModules[5075] = 1;
+    if (features.landscapeFull) selectModules([5075, 5076]);
     if (features.voiceDownload) selectModules([1447, 5532, 8013, 11114]);
     if (features.cloneExpressions) selectModules([9839, 10078]);
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
@@ -20008,6 +20008,30 @@
         try { if (React) useSettings("landscapeFull"); } catch (_) {}
         return landscapeChatLayout.call0(orig, self);
     };
+    // Swiping a message to reply or edit blanked the chat (#145): only useChatLayout reported the phone layout, while
+    // everything that reads the window size class directly (useIsWindowLarge 6904: the keyboard placeholder, channel
+    // details, sheets and modals) still saw a LARGE tablet window. Opening the keyboard mixed the two layouts and the chat
+    // panel slid away. On a sideways phone the size class itself (useWindowSizeClassifier 5076) now says NORMAL, so every
+    // reader agrees with the full-screen chat. Its enum is numeric (SMALL 0 < NORMAL 1 < LARGE 2 < XLARGE 3).
+    const landscapeClassifier = {normal:1};
+    function landscapeSizeClass(value) {
+        return typeof value === "number" && value > landscapeClassifier.normal && landscapePhone() ? landscapeClassifier.normal : value;
+    }
+    function landscapeClassifierRead(orig, self, args) { return landscapeSizeClass(orig.apply(self, args)); }
+    landscapeClassifierRead.call0 = (orig, self) => landscapeSizeClass(orig.call(self));
+    function landscapeClassifierHook(orig, self, args) {
+        try { if (React) useSettings("landscapeFull"); } catch (_) {}
+        return landscapeSizeClass(orig.apply(self, args));
+    }
+    landscapeClassifierHook.call0 = (orig, self) => {
+        try { if (React) useSettings("landscapeFull"); } catch (_) {}
+        return landscapeSizeClass(orig.call(self));
+    };
+    function landscapeHookClassifier(exports) {
+        const sizes = exports && exports.WindowSizeClassifier;
+        if (sizes && typeof sizes.NORMAL === "number") landscapeClassifier.normal = sizes.NORMAL;
+        return hookExport(hookExport(exports, "default", landscapeClassifierHook), "getWindowSizeClassifier", landscapeClassifierRead);
+    }
     // Download voice messages (#125, after VoiceDownload): a voice message gets a Download button of its own, right under its
     // waveform: the native call-to-action button Discord's message view already draws (Message.ctaButton, the one under
     // age-verification DMs), so it looks and feels like the rest of the chat and needs no hold menu. Its tap reaches
@@ -22867,6 +22891,7 @@
             case 13511: return features.dndBanners ? hookExport(exports, "shouldNotify", dndShouldNotify) : exports;
             case 13523: return features.dndBanners ? hookExport(exports, "playInAppMessageSound", dndBannerSound) : exports;
             case 5075: return features.landscapeFull ? hookExport(hookExport(exports, "default", landscapeChatLayoutHook), "getChatLayout", landscapeChatLayout) : exports;
+            case 5076: return features.landscapeFull ? landscapeHookClassifier(exports) : exports;
             case 8590: if (features.badges && exports && exports.default) badgesAttachStore(exports.default); return exports;
             case 9978:
                 if (features.translate) exports = hookComponent(exports, translateSheet);

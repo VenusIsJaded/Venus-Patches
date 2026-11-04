@@ -65,6 +65,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 5072 | `modules/main_tabs_v2/helpers/NavigationRouteUtils.native.tsx` | navigateToChannel, navigateToRootTab, pushModal, popModal | ModalAPI |
 | 5073 | `modules/main_tabs_v2/RootNavigationRef.native.tsx` | getRootNavigationRef | RootNavigationRef |
 | 5075 | `modules/chat/native/useChatLayout.tsx` | default, getChatLayout | useChatLayout (Full-screen chat in landscape) |
+| 5076 | `modules/screen/native/useWindowSizeClassifier.tsx` | default, getWindowSizeClassifier, WindowSizeClassifier | useWindowSizeClassifier (Full-screen chat in landscape) |
 | 5112 | `modules/experiments/ExperimentStore.tsx` | default, registerExperiment | ExperimentStore (Unlock Discord experiments) |
 | 5116 | `stores/GuildMemberCountStore.tsx` | default, getMemberCount, getOnlineCount | GuildMemberCountStore |
 | 5131 | `design/components/Icon/native/redesign/generated/UserPlusIcon.tsx` | UserPlusIcon | UserPlusIcon |
@@ -270,6 +271,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 9978 | `modules/messages/native/long_press/LongPressMessageActionSheet.tsx` | default | LongPressMessageActionSheet |
 | 9988 | `modules/messages/native/long_press/LongPressMessageActionSheetUtils.tsx` | getContextBarCancelReason, handleEdit, handleCreateThread | LongPressMessageActionSheetUtils |
 | 9990 | `modules/replies/PendingReplyActionCreators.tsx` | createPendingReply, createShallowPendingReply | PendingReplyActionCreators (Reply without pinging) |
+| 9995 | `modules/forums/native/composer/ForumComposer.tsx` | default | ForumComposer (Send long messages keeps the real limit) |
 | 10002 | `modules/foreground_service/mobile/ForegroundServiceManager.android.tsx` | default | ForegroundServiceManager |
 | 10006 | `lib/uploader/native/getPreCompressionFileSize.tsx` | getPreCompressionFileSize | getPreCompressionFileSize (Compress big files: size gate) |
 | 10023 | `design/components/Icon/native/redesign/generated/PencilIcon.tsx` | PencilIcon | PencilIcon |
@@ -393,6 +395,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 13769 | `design/components/Icon/native/redesign/generated/BookmarkOutlineIcon.tsx` | BookmarkOutlineIcon | BookmarkOutlineIcon (Remove anything: Bookmark Message) |
 | 13780 | `modules/main_tabs_v2/native/channel/header/PrivateChannelButtons.tsx` | default | PrivateChannelButtons (Remove anything: DM call / video / search) |
 | 13788 | `modules/main_tabs_v2/native/channel/header/PrivateChannelHeader.tsx` | default | PrivateChannelHeader |
+| 13811 | `modules/scheduled_messages/native/ScheduledMessageEditContentModal.tsx` | default | ScheduledMessageEditContentModal (Send long messages keeps the real limit) |
 | 13827 | `design/components/Icon/native/redesign/generated/ChatSmileIcon.tsx` | ChatSmileIcon | ChatSmileIcon |
 | 13836 | `design/components/Icon/native/redesign/generated/EmbedIcon.tsx` | EmbedIcon | EmbedIcon (Fix link previews) |
 | 13929 | `design/components/Icon/native/redesign/generated/QuestsIcon.tsx` | QuestsIcon | QuestsIcon |
