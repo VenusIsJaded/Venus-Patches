@@ -653,6 +653,8 @@ object BackgroundMedia {
                     BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
                     if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@Runnable
                     val options = BitmapFactory.Options()
+                    // Android treats zero as one in the decoder, but our arithmetic needs a nonzero divisor.
+                    options.inSampleSize = 1
                     // Power-of-two subsampling also bounds decoded memory when a small file declares a huge image.
                     while ((bounds.outWidth.toLong() + options.inSampleSize - 1) / options.inSampleSize > MAX_ART_SIDE ||
                         (bounds.outHeight.toLong() + options.inSampleSize - 1) / options.inSampleSize > MAX_ART_SIDE) {
