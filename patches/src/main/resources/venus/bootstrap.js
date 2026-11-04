@@ -446,6 +446,9 @@
     // file and by restoring a backup, so a hand-edited backup can never put a setting in a state the pages can't show.
     function acceptedSetting(key, value) {
         if (!owns(settings, key) || typeof value !== typeof settings[key]) return undefined;
+        // Every switch (165 of the 199 settings) is a plain boolean with no rule of its own below, so it is accepted as is.
+        // Only the number and text settings have rules; a boolean setting that ever needs one must be handled above this line.
+        if (typeof value === "boolean") return value;
         if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
             key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
             (key === "systemFontSource" || key === "systemEmojiSource") && !FONT_SOURCES.includes(value) ||
@@ -726,15 +729,20 @@
                 const loaded = JSON.parse(text);
                 if (!loaded || typeof loaded !== "object" || Array.isArray(loaded)) throw new Error("Invalid preferences");
                 migrateSettings(loaded);
+                // One pass over the settings: the keys whose saved value was refused are noted here for the debug log, which used to
+                // run acceptedSetting over every key a second time just to find them.
+                let rejected = null;
                 for (const key of Object.keys(settings)) {
-                    const value = dirty.has(key) ? undefined : acceptedSetting(key, loaded[key]);
+                    if (dirty.has(key)) continue;
+                    const saved = loaded[key], value = acceptedSetting(key, saved);
                     if (value !== undefined) settings[key] = value;
+                    else if (saved !== undefined) (rejected || (rejected = [])).push(key);
                 }
                 if (settings.debugLog) try {
-                    const rejected = Object.keys(settings).filter(key => loaded[key] !== undefined && !dirty.has(key) && acceptedSetting(key, loaded[key]) === undefined);
-                    const unknown = Object.keys(loaded).filter(key => !owns(settings, key));
-                    dlog("I", "settings", "read the settings file: " + dlogBytes(text.length) + ", " + Object.keys(loaded).length + " entries" +
-                        (rejected.length ? "; ignored values that aren't valid for " + rejected.join(", ") : "") +
+                    const loadedKeys = Object.keys(loaded);
+                    const unknown = loadedKeys.filter(key => !owns(settings, key));
+                    dlog("I", "settings", "read the settings file: " + dlogBytes(text.length) + ", " + loadedKeys.length + " entries" +
+                        (rejected ? "; ignored values that aren't valid for " + rejected.join(", ") : "") +
                         (unknown.length ? "; kept alongside: " + unknown.slice(0, 25).join(", ") : ""));
                 } catch (_) {}
                 if (typeof loaded.lastBackup === "number" && Number.isFinite(loaded.lastBackup) && !backup.last) backup.last = loaded.lastBackup;
