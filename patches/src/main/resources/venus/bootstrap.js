@@ -1313,7 +1313,7 @@
         silentEdit:["Silent edit", "Edited", "(edited)", "Edit message", "No edit mark"],
         silentDelete:["Silent delete", "Anti log", "Message logger", "Delete without logs"],
         localEdit:["Local edit", "Edit locally", "Fake message", "Edit other people's messages"],
-        localBookmarks:["Bookmark Message", "For Later", "Saved messages", "Unlimited bookmarks"],
+        localBookmarks:["Bookmark Message", "Reminders", "Saved messages", "Unlimited bookmarks"],
         hypeSquad:["HypeSquad", "House", "Bravery", "Brilliance", "Balance", "Badge"],
         customIdle:["Custom idle", "Idle", "AFK", "Away", "Idle timeout", "Status"],
         pauseInvites:["Pause invites", "Invites", "Lock invites", "Raid", "Security"],
@@ -21810,7 +21810,7 @@
         const n = bookmarkIndex().sorted.length, open = inspectedExport(13581, "showForLaterModal");
         const groups = [
             !on ? offCard("status", Icon, "localBookmarks") :
-                n ? statusCard("status", "Kept on this phone, with no limit. Open them any time from For Later.", {title:pl(n, "{n} bookmark", "{n} bookmarks"), IconComponent:Icon}) :
+                n ? statusCard("status", "Kept on this phone, with no limit.", {title:pl(n, "{n} bookmark", "{n} bookmarks"), IconComponent:Icon}) :
                 statusCard("status", "Hold any message and tap Bookmark Message. It's saved on this phone instead of your account, with no limit.",
                     {title:tr("No bookmarks yet"), IconComponent:Icon}),
             on && n && Row && typeof open === "function" ? el(Group, {key:"open", title:tr("Bookmarks")},
