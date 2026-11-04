@@ -4363,8 +4363,8 @@
                     accessibilityLabel:tr("Remove: {name}", {name:info.name})}, el(Remove, {size:"sm"}))});
         }) : [];
         const hint = feature === "noDelete" ?
-            footnote("hint", "Hold a server, folder, channel or DM, or open someone's \u22ef menu, to keep or stop keeping deleted messages there.") :
-            footnote("hint", "Hold a server, folder, channel or DM to hide or show your typing there.");
+            footnote("hint", "Hold a server, folder, channel or DM, or open someone's \u22ef menu, to make an exception.") :
+            footnote("hint", "Hold a server, folder, channel or DM to make an exception.");
         return el(RN.View, {key:"rules", style:{gap:8}}, rows.length ? el(Group, {key:"list", title:tr("Exceptions")}, rows) : groupTitle("title", "Exceptions"), hint);
     }
     function NoTypingSettings() {
