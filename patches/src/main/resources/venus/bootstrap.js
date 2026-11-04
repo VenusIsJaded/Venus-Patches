@@ -13690,7 +13690,7 @@
     function AccountNotifyPreview(props) {
         useSettings("accountSwitcher");
         const s = useChatPreviewStyles();
-        const k = useThemed("accountNotify", c => ({card:Object.assign({}, ACCOUNT_NOTIFY_DARK.card, {backgroundColor:c.BACKGROUND_SURFACE_HIGH || c.BACKGROUND_BASE_LOW || c.BACKGROUND_MOD_SUBTLE}),
+        const k = useThemed("accountNotify", c => ({head:ACCOUNT_NOTIFY_DARK.head, card:Object.assign({}, ACCOUNT_NOTIFY_DARK.card, {backgroundColor:c.BACKGROUND_SURFACE_HIGH || c.BACKGROUND_BASE_LOW || c.BACKGROUND_MOD_SUBTLE}),
             app:Object.assign({}, ACCOUNT_NOTIFY_DARK.app, {backgroundColor:c.BACKGROUND_BRAND || "#5865f2"}), account:Object.assign({}, ACCOUNT_NOTIFY_DARK.account, {color:c.TEXT_BRAND || c.TEXT_LINK}),
             dot:Object.assign({}, ACCOUNT_NOTIFY_DARK.dot, {color:c.TEXT_MUTED}), pill:Object.assign({}, ACCOUNT_NOTIFY_DARK.pill, {backgroundColor:c.BACKGROUND_MOD_SUBTLE})}), ACCOUNT_NOTIFY_DARK);
         const me = props.me, other = (props.accounts || []).find(acc => acc && acc.id && (!me || acc.id !== me.id));
@@ -13774,12 +13774,12 @@
                 Row ? el(Row, {key:"manage", label:tr("Manage accounts"), subLabel:tr("Open Discord's account manager to reorder or remove accounts."), icon:rowIcon(7368, "SettingsIcon"),
                     arrow:true, disabled:!on, onPress:() => openManageAccounts()}) : null,
                 null),
-            el(Group, {key:"shortcuts", title:tr("Shortcuts")},
-                switchRow(Switch, "accountSwitcherYouBar", "Button on the profile bar", "Shows a Switch accounts button next to the notifications bell on the bottom bar.", rowIcon(10598, "UserCircleIcon"))),
             el(AccountNotifyPreview, {key:"notifyPreview", on, accounts, me}),
             el(Group, {key:"notify", title:tr("Notifications")},
                 switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notifications for all your saved accounts, not just the one you're using. Each one shows which account it's for.", rowIcon(9045, "BellIcon")),
                 settings.accountSwitcherNotify ? switchRow(Switch, "accountSwitcherNotifyOpen", "While Discord is open", "Also show your other accounts' notifications while you're using Discord. The account you're on keeps its in-app banners.", rowIcon(6919, "MobilePhoneIcon")) : null),
+            el(Group, {key:"shortcuts", title:tr("Shortcuts")},
+                switchRow(Switch, "accountSwitcherYouBar", "Button on the profile bar", "Shows a Switch accounts button next to the notifications bell on the bottom bar.", rowIcon(10598, "UserCircleIcon"))),
             el(Group, {key:"shared", title:tr("Every account")},
                 switchRow(Switch, "accountSwitcherShare", "Same theme on every account", "Your theme and Nitro theme follow you when you switch. Venus settings are always shared.", rowIcon(16320, "PaintPaletteIcon"))),
             footnote("note", "Tap your avatar on the You tab, or hold the You tab, to switch from anywhere. Hold an account above to remove it.")];
