@@ -66,6 +66,7 @@
     if (features.platformSpoof) selectModules([14713]);
     if (features.guildLurk) targetModules[13422] = 1;
     if (features.quietReplies) selectModules([1392, 5532, 9990]);
+    if (features.timezones) selectModules([1392, 2068, 2119, 5532, 8013, 14015, 14101]);
     if (features.viewRaw) selectModules([9978, 10596, 17245, 10780, 17433, 14015, 7158, 7167]);
     if (features.compressUploads) selectModules([8023, 8046, 10006]);
     if (features.timeoutDuration) selectModules([2119, 2128, 8013]);
@@ -99,7 +100,7 @@
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, accountSwitcherNotifyOpen:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timeoutDuration:false, dndBanners:false, voiceDownload:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
         hypeSquad:false, customIdle:false, customIdleMinutes:10, pauseInvites:false, fastDeleteChannels:false, fastDeleteChannelsConfirm:true, fastDeleteChannelsMenu:true, mutualGroupDMs:false, platformSpoof:false, platformSpoofDevice:"desktop" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
@@ -117,7 +118,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, accountSwitcherNotifyOpen: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timeoutDuration: false, dndBanners: false, voiceDownload: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
             hypeSquad: false, customIdle: false, customIdleMinutes: 10, pauseInvites: false, fastDeleteChannels: false, fastDeleteChannelsConfirm: true, fastDeleteChannelsMenu: true, mutualGroupDMs: false, platformSpoof: false, platformSpoofDevice: "desktop"
         }));
     }
@@ -152,6 +153,7 @@
     // Keep up to takes any number up to MAX_DELETED, or 0 for No limit; the saved file keeps the newest ARCHIVE_BYTES of it.
     const MAX_DELETED = 999999, ARCHIVE_BYTES = 64 * 1024 * 1024;
     // What the Read all button clears: servers, DMs, or both.
+    const TIMEZONE_CLOCKS = ["discord", "12", "24"];
     const READ_ALL_MODES = ["guilds", "dms", "both"];
     // The devices Platform spoof can show, and Discord's own time before it sets you to Idle (minutes).
     const SPOOF_DEVICES = ["desktop", "web", "console"], CUSTOM_IDLE_DEFAULT = 10;
@@ -379,6 +381,7 @@
         if (features.materialYou && materialYou.system) extra.materialYouSystem = materialYou.system;
         if (features.serverEdit && serverEdits.size) extra.serverEdits = serverEditData(false);
         if (features.localEdit && localEdits.size) extra.localEdits = localEditData();
+        if (features.timezones && timezoneUsers.size) extra.timezoneUsers = tzData();
         if ((features.nitroThemes || features.accountSwitcher) && nitroThemeHasAny()) extra.nitroThemes = nitroThemeData();
         return JSON.stringify(Object.keys(extra).length ? Object.assign({}, settings, extra) : settings);
     }
@@ -457,7 +460,7 @@
         // Every switch (165 of the 199 settings) is a plain boolean with no rule of its own below, so it is accepted as is.
         // Only the number and text settings have rules; a boolean setting that ever needs one must be handled above this line.
         if (typeof value === "boolean") return value;
-        if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
+        if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "timezonesClock" && !TIMEZONE_CLOCKS.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
             key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
             (key === "systemFontSource" || key === "systemEmojiSource") && !FONT_SOURCES.includes(value) ||
             key === "messageHighlightThickness" && !HIGHLIGHT_THICKNESSES.includes(value) || key === "language" && !isLanguage(value)) return undefined;
@@ -514,6 +517,11 @@
             if (clean === undefined) return false;
             if (settings.hideAnythingSpots === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings.hideAnythingSpots = clean; dirty.add(key); save(); notify(key); return true;
+        }
+        if (key === "timezonesClock") {
+            if (!TIMEZONE_CLOCKS.includes(value)) return false;
+            if (settings.timezonesClock === value && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.timezonesClock = value; dirty.add(key); save(); notify(key); later(tzRedraw, 0); return true;
         }
         if (key === "readAllMode") {
             if (!READ_ALL_MODES.includes(value)) return false;
@@ -720,6 +728,7 @@
         if (features.messageHighlight && key === "messageHighlight") later(messageHighlightRedraw, 0);
         if (features.hideBlocked && featureFor(key) === "hideBlocked") hideBlockedChanged();
         if (features.staffTag && featureFor(key) === "staffTag") later(staffTagChanged, 0);
+        if (features.timezones && featureFor(key) === "timezones") later(tzRedraw, 0);
         if (features.bulkDelete && key === "bulkDelete" && !value) bulkDeleteCancel();
         if (features.localBookmarks && key === "localBookmarks") { if (value) bookmarksRestore(); bookmarksChanged(); }
         if (features.bulkDelete && (key === "bulkDeleteIncludeCached" || key === "noDelete") && bulkDelete.active) { bulkDeletePruneKept(); bulkDeleteRedrawAll(); }
@@ -785,6 +794,7 @@
                 if (features.removedAlerts) removedLoad(loaded.removedSeen);
                 if (features.serverEdit && !serverEdit.dirty) serverEditLoad(serverEditClean(loaded.serverEdits, false));
                 if (features.localEdit) localEditLoad(loaded.localEdits);
+                if (features.timezones && !tz.dirty) tzLoad(loaded.timezoneUsers);
                 if (features.badges) {
                     const accounts = loaded.badgesAccounts, played = loaded.badgesPlayed, snowflake = id => typeof id === "string" && /^\d{17,20}$/.test(id);
                     if (Array.isArray(accounts)) accounts.slice(0, 50).forEach(id => { if (snowflake(id)) badges.accounts.add(id); });
@@ -1212,7 +1222,7 @@
     const featureFor = key => {
         const cached = featureTable[key];
         if (cached !== undefined) return cached;
-        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^compressUploads[A-Z]/.test(key) ? "compressUploads" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : /^expandBar[A-Z]/.test(key) ? "expandBar" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^noTyping[A-Z]/.test(key) ? "noTyping" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^viewRaw[A-Z]/.test(key) ? "viewRaw" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : /^customIdle[A-Z]/.test(key) ? "customIdle" : /^fastDeleteChannels[A-Z]/.test(key) ? "fastDeleteChannels" : /^platformSpoof[A-Z]/.test(key) ? "platformSpoof" : /^silentEdit[A-Z]/.test(key) ? "silentEdit" : /^localEdit[A-Z]/.test(key) ? "localEdit" : /^listenAlong[A-Z]/.test(key) ? "listenAlong" : /^backgroundMedia[A-Z]/.test(key) ? "backgroundMedia" : /^fakeDeafen[A-Z]/.test(key) ? "fakeDeafen" : key;
+        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^compressUploads[A-Z]/.test(key) ? "compressUploads" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : /^expandBar[A-Z]/.test(key) ? "expandBar" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^noTyping[A-Z]/.test(key) ? "noTyping" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^viewRaw[A-Z]/.test(key) ? "viewRaw" : /^timezones[A-Z]/.test(key) ? "timezones" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : /^customIdle[A-Z]/.test(key) ? "customIdle" : /^fastDeleteChannels[A-Z]/.test(key) ? "fastDeleteChannels" : /^platformSpoof[A-Z]/.test(key) ? "platformSpoof" : /^silentEdit[A-Z]/.test(key) ? "silentEdit" : /^localEdit[A-Z]/.test(key) ? "localEdit" : /^listenAlong[A-Z]/.test(key) ? "listenAlong" : /^backgroundMedia[A-Z]/.test(key) ? "backgroundMedia" : /^fakeDeafen[A-Z]/.test(key) ? "fakeDeafen" : key;
     };
     // Section titles are read whenever Discord draws the list, so they follow the language too. "Venus" is a name.
     function section(label, keys) {
@@ -1247,7 +1257,7 @@
         hiddenChannels:[8495, "LockIcon"], systemFont:[16730, "LettersIcon"], systemEmoji:[13827, "ChatSmileIcon"],
         youBarSettings:[7368, "SettingsIcon"], quests:[13929, "QuestsIcon"],
         badges:[9211, "TrophyIcon"], userNotif:[9045, "BellIcon"], accountSwitcher:[8489, "GroupIcon"], appIcons:[8506, "AppsIcon"],
-        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"], localBookmarks:[13592, "BookmarkIcon"],
+        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timezones:[9393, "GlobeEarthIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"], localBookmarks:[13592, "BookmarkIcon"],
         hypeSquad:[18747, "HomeIcon"], customIdle:[14205, "UserClockIcon"], pauseInvites:[8676, "PauseIcon"], fastDeleteChannels:[18679, "ChannelListIcon"], mutualGroupDMs:[8489, "GroupIcon"], platformSpoof:[5133, "UserPlatformIcon"]};
     const venusIcons = new Map();
     function venusIcon(id, name, fallback) {
@@ -1317,6 +1327,7 @@
         dndBanners:["Do Not Disturb", "DND", "Banner", "Banners", "In-app notifications", "Pop-up", "Focus"],
         landscapeFull:["Landscape", "Sideways", "Rotate", "Full screen", "Sidebar", "Channel list"],
         compressUploads:["Compress", "Compression", "Shrink", "Smaller", "Resize", "File size", "Too big", "Too large", "Upload limit", "Size limit", "Nitro", "Video", "Photo", "Audio", "Attachments"],
+        timezones:["Time zone", "Timezone", "Local time", "Clock", "UTC", "GMT", "Offset", "12-hour", "24-hour", "Daylight saving", "Timezones"],
         viewRaw:["Raw", "JSON", "Data", "Developer", "Inspect", "Debug", "ID", "IDs", "Message", "Channel", "Thread", "Forum", "Server", "User", "Role", "Copy", "ViewRaw"],
         quietReplies:["Ping", "Pings", "Mention", "Mentions", "Reply", "Replies", "@ ON", "@ OFF", "Notification", "Servers", "Group DMs", "When they mentioned you", "Silent replies", "No ping"],
         fullImages:["High-res profile pictures", "HighResProfileImages", "Avatars", "Profile pictures", "Banners", "Uncompressed", "Uncompressed images", "Original", "Full quality", "Lossless", "Compression", "Blurry", "Thumbnail", "Resolution", "Pictures", "Photos"],
@@ -1820,6 +1831,7 @@
         toggle("messages", "silentDelete", "Delete without a trace", "Blanks your message before deleting it, so message loggers have nothing to keep.");
         withOptions("messages", "localEdit", "VENUS_LOCALEDIT", "Edit messages locally", "Change how any message reads on this phone. Only you see it.", "Edit locally", LocalEditSettings);
         withOptions("messages", "localBookmarks", "VENUS_LOCALBOOKMARKS", "Local bookmarks", "Bookmark as many messages as you like. They're kept on this phone instead of your account.", "Local bookmarks", LocalBookmarksSettings);
+        withOptions("people", "timezones", "VENUS_TIMEZONES", "Time zones", "Set someone's time zone to see their local time on their messages and profile.", "Time zones", TimezonesSettings);
         withOptions("people", "reviewDB", "VENUS_REVIEWDB", "User and server reviews", "Read and write ReviewDB reviews on profiles and servers.", "Reviews", ReviewSettings);
         withOptions("people", "userNotif", "VENUS_USERNOTIF", "User activity notifications", "Get notified when chosen people change status, type or message.", "Activity notifications", UserNotifSettings);
         // The two logs open from their feature's page, one level below it, like Discord's own nested settings.
@@ -2563,6 +2575,7 @@
         // Pictures from this phone stay on it: a backup keeps the names and the icons that are links.
         if (features.serverEdit && serverEdits.size) { const servers = serverEditData(true); if (Object.keys(servers).length) out.servers = servers; }
         if (features.localEdit && localEdits.size) out.localEdits = localEditData();
+        if (features.timezones && timezoneUsers.size) out.timezones = tzData();
         if (features.localBookmarks && bookmarks.list.size) return bookmarkBackupText(out);
         return JSON.stringify(out, null, 1);
     }
@@ -2615,7 +2628,8 @@
                 if (/^\d{17,20}:\d{17,20}$/.test(key) && typeof text === "string" && text.length <= LOCAL_EDIT_TEXT) edited.set(key, text);
             });
         }
-        return {values, people, themes, iconPacks:packs, servers, localEdits:edited, bookmarks:marks, version:wrapped && typeof data.version === "string" ? data.version.slice(0, 24) : "", created:Number.isFinite(created) ? created : 0};
+        const zones = wrapped && data.timezones ? tzClean(data.timezones) : null;
+        return {values, people, themes, iconPacks:packs, servers, localEdits:edited, timezones:zones, bookmarks:marks, version:wrapped && typeof data.version === "string" ? data.version.slice(0, 24) : "", created:Number.isFinite(created) ? created : 0};
     }
     // Puts a backup in place: every setting it has, the rest back to how Venus starts. Switches go through setSetting,
     // so everything they start or stop (Quests, themes, kept messages) happens as if you'd flipped them yourself.
@@ -2652,6 +2666,10 @@
                 before.concat(Array.from(localEdits.keys())).forEach(key => { const at = key.indexOf(":"); localEditRedraw(key.slice(0, at), key.slice(at + 1)); });
             }
             if (features.localBookmarks && parsed.bookmarks) bookmarksReplace(parsed.bookmarks);
+            if (features.timezones && parsed.timezones) {
+                timezoneUsers.clear(); parsed.timezones.forEach((zone, id) => timezoneUsers.set(id, zone));
+                tz.dirty = true; save(); notify("timezones"); later(tzRedraw, 0);
+            }
             if (features.iconPacks && parsed.iconPacks) {
                 iconPacks.loaded = true; iconPacks.custom = parsed.iconPacks.custom; iconPacks.active = parsed.iconPacks.active; iconPacks.error = "";
                 iconPacksPersist(); iconPacksApply(); notify("iconPacks");
@@ -8887,6 +8905,7 @@
         if (features.timeoutDuration && enabled("timeoutDuration")) message = timeoutTagMessage(message, row.message);
         if (features.voiceDownload && enabled("voiceDownload")) message = voiceDownloadMessage(message, row.message);
         if (features.staffTag && enabled("staffTag")) message = staffTagMessage(message, row.message);
+        if (features.timezones && timezoneUsers.size && enabled("timezonesChat")) message = tzMessage(message, row.message);
         let next = message === result.message ? result : Object.assign({},result,{message});
         if (!translateOn && !features.translate && !(noDeleteOn && (edits.size || deleted.size)) && !highlightOn && !features.messageHighlight && !bulkOn) return next;
         const source = row.message || message;
@@ -20221,6 +20240,331 @@
             footnote("note", "Files under the limit are never touched. Nitro and boosted servers raise the limit, so they need less or no compression.")];
         return settingsBody(ui, groups);
     }
+    // Time zones (#141, after Timezones by Equicord): set the time zone of anyone you talk to, and their local time shows
+    // next to the time on their messages, and on their profile as a Local time card. There is no online lookup and no server:
+    // zones are IANA names from Discord's own list (15315, the list its Intl polyfill uses), and every time is worked out on
+    // the phone by Hermes's Intl, which runs on Android's ICU zone data, so daylight saving is right for any date. A message
+    // shows their time when it was sent, so chat rows never have to be redrawn as the clock moves; only the card ticks.
+    const TZ_MAX = 500, TZ_ZONE = /^[A-Za-z][A-Za-z0-9_+-]*(\/[A-Za-z0-9_+-]+){0,2}$/;
+    const TZ_FALLBACK = ["UTC", "Pacific/Honolulu", "America/Anchorage", "America/Los_Angeles", "America/Denver", "America/Chicago", "America/New_York",
+        "America/Sao_Paulo", "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Kyiv", "Europe/Moscow", "Asia/Dubai", "Asia/Kolkata",
+        "Asia/Bangkok", "Asia/Shanghai", "Asia/Tokyo", "Australia/Sydney", "Pacific/Auckland"];
+    const timezoneUsers = new Map();
+    const tz = {dirty:false, parts:new Map(), clocks:new Map(), dates:new Map(), hour12:new Map(), list:null, cycle:null};
+    function tzZone(value) { return typeof value === "string" && value.length <= 64 && TZ_ZONE.test(value); }
+    function tzClean(raw) {
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+        const out = new Map();
+        Object.keys(raw).slice(0, TZ_MAX).forEach(id => { if (/^\d{17,20}$/.test(id) && tzZone(raw[id])) out.set(id, raw[id]); });
+        return out;
+    }
+    function tzLoad(raw) { const clean = tzClean(raw); if (clean) clean.forEach((zone, id) => { if (!timezoneUsers.has(id)) timezoneUsers.set(id, zone); }); }
+    function tzData() { const out = {}; timezoneUsers.forEach((zone, id) => { out[id] = zone; }); return out; }
+    // One formatter per zone (and kind), made once: Hermes's Intl builds an ICU formatter in Java for each one, which costs far
+    // more than formatting with it. A zone Android doesn't know throws, and is remembered as null.
+    function tzFormatter(cache, key, make) {
+        if (cache.has(key)) return cache.get(key);
+        let format = null;
+        try { format = make(); } catch (_) { format = null; }
+        if (cache.size > 200) cache.clear();
+        cache.set(key, format);
+        return format;
+    }
+    // Minutes ahead of UTC in that zone at that moment, daylight saving included, or null for a zone Android doesn't know.
+    function tzOffset(zone, ms) {
+        const format = tzFormatter(tz.parts, zone, () => new Intl.DateTimeFormat("en-US", {timeZone:zone, hour12:false,
+            year:"numeric", month:"numeric", day:"numeric", hour:"numeric", minute:"numeric"}));
+        if (!format) return null;
+        let y, mo, d, h, mi;
+        try {
+            if (typeof format.formatToParts === "function") {
+                const parts = format.formatToParts(ms);
+                for (let i = 0; i < parts.length; i++) {
+                    const part = parts[i], value = parseInt(part.value, 10);
+                    if (part.type === "year") y = value; else if (part.type === "month") mo = value; else if (part.type === "day") d = value;
+                    else if (part.type === "hour") h = value; else if (part.type === "minute") mi = value;
+                }
+            } else {
+                const m = /(\d+)\/(\d+)\/(\d+),?\s+(\d+):(\d+)/.exec(format.format(ms));
+                if (m) { mo = +m[1]; d = +m[2]; y = +m[3]; h = +m[4]; mi = +m[5]; }
+            }
+        } catch (_) { return null; }
+        if (![y, mo, d, h, mi].every(Number.isFinite)) return null;
+        return Math.round((Date.UTC(y, mo - 1, d, h % 24, mi) - Math.floor(ms / 60000) * 60000) / 60000);
+    }
+    function tzMyOffset(ms) { return -new Date(ms).getTimezoneOffset(); }
+    function tzOffsetLabel(minutes) {
+        if (!minutes) return "GMT";
+        const abs = Math.abs(minutes), h = Math.floor(abs / 60), m = abs % 60;
+        return "GMT" + (minutes > 0 ? "+" : "\u2212") + h + (m ? ":" + (m < 10 ? "0" : "") + m : "");
+    }
+    // Discord's language, so their time reads like Discord's own time next to it.
+    function tzLocale() { let locale = null; try { locale = localeStore && localeStore.locale; } catch (_) {} return typeof locale === "string" && locale ? locale : "en-US"; }
+    // 12 or 24-hour: the page's choice, or Discord's own (TimestampHourCycle in UserSettings 2044: 1 is 12-hour, 2 is 24-hour,
+    // 0 follows Discord's language).
+    function tzHour12() {
+        const choice = settings.timezonesClock;
+        if (choice === "12") return true;
+        if (choice === "24") return false;
+        let cycle = 0;
+        try {
+            const setting = tz.cycle || (tz.cycle = inspectedExport(2044, "TimestampHourCycle"));
+            cycle = setting && typeof setting.getSetting === "function" ? setting.getSetting() : 0;
+        } catch (_) {}
+        if (cycle === 1) return true;
+        if (cycle === 2) return false;
+        const locale = tzLocale();
+        if (!tz.hour12.has(locale)) {
+            let twelve = true;
+            try { const o = new Intl.DateTimeFormat(locale, {hour:"numeric"}).resolvedOptions(); twelve = typeof o.hour12 === "boolean" ? o.hour12 : !/^h2[34]$/.test(String(o.hourCycle)); } catch (_) {}
+            tz.hour12.set(locale, twelve);
+        }
+        return tz.hour12.get(locale);
+    }
+    function tzClockText(zone, ms, hour12) {
+        const locale = tzLocale(), format = tzFormatter(tz.clocks, zone + "\u0000" + locale + (hour12 ? "\u0000h12" : "\u0000h23"),
+            () => new Intl.DateTimeFormat(locale, {timeZone:zone, hour:"numeric", minute:"2-digit", hour12}));
+        try { if (format) { const text = format.format(ms); if (text && /\d/.test(text)) return text; } } catch (_) {}
+        const offset = tzOffset(zone, ms);
+        if (offset === null) return "";
+        const d = new Date(ms + offset * 60000), h = d.getUTCHours(), m = d.getUTCMinutes(), mm = (m < 10 ? "0" : "") + m;
+        return hour12 ? (h % 12 || 12) + ":" + mm + (h < 12 ? " AM" : " PM") : (h < 10 ? "0" : "") + h + ":" + mm;
+    }
+    // The day and time there: on the profile card when their day isn't yours, and when you tap a message's time.
+    function tzDateText(zone, ms, hour12) {
+        const locale = tzLocale(), format = tzFormatter(tz.dates, zone + "\u0000" + locale + (hour12 ? "\u0000h12" : "\u0000h23"),
+            () => new Intl.DateTimeFormat(locale, {timeZone:zone, weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", hour12}));
+        try { if (format) { const text = format.format(ms); if (text && /\d/.test(text)) return text; } } catch (_) {}
+        return tzClockText(zone, ms, hour12);
+    }
+    function tzCity(zone) { const parts = String(zone).split("/"); return parts[parts.length - 1].replace(/_/g, " "); }
+    function tzRegion(zone) { return String(zone).split("/").slice(0, -1).join(" \u00b7 ").replace(/_/g, " "); }
+    function tzAhead(minutes) {
+        if (!minutes) return tr("Same time as you");
+        const abs = Math.abs(minutes), h = Math.floor(abs / 60), m = abs % 60;
+        const time = h && m ? tr("{h}h {m}m", {h, m}) : h ? tr("{n}h", {n:h}) : tr("{n}m", {n:m});
+        return minutes > 0 ? tr("{time} ahead of you", {time}) : tr("{time} behind you", {time});
+    }
+    function tzMine() { try { const zone = new Intl.DateTimeFormat().resolvedOptions().timeZone; return tzZone(zone) ? zone : ""; } catch (_) { return ""; } }
+    function tzList() {
+        if (tz.list) return tz.list;
+        const list = inspectedExport(15315, "timezones");
+        if (Array.isArray(list) && list.length) return tz.list = list.filter(tzZone);
+        return TZ_FALLBACK;
+    }
+    function tzMs(value) {
+        if (value == null) return NaN;
+        if (typeof value === "number") return value;
+        if (typeof value === "string") return Date.parse(value);
+        try { return Number(value.valueOf()); } catch (_) { return NaN; }
+    }
+    function tzName(userId) {
+        let user = null;
+        try { user = userStore && userStore.getUser(userId); } catch (_) {}
+        return user ? String(user.globalName || user.username || userId) : String(userId);
+    }
+    // Whose time a message shows: its author's, or in a one-on-one DM (with that option on) the other person's on your own.
+    function tzForMessage(message) {
+        const author = message.authorId == null ? "" : String(message.authorId), zone = timezoneUsers.get(author);
+        if (zone || !settings.timezonesDmOwn) return zone || "";
+        const me = currentUser();
+        if (!me || String(me.id) !== author || !channelStore) return "";
+        let channel = null;
+        try { channel = channelStore.getChannel(String(message.channelId)); } catch (_) {}
+        if (!channel || channel.type !== 1) return "";
+        const list = channel.recipients, other = list && list[0];
+        return other ? timezoneUsers.get(String(other.id || other)) || "" : "";
+    }
+    // The native row's timestamp is text Discord already formatted (calendarFormat in createMessageContent 8150), so their time
+    // goes after it in brackets, "Today at 14:18 (18:18)", and their full date and time joins the line you get by tapping the
+    // time (timestampTooltip). Nothing is added when their clock reads the same as yours at that moment.
+    function tzMessage(message, source) {
+        if (!message || typeof message.timestamp !== "string" || !message.timestamp) return message;
+        const zone = tzForMessage(message);
+        if (!zone) return message;
+        const ms = tzMs(source && source.timestamp);
+        if (!Number.isFinite(ms)) return message;
+        const offset = tzOffset(zone, ms);
+        if (offset === null || offset === tzMyOffset(ms)) return message;
+        const hour12 = tzHour12(), time = tzClockText(zone, ms, hour12);
+        if (!time) return message;
+        const copy = Object.assign({}, message);
+        copy.timestamp = message.timestamp + " (" + (settings.timezonesOffset ? time + " " + tzOffsetLabel(offset) : time) + ")";
+        const line = tr("Their time: {time}", {time:tzDateText(zone, ms, hour12) + " \u00b7 " + tzCity(zone)});
+        copy.timestampTooltip = typeof message.timestampTooltip === "string" && message.timestampTooltip ? message.timestampTooltip + "\n" + line : line;
+        copy.timestampAccessibilityLabel = (message.timestampAccessibilityLabel || message.timestamp) + ", " + line;
+        return copy;
+    }
+    // The open chat, drawn again after a time zone or an option changes.
+    function tzRedraw() {
+        const selected = inspectedExport(2119, "default"), store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        let channelId = null;
+        try { channelId = selected && typeof selected.getChannelId === "function" ? selected.getChannelId() : null; } catch (_) {}
+        if (!channelId || !store || typeof store.getMessages !== "function") return;
+        const ids = [];
+        try {
+            const messages = store.getMessages(channelId), list = messages && Array.isArray(messages._array) ? messages._array : null;
+            if (list) for (let i = 0; i < list.length; i++) { if (list[i] && list[i].id) ids.push(String(list[i].id)); }
+        } catch (_) {}
+        bulkDeleteRedrawIds(String(channelId), ids);
+    }
+    function tzSet(userId, zone) {
+        userId = String(userId);
+        if (!/^\d{17,20}$/.test(userId)) return false;
+        if (zone) {
+            if (!tzZone(zone) || tzOffset(zone, Date.now()) === null) return false;
+            timezoneUsers.delete(userId); timezoneUsers.set(userId, zone);
+            if (timezoneUsers.size > TZ_MAX) timezoneUsers.delete(timezoneUsers.keys().next().value);
+        } else timezoneUsers.delete(userId);
+        tz.dirty = true; save(); notify("timezones"); later(tzRedraw, 0);
+        return true;
+    }
+    // A person's ⋯ menu: Set time zone (Change time zone once they have one), in its own group above Block and Report.
+    function timezoneProfileMenu(orig, self, args) {
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!enabled("timezones") || !React || !rendered || !props) return rendered;
+        const userId = String(props.userId || props.user && props.user.id || ""), me = currentUser(), Menu = inspectedExport(9662, "ContextMenu");
+        if (!Menu || !/^\d{17,20}$/.test(userId) || me && String(me.id) === userId) return rendered;
+        const item = {label:timezoneUsers.has(userId) ? tr("Change time zone") : tr("Set time zone"), venusTimezone:true, action:() => later(() => openTimezonePicker(userId), 60)};
+        const has = list => list.some(entry => entry && (entry.venusTimezone || Array.isArray(entry) && entry.some(inner => inner && inner.venusTimezone)));
+        return cloneTree(rendered, (node, nodeProps) => {
+            if (node.type !== Menu || !Array.isArray(nodeProps.items) || has(nodeProps.items)) return nodeProps;
+            const items = nodeProps.items, last = items[items.length - 1];
+            const danger = Array.isArray(last) && last.some(entry => entry && entry.variant === "destructive");
+            const grouped = items.some(Array.isArray);
+            const next = !grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]]);
+            return Object.assign({}, nodeProps, {items:next});
+        }, 0);
+    }
+    // Profiles: a Local time card after the note (UserProfileNote 14101 is the last card, as for Reviews), only for people
+    // with a time zone. It ticks over on each new minute.
+    function timezoneNote(orig, self, args) {
+        const tree = orig.apply(self, args), userId = args[0] && args[0].userId;
+        if (!React || !RN || typeof userId !== "string" || !timezoneUsers.has(userId)) return tree;
+        return el(React.Fragment, null, tree, el(TimezoneCard, {key:"venus-timezone:" + userId, userId}));
+    }
+    const TIMEZONE_DARK = {badge:{width:40, height:40, borderRadius:20, alignItems:"center", justifyContent:"center", backgroundColor:"#5865f229"},
+        brand:{color:"#94a8ff"}, muted:{color:"#949ba4"}};
+    function useTimezoneStyles() {
+        return useThemed("timezones", c => ({badge:TIMEZONE_DARK.badge, brand:{color:c.TEXT_BRAND || TIMEZONE_DARK.brand.color}, muted:{color:c.TEXT_MUTED}}), TIMEZONE_DARK);
+    }
+    function TimezoneCard(props) {
+        useSettings("timezones");
+        const [, tick] = React.useState(0), zone = timezoneUsers.get(props.userId) || "", live = enabled("timezonesProfile") && !!zone;
+        React.useEffect(() => {
+            if (!live) return undefined;
+            let timer, gone = false;
+            const next = () => { timer = later(() => { if (gone) return; tick(n => n + 1); next(); }, 60050 - Date.now() % 60000, false); };
+            next();
+            return () => { gone = true; if (timer !== undefined && typeof global.clearTimeout === "function") global.clearTimeout(timer); };
+        }, [live]);
+        const ui = reviewUI(), styles = useReviewStyles(ui), s = useTimezoneStyles();
+        if (!live || !ui.Card) return null;
+        const now = Date.now(), offset = tzOffset(zone, now);
+        if (offset === null) return null;
+        const hour12 = tzHour12(), mine = tzMyOffset(now), day = o => Math.floor((now + o * 60000) / 86400000);
+        const time = day(offset) === day(mine) ? tzClockText(zone, now, hour12) : tzDateText(zone, now, hour12);
+        const sub = [tzCity(zone), tzOffsetLabel(offset), tzAhead(offset - mine)].join(" \u00b7 ");
+        const Press = inspectedExport(6462, "PressableOpacity") || RN.Pressable || RN.View, Globe = venusIcon(9393, "GlobeEarthIcon"), Pencil = venusIcon(10023, "PencilIcon");
+        return el(RN.View, {style:[styles.card]},
+            el(ui.Card, {title:tr("Local time")},
+                el(Press, {onPress:() => { haptic("SELECTION"); openTimezonePicker(props.userId); }, accessibilityRole:"button",
+                    accessibilityLabel:tr("Local time") + ", " + time + ", " + sub, accessibilityHint:tr("Change time zone"),
+                    style:{flexDirection:"row", alignItems:"center", gap:12, paddingHorizontal:8, paddingVertical:6}},
+                    el(RN.View, {style:s.badge}, el(Globe, {size:"md", color:s.brand.color})),
+                    el(RN.View, {style:{flex:1, gap:2}},
+                        serverText(time, "heading-lg/bold", "text-strong", {color:"#f2f3f5", fontSize:20, fontWeight:"700"}, {numberOfLines:1}),
+                        serverText(sub, "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:13}, {numberOfLines:2})),
+                    el(Pencil, {size:"sm", color:s.muted.color}))));
+    }
+    // Picking a zone: the one they have and yours first, then every zone, with a search box. Rows show the time there now.
+    const TIMEZONE_ROWS = 40;
+    function TimezonePickSheet(props) {
+        useSettings("timezones");
+        const ui = reviewUI(), [query, setQuery] = React.useState(""), userId = props.userId;
+        const close = () => hideReviewSheet(ui, props.sheetKey), current = timezoneUsers.get(userId) || "", mine = tzMine();
+        const header = ui.Header ? el(ui.Header, {title:current ? tr("Change time zone") : tr("Set time zone"), trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : undefined;
+        const words = searchFold(query).split(/\s+/).filter(Boolean), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
+        const all = tzList(), seen = new Set(), list = [];
+        const add = zone => { if (zone && !seen.has(zone) && list.length < TIMEZONE_ROWS) { seen.add(zone); list.push(zone); } };
+        if (words.length) all.forEach(zone => { const hay = searchFold(zone.replace(/[_/]/g, " ")); if (words.every(w => hay.indexOf(w) >= 0)) add(zone); });
+        else { add(current); add(mine); all.forEach(add); }
+        const now = Date.now(), hour12 = tzHour12();
+        const rows = Row ? list.map(zone => {
+            const offset = tzOffset(zone, now), region = tzRegion(zone);
+            return el(Row, {key:zone, label:tzCity(zone), icon:zone === current ? rowIcon(6473, "CheckmarkLargeIcon") : rowIcon(9393, "GlobeEarthIcon"),
+                subLabel:[region, offset === null ? "" : tzClockText(zone, now, hour12), offset === null ? "" : tzOffsetLabel(offset)].filter(Boolean).join(" \u00b7 "),
+                onPress:() => { haptic("SELECTION"); if (zone !== current) tzSet(userId, zone); close(); }});
+        }) : [];
+        const content = el(RN.View, {style:{paddingHorizontal:12, paddingBottom:24, gap:16}},
+            serverText(tzName(userId), "text-md/semibold", "text-strong", {color:"#f2f3f5", fontSize:16, fontWeight:"600", paddingHorizontal:4}, {key:"who", numberOfLines:1}),
+            ui.TextInput ? el(ui.TextInput, {key:"search", value:query, onChange:text => setQuery(String(text || "")), placeholder:tr("Search time zones"), autoCorrect:false}) : null,
+            rows.length ? el(Group, {key:"list"}, rows) :
+                el(RN.View, {key:"none", style:{padding:24, alignItems:"center"}}, serverText(tr("No time zones found"), "text-md/medium", "text-muted", {color:"#949ba4", fontSize:16})),
+            current && Row ? el(Group, {key:"remove"}, el(Row, {label:tr("Remove time zone"), icon:rowIcon(5148, "TrashIcon"), variant:"danger",
+                onPress:() => { haptic("IMPACT_LIGHT"); tzSet(userId, null); close(); }})) : null);
+        return serverEditScroll(ui, header, content);
+    }
+    function openTimezonePicker(userId) {
+        if (!enabled("timezones") || !React || !RN || !/^\d{17,20}$/.test(String(userId))) return;
+        const ui = reviewUI();
+        if (!ui.ActionSheet || typeof ui.showSheet !== "function") return;
+        const key = "VenusTimezone:" + userId;
+        try { ui.showSheet({key, content:el(TimezonePickSheet, {userId:String(userId), sheetKey:key}), stackingBehavior:"stack"}); } catch (_) {}
+    }
+    // The page's preview: a DM with Sam, whose time zone is Tokyo (New York if yours is Tokyo), drawn the way chat will draw it.
+    function TimezonesPreview(props) {
+        useSettings("timezones");
+        const s = useChatPreviewStyles(), k = usePreviewChrome(), on = !!props.on, hour12 = tzHour12();
+        const zone = tzMine() === "Asia/Tokyo" ? "America/New_York" : "Asia/Tokyo";
+        const at = minute => { const d = new Date(); d.setHours(16, minute, 0, 0); return d.getTime(); };
+        const theirs = ms => {
+            const offset = tzOffset(zone, ms), text = offset === null ? "" : tzClockText(zone, ms, hour12);
+            return text ? " (" + (settings.timezonesOffset ? text + " " + tzOffsetLabel(offset) : text) + ")" : "";
+        };
+        const chat = on && settings.timezonesChat, own = chat && settings.timezonesDmOwn;
+        const row = (key, who, color, time, ms, show, text) => previewMessage(s, key, who, color, time + (show ? theirs(ms) : ""), el(RN.Text, {style:s.text}, text));
+        return el(RN.View, {key:"preview"},
+            previewScreen(s, "preview", "Time zones preview", [el(RN.View, {key:"chat"},
+                row("sam", "Sam", "#eb459e", tr("Today at 4:01 PM"), at(1), chat, tr("Are we still playing tonight?")),
+                row("you", tr("You"), "#5865f2", tr("Today at 4:02 PM"), at(2), own, tr("Yes, see you there!")))],
+                {header:previewHeader(k, {title:"Sam", leading:el(venusIcon(8490, "AtIcon"), {size:"sm", color:k.iconMuted.color})}),
+                 footer:previewInput(k, s, {placeholder:tr("Message {channel}", {channel:"@Sam"})})}));
+    }
+    function TimezonesSettings() {
+        useSettings("timezones");
+        const ui = reviewUI();
+        if (!React || !RN) return null;
+        const on = enabled("timezones"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Row = ui.TableRow;
+        const now = Date.now(), hour12 = tzHour12();
+        const people = Array.from(timezoneUsers.keys()).map(id => {
+            let user = null;
+            try { user = userStore && userStore.getUser(id); } catch (_) {}
+            return {id, zone:timezoneUsers.get(id), user, name:tzName(id)};
+        }).sort((a, b) => a.name.localeCompare(b.name));
+        const avatar = user => {
+            let uri = "";
+            try { uri = user && typeof user.getAvatarURL === "function" ? String(user.getAvatarURL(undefined, 64) || "") : ""; } catch (_) {}
+            return uri && RN.Image ? el(RN.Image, {source:{uri}, style:{width:24, height:24, borderRadius:12}}) : rowIcon(11671, "UserIcon");
+        };
+        const rows = Row ? people.map(p => el(Row, {key:p.id, label:p.name, icon:avatar(p.user), arrow:true, disabled:!on,
+            subLabel:[tzCity(p.zone), tzOffset(p.zone, now) === null ? "" : tzClockText(p.zone, now, hour12)].filter(Boolean).join(" \u00b7 "),
+            onPress:() => openTimezonePicker(p.id)})) : [];
+        const groups = [
+            !on ? offCard("status", venusIcon(9393, "GlobeEarthIcon"), "timezones") : null,
+            el(TimezonesPreview, {key:"preview", on}),
+            el(Group, {key:"where", title:tr("Where it shows")},
+                switchRow(Switch, "timezonesChat", "In chat", "Their time next to the time on each of their messages.", rowIcon(8471, "ChatIcon")),
+                switchRow(Switch, "timezonesDmOwn", "Your messages in DMs", "In a DM with someone who has a time zone, your messages show their time too.", rowIcon(8490, "AtIcon")),
+                switchRow(Switch, "timezonesProfile", "On profiles", "A Local time card with their time right now.", rowIcon(11671, "UserIcon"))),
+            radioGroup(ui, "clock", "Clock", "timezonesClock", on, [["discord", "Like Discord", "Follows Discord's 12 or 24-hour setting.", rowIcon(5150, "ClockIcon")],
+                ["12", "12-hour", undefined, rowIcon(5150, "ClockIcon")], ["24", "24-hour", undefined, rowIcon(5150, "ClockIcon")]]),
+            el(Group, {key:"offset"}, switchRow(Switch, "timezonesOffset", "Show the UTC offset", "Adds the offset after their time, like GMT+1.", rowIcon(9393, "GlobeEarthIcon"))),
+            rows.length ? el(Group, {key:"people", title:tr("People")}, rows) :
+                el(RN.View, {key:"people", style:{paddingHorizontal:16}}, serverText(tr("No one has a time zone yet."), "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:14})),
+            footnote("note", "Set someone's time zone from the \u22ef menu on their profile. Times are worked out on this phone, daylight saving included, and nothing is sent anywhere.")];
+        return settingsBody(ui, groups);
+    }
     // Show timeout duration (#125, after ShowTimeoutDuration): Discord marks a timed-out person with a small clock that
     // says nothing about how long. Their member record (GuildMemberStore 2128) keeps communicationDisabledUntil, so their
     // messages get the same native tag Discord draws for BOT and Venus draws for staff: "Timed out · 2h 14m", with the
@@ -23573,7 +23917,7 @@
             case 1266: if (features.pastelize) pastelHash = typeof exports === "function" ? exports : exports.default; return exports;
             case 2128: if (features.pastelize) guildMembers = exports.default; if (features.timeoutDuration && exports && exports.default) timeoutTag.members = exports.default; return exports;
             case 8013:
-                if ((features.pastelize || features.noDelete || features.translate || features.messageHighlight || features.bulkDelete || features.staffTag || features.timeoutDuration || features.voiceDownload || features.localEdit) && exports.default && exports.default.prototype)
+                if ((features.pastelize || features.noDelete || features.translate || features.messageHighlight || features.bulkDelete || features.staffTag || features.timeoutDuration || features.voiceDownload || features.localEdit || features.timezones) && exports.default && exports.default.prototype)
                     hookExport(exports.default.prototype, "generate", messageRow);
                 return exports;
             case 5207: if (features.platformIndicators || features.userNotif) { presenceStore = exports.default; if (features.userNotif) userNotifSeedStatuses(); } return exports;
@@ -23633,7 +23977,9 @@
                 // (GuildRolesAndChannelsRow reads it by name); hook both.
                 exports = hookComponent(exports, hiddenInfo);
                 return hookExport(exports, "ChannelInfo", hiddenInfo);
-            case 14101: return features.reviewDB ? hookComponent(exports, reviewNote) : exports;
+            case 14101:
+                if (features.timezones) exports = hookComponent(exports, timezoneNote);
+                return features.reviewDB ? hookComponent(exports, reviewNote) : exports;
             case 15048: return features.reviewDB ? hookExport(exports, "ContextMenuPopout", reviewMenu) : exports;
             case 14995: return features.reviewDB ? hookComponent(exports, reviewGuild) : exports;
             case 7098: return features.systemEmoji && exports && exports.default ? replaceValue(exports, "default", propsComponent(exports.default, systemEmojiProps)) : exports;
@@ -23672,6 +24018,7 @@
             case 10780: return features.viewRaw ? hookComponent(exports, viewRawPostMenu) : exports;
             case 14015:
                 if (features.noDelete) exports = hookComponent(exports, rulesProfileMenu);
+                if (features.timezones) exports = hookComponent(exports, timezoneProfileMenu);
                 return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
             case 7158: return features.viewRaw ? hookComponent(exports, viewRawRolesCard) : exports;
             case 7167: return features.viewRaw ? hookExport(exports, "showSimpleActionSheet", viewRawSimpleSheet) : exports;
@@ -23683,7 +24030,7 @@
             case 14755: return features.fakeDeafen && exports && exports.default ? fakeDeafAttach(exports) : exports;
             case 18341: return features.fakeDeafen ? hookComponent(exports, fakeDeafSwitch, "DeafenSwitch") : exports;
             case 1392:
-                if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments || features.quietReplies || features.silentEdit || features.silentDelete || features.localEdit))
+                if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments || features.quietReplies || features.silentEdit || features.silentDelete || features.localEdit || features.timezones))
                     userStore = exports.default;
                 if (features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels) restoreDeleted();
                 return exports;

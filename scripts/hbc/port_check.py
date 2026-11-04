@@ -515,6 +515,8 @@ BOOTSTRAP_MODULES = [
     (12003, 'design/components/Icon/native/redesign/generated/FileIcon.tsx', ['FileIcon'], 'FileIcon (View raw data)'),
     (8488, 'design/components/Icon/native/redesign/generated/ForumIcon.tsx', ['ForumIcon'], 'ForumIcon (View raw data)'),
     (13951, 'design/components/Icon/native/redesign/generated/ShieldLockIcon.tsx', ['ShieldLockIcon'], 'ShieldLockIcon (View raw data)'),
+    (2044, 'modules/user_settings/UserSettings.tsx', ['TimestampHourCycle'], 'UserSettings (Time zones: 12 or 24-hour like Discord)'),
+    (15315, None, ['timezones'], 'Intl time zone list (Time zones picker)'),
 ]
 
 
