@@ -868,6 +868,27 @@ def build():
     run("java", "-Xmx384m", "-cp", TOOLS / "r8.jar", "com.android.tools.r8.D8",
         "--release", "--min-api", "26", "--lib", TOOLS / "android.jar",
         "--classpath", stubs, "--output", compress_dex, compress_classes)
+    # Account switcher's notifications from other accounts while Discord is open: the same Java-only rules again.
+    accounts_classes = BUILD / "accounts-classes.jar"
+    run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        *sorted((ROOT / "extensions/accounts/src/main/kotlin").rglob("*.kt")), "-d", accounts_classes)
+    with zipfile.ZipFile(accounts_classes) as native:
+        for name in native.namelist():
+            if not name.endswith(".class"):
+                continue
+            content = native.read(name)
+            for unsafe in (b"kotlin/text/", b"kotlin/collections/", b"kotlin/Result", b"kotlin/Unit", b"kotlin/io/", b"kotlin/ranges/",
+                           b"kotlin/jvm/functions/"):
+                if unsafe in content:
+                    raise SystemExit(f"Unsafe host Kotlin helper in {name}: {unsafe.decode()}; use Java APIs")
+    accounts_dex = BUILD / "accounts-dex"
+    accounts_dex.mkdir(exist_ok=True)
+    for stale in accounts_dex.glob("classes*.dex"):
+        stale.unlink()
+    run("java", "-Xmx384m", "-cp", TOOLS / "r8.jar", "com.android.tools.r8.D8",
+        "--release", "--min-api", "26", "--lib", TOOLS / "android.jar",
+        "--classpath", stubs, "--output", accounts_dex, accounts_classes)
     check_languages()
     classes = BUILD / "classes.jar"
     sources = sorted((ROOT / "patches/src/main/kotlin").rglob("*.kt"))
@@ -926,6 +947,7 @@ def build():
         add("extensions/media.mpe", (media_dex / "classes.dex").read_bytes())
         add("extensions/diag.mpe", (diag_dex / "classes.dex").read_bytes())
         add("extensions/compress.mpe", (compress_dex / "classes.dex").read_bytes())
+        add("extensions/accounts.mpe", (accounts_dex / "classes.dex").read_bytes())
         for path in sorted(dex.glob("classes*.dex")):
             add(path.name, path.read_bytes())
     run("java", "-Xmx256m", "-cp", f"{bundle}:{TOOLS / 'morphe.jar'}:{TOOLS / 'gson.jar'}",

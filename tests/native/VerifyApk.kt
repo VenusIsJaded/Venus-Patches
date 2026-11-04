@@ -246,7 +246,7 @@ fun main(args: Array<String>) {
     ZipFile(apk).use { zip -> checkPackaging(zip, some) }
     checkManifest(apk)
     // Every Venus extension the .mpp carries made it into the APK's DEX.
-    for (pkg in listOf("audio", "chat", "diag", "emoji", "extension", "font", "i18n", "media", "monet"))
+    for (pkg in listOf("accounts", "audio", "chat", "diag", "emoji", "extension", "font", "i18n", "media", "monet"))
         check(allClasses.keys.any { it.startsWith("Lapp/venus/$pkg/") }) { "No app.venus.$pkg classes in the APK" }
     if ("signed" in args.drop(1)) {
         val verification = ApkVerifier.Builder(apk).setMinCheckedPlatformVersion(26).build().verify()

@@ -943,9 +943,75 @@ val translateMessages = bundledPlugin("translate", "Translate messages",
 val userActivityNotifications = bundledPlugin("userNotif", "User activity notifications",
     "Shows a notice when chosen friends or users change status, start typing or send a message. Based on UserNotif by cywrx and coder.gg.")
 
+internal const val ACCOUNT_NOTIFICATIONS = "Lapp/venus/accounts/AccountNotifications;"
+private const val NOTIFICATION_CLIENT = "Lcom/discord/notifications/client/NotificationClient;"
+private const val NOTIFICATION_DATA = "Lcom/discord/notifications/api/NotificationData;"
+
+/**
+ * Notifications from every account while Discord is open (#152). showNotification asks shouldDisplayNotification() (false
+ * while Discord is in front) and drops the push unless it's a call ring, since the signed-in account shows its own in-app
+ * banners. Saved accounts you aren't on have no connection, so their pushes vanished. Right before that branch Venus asks
+ * [app.venus.accounts.AccountNotifications.showWhileOpen] with the push's receiving account: true for another saved account,
+ * and the push is shown as in the background, with Discord's own account label. The signed-in account is unchanged.
+ */
+internal fun otherAccountsWhileOpen(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val code = method.implementation?.instructions?.toList() ?: throw PatchException("showNotification has no code")
+    fun ref(i: Int) = (code.getOrNull(i) as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString()
+    val read = code.indices.firstOrNull { ref(it) == "$NOTIFICATION_CLIENT->shouldDisplayNotification:Lkotlin/jvm/functions/Function0;" }
+        ?: throw PatchException("showNotification no longer asks shouldDisplayNotification")
+    val branch = read + 6
+    val expected = listOf(com.android.tools.smali.dexlib2.Opcode.IGET_OBJECT, com.android.tools.smali.dexlib2.Opcode.INVOKE_INTERFACE,
+        com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT_OBJECT, com.android.tools.smali.dexlib2.Opcode.CHECK_CAST,
+        com.android.tools.smali.dexlib2.Opcode.INVOKE_VIRTUAL, com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT,
+        com.android.tools.smali.dexlib2.Opcode.IF_NEZ, com.android.tools.smali.dexlib2.Opcode.INVOKE_VIRTUAL)
+    if (code.subList(read, minOf(code.size, read + 8)).map { it.opcode } != expected ||
+        ref(read + 4) != "Ljava/lang/Boolean;->booleanValue()Z" || ref(read + 7) != "$NOTIFICATION_DATA->getType()Ljava/lang/String;")
+        throw PatchException("showNotification's in-front check changed")
+    val flag = (code[branch] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA
+    val data = (code[read + 7] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC
+    // The Context: the register handed to the renderer's initIconUrlUtils(Context) further on, never reassigned in between.
+    val init = code.indices.firstOrNull { ref(it)?.endsWith("->initIconUrlUtils(Landroid/content/Context;)V") == true }
+        ?: throw PatchException("showNotification no longer prepares the renderer")
+    val context = (code[init] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerD
+    if (code.subList(read, init).any { (it as? com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction)?.registerA == context &&
+            it.opcode.setsRegister() } || maxOf(flag, data, context) > 15)
+        throw PatchException("showNotification's registers changed")
+    requireUnpatched(method, "venus-")
+    method.addInstructions(branch, """
+        if-nez v$flag, :venus_in_front
+        invoke-virtual {v$data}, $NOTIFICATION_DATA->getReceivingUserId-wUX8bhU()Lcom/discord/primitives/UserId;
+        move-result-object v$flag
+        invoke-static {v$context, v$flag}, $ACCOUNT_NOTIFICATIONS->showWhileOpen(Landroid/content/Context;Ljava/lang/Object;)Z
+        move-result v$flag
+        :venus_in_front
+        nop
+    """)
+}
+
+/** Hidden helper of Account switcher: shows your other accounts' notifications while Discord is open. */
+private val otherAccountNotifications = bytecodePatch {
+    dependsOn(discordBundleGuard)
+    extendWith("extensions/accounts.mpe")
+    execute {
+        otherAccountsWhileOpen(Fingerprint(
+            definingClass = NOTIFICATION_CLIENT,
+            name = "showNotification",
+            returnType = "V",
+            parameters = listOf("Landroid/content/Context;", NOTIFICATION_DATA, "Ljava/util/Map;", "Z", "Z")
+        ).method)
+    }
+}
+
 @Suppress("unused")
-val accountSwitcher = bundledPlugin("accountSwitcher", "Account switcher",
-    "Switch between multiple Discord accounts from the You tab, your profile bar or Settings.")
+val accountSwitcher = bytecodePatch(
+    name = "Account switcher",
+    description = "Switch between multiple Discord accounts from the You tab, your profile bar or Settings, with notifications from all of them."
+) {
+    compatibleWith(discord)
+    section(PLUGINS)
+    dependsOn(venusSettings, otherAccountNotifications)
+    execute { additionalSelections += "accountSwitcher" }
+}
 
 @Suppress("unused")
 val unlockAppIcons = bundledPlugin("appIcons", "Unlock app icons",
