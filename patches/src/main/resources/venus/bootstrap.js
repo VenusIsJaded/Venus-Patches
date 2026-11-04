@@ -3661,6 +3661,13 @@
         if (Array.isArray(items) && items.length) raw.sticker_items = items.filter(Boolean).map(item =>
             ({id:item.id, name:item.name, format_type:item.format_type != null ? item.format_type : item.formatType}));
         if (Array.isArray(message.stickers) && message.stickers.length) raw.stickers = message.stickers;
+        // Components V2 messages (#145) keep all their text, images and buttons in components (flags carries
+        // IS_COMPONENTS_V2), so without them a kept one came back empty after a restart. createMessageRecord copies the
+        // saved list onto the record as it is, so it returns in the same shape the live record had.
+        // A component list that can't be saved as JSON still keeps the rest of the message.
+        if (Array.isArray(message.components) && message.components.length) {
+            try { return JSON.parse(JSON.stringify(Object.assign({}, raw, {components:message.components}))); } catch (_) {}
+        }
         return JSON.parse(JSON.stringify(raw));
     }
     // A new color or brightness for kept messages reaches chat at once: Discord redraws a row when its message
