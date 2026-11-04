@@ -518,6 +518,8 @@ BOOTSTRAP_MODULES = [
     (13951, 'design/components/Icon/native/redesign/generated/ShieldLockIcon.tsx', ['ShieldLockIcon'], 'ShieldLockIcon (View raw data)'),
     (2044, 'modules/user_settings/UserSettings.tsx', ['TimestampHourCycle'], 'UserSettings (Time zones: 12 or 24-hour like Discord)'),
     (15315, None, ['timezones'], 'Intl time zone list (Time zones picker)'),
+    (17434, 'modules/guilds_bar/native/GuildsBarFolderMenuItems.tsx', ['getGuildFolderMenuItems'], 'GuildsBarFolderMenuItems (Venus rules: folder menu row)'),
+    (18745, 'design/components/Icon/native/redesign/generated/ListBulletsIcon.tsx', ['ListBulletsIcon'], 'ListBulletsIcon (Venus rules)'),
 ]
 
 
