@@ -58,6 +58,7 @@
     if (features.silentLeave) selectModules([2068, 7290]);
     if (features.silentEdit || features.silentDelete) selectModules([584, 1392, 5532, 7445]);
     if (features.localEdit) selectModules([584, 1392, 5532, 8013, 9978]);
+    if (features.localBookmarks) selectModules([584, 9980, 13587]);
     if (features.customIdle) selectModules([1087]);
     if (features.pauseInvites) selectModules([17433, 2090, 4845, 1087]);
     if (features.fastDeleteChannels) selectModules([10596, 5400, 1128, 2068, 4845, 1087]);
@@ -98,7 +99,7 @@
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, accountSwitcherNotifyOpen:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timeoutDuration:false, dndBanners:false, voiceDownload:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timeoutDuration:false, dndBanners:false, voiceDownload:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
         hypeSquad:false, customIdle:false, customIdleMinutes:10, pauseInvites:false, fastDeleteChannels:false, fastDeleteChannelsConfirm:true, fastDeleteChannelsMenu:true, mutualGroupDMs:false, platformSpoof:false, platformSpoofDevice:"desktop" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
@@ -116,7 +117,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, accountSwitcherNotifyOpen: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timeoutDuration: false, dndBanners: false, voiceDownload: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timeoutDuration: false, dndBanners: false, voiceDownload: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
             hypeSquad: false, customIdle: false, customIdleMinutes: 10, pauseInvites: false, fastDeleteChannels: false, fastDeleteChannelsConfirm: true, fastDeleteChannelsMenu: true, mutualGroupDMs: false, platformSpoof: false, platformSpoofDevice: "desktop"
         }));
     }
@@ -720,6 +721,7 @@
         if (features.hideBlocked && featureFor(key) === "hideBlocked") hideBlockedChanged();
         if (features.staffTag && featureFor(key) === "staffTag") later(staffTagChanged, 0);
         if (features.bulkDelete && key === "bulkDelete" && !value) bulkDeleteCancel();
+        if (features.localBookmarks && key === "localBookmarks") { if (value) bookmarksRestore(); bookmarksChanged(); }
         if (features.bulkDelete && (key === "bulkDeleteIncludeCached" || key === "noDelete") && bulkDelete.active) { bulkDeletePruneKept(); bulkDeleteRedrawAll(); }
         if (features.experiments && key === "experiments") { if (value) experimentsEnable(); else if (experiments.unlocked && !backup.restoring) later(experimentsAskReopen, 0); }
         if (features.quests || features.badges || features.userNotif || features.removedAlerts) backgroundSync();
@@ -829,6 +831,7 @@
             if (features.customThemes && enabled("customThemes")) customThemesRestore();
             if (features.materialYou && enabled("materialYou")) { myStart(); customThemesApply(); }
             if (features.iconPacks && enabled("iconPacks")) iconPacksRestore();
+            if (features.localBookmarks) bookmarksRestore();
             if (features.hideBlocked && enabled("hideBlocked")) hideBlockedChanged();
             if (features.experiments && enabled("experiments")) experimentsEnable();
             if (features.quests || features.badges || features.userNotif || features.removedAlerts) backgroundSync();
@@ -1244,7 +1247,7 @@
         hiddenChannels:[8495, "LockIcon"], systemFont:[16730, "LettersIcon"], systemEmoji:[13827, "ChatSmileIcon"],
         youBarSettings:[7368, "SettingsIcon"], quests:[13929, "QuestsIcon"],
         badges:[9211, "TrophyIcon"], userNotif:[9045, "BellIcon"], accountSwitcher:[8489, "GroupIcon"], appIcons:[8506, "AppsIcon"],
-        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"],
+        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"], localBookmarks:[13592, "BookmarkIcon"],
         hypeSquad:[18747, "HomeIcon"], customIdle:[14205, "UserClockIcon"], pauseInvites:[8676, "PauseIcon"], fastDeleteChannels:[18679, "ChannelListIcon"], mutualGroupDMs:[8489, "GroupIcon"], platformSpoof:[5133, "UserPlatformIcon"]};
     const venusIcons = new Map();
     function venusIcon(id, name, fallback) {
@@ -1299,6 +1302,7 @@
         silentEdit:["Silent edit", "Edited", "(edited)", "Edit message", "No edit mark"],
         silentDelete:["Silent delete", "Anti log", "Message logger", "Delete without logs"],
         localEdit:["Local edit", "Edit locally", "Fake message", "Edit other people's messages"],
+        localBookmarks:["Bookmark Message", "For Later", "Saved messages", "Unlimited bookmarks"],
         hypeSquad:["HypeSquad", "House", "Bravery", "Brilliance", "Balance", "Badge"],
         customIdle:["Custom idle", "Idle", "AFK", "Away", "Idle timeout", "Status"],
         pauseInvites:["Pause invites", "Invites", "Lock invites", "Raid", "Security"],
@@ -1815,6 +1819,7 @@
         withOptions("messages", "silentEdit", "VENUS_SILENTEDIT", "Edit without the (edited) mark", "Only works when your message is the latest in the chat. Others see a new message, not an edit.", "Silent edit", SilentEditSettings);
         toggle("messages", "silentDelete", "Delete without a trace", "Blanks your message before deleting it, so message loggers have nothing to keep.");
         withOptions("messages", "localEdit", "VENUS_LOCALEDIT", "Edit messages locally", "Change how any message reads on this phone. Only you see it.", "Edit locally", LocalEditSettings);
+        withOptions("messages", "localBookmarks", "VENUS_LOCALBOOKMARKS", "Local bookmarks", "Bookmark as many messages as you like. They're kept on this phone instead of your account.", "Local bookmarks", LocalBookmarksSettings);
         withOptions("people", "reviewDB", "VENUS_REVIEWDB", "User and server reviews", "Read and write ReviewDB reviews on profiles and servers.", "Reviews", ReviewSettings);
         withOptions("people", "userNotif", "VENUS_USERNOTIF", "User activity notifications", "Get notified when chosen people change status, type or message.", "Activity notifications", UserNotifSettings);
         // The two logs open from their feature's page, one level below it, like Discord's own nested settings.
@@ -2542,7 +2547,7 @@
             settings[key] !== defaults[key]).length;
         return {on:keys.filter(key => settings[key]).length, total:keys.length, changed, people:features.userNotif ? userNotif.ids.size : 0,
             themes:features.customThemes ? customThemes.list.length : 0, servers:features.serverEdit ? serverEdits.size : 0,
-            iconPacks:features.iconPacks ? (iconPacks.active ? 1 : 0) + iconPacks.custom.length : 0,
+            iconPacks:features.iconPacks ? (iconPacks.active ? 1 : 0) + iconPacks.custom.length : 0, bookmarks:features.localBookmarks ? bookmarks.list.size : 0,
             language:settings.language !== "auto", hidden:hiddenFeatureKeys().length};
     }
     function backupIsDefault() {
@@ -2558,6 +2563,7 @@
         // Pictures from this phone stay on it: a backup keeps the names and the icons that are links.
         if (features.serverEdit && serverEdits.size) { const servers = serverEditData(true); if (Object.keys(servers).length) out.servers = servers; }
         if (features.localEdit && localEdits.size) out.localEdits = localEditData();
+        if (features.localBookmarks && bookmarks.list.size) return bookmarkBackupText(out);
         return JSON.stringify(out, null, 1);
     }
     // A backup, or a plain venus-patches.json settings file, read back. Throws a message you can show when it isn't one.
@@ -2598,6 +2604,7 @@
             const act = typeof data.iconPacks.active === "string" ? normalizeIconPackId(data.iconPacks.active) : "";
             packs = {custom, active:act};
         }
+        const marks = wrapped && Array.isArray(data.bookmarks) ? data.bookmarks.slice(0, BOOKMARKS_MAX).map(bookmarkClean).filter(Boolean) : null;
         const created = wrapped && typeof data.created === "string" ? Date.parse(data.created) : NaN;
         const servers = wrapped && data.servers ? serverEditClean(data.servers, true) : null;
         let edited = null;
@@ -2608,7 +2615,7 @@
                 if (/^\d{17,20}:\d{17,20}$/.test(key) && typeof text === "string" && text.length <= LOCAL_EDIT_TEXT) edited.set(key, text);
             });
         }
-        return {values, people, themes, iconPacks:packs, servers, localEdits:edited, version:wrapped && typeof data.version === "string" ? data.version.slice(0, 24) : "", created:Number.isFinite(created) ? created : 0};
+        return {values, people, themes, iconPacks:packs, servers, localEdits:edited, bookmarks:marks, version:wrapped && typeof data.version === "string" ? data.version.slice(0, 24) : "", created:Number.isFinite(created) ? created : 0};
     }
     // Puts a backup in place: every setting it has, the rest back to how Venus starts. Switches go through setSetting,
     // so everything they start or stop (Quests, themes, kept messages) happens as if you'd flipped them yourself.
@@ -2644,6 +2651,7 @@
                 save(); notify("localEdit");
                 before.concat(Array.from(localEdits.keys())).forEach(key => { const at = key.indexOf(":"); localEditRedraw(key.slice(0, at), key.slice(at + 1)); });
             }
+            if (features.localBookmarks && parsed.bookmarks) bookmarksReplace(parsed.bookmarks);
             if (features.iconPacks && parsed.iconPacks) {
                 iconPacks.loaded = true; iconPacks.custom = parsed.iconPacks.custom; iconPacks.active = parsed.iconPacks.active; iconPacks.error = "";
                 iconPacksPersist(); iconPacksApply(); notify("iconPacks");
@@ -2760,6 +2768,7 @@
             what.themes ? chip("themes", 16412, "EyeDropperIcon", pl(what.themes, "{n} theme", "{n} themes")) : null,
             what.servers ? chip("servers", 10023, "PencilIcon", pl(what.servers, "{n} server edited", "{n} servers edited")) : null,
             what.iconPacks ? chip("iconPacks", 11449, "ImageSparkleIcon", pl(what.iconPacks, "{n} icon pack", "{n} icon packs")) : null,
+            what.bookmarks ? chip("bookmarks", 13592, "BookmarkIcon", pl(what.bookmarks, "{n} bookmark", "{n} bookmarks")) : null,
             what.hidden ? chip("hidden", 6927, "EyeSlashIcon", pl(what.hidden, "{n} feature hidden", "{n} features hidden")) : null,
             what.language ? chip("language", 9415, "LanguageIcon", languageLabel(settings.language)) : null];
         const backupRow = (key, label, sub, id, name, onPress, disabled) => Row ? el(Row, {key, label:tr(label), subLabel:tr(sub), icon:rowIcon(id, name), arrow:true,
@@ -21067,6 +21076,319 @@
             footnote("note", "Only you see these changes, and only on this phone. Nothing is sent to Discord.")];
         return settingsBody(ui, groups);
     }
+    // Local bookmarks (#155): Bookmark Message saves on this phone instead of your account, so Discord's limit (2, or 200
+    // with Nitro) never applies. Discord's own long-press row, toasts and For Later list stay: SavedMessagesStore (9980)
+    // answers with the local bookmarks merged into what your account has, and SavedMessagesActions (13587) keeps new
+    // bookmarks here instead of sending them. Reminders still go to Discord. Each account has its own, in their own file
+    // (never the settings file), and Backup and restore carries them.
+    const BOOKMARKS_FILE = "venus-bookmarks.json", BOOKMARKS_MAX = 10000, BOOKMARKS_FILL = 25;
+    // Only what a real edit or a link preview changes: Translate and Edit locally send MESSAGE_UPDATEs with other text.
+    const BOOKMARK_UPDATE_KEYS = ["content", "embeds", "attachments", "edited_timestamp", "flags", "sticker_items", "poll"];
+    const bookmarks = {list:new Map(), ids:new Set(), index:null, version:0, changedAt:0, loaded:false, loading:false, replaced:false,
+        dirty:false, saving:false, timer:null, filling:false, store:null, comparator:undefined, attached:false,
+        serverSaved:() => null};
+    const bookmarkSnowflake = id => typeof id === "string" && /^\d{17,20}$/.test(id);
+    const bookmarkKey = entry => entry.u + ":" + entry.c + "-" + entry.m;
+    function bookmarksOn() { return enabled("localBookmarks"); }
+    function bookmarkUser() {
+        let me = null;
+        try { me = currentUser(); } catch (_) {}
+        if (!me) { const store = inspectedExport(1392, "default"); try { me = store && store.getCurrentUser(); } catch (_) {} }
+        return me && me.id ? String(me.id) : "";
+    }
+    // The signed-in account's bookmarks, newest first, rebuilt only after a change or an account switch.
+    function bookmarkIndex() {
+        const user = bookmarkUser(), idx = bookmarks.index;
+        if (idx && idx.user === user && idx.version === bookmarks.version) return idx;
+        const byKey = new Map(), byId = new Map(), sorted = [];
+        if (user) bookmarks.list.forEach(entry => {
+            if (entry.u !== user) return;
+            byKey.set(entry.c + "-" + entry.m, entry); byId.set(entry.m, entry); sorted.push(entry);
+        });
+        sorted.sort((a, b) => b.t - a.t);
+        return bookmarks.index = {user, version:bookmarks.version, byKey, byId, sorted};
+    }
+    function bookmarksChanged() {
+        bookmarks.version++; bookmarks.index = null;
+        bookmarks.changedAt = Math.max(Date.now(), bookmarks.changedAt + 1);
+        const store = bookmarks.store;
+        if (store && typeof store.emitChange === "function") try { store.emitChange(); } catch (_) {}
+        notify("localBookmarks");
+    }
+    function bookmarksIdsRebuild() { bookmarks.ids = new Set(Array.from(bookmarks.list.values(), entry => entry.m)); }
+    // One entry from the file or a backup, checked: a hand-edited file can't put anything odd into Discord's list.
+    function bookmarkClean(item) {
+        if (!item || typeof item !== "object" || Array.isArray(item) || !bookmarkSnowflake(item.u) || !bookmarkSnowflake(item.c) || !bookmarkSnowflake(item.m)) return null;
+        const raw = item.raw && typeof item.raw === "object" && !Array.isArray(item.raw) && item.raw.id === item.m ? item.raw : null;
+        return {u:item.u, c:item.c, m:item.m, g:bookmarkSnowflake(item.g) ? item.g : "", a:bookmarkSnowflake(item.a) ? item.a : "",
+            t:Number.isFinite(item.t) && item.t > 0 ? Math.min(item.t, Date.now()) : Date.now(), raw};
+    }
+    function bookmarksData(level) {
+        const out = [];
+        bookmarks.list.forEach(entry => {
+            const item = {u:entry.u, c:entry.c, m:entry.m, t:entry.t};
+            if (entry.g) item.g = entry.g;
+            if (entry.a) item.a = entry.a;
+            if (entry.raw && level !== 2) item.raw = level === 1 ? Object.assign({}, entry.raw, {embeds:[]}) : entry.raw;
+            out.push(item);
+        });
+        return out;
+    }
+    // Backups stay under the size Restore accepts: link previews go first, then the saved copies (Venus fetches the
+    // messages again when For Later opens), never the bookmarks themselves.
+    function bookmarkBackupText(out) {
+        let text = "";
+        for (let level = 0; level < 3; level++) {
+            out.bookmarks = bookmarksData(level);
+            text = JSON.stringify(out, null, 1);
+            if (text.length <= BACKUP_MAX_BYTES) break;
+        }
+        return text;
+    }
+    // What Discord's For Later list reads, in the same shape as a saved message from your account.
+    function bookmarkSaved(entry) {
+        if (entry.saved && entry.saved.raw === entry.raw) return entry.saved.value;
+        let message = null;
+        if (entry.raw) {
+            const create = inspectedExport(5534, "createMessageRecord");
+            try { message = typeof create === "function" ? create(entry.raw) : null; } catch (_) { message = null; }
+        }
+        const value = {saveData:{channelId:entry.c, messageId:entry.m, savedAt:new Date(entry.t), guildId:entry.g || undefined,
+            authorId:entry.a || undefined, notes:undefined, dueAt:undefined}, message};
+        entry.saved = {raw:entry.raw, value};
+        return value;
+    }
+    function bookmarkSort(list) {
+        if (bookmarks.comparator === undefined) bookmarks.comparator = inspectedExport(9980, "getComparator") || null;
+        const key = bookmarks.comparator;
+        const rank = item => {
+            try { return typeof key === "function" ? key(item.saveData) : 1e13 - item.saveData.savedAt.getTime(); } catch (_) { return 0; }
+        };
+        return list.map(item => [rank(item), item]).sort((a, b) => a[0] - b[0]).map(pair => pair[1]);
+    }
+    function bookmarkMerge(list) {
+        if (!bookmarksOn()) return list;
+        const idx = bookmarkIndex();
+        if (!idx.sorted.length) return list;
+        const base = Array.isArray(list) ? list.filter(item => !(item && item.saveData && idx.byKey.has(item.saveData.channelId + "-" + item.saveData.messageId))) : [];
+        return bookmarkSort(base.concat(idx.sorted.map(bookmarkSaved)));
+    }
+    // Local bookmarks your account doesn't also have, for Discord's counts.
+    function bookmarkExtra() {
+        if (!bookmarksOn()) return 0;
+        let n = 0;
+        bookmarkIndex().sorted.forEach(entry => { if (!bookmarks.serverSaved(entry.c, entry.m)) n++; });
+        return n;
+    }
+    function bookmarkIsMarked(orig, self, args) {
+        if (bookmarksOn() && args[0] != null && bookmarkIndex().byId.has(String(args[0]))) return true;
+        return orig.apply(self, args);
+    }
+    function bookmarkGetSaved(orig, self, args) {
+        if (bookmarksOn()) { const entry = bookmarkIndex().byKey.get(args[0] + "-" + args[1]); if (entry) return bookmarkSaved(entry); }
+        return orig.apply(self, args);
+    }
+    function bookmarkList(orig, self, args) { return bookmarkMerge(orig.apply(self, args)); }
+    function bookmarkCount(orig, self, args) { const n = orig.apply(self, args); return typeof n === "number" ? n + bookmarkExtra() : n; }
+    // Discord's list redraws when this changes, so a local change (or switching the feature) reaches an open For Later.
+    function bookmarkLastChanged(orig, self, args) { const t = orig.apply(self, args); return Math.max(typeof t === "number" ? t : 0, bookmarks.changedAt); }
+    function bookmarksStoreHook(store) {
+        if (bookmarks.store || !store) return;
+        bookmarks.store = store;
+        const saved = store.getSavedMessage;
+        if (typeof saved === "function") bookmarks.serverSaved = (channelId, messageId) => { try { return saved.call(store, channelId, messageId); } catch (_) { return null; } };
+        hookExport(store, "isMessageBookmarked", bookmarkIsMarked);
+        hookExport(store, "getSavedMessage", bookmarkGetSaved);
+        hookExport(store, "getMessageBookmarks", bookmarkList);
+        hookExport(store, "getSavedMessages", bookmarkList);
+        hookExport(store, "getBookmarkCount", bookmarkCount);
+        hookExport(store, "getSavedMessageCount", bookmarkCount);
+        hookExport(store, "getLastChanged", bookmarkLastChanged);
+    }
+    function bookmarkMessage(channelId, messageId) {
+        const store = msgStore || inspectedExport(5532, "default");
+        try { return store && typeof store.getMessage === "function" ? store.getMessage(channelId, messageId) : null; } catch (_) { return null; }
+    }
+    // A copy of the message, so a bookmark still shows after the chat has scrolled out of Discord's cache or a restart.
+    function bookmarkRaw(message, channelId, messageId) {
+        try { const raw = rawDeleted(message, {id:messageId, channelId}); return raw && raw.id === messageId ? raw : null; } catch (_) { return null; }
+    }
+    function bookmarkAdd(user, channelId, messageId) {
+        const key = user + ":" + channelId + "-" + messageId, old = bookmarks.list.get(key);
+        if (!old && bookmarks.list.size >= BOOKMARKS_MAX) return Promise.reject(new Error("Too many bookmarks"));
+        const message = bookmarkMessage(channelId, messageId), raw = message ? bookmarkRaw(message, channelId, messageId) : old ? old.raw : null;
+        const channels = channelStore || inspectedExport(2068, "default");
+        let guild = "";
+        try { const channel = channels && channels.getChannel(channelId); guild = channel && channel.guild_id ? String(channel.guild_id) : ""; } catch (_) {}
+        const author = message && message.author && message.author.id ? String(message.author.id) : old ? old.a : "";
+        const entry = {u:user, c:channelId, m:messageId, g:bookmarkSnowflake(guild) ? guild : "", a:bookmarkSnowflake(author) ? author : "", t:old ? old.t : Date.now(), raw};
+        bookmarks.list.set(key, entry); bookmarks.ids.add(messageId);
+        bookmarksSave(); bookmarksChanged();
+        if (!raw) later(bookmarksFill, 0);
+        return Promise.resolve(bookmarkSaved(entry));
+    }
+    function bookmarkRemove(channelId, messageId) {
+        const user = bookmarkUser(), key = user + ":" + channelId + "-" + messageId;
+        if (!user || !bookmarks.list.delete(key)) return false;
+        bookmarksIdsRebuild(); bookmarksSave(); bookmarksChanged();
+        return true;
+    }
+    // SavedMessagesActions (13587): a new bookmark stays here; a reminder still goes to Discord, and like Discord turning a
+    // bookmark into a reminder, it then replaces the local bookmark.
+    function bookmarkUpsert(orig, self, args) {
+        const request = args[0], channelId = request && request.channelId, messageId = request && request.messageId;
+        if (!bookmarksOn() || !channelId || !messageId) return orig.apply(self, args);
+        if (request.dueAt != null) {
+            const sent = orig.apply(self, args);
+            Promise.resolve(sent).then(() => bookmarkRemove(String(channelId), String(messageId)), () => {});
+            return sent;
+        }
+        const user = bookmarkUser();
+        return user ? bookmarkAdd(user, String(channelId), String(messageId)) : orig.apply(self, args);
+    }
+    function bookmarkDelete(orig, self, args) {
+        const request = args[0], channelId = request && request.channelId && String(request.channelId), messageId = request && request.messageId && String(request.messageId);
+        if (!bookmarksOn() || !channelId || !messageId || !bookmarkRemove(channelId, messageId)) return orig.apply(self, args);
+        // When your account has it too, it goes there as well, or the next sync would bring it back.
+        return bookmarks.serverSaved(channelId, messageId) ? orig.apply(self, args) : Promise.resolve();
+    }
+    function bookmarkFetch(orig, self, args) {
+        if (bookmarksOn()) later(bookmarksFill, 0);
+        return orig.apply(self, args);
+    }
+    // Bookmarks without a saved copy (restored from a small backup, or bookmarked outside a loaded chat) get the
+    // message again, a few at a time while For Later is open: from Discord's cache, or one request each.
+    function bookmarksFill() {
+        if (bookmarks.filling || !bookmarksOn()) return;
+        const missing = bookmarkIndex().sorted.filter(entry => !entry.raw && !entry.tried).slice(0, BOOKMARKS_FILL);
+        if (!missing.length) return;
+        bookmarks.filling = true;
+        let found = 0;
+        missing.reduce((chain, entry) => chain.then(() => {
+            entry.tried = true;
+            const cached = bookmarkMessage(entry.c, entry.m), raw = cached ? bookmarkRaw(cached, entry.c, entry.m) : null;
+            if (raw) { entry.raw = raw; found++; return null; }
+            return httpCall("get", {url:"/channels/" + entry.c + "/messages", query:{around:entry.m, limit:1}}).then(response => {
+                const list = response && response.body, hit = Array.isArray(list) ? list.find(item => item && item.id === entry.m) : null;
+                if (!hit) return;
+                const copy = Object.assign({}, hit);
+                delete copy.referenced_message;
+                try { entry.raw = JSON.parse(JSON.stringify(copy)); found++; } catch (_) {}
+            }, () => {});
+        }), Promise.resolve()).then(() => {
+            bookmarks.filling = false;
+            if (found) { bookmarksSave(); bookmarksChanged(); }
+        });
+    }
+    function bookmarkUpdate(update) {
+        const id = String(update.id), real = !!update.edited_timestamp || update.content === undefined && Array.isArray(update.embeds);
+        if (!real) return;
+        let touched = false;
+        bookmarks.list.forEach(entry => {
+            if (entry.m !== id || !entry.raw) return;
+            const next = Object.assign({}, entry.raw);
+            BOOKMARK_UPDATE_KEYS.forEach(key => { if (update[key] !== undefined) next[key] = update[key]; });
+            try { entry.raw = JSON.parse(JSON.stringify(next)); touched = true; } catch (_) {}
+        });
+        if (touched) { bookmarksSave(); bookmarksChanged(); }
+    }
+    // Flux interceptor (Dispatcher 584): edits reach saved copies, and an account switch redraws For Later.
+    // Always returns false, so every action goes on to Discord unchanged.
+    function bookmarksIntercept(action) {
+        if (!action || !bookmarks.list.size) return false;
+        const type = action.type;
+        if (type === "MESSAGE_UPDATE") {
+            const update = action.message;
+            if (update && update.id != null && bookmarks.ids.has(String(update.id))) later(() => bookmarkUpdate(update), 0);
+        } else if (type === "POST_CONNECTION_OPEN" || type === "LOGOUT") { bookmarks.index = null; bookmarks.changedAt = Math.max(Date.now(), bookmarks.changedAt + 1); }
+        return false;
+    }
+    function bookmarksInit(dispatcher) {
+        if (bookmarks.attached || !dispatcher || typeof dispatcher.addInterceptor !== "function") return;
+        bookmarks.attached = true;
+        try { dispatcher.addInterceptor(bookmarksIntercept); } catch (_) { bookmarks.attached = false; }
+    }
+    // Read once at startup whenever the feature is patched, even switched off, so a backup always carries them.
+    function bookmarksRestore() {
+        if (bookmarks.loaded || bookmarks.loading || !files) return;
+        let constants;
+        try { constants = typeof files.getConstants === "function" ? files.getConstants() : files; } catch (_) { constants = {}; }
+        const dir = constants && constants.DocumentsDirPath;
+        if (typeof dir !== "string") { bookmarks.loaded = true; return; }
+        const path = dir.replace(/\/$/, "") + "/" + BOOKMARKS_FILE;
+        let text = null;
+        bookmarks.loading = true;
+        Promise.resolve().then(() => files.fileExists(path)).then(exists => exists ? files.readFile(path, "utf8") : null).then(read => {
+            text = read;
+            const parsed = read ? JSON.parse(read) : null;
+            if (!bookmarks.replaced && parsed && Array.isArray(parsed.bookmarks)) parsed.bookmarks.slice(0, BOOKMARKS_MAX).forEach(item => {
+                const entry = bookmarkClean(item);
+                if (entry && !bookmarks.list.has(bookmarkKey(entry))) bookmarks.list.set(bookmarkKey(entry), entry);
+            });
+        }).catch(error => {
+            dlog("W", "bookmarks", "couldn't read saved bookmarks: " + dlogText(error));
+            // Kept aside before anything is written over it, so a damaged file can still be recovered by hand.
+            if (text) Promise.resolve().then(() => files.writeFile("documents", "venus-bookmarks.broken.json", text, "utf8")).catch(() => {});
+        }).then(() => {
+            bookmarks.loading = false; bookmarks.loaded = true;
+            bookmarksIdsRebuild(); bookmarksChanged();
+            if (bookmarks.dirty) bookmarksSave();
+        });
+    }
+    // Written a moment after a change, one write at a time; changes made before the file was read wait for it.
+    function bookmarksSave() {
+        if (!files) return;
+        if (!bookmarks.loaded || bookmarks.saving) { bookmarks.dirty = true; return; }
+        bookmarks.dirty = false;
+        if (bookmarks.timer) return;
+        bookmarks.timer = later(bookmarksWrite, 400) || null;
+    }
+    function bookmarksWrite() {
+        bookmarks.timer = null;
+        if (bookmarks.saving) { bookmarks.dirty = true; return; }
+        let text;
+        try { text = JSON.stringify({version:1, bookmarks:bookmarksData(0)}); } catch (_) { return; }
+        bookmarks.saving = true;
+        Promise.resolve().then(() => files.writeFile("documents", BOOKMARKS_FILE, text, "utf8"))
+            .catch(error => dlog("W", "bookmarks", "couldn't save bookmarks: " + dlogText(error)))
+            .then(() => { bookmarks.saving = false; if (bookmarks.dirty) bookmarksSave(); });
+    }
+    function bookmarksReplace(list) {
+        bookmarks.list.clear();
+        list.forEach(entry => bookmarks.list.set(bookmarkKey(entry), entry));
+        bookmarks.replaced = true; bookmarks.loaded = !bookmarks.loading;
+        bookmarksIdsRebuild(); bookmarksSave(); bookmarksChanged();
+        later(bookmarksFill, 0);
+    }
+    function bookmarksClear() {
+        const user = bookmarkUser();
+        if (!user) return;
+        Array.from(bookmarks.list.keys()).forEach(key => { if (bookmarks.list.get(key).u === user) bookmarks.list.delete(key); });
+        bookmarksIdsRebuild(); bookmarksSave(); bookmarksChanged();
+        haptic("IMPACT_LIGHT");
+        reviewToast(reviewUI(), "Bookmarks removed", venusIcon(5148, "TrashIcon"));
+    }
+    function LocalBookmarksSettings() {
+        useSettings("localBookmarks");
+        const ui = reviewUI();
+        if (!React || !RN) return null;
+        const on = enabled("localBookmarks"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Icon = venusIcon(13592, "BookmarkIcon");
+        const n = bookmarkIndex().sorted.length, open = inspectedExport(13581, "showForLaterModal");
+        const groups = [
+            !on ? offCard("status", Icon, "localBookmarks") :
+                n ? statusCard("status", "Kept on this phone, with no limit. Open them any time from For Later.", {title:pl(n, "{n} bookmark", "{n} bookmarks"), IconComponent:Icon}) :
+                statusCard("status", "Hold any message and tap Bookmark Message. It's saved on this phone instead of your account, with no limit.",
+                    {title:tr("No bookmarks yet"), IconComponent:Icon}),
+            on && n && Row && typeof open === "function" ? el(Group, {key:"open", title:tr("Bookmarks")},
+                el(Row, {key:"open", label:tr("Open bookmarks"), subLabel:tr("Everything you saved, newest first."), icon:rowIcon(13592, "BookmarkIcon"), arrow:true,
+                    onPress:() => { try { open("BOOKMARK"); } catch (_) {} }})) : null,
+            n ? el(Group, {key:"manage", title:tr("Manage")},
+                actionRow(ui, "clear", "Remove all bookmarks", "Only the ones on this phone. Reminders stay.",
+                    () => confirmAction("Remove all bookmarks?", "Every bookmark you kept on this phone goes away. This can't be undone.", "Remove all", bookmarksClear),
+                    !on, true, rowIcon(5148, "TrashIcon"))) : null,
+            footnote("note", "Reminders still sync with your account. Backup and restore includes your bookmarks, so a new phone gets them back.")];
+        return settingsBody(ui, groups);
+    }
     // HypeSquad, Custom idle, Pause invites, Fast delete channels, Mutual group DMs and Platform spoof (issue #129 and the
     // requests that came with it). HypeSquad and Pause invites are plain API calls; Custom idle swaps Discord's idle time
     // for a live value; Fast delete skips the channel delete alert and adds a row to the channel menu; Mutual group DMs adds
@@ -23369,6 +23691,8 @@
                     restoreDeleted();
                 }
                 return exports;
+            case 9980: if (features.localBookmarks && exports && exports.default) bookmarksStoreHook(exports.default); return exports;
+            case 13587: return features.localBookmarks ? hookExport(hookExport(hookExport(exports, "upsertSavedMessage", bookmarkUpsert), "deleteSavedMessage", bookmarkDelete), "fetchBookmarks", bookmarkFetch) : exports;
             case 7656: if (features.quests) questAttach(exports.default); return exports;
             case 1498: return features.fullImages ? hookExport(exports, "getMobileOptimizedSrc", fullImagesSrc) : exports;
             case 8666: return features.fullImages ? hookFullImagesViewer(exports) : exports;
@@ -23402,6 +23726,7 @@
                 if (features.expandBar && exports && exports.default) expandBarInit(exports.default);
                 if (features.experiments && exports && exports.default) experimentsInit(exports.default);
                 if (features.voiceOptions && exports && exports.default) voiceOptionsInit(exports.default);
+                if (features.localBookmarks && exports && exports.default) bookmarksInit(exports.default);
                 if ((features.messageHighlight || features.bulkDelete || features.localEdit) && exports && exports.default && !dispatcher)
                     dispatcher = exports.default.dispatch.bind(exports.default);
                 if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 584) {
