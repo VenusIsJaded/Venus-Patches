@@ -20,6 +20,8 @@ object AccountNotifications {
     /** Discord's NotificationCache: the account the app is signed in to, written by JS through setCurrentUser. */
     private const val CACHE = "DiscordNotificationClient"
     private const val CURRENT_USER = "CACHE_KEY_CURRENT_USER_ID"
+    /** NotificationCache's saved account names, a JSON map of account id to name (setMultiAccountUsernames). */
+    private const val ACCOUNT_NAMES = "CACHE_KEY_ACCOUNT_USERNAMES"
 
     // The settings file is read again only when it changed, so a burst of pushes costs one stat each.
     @Volatile private var stamp = Long.MIN_VALUE
@@ -43,13 +45,7 @@ object AccountNotifications {
         if (shown) return true
         try {
             if (context == null || notification == null || !turnedOn(context)) return false
-            var getter = receivingGetter
-            if (getter == null || getter.declaringClass != notification.javaClass) {
-                getter = notification.javaClass.getMethod("getReceivingUserId-wUX8bhU")
-                receivingGetter = getter
-            }
-            val receiving = getter!!.invoke(notification)?.toString() ?: return false
-            if (receiving.length == 0) return false
+            val receiving = receivingId(notification) ?: return false
             val current = context.getSharedPreferences(CACHE, Context.MODE_PRIVATE).getString(CURRENT_USER, null)
             return current != null && current.length > 0 && current != receiving
         } catch (_: Throwable) {
@@ -75,8 +71,8 @@ object AccountNotifications {
                 field!!.isAccessible = true
                 labelField = field
             }
-            val label = field!!.get(owner) as? String ?: return title
-            if (label.length == 0) return title
+            val own = field!!.get(owner) as? String
+            val label = (if (own != null && own.length > 0) own else savedName(context, notification)) ?: return title
             var base: CharSequence? = title
             if (base == null || base.length == 0) {
                 var getter = titleGetter
@@ -92,6 +88,32 @@ object AccountNotifications {
         } catch (_: Throwable) {
             return title
         }
+    }
+
+    /** The account a push was sent to, from NotificationData's receiving-user getter, or null. */
+    private fun receivingId(notification: Any): String? {
+        var getter = receivingGetter
+        if (getter == null || getter.declaringClass != notification.javaClass) {
+            getter = notification.javaClass.getMethod("getReceivingUserId-wUX8bhU")
+            receivingGetter = getter
+        }
+        val id = getter!!.invoke(notification)?.toString()
+        return if (id == null || id.length == 0) null else id
+    }
+
+    /**
+     * The receiving account's name from Discord's own NotificationCache, when it isn't the account you're on. Discord's
+     * getAccountLabel gives up unless that cache already lists two or more accounts, which it only fills after a sync;
+     * this reads the same names without that condition, so a push from another account is never left unlabelled.
+     */
+    private fun savedName(context: Context, notification: Any): String? {
+        val receiving = receivingId(notification) ?: return null
+        val prefs = context.getSharedPreferences(CACHE, Context.MODE_PRIVATE)
+        val current = prefs.getString(CURRENT_USER, null)
+        if (current == null || current.length == 0 || current == receiving) return null
+        val names = prefs.getString(ACCOUNT_NAMES, null) ?: return null
+        val name = org.json.JSONObject(names).optString(receiving, "")
+        return if (name.length == 0) null else name
     }
 
     /** Account switcher on, Notifications from every account on and While Discord is open on, in Venus' saved settings. */

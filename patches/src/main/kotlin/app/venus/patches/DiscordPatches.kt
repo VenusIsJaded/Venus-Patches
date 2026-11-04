@@ -1143,7 +1143,48 @@ internal fun otherAccountsWhileOpen(method: app.morphe.patcher.util.proxy.mutabl
     """)
 }
 
-/** Hidden helper of Account switcher: shows your other accounts' notifications while Discord is open. */
+private const val RENDER_DISPLAY = "Lcom/discord/notifications/renderer/NotificationRenderer\$display\$1;"
+
+/**
+ * Which account a notification is for (#152). Discord's renderer (NotificationRenderer.display's coroutine) puts the
+ * receiving account's name in the subtext, which Android's conversation layout never draws. Right after it builds the
+ * conversation title (getConversationTitle) and before MessagingStyle stores it, Venus passes the title through
+ * [app.venus.accounts.AccountNotifications.title] with the push, the Context and the coroutine (which holds Discord's
+ * account label), so another saved account's notifications read "#channel · account". Like the hook above, one call whose
+ * result goes straight back into Discord's register, with no branch.
+ */
+internal fun accountLabelInTitle(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val code = method.implementation?.instructions?.toList() ?: throw PatchException("the notification renderer has no code")
+    fun ref(i: Int) = (code.getOrNull(i) as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString()
+    val call = code.indices.firstOrNull { ref(it) == "Lcom/discord/notifications/renderer/utils/NotificationDataUtilsKt;->getConversationTitle(${NOTIFICATION_DATA})Ljava/lang/CharSequence;" }
+        ?: throw PatchException("the notification renderer no longer builds a conversation title")
+    if (code.getOrNull(call + 1)?.opcode != com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT_OBJECT ||
+        code.getOrNull(call + 2)?.opcode != com.android.tools.smali.dexlib2.Opcode.IPUT_OBJECT ||
+        ref(call + 2) != "Landroidx/core/app/NotificationCompat\$MessagingStyle;->h:Ljava/lang/CharSequence;")
+        throw PatchException("the notification renderer's conversation title changed")
+    val data = (code[call] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC
+    val title = (code[call + 1] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA
+    // The Context: the register the next getActiveNotification(Context, String) reads, right after the title is stored.
+    val active = (call + 3 until code.size).firstOrNull { ref(it)?.endsWith("->getActiveNotification(Landroid/content/Context;Ljava/lang/String;)Landroid/app/Notification;") == true }
+        ?: throw PatchException("the notification renderer no longer looks up the shown notification")
+    val context = (code[active] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC
+    // The coroutine: the object Discord reads its own \$notification field from.
+    val owner = code.indices.firstOrNull { ref(it) == "$RENDER_DISPLAY->\$notification:$NOTIFICATION_DATA" }?.let {
+        (code[it] as com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction).registerB
+    } ?: throw PatchException("the notification renderer no longer reads its push")
+    val writes = { from: Int, to: Int, register: Int -> code.subList(from, to).any {
+        (it as? com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction)?.registerA == register && it.opcode.setsRegister() } }
+    if (writes(1, call, owner) || writes(call + 2, active, context) || maxOf(data, title, context, owner) > 15 ||
+        setOf(data, title, context, owner).size != 4)
+        throw PatchException("the notification renderer's registers changed")
+    requireUnpatched(method, "venus-")
+    method.addInstructions(call + 2, """
+        invoke-static {v$title, v$data, v$context, v$owner}, $ACCOUNT_NOTIFICATIONS->title(Ljava/lang/CharSequence;Ljava/lang/Object;Landroid/content/Context;Ljava/lang/Object;)Ljava/lang/CharSequence;
+        move-result-object v$title
+    """)
+}
+
+/** Hidden helper of Account switcher: shows your other accounts' notifications while Discord is open, labelled with the account. */
 private val otherAccountNotifications = bytecodePatch {
     dependsOn(discordBundleGuard)
     extendWith("extensions/accounts.mpe")
@@ -1153,6 +1194,12 @@ private val otherAccountNotifications = bytecodePatch {
             name = "showNotification",
             returnType = "V",
             parameters = listOf("Landroid/content/Context;", NOTIFICATION_DATA, "Ljava/util/Map;", "Z", "Z")
+        ).method)
+        accountLabelInTitle(Fingerprint(
+            definingClass = RENDER_DISPLAY,
+            name = "invokeSuspend",
+            returnType = "Ljava/lang/Object;",
+            parameters = listOf("Ljava/lang/Object;")
         ).method)
     }
 }
