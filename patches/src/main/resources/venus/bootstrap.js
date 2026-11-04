@@ -12,7 +12,7 @@
     selectModules([17, 19, 120, 1164, 2132, 11084, 15602, 15733]);
     if (features.picker) targetModules[414] = 1;
     if (features.voice) selectModules([1297, 8023, 8026]);
-    if (features.anonFiles) selectModules([8026, 8056]);
+    if (features.anonFiles) selectModules([8026, 8056, 10321, 6454]);
     if (features.copyBios) targetModules[10940] = 1;
     if (features.cleanChannels) selectModules([2068, 5521, 5512, 7635]);
     if (features.favouriteAnything) selectModules([13989, 10035, 10038]);
@@ -77,7 +77,7 @@
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
     if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
     if (features.experiments) selectModules([584, 1392, 1403]);
-    if (features.hideAnything) selectModules([14015, 15735, 15736, 9419, 10331, 16133, 16225, 12892, 12897, 12901, 12908, 12909, 13780, 14204, 15590, 17157, 15046, 8805, 9052, 10858, 12942, 14988, 14994, 14925, 14998, 11678, 11679, 14197, 10939, 7158, 14182, 14101, 17156, 17263, 13151, 12000, 10838, 17949, 16773, 17265, 17881, 17869, 11164, 9978, 13759, 12696, 10650, 13769, 8494, 9873]);
+    if (features.hideAnything) selectModules([9847, 10078, 1202, 14015, 15735, 15736, 9419, 10331, 16133, 16225, 12892, 12897, 12901, 12908, 12909, 13780, 14204, 15590, 17157, 15046, 8805, 9052, 10858, 12942, 14988, 14994, 14925, 14998, 11678, 11679, 14197, 10939, 7158, 14182, 14101, 17156, 17263, 13151, 12000, 10838, 17949, 16773, 17265, 17881, 17869, 11164, 9978, 13759, 12696, 10650, 13769, 8494, 9873]);
     if (features.voiceOptions) { targetModules[584] = 1; targetModules[11372] = 1; targetModules[6145] = 1; }
     const revision = "1.21.1";
     // The Discord build these patches are pinned to (DiscordPatches.kt compatibleWith); shown on the About page.
@@ -1123,6 +1123,8 @@
     // and players work. Alt text and clip titles are the user's own words and are left alone.
     const ANON_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", ANON_LENGTH = 10;
     const anonNames = new WeakMap();
+    // Files you chose to send with their real name (#143), from the checkbox in Discord's attachment sheet.
+    const anonKept = new WeakSet(), anonKeptIds = new Set();
     // Crypto-quality bytes when the runtime has them, Math.random otherwise (Hermes on Android has no crypto).
     function anonBytes(n) {
         const out = new Uint8Array(n), c = global.crypto;
@@ -1144,7 +1146,7 @@
         return (/^SPOILER_/i.test(text) ? "SPOILER_" : "") + stem + (/^[a-z0-9]{1,10}$/.test(ext) ? "." + ext : "");
     }
     function anonNameFor(upload) {
-        if (!upload || typeof upload !== "object") return null;
+        if (!upload || typeof upload !== "object" || anonKept.has(upload) || upload.id != null && anonKeptIds.has(String(upload.id))) return null;
         const real = typeof upload.filename === "string" ? upload.filename : null;
         if (!real) return null;
         const known = anonNames.get(upload);
@@ -1153,6 +1155,39 @@
         const name = anonFileName(real);
         anonNames.set(upload, {from:real, name});
         return name;
+    }
+    // The sheet Discord opens when you tap a file you're about to send (UploadPreviewActionSheet 10321, {upload}) gets one more
+    // checkbox under Mark as spoiler: Random file name, with the name it will be sent as. Unticked, that one file keeps its real
+    // name; nothing else changes.
+    function AnonFileRow(props) {
+        useSettings("anonFiles");
+        const upload = props.upload, CheckboxRow = inspectedExport(6454, "TableCheckboxRow");
+        const kept = () => anonKept.has(upload) || upload.id != null && anonKeptIds.has(String(upload.id));
+        const [, redraw] = React.useState(0);
+        if (!CheckboxRow || !enabled("anonFiles")) return null;
+        const on = !kept(), name = on ? anonNameFor(upload) : null;
+        const flip = () => {
+            haptic("SELECTION");
+            if (on) { anonKept.add(upload); if (upload.id != null) anonKeptIds.add(String(upload.id)); }
+            else { anonKept.delete(upload); if (upload.id != null) anonKeptIds.delete(String(upload.id)); }
+            redraw(n => n + 1);
+        };
+        return el(CheckboxRow, {label:tr("Random file name"), subLabel:on && name ? tr("Sent as {name}", {name}) : tr("Sent with its real name"),
+            icon:rowIcon(6927, "EyeSlashIcon"), checked:on, onPress:flip});
+    }
+    function anonUploadSheet(orig, self, args) {
+        const tree = orig.apply(self, args), props = args[0], upload = props && props.upload && (props.upload.item || props.upload);
+        if (!enabled("anonFiles") || !React || !tree || !upload || typeof upload !== "object" || typeof upload.filename !== "string") return tree;
+        const CheckboxRow = inspectedExport(6454, "TableCheckboxRow");
+        if (!CheckboxRow) return tree;
+        let added = false;
+        return cloneTree(tree, (node, nodeProps) => {
+            if (added || !Array.isArray(nodeProps.children)) return nodeProps;
+            const kids = nodeProps.children, last = kids.map(k => k && k.type === CheckboxRow).lastIndexOf(true);
+            if (last < 0) return nodeProps;
+            added = true;
+            return Object.assign({}, nodeProps, {children:kids.slice(0, last + 1).concat([el(AnonFileRow, {key:"venus-anon", upload})], kids.slice(last + 1))});
+        }, 0, () => added);
     }
     function anonPayload(orig, self, args) {
         const result = orig.apply(self, args);
@@ -1291,7 +1326,7 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Venus rules", "Always keep", "Never keep", "Keep messages from"],
+    const FEATURE_KEYWORDS = {hideAnything:["Get Nitro buttons", "Emoji and sticker menus", "Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Venus rules", "Always keep", "Never keep", "Keep messages from"],
         noTyping:["Venus rules", "Hide my typing in", "Always hide", "Always show"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text", "Only in DMs and groups", "In the member list"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
@@ -1302,7 +1337,7 @@
             "FxTwitter", "vxTwitter", "fxtumblr", "Dark Tumblr posts", "embed", "Imgur", "Newgrounds",
             "Post style", "Translate posts", "Full post", "Media", "Text", "File", "Translate", "Gallery", "Service", "Settings", "Dark posts"], tenorGifs:["Tenor", "GIF", "GIFs", "Klipy", "GIFs from", "Only Tenor"],
         hideBlocked:["Blocked messages", "Ignored messages", "Replies to them", "Remove blocked users", "RemoveBlockedUsers", "Close their DM", "blocked", "ignored", "replies"],
-        anonFiles:["File names", "Random name", "Privacy", "Rename"],
+        anonFiles:["File names", "Random name", "Privacy", "Rename", "Random file name"],
         staffTag:["In the member list", "Owner", "Admin", "Manager", "Mod", "Crown", "Staff", "Moderator", "Tags", "Staff tags", "StaffTag", "Label", "Badge"],
         alwaysTrust:["AlwaysTrust", "Always Trust", "Leaving Discord", "Untrusted domain", "Suspicious file", "Dangerous download", "Links", "Downloads"],
         noConfirmPin:["NoConfirmPin", "Pin", "Unpin", "Pinned messages"],
@@ -10990,7 +11025,7 @@
         ["messages.newDM", "messages", 10621, "PlusLargeIcon"], ["profile.call", "profile", 9621, "PhoneCallIcon"],
         ["attach.apps", "attach", 8506, "AppsIcon"], ["attach.polls", "attach", 10325, "PollsIcon"], ["attach.photos", "attach", 8487, "ImageIcon"],
         ["you.quests", "you", 13929, "QuestsIcon"], ["you.shop", "you", 11964, "ShopIcon"], ["you.nitro", "you", 9327, "NitroWheelIcon"],
-        ["you.questBanner", "you", 6927, "EyeSlashIcon"],
+        ["you.questBanner", "you", 6927, "EyeSlashIcon"], ["sheets.nitro", "sheets", 9327, "NitroWheelIcon"],
         ["menu.mainProfile", "menu", 9543, "MoreHorizontalIcon"], ["menu.serverProfile", "menu", 9543, "MoreHorizontalIcon"],
         ["menu.nickname", "menu", 9543, "MoreHorizontalIcon"], ["menu.invite", "menu", 9543, "MoreHorizontalIcon"],
         ["menu.ring", "menu", 9543, "MoreHorizontalIcon"], ["menu.copyUsername", "menu", 9543, "MoreHorizontalIcon"],
@@ -11086,11 +11121,11 @@
         hiddenSpots().forEach(key => { if (/^row\./.test(key) && rowLabels.has(key.slice(4))) { out[key.slice(4)] = rowLabels.get(key.slice(4)); any = true; } });
         return any ? out : null;
     }
-    const HIDE_PLACES = ["chat", "attach", "message", "dm", "details", "messages", "profile", "menu", "server", "guild", "you"];
+    const HIDE_PLACES = ["chat", "attach", "message", "dm", "details", "messages", "profile", "menu", "server", "guild", "you", "sheets"];
     const HIDE_SPOT_KEYS = Object.create(null);
     HIDE_SPOTS.forEach(spot => { HIDE_SPOT_KEYS[spot[0]] = spot; });
     // Modules hooked for it (also selected in targetModules).
-    const HIDE_HOOKED = {14015:1, 15735:1, 15736:1, 10331:1, 16133:1, 16225:1, 12892:1, 12897:1, 12901:1, 12908:1, 12909:1, 13780:1, 14204:1, 15590:1, 17157:1, 9419:1,
+    const HIDE_HOOKED = {9847:1, 10078:1, 14015:1, 15735:1, 15736:1, 10331:1, 16133:1, 16225:1, 12892:1, 12897:1, 12901:1, 12908:1, 12909:1, 13780:1, 14204:1, 15590:1, 17157:1, 9419:1,
         15046:1, 8805:1, 9052:1, 10858:1, 12942:1, 14988:1, 14994:1, 14925:1, 14998:1,
         11678:1, 11679:1, 14197:1, 10939:1, 7158:1, 14182:1, 14101:1, 17156:1, 17263:1,
         13151:1, 12000:1, 10838:1, 17949:1, 16773:1, 17265:1, 17881:1, 17869:1, 11164:1, 9978:1, 13759:1};
@@ -11121,6 +11156,7 @@
             case "you.quests": return tr("Quests button");
             case "you.shop": return tr("Shop button");
             case "you.nitro": return tr("Nitro button");
+            case "sheets.nitro": return tr("Get Nitro buttons");
             case "you.questBanner": return tr("Quests banner");
             case "attach.apps": return tr("Apps");
             case "attach.polls": return tr("Polls");
@@ -11140,7 +11176,7 @@
         return key;
     }
     function hidePlaceTitle(place) {
-        return place === "message" ? tr("Message menu") : place === "menu" ? tr("Profile menu") : place === "settings" ? tr("Settings") : place === "options" ? tr("Venus options") : place === "chat" ? tr("Message bar") : place === "attach" ? tr("Attach menu") : place === "dm" ? tr("Direct messages") : place === "messages" ? tr("Messages tab") :
+        return place === "sheets" ? tr("Emoji and sticker menus") : place === "message" ? tr("Message menu") : place === "menu" ? tr("Profile menu") : place === "settings" ? tr("Settings") : place === "options" ? tr("Venus options") : place === "chat" ? tr("Message bar") : place === "attach" ? tr("Attach menu") : place === "dm" ? tr("Direct messages") : place === "messages" ? tr("Messages tab") :
             place === "profile" ? tr("Other people's profiles") : place === "server" ? tr("Channel list") : place === "guild" ? tr("Server menu") : place === "details" ? tr("Channel details") : tr("Your profile");
     }
     function hideSpotsText(raw) {
@@ -12167,10 +12203,58 @@
         // Always the same shape, so turning removal mode on never remounts Discord.
         return el(React.Fragment, null, rendered, Safe ? el(Safe, null, el(HideEditBar)) : el(HideEditBar));
     }
+    // Get Nitro buttons (#143): the emoji sheet's Nitro button carries Discord's NitroWheel (design/void 1202) as its icon, and
+    // the sticker sheet's says Get Nitro (gl/XHJ, in any language). Join Server, Favorite and Venus's own buttons stay.
+    function sheetNitroSpot(node) {
+        const type = node.type, props = node.props;
+        if (!type || typeof type === "string" || typeof props.onPress !== "function") return null;
+        const icon = props.icon, wheel = inspectedExport(1202, "NitroWheel");
+        if (wheel && icon && typeof icon === "object" && icon.type === wheel) return "sheets.nitro";
+        if (typeof props.text === "string" && props.text && props.text === discordText("gl/XHJ")) return "sheets.nitro";
+        return null;
+    }
+    // The sticker sheet draws its button inside GuildStickerDetail, a component of its own ({sticker, channel}), so that one is
+    // swapped for a twin that draws it and then takes the button out. One twin per component, so React keeps its state.
+    const hideSheetTypes = new WeakMap();
+    function hideSheetSwap(node, depth) {
+        if (!node || typeof node !== "object" || depth > 8) return node;
+        if (Array.isArray(node)) {
+            let next = null;
+            for (let i = 0; i < node.length; i++) { const v = hideSheetSwap(node[i], depth + 1); if (v !== node[i] && !next) next = node.slice(); if (next) next[i] = v; }
+            return next || node;
+        }
+        const props = node.props, type = node.type;
+        if (!props) return node;
+        if (typeof type === "function" && !(type.prototype && type.prototype.isReactComponent) && props.sticker && "channel" in props) {
+            let twin = hideSheetTypes.get(type);
+            if (!twin) {
+                twin = function VenusStickerDetail(innerProps) {
+                    const out = type.apply(this, arguments);
+                    if (!enabled("hideAnything")) return out;
+                    const edit = hideEditing();
+                    return edit || settings.hideAnythingSpots ? hideWalk(out, 0, sheetNitroSpot, edit, null) : out;
+                };
+                if (type.displayName || type.name) twin.displayName = type.displayName || type.name;
+                hideSheetTypes.set(type, twin);
+            }
+            return React.createElement(twin, Object.assign({}, props, {key:node.key}));
+        }
+        const children = props.children;
+        if (children == null || typeof children !== "object") return node;
+        const next = hideSheetSwap(children, depth + 1);
+        return next === children ? node : React.cloneElement(node, {children:next});
+    }
+    function hideStickerSheet(orig, self, args) {
+        const tree = orig.apply(self, args);
+        return React && enabled("hideAnything") ? hideSheetSwap(tree, 0) : tree;
+    }
     function hideAnythingHooks(id, exports) {
         if (!exports) return exports;
         switch (id) {
             case 12892: return hookComponent(exports, hideTree(chatAttachSpot));
+            // The Get Nitro buttons in the emoji sheet (CustomEmojiContent 9847) and the sticker sheet (StickerDetailActionSheet 10078).
+            case 9847: return hookComponent(exports, hideTree(sheetNitroSpot));
+            case 10078: return hookComponent(exports, hideStickerSheet);
             case 12897: return hookComponent(exports, hideWhole("chat.apps"));
             case 12901: return hookComponent(exports, hideWhole("chat.gift"));
             case 12909: return hookComponent(exports, hideWhole("chat.voice"));
@@ -24345,6 +24429,7 @@
             }
             case 8056: return features.anonFiles ? hookExport(exports, "getUploadPayload", anonPayload) : exports;
             case 8026: return features.anonFiles ? hookExport(exports, "getAttachmentPayload", anonPayload) : exports;
+            case 10321: return features.anonFiles ? hookComponent(exports, anonUploadSheet) : exports;
             case 7323:
                 if (!features.freeNitro) return exports;
                 stickerRules = exports;
