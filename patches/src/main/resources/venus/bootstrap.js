@@ -93,7 +93,7 @@
         badges:false, badgesGameTime:true, badgesUniqueGames:true, badgesCycleMinutes:15, badgesGamesAtOnce:2, systemFont:false, systemFontSource:"phone",
         systemEmoji:false, systemEmojiSource:"phone", gestures:false, gestureOwn:"edit", gestureTripleDelete:true,
         validUser:false, youBarSettings:false, splitMessages:false,
-        translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false, translateSkip:"",
+        translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false, translateSave:true, translateSkip:"",
         userNotif:false, userNotifFriends:true, userNotifStatus:true, userNotifMessages:true, userNotifTyping:true, userNotifPush:false, userNotifLogStatus:true, userNotifLogMessages:true, userNotifLogTyping:false,
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
@@ -111,7 +111,7 @@
             badges: false, badgesGameTime: true, badgesUniqueGames: true, badgesCycleMinutes: 15, badgesGamesAtOnce: 2, systemFont: false, systemFontSource: "phone",
             systemEmoji: false, systemEmojiSource: "phone", gestures: false, gestureOwn: "edit", gestureTripleDelete: true,
             validUser: false, youBarSettings: false, splitMessages: false,
-            translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false, translateSkip: "",
+            translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false, translateSave: true, translateSkip: "",
             userNotif: false, userNotifFriends: true, userNotifStatus: true, userNotifMessages: true, userNotifTyping: true, userNotifPush: false, userNotifLogStatus: true, userNotifLogMessages: true, userNotifLogTyping: false,
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
@@ -689,6 +689,7 @@
         notify(key);
         if (features.translate && key === "translate" && value) translateRestore();
         if (features.translate && featureFor(key) === "translate") later(translateChanged, 0);
+        if (features.translate && key === "translateSave") translateSaveChanged(value);
         if (features.userNotif && key === "userNotifPush" && value && status.storage !== "loading" && status.storage !== "waiting") later(() => userNotifRequestPermissions(false), 0);
         if (features.userNotif && featureFor(key) === "userNotif") userNotifSync();
         if (features.removedAlerts && key === "removedAlertsPush" && value && status.storage !== "loading" && status.storage !== "waiting") later(() => userNotifRequestPermissions(false), 0);
@@ -1264,7 +1265,7 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
+    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "Same theme on every account"],
@@ -14957,6 +14958,8 @@
     // Saved translations: only finished ones, newest last, read once when Discord opens. A damaged file is ignored.
     function translateRestore() {
         if (translate.restored || translate.restoring || !files || !features.translate) return;
+        // Keep after restarting off (#143): a restart starts from nothing, so there's nothing to read back.
+        if (!settings.translateSave) { translate.restored = true; return; }
         let constants;
         try { constants = typeof files.getConstants === "function" ? files.getConstants() : files; } catch (_) { constants = null; }
         const directory = constants && constants.DocumentsDirPath;
@@ -14988,9 +14991,10 @@
         }).catch(() => {}).then(() => { translate.restoring = false; translate.restored = true; if (enabled("translate")) translateSchedule(0); });
     }
     function translatePersist() {
-        if (!files || translate.saveTimer !== undefined) return;
+        if (!files || !settings.translateSave || translate.saveTimer !== undefined) return;
         translate.saveTimer = later(() => {
             translate.saveTimer = undefined;
+            if (!settings.translateSave) return;
             if (translate.saving) { translatePersist(); return; }
             const entries = [];
             translate.cache.forEach(entry => { if (entry.state === "done" && typeof entry.translated === "string") entries.push([entry.target, entry.text, entry.translated, entry.language || ""]); });
@@ -15802,10 +15806,13 @@
                     subLabel:tr("Always shown with the original text."), value:true, disabled:true, onValueChange:() => {}}) :
                     switchRow(Switch, "translateNote", "Show the original language", "A small \"Translated from Spanish\" line under each translation.", rowIcon(9393, "GlobeEarthIcon")),
                 switchRow(Switch, "translateOriginal", "Show the original text", "The untranslated message, in a quote under the translation.", rowIcon(14150, "QuoteIcon"))),
-            // Only once something is saved: a greyed-out "Nothing saved yet" row has nothing to offer.
-            saved ? el(Group, {key:"clear", title:tr("Manage")}, actionRow(ui, "clear", "Clear saved translations",
-                tr("{count} kept on this phone, so chats you reopen show them at once.", {count:count(saved, "translation")}),
-                () => confirmAction("Clear saved translations?", "Messages on screen will be translated again.", "Clear", translateForget), false, true)) : null,
+            // Keep after restarting (#143), with Clear right under it while there's something saved. Off, a restart puts every
+            // message back as it was written, with nothing to clear by hand.
+            el(Group, {key:"clear", title:tr("Saving")},
+                switchRow(Switch, "translateSave", "Keep after restarting", "Translations are saved on this phone, so chats you reopen show them at once. Off, a restart shows every message as it was written.", rowIcon(5143, "DownloadIcon")),
+                settings.translateSave && saved ? actionRow(ui, "clear", "Clear saved translations",
+                    tr("{count} kept on this phone, so chats you reopen show them at once.", {count:count(saved, "translation")}),
+                    () => confirmAction("Clear saved translations?", "Messages on screen will be translated again.", "Clear", translateForget), !on, true) : null),
             footnote("note", settings.translateMode === "manual" ? "Only messages you choose, or chats you translate from the bar, are sent to Google Translate, once each, without your Discord account." :
                 "Only messages on screen are sent to Google Translate, once each, without your Discord account. Hold a message to show its original, or translate your own.")];
         return settingsBody(ui, groups);
@@ -15857,6 +15864,15 @@
             offered.map(entry => CheckboxRow ? el(CheckboxRow, {key:entry.code, label:entry.label, subLabel:entry.sub, checked:pickedSet.has(entry.code), disabled:!on, onPress:() => toggle(entry.code)}) :
                 el(Row, {key:entry.code, label:(pickedSet.has(entry.code) ? "\u2713 " : "") + entry.label, subLabel:entry.sub, disabled:!on, onPress:() => toggle(entry.code)}));
         return el(RN.View, {key:"skip", style:{gap:12}}, head, el(RN.View, {key:"searchBox", style:{paddingHorizontal:16}}, search), el(Group, {key:"list"}, list));
+    }
+    // Keep after restarting (#143). Off: the file on the phone is emptied straight away, and what's on screen stays translated
+    // only until Discord restarts. On: what's translated now is saved again.
+    function translateSaveChanged(value) {
+        if (!files || backup.restoring) return;
+        if (value) { translatePersist(); return; }
+        if (translate.saveTimer !== undefined && typeof global.clearTimeout === "function") global.clearTimeout(translate.saveTimer);
+        translate.saveTimer = undefined;
+        Promise.resolve().then(() => files.writeFile("documents", TRANSLATE_FILE, "{\"version\":1,\"entries\":[]}", "utf8")).catch(() => {});
     }
     // Clear saved translations: forgets every translation, on the phone too, and translates what's on screen again.
     function translateForget() {
