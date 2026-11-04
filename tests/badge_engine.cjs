@@ -44,11 +44,17 @@ function world(opts = {}) {
     };
     const factory = new Function('env', 'later', 'clearTimeout', 'http', 'nowFn', 'dispatched', `
         const Date = (() => { const R = globalThis.Date; function D(...a) { return a.length ? new R(...a) : new R(nowFn()); } D.now = nowFn; D.UTC = R.UTC; return D; })();
-        const settings = env.settings, global = {clearTimeout}, features = {badges:true};
+        const settings = env.settings, features = {badges:true};
+        // badgeAuth() reads Discord's TokenManager through global.__r(1113); without it every report is dropped, so the
+        // fake host has to answer that one module like a signed-in install does. Any other id stays unresolved.
+        const global = {clearTimeout, __r: function (id) {
+            if (id !== 1113) return undefined;
+            return {getToken: function (user) { return user ? "token-" + user : "token-111111111111111111"; }};
+        }};
         function enabled(k) { return !!settings[k]; }
         function notify() {} function save() {} function backgroundSync() {}
         function currentId() { return "111111111111111111"; }
-        function inspectedExport(id) { return id === 502 ? {getAnalyticsToken: () => "AT", getSessionId: () => "S"} : null; }
+        function inspectedExport(id) { return id === 502 ? {getId: () => "111111111111111111", getAnalyticsToken: () => "AT", getSessionId: () => "S"} : null; }
         function questDesktopProperties() {} const quest = {desktop:{session:"hs", signature:"ls"}};
         function questRequest(url, body, desktop, method, active) {
             const request = {url}; if (body !== undefined) request.body = body;
