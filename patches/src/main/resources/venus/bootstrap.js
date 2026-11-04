@@ -1327,8 +1327,8 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Get Nitro buttons", "Emoji and sticker menus", "Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Where it works", "Only places I choose", "Keep deleted messages here", "Stop keeping deleted messages here"],
-        noTyping:["Where it works", "Only places I choose", "Hide my typing here", "Stop hiding my typing here"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
+    const FEATURE_KEYWORDS = {hideAnything:["Get Nitro buttons", "Emoji and sticker menus", "Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Where it works", "Only places you choose", "Keep deleted messages here", "Stop keeping deleted messages here"],
+        noTyping:["Where it works", "Only places you choose", "Hide my typing here", "Stop hiding my typing here"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text", "Only in DMs and groups", "In the member list"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "While Discord is open", "Same theme on every account"],
@@ -4353,16 +4353,16 @@
                     accessibilityLabel:tr("Remove: {name}", {name:info.name})}, el(Remove, {size:"sm"}))});
         }) : [];
         const icons = [rowIcon(9393, "GlobeEarthIcon"), rowIcon(9851, "StarIcon")];
-        const title = chosen ? tr("Turned on in") : tr("Turned off in");
+        const title = chosen ? tr("On in these places") : tr("Off in these places");
         const hint = feature === "noDelete" ?
             footnote("hint", "Hold a server, folder, channel or DM, or open someone's \u22ef menu, to turn it on or off there.") :
             footnote("hint", "Hold a server, folder, channel or DM to turn it on or off there.");
         return el(RN.View, {key:"places", style:{gap:20}},
             feature === "noDelete" ?
                 radioGroup(ui, "where", "Where it works", "noDeleteWhere", on, [["all", "Everywhere", "Keeps deleted messages everywhere, except places you turn it off.", icons[0]],
-                    ["chosen", "Only places I choose", "Keeps them only in places you turn it on.", icons[1]]]) :
+                    ["chosen", "Only places you choose", "Keeps them only in places you turn it on.", icons[1]]]) :
                 radioGroup(ui, "where", "Where it works", "noTypingWhere", on, [["all", "Everywhere", "Hides your typing everywhere, except places you turn it off.", icons[0]],
-                    ["chosen", "Only places I choose", "Hides it only in places you turn it on.", icons[1]]]),
+                    ["chosen", "Only places you choose", "Hides it only in places you turn it on.", icons[1]]]),
             el(RN.View, {key:"list", style:{gap:8}}, rows.length ? el(Group, {key:"rows", title}, rows) : groupTitle("title", title), hint));
     }
     function NoTypingSettings() {
