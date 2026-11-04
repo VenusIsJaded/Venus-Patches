@@ -61,6 +61,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Copy profile bios | Select and copy profile bios |
 | | Leave group DMs silently | Leave without the "left the group" message (based on SilentLeave by coder.gg) |
 | | Show timeout duration | Shows how long someone is timed out (based on ShowTimeoutDuration by Ven) |
+| | Time zones | Set someone's time zone to see their local time next to their messages and on their profile, worked out on your phone with no online lookup (based on Timezones by Equicord) |
 | | User and server reviews | Reviews from ReviewDB |
 | | User activity notifications | Notices and a log when chosen people change status, type or message |
 | | Account switcher | Switch between up to 50 accounts, with notifications from all of them, even while Discord is open |
