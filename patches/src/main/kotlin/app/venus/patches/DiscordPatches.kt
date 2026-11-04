@@ -50,7 +50,72 @@ private val additionalSelections = mutableSetOf<String>()
 /** Turns on a runtime feature from a patch kept in another file. */
 internal fun selectRuntimeFeature(key: String) { additionalSelections += key }
 internal val discordBundleGuard = rawResourcePatch {
-    execute { HbcPrivacy.verifyOriginal(get("assets/index.android.bundle")) }
+    execute {
+        HbcPrivacy.verifyOriginal(get("assets/index.android.bundle"))
+        checkNativeLibraries(this)
+    }
+}
+
+/** Every Discord build ships this in lib/<abi>/; an ABI without it can't start React Native. */
+private const val NATIVE_PROBE = "/libreactnative.so"
+
+/**
+ * Stops patching a Discord that can't start on this phone, instead of installing one that crashes instantly.
+ *
+ * APKPure's XAPK and Uptodown's bundle carry the same base.apk as APKMirror's APKM, but only the splits for the phone
+ * they were fetched for, often just `config.armeabi_v7a`. Discord's native code (libreactnative, libkv_storage,
+ * liblibdiscore-rn-jsi-module…) lives only in those ABI splits, never in base.apk. So the merged APK Morphe patches
+ * either has no `lib/` at all (Morphe Manager's "Optimize for device architecture" drops the 32-bit split on a 64-bit
+ * phone) or none for the phone's own ABI. Android then installs it with no native libraries (`primaryCpuAbi=null`), and
+ * Discord dies before drawing anything with `UnsatisfiedLinkError: dlopen failed: library "libkv_storage.so" not found`.
+ * That's what the S23 Ultra in #158 and the Tab A7 in #147 logged. APKMirror's APKM has all four ABIs, so it never
+ * hit this.
+ *
+ * Reads only the archive's entry names (no extraction). Off-device (Morphe CLI) the phone's ABIs are unknown, so only
+ * an APK with no Discord native code at all is refused. A patcher too old to list entries skips the check.
+ */
+private fun checkNativeLibraries(context: app.morphe.patcher.patch.ResourcePatchContext) {
+    val entries = try {
+        context.listApkEntries("lib/")
+    } catch (_: LinkageError) {
+        return
+    }
+    val shipped = nativeAbis(entries)
+    val problem = nativeLibraryProblem(shipped, deviceAbis()) ?: return
+    throw PatchException(problem)
+}
+
+/** The ABIs whose `lib/<abi>/` folder has Discord's React Native library, in archive order. */
+internal fun nativeAbis(entries: Collection<String>): List<String> {
+    val abis = LinkedHashSet<String>()
+    for (name in entries) {
+        if (!name.startsWith("lib/") || !name.endsWith(NATIVE_PROBE)) continue
+        val abi = name.substring(4, name.length - NATIVE_PROBE.length)
+        if (abi.isNotEmpty() && '/' !in abi) abis += abi
+    }
+    return abis.toList()
+}
+
+/**
+ * Why a Discord APK with native code for [shipped] ABIs can't run on a phone that supports [device] ABIs (null when
+ * unknown, as on a computer), or null when it can.
+ */
+internal fun nativeLibraryProblem(shipped: List<String>, device: List<String>?): String? {
+    val fix = "Use the full Discord 351.11 - Stable APKM from APKMirror, which has all 4 architectures. APKPure and " +
+        "Uptodown files only carry the parts for one kind of phone. If you must use one, turn off \"Optimize for " +
+        "device architecture\" in Morphe's settings and patch again."
+    if (shipped.isEmpty()) return "This Discord file has none of Discord's native libraries, so it would crash as soon as it opens. $fix"
+    if (device == null || device.isEmpty() || shipped.any { it in device }) return null
+    return "This Discord file only has native libraries for ${shipped.joinToString()}, but this phone runs " +
+        "${device.joinToString()}, so it would crash as soon as it opens. $fix"
+}
+
+/** `Build.SUPPORTED_ABIS` when patching on a phone, null on a computer. Read reflectively: patches build without Android. */
+private fun deviceAbis(): List<String>? = try {
+    (Class.forName("android.os.Build").getField("SUPPORTED_ABIS").get(null) as? Array<*>)
+        ?.mapNotNull { (it as? String)?.takeIf(String::isNotBlank) }
+} catch (_: Throwable) {
+    null
 }
 
 private val runtimeAssets = rawResourcePatch {
