@@ -21081,7 +21081,7 @@
     // answers with the local bookmarks merged into what your account has, and SavedMessagesActions (13587) keeps new
     // bookmarks here instead of sending them. Reminders still go to Discord. Each account has its own, in their own file
     // (never the settings file), and Backup and restore carries them.
-    const BOOKMARKS_FILE = "venus-bookmarks.json", BOOKMARKS_MAX = 10000, BOOKMARKS_FILL = 25;
+    const BOOKMARKS_FILE = "venus-bookmarks.json", BOOKMARKS_MAX = 5000, BOOKMARKS_FILL = 25;
     // Only what a real edit or a link preview changes: Translate and Edit locally send MESSAGE_UPDATEs with other text.
     const BOOKMARK_UPDATE_KEYS = ["content", "embeds", "attachments", "edited_timestamp", "flags", "sticker_items", "poll"];
     const bookmarks = {list:new Map(), ids:new Set(), index:null, version:0, changedAt:0, loaded:false, loading:false, replaced:false,
@@ -21098,6 +21098,8 @@
     }
     // The signed-in account's bookmarks, newest first, rebuilt only after a change or an account switch.
     function bookmarkIndex() {
+        // Read on first use too, in case the settings file couldn't be read at startup.
+        if (!bookmarks.loaded && !bookmarks.loading && files) bookmarksRestore();
         const user = bookmarkUser(), idx = bookmarks.index;
         if (idx && idx.user === user && idx.version === bookmarks.version) return idx;
         const byKey = new Map(), byId = new Map(), sorted = [];
@@ -21134,13 +21136,14 @@
         });
         return out;
     }
-    // Backups stay under the size Restore accepts: link previews go first, then the saved copies (Venus fetches the
-    // messages again when For Later opens), never the bookmarks themselves.
+    // Bookmarks go into the backup on one compact line under the readable settings, and the backup stays under the size
+    // Restore accepts: link previews go first, then the saved copies (Venus fetches those messages again when For Later
+    // opens), never the bookmarks themselves. 5000 bookmarks without copies take about 600 KB.
     function bookmarkBackupText(out) {
-        let text = "";
+        const head = JSON.stringify(out, null, 1), start = head.slice(0, head.lastIndexOf("}")).replace(/\s+$/, "") + ",\n \"bookmarks\": ";
+        let text = head;
         for (let level = 0; level < 3; level++) {
-            out.bookmarks = bookmarksData(level);
-            text = JSON.stringify(out, null, 1);
+            text = start + JSON.stringify(bookmarksData(level)) + "\n}";
             if (text.length <= BACKUP_MAX_BYTES) break;
         }
         return text;
