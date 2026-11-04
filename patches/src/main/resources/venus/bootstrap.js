@@ -16,7 +16,7 @@
     if (features.copyBios) targetModules[10940] = 1;
     if (features.cleanChannels) selectModules([2068, 5521, 5512, 7635]);
     if (features.favouriteAnything) selectModules([13989, 10035, 10038]);
-    if (features.freeNitro) selectModules([1392, 2068, 6243, 6286, 4864, 15066, 7323, 7445]);
+    if (features.freeNitro) selectModules([1392, 2068, 6243, 6286, 4864, 15066, 7323, 7445, 8013, 2119, 5532]);
     if (features.noTyping) selectModules([12849, 2068, 10596, 17245, 17433, 17434]);
     if (features.fakeDeafen) selectModules([14755, 18341]);
     if (features.quickDelete) selectModules([5400, 1128]);
@@ -728,6 +728,7 @@
         if (features.messageHighlight && key === "messageHighlight") later(messageHighlightRedraw, 0);
         if (features.hideBlocked && featureFor(key) === "hideBlocked") hideBlockedChanged();
         if (features.staffTag && featureFor(key) === "staffTag") later(staffTagChanged, 0);
+        if (features.freeNitro && key === "freeNitro") later(nitroLinksRedraw, 0);
         if (features.timezones && featureFor(key) === "timezones") later(tzRedraw, 0);
         if (features.bulkDelete && key === "bulkDelete" && !value) bulkDeleteCancel();
         if (features.localBookmarks && key === "localBookmarks") { if (value) bookmarksRestore(); bookmarksChanged(); }
@@ -8135,7 +8136,7 @@
                 switchRow(Switch,"stickers","Stickers","Stickers from other servers. Animated ones may not move.",rowIcon(13217,"StickerIcon"))),
             el(Group,{key:"style",title:tr("Link style")},
                 switchRow(Switch,"hyperlinks","Short links","In chat it looks the same either way. Short links only change what's copied or quoted.",rowIcon(5137,"LinkIcon"))),
-            footnote("note","Everyone sees the image, but it's a link, not a real Nitro emoji or sticker.")];
+            footnote("note","With Venus, links like these show as real emojis and stickers, and tapping one opens its usual menu. Elsewhere, people see the image.")];
         return settingsBody(ui,groups);
     }
     // Fix link previews: a sent link and the preview everyone sees, for the site picked in the row of marks above it.
@@ -8890,9 +8891,94 @@
             }
         });
     }
-    function messageRow(orig, self, args) { const row = features.localEdit ? localEditRow(args[0]) : args[0]; return messageRowResult(orig.call(self, row), row); }
+    function messageRow(orig, self, args) {
+        let row = features.localEdit ? localEditRow(args[0]) : args[0];
+        if (features.freeNitro) row = nitroLinkRow(row);
+        return messageRowResult(orig.call(self, row), row);
+    }
     // generate(row) is called once per chat row as you scroll: skip the arguments object (2.3x).
-    messageRow.call1 = (orig, self, row) => { if (features.localEdit) row = localEditRow(row); return messageRowResult(orig.call(self, row), row); };
+    messageRow.call1 = (orig, self, row) => { if (features.localEdit) row = localEditRow(row); if (features.freeNitro) row = nitroLinkRow(row); return messageRowResult(orig.call(self, row), row); };
+    // Nitro links (#143): an emoji or sticker sent as a link (by Venus or any plugin that does the same) is drawn as the real
+    // thing. Before Discord builds the row, each emoji link becomes <:name:id> (or <a:name:id>) and each sticker link on a line
+    // of its own becomes one of the message's stickers, and the image preview Discord made for that link is dropped. Discord
+    // then draws them itself, so tapping one opens its own emoji or sticker sheet, with the server it's from, Favorite, and
+    // Add to a server when Clone emojis and stickers is on. Only what this phone shows changes: the message keeps its links.
+    const NITRO_EMOJI_LINK = /\[((?:\\.|[^\]\\\n])*)\]\((https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/emojis\/(\d{17,20})\.(webp|gif|png|jpg)(?:\?[^\s)]*)?)\)|(?:<)?(https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/emojis\/(\d{17,20})\.(webp|gif|png|jpg)(?:\?[^\s<>)]*)?)(?:>)?/g;
+    const NITRO_STICKER_LINE = /^\s*(?:\[((?:\\.|[^\]\\\n])*)\]\((https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/stickers\/(\d{17,20})\.(png|gif|webp)(?:\?[^\s)]*)?)\)|<?(https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/stickers\/(\d{17,20})\.(png|gif|webp)(?:\?[^\s<>)]*)?)>?)\s*$/;
+    const nitroLinkCopies = new WeakMap();
+    function nitroLinkName(text, fallback) {
+        const clean = String(text || "").replace(/\\(.)/g, "$1").replace(/^:|:$/g, "").replace(/[^\w]/g, "_").replace(/_+/g, "_").slice(0, 32);
+        return clean.length >= 2 ? clean : fallback;
+    }
+    // The message as this phone draws it, or the same message when it has no emoji or sticker links.
+    function nitroLinkMessage(message) {
+        const content = message.content;
+        if (typeof content !== "string" || content.length < 40 || content.indexOf("discordapp.") < 0 || content.indexOf("/emojis/") < 0 && content.indexOf("/stickers/") < 0) return message;
+        const urls = new Set(), stickers = [];
+        let text = content;
+        // Sticker links on their own line, at most three (Discord's own limit) and none already on the message.
+        if (text.indexOf("/stickers/") >= 0 && !(Array.isArray(message.stickerItems) && message.stickerItems.length) && !(Array.isArray(message.stickers) && message.stickers.length)) {
+            const lines = text.split("\n"), kept = [];
+            for (let i = 0; i < lines.length; i++) {
+                const m = stickers.length < 3 && NITRO_STICKER_LINE.exec(lines[i]);
+                if (!m) { kept.push(lines[i]); continue; }
+                const id = m[3] || m[6], ext = m[4] || m[7];
+                let known = null;
+                try { known = stickerStore && stickerStore.getStickerById(id); } catch (_) { known = null; }
+                const format = known && known.format_type || (ext === "gif" ? 4 : 1);
+                stickers.push({id, name:known && known.name || nitroLinkName(m[1], "sticker").replace(/_/g, " "), format_type:format});
+                urls.add(m[2] || m[5]);
+            }
+            if (stickers.length) text = kept.join("\n").replace(/\s+$/, "");
+        }
+        // Emoji links anywhere outside code, with a Markdown link's text as the name when there is one.
+        if (text.indexOf("/emojis/") >= 0) text = text.replace(/```[\s\S]*?(?:```|$)|`[^`\n]*(?:`|$)/g, code => code.replace(/:/g, "\u0000")).replace(NITRO_EMOJI_LINK, (all, label, url, id, ext, bare, bareId, bareExt) => {
+            id = id || bareId; ext = ext || bareExt; url = url || bare;
+            let known = null;
+            try { known = emojiStore && emojiStore.getCustomEmojiById(id); } catch (_) { known = null; }
+            const animated = ext === "gif" || /[?&]animated=true/.test(url) || !!(known && known.animated);
+            urls.add(url);
+            return "<" + (animated ? "a" : "") + ":" + nitroLinkName(label || known && known.name, "emoji") + ":" + id + ">";
+        }).replace(/\u0000/g, ":");
+        if (!urls.size) return message;
+        const ids = new Set();
+        urls.forEach(url => { const m = /\/(?:emojis|stickers)\/(\d{17,20})\./.exec(url); if (m) ids.add(m[1]); });
+        let next = copyWith(message, "content", text);
+        // The preview Discord unfurled for a converted link would show the same picture a second time.
+        if (Array.isArray(message.embeds) && message.embeds.length) {
+            const embeds = message.embeds.filter(embed => {
+                const url = embed && (embed.url || embed.image && embed.image.url || embed.thumbnail && embed.thumbnail.url);
+                const m = typeof url === "string" && /discordapp\.(?:com|net)\/(?:emojis|stickers)\/(\d{17,20})\./.exec(url);
+                return !(m && ids.has(m[1]));
+            });
+            if (embeds.length !== message.embeds.length) next = copyWith(next, "embeds", embeds);
+        }
+        if (stickers.length) next = copyWith(next, "stickerItems", stickers);
+        return next;
+    }
+    function nitroLinkRow(row) {
+        if (!row || row.rowType !== 1 || !row.message || !enabled("freeNitro")) return row;
+        const message = row.message;
+        let hit = nitroLinkCopies.get(message);
+        if (hit === undefined) { const shown = nitroLinkMessage(message); hit = shown === message ? null : {shown, source:null, row:null}; nitroLinkCopies.set(message, hit); }
+        if (!hit) return row;
+        if (hit.source !== row) { hit.source = row; hit.row = copyWith(row, "message", hit.shown); }
+        return hit.row;
+    }
+    // Switched on or off: the open chat is drawn again, so its links turn into emojis and stickers, or back.
+    function nitroLinksRedraw() {
+        const selected = inspectedExport(2119, "default"), store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        const channelId = selected && typeof selected.getChannelId === "function" ? selected.getChannelId() : null;
+        if (!channelId || !store || typeof store.getMessages !== "function" || typeof dispatcher !== "function") return;
+        let arr = null;
+        try { const messages = store.getMessages(channelId); arr = messages && Array.isArray(messages._array) ? messages._array : null; } catch (_) { arr = null; }
+        if (!arr) return;
+        arr.slice(-80).forEach(message => {
+            if (!message || typeof message.content !== "string" || message.content.indexOf("discordapp.") < 0) return;
+            const update = value => { try { dispatcher({type:"MESSAGE_UPDATE", message:{id:message.id, channel_id:channelId, content:value}}); } catch (_) {} };
+            update(message.content + "\u200b"); later(() => update(message.content), 80);
+        });
+    }
     function messageRowResult(result, row) {
         if (!result || !row || row.rowType !== 1 || !result.message) return result;
         const pastelOn = enabled("pastelize"), translateOn = enabled("translate"), noDeleteOn = enabled("noDelete"), highlightOn = enabled("messageHighlight"), bulkOn = features.bulkDelete && bulkDelete.active;
@@ -23918,7 +24004,7 @@
             case 1266: if (features.pastelize) pastelHash = typeof exports === "function" ? exports : exports.default; return exports;
             case 2128: if (features.pastelize) guildMembers = exports.default; if (features.timeoutDuration && exports && exports.default) timeoutTag.members = exports.default; return exports;
             case 8013:
-                if ((features.pastelize || features.noDelete || features.translate || features.messageHighlight || features.bulkDelete || features.staffTag || features.timeoutDuration || features.voiceDownload || features.localEdit || features.timezones) && exports.default && exports.default.prototype)
+                if ((features.pastelize || features.noDelete || features.translate || features.messageHighlight || features.bulkDelete || features.staffTag || features.timeoutDuration || features.voiceDownload || features.localEdit || features.timezones || features.freeNitro) && exports.default && exports.default.prototype)
                     hookExport(exports.default.prototype, "generate", messageRow);
                 return exports;
             case 5207: if (features.platformIndicators || features.userNotif) { presenceStore = exports.default; if (features.userNotif) userNotifSeedStatuses(); } return exports;
