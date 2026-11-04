@@ -63,7 +63,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Show timeout duration | Shows how long someone is timed out (based on ShowTimeoutDuration by Ven) |
 | | User and server reviews | Reviews from ReviewDB |
 | | User activity notifications | Notices and a log when chosen people change status, type or message |
-| | Account switcher | Switch between up to 50 accounts, with notifications from all of them |
+| | Account switcher | Switch between up to 50 accounts, with notifications from all of them, even while Discord is open |
 | | Listen along | Listen along to a friend's Spotify (needs Premium; by maayan080) |
 | | HypeSquad house | Join or leave a HypeSquad house |
 | | Custom idle time | Choose when you go Idle, or never |

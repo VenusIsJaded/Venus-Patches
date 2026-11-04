@@ -1005,7 +1005,7 @@ private val otherAccountNotifications = bytecodePatch {
 @Suppress("unused")
 val accountSwitcher = bytecodePatch(
     name = "Account switcher",
-    description = "Switch between multiple Discord accounts from the You tab, your profile bar or Settings, with notifications from all of them."
+    description = "Switch between multiple Discord accounts from the You tab, your profile bar or Settings."
 ) {
     compatibleWith(discord)
     section(PLUGINS)
