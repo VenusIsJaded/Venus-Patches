@@ -3956,14 +3956,15 @@
     // own native block quote, subtext and strikethrough nodes, so it follows the theme and font like any message.
     // Plain text only, so an old version can never ping anyone or open a link.
     // Its last line is a small "Remove edit history" link that removes it on the spot (#130).
+    // Discord's native renderer ends every subtext line by itself, so the lines follow each other with no break node
+    // between them: one there left an empty line above Remove edit history (#145).
     function editHistoryNodes(entry) {
         if (entry.view) return entry.view;
         const lines = [];
-        entry.versions.forEach((version, index) => {
-            if (index) lines.push({type:"br"});
+        entry.versions.forEach(version => {
             lines.push({type:"subtext", content:[{type:"s", content:[{type:"text", content:version.content || "(empty)"}]}]});
         });
-        lines.push({type:"br"}, {type:"subtext", content:[noDeleteLink(tr("Remove edit history"), NODELETE_HISTORY, entry.channelId, entry.id, "")]});
+        lines.push({type:"subtext", content:[noDeleteLink(tr("Remove edit history"), NODELETE_HISTORY, entry.channelId, entry.id, "")]});
         entry.view = {type:"blockQuote", content:lines};
         return entry.view;
     }
