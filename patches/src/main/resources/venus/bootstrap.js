@@ -89,7 +89,7 @@
     // Every feature starts off: nothing changes in Discord until you turn it on. Options inside a feature keep
     // their own defaults, so turning a feature on does what it says straight away.
     const settings = { debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
-        noTyping: false, noTypingServers: true, noTypingGroups: true, noTypingDms: true, noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
+        noTyping: false, noTypingWhere: "all", noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
         jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, pastelDms:false, pastelMembers:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
         quests:false, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true,
         badges:false, badgesGameTime:true, badgesUniqueGames:true, badgesCycleMinutes:15, badgesGamesAtOnce:2, systemFont:false, systemFontSource:"phone",
@@ -107,7 +107,7 @@
     function defaultSettings() {
         return DEFAULT_SETTINGS || (DEFAULT_SETTINGS = Object.freeze({
             debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
-            noTyping: false, noTypingServers: true, noTypingGroups: true, noTypingDms: true, noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
+            noTyping: false, noTypingWhere: "all", noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
             jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, pastelDms: false, pastelMembers: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
             quests: false, questsVideo: true, questsPlay: true, questsActivity: true, questsEnroll: true,
             badges: false, badgesGameTime: true, badgesUniqueGames: true, badgesCycleMinutes: 15, badgesGamesAtOnce: 2, systemFont: false, systemFontSource: "phone",
@@ -193,8 +193,9 @@
     // How you ask in "Only when you ask" (#82): the bar at the top of a chat, Translate in a message's menu, or both.
     // One choice instead of two switches, so there's always a way to translate.
     const TRANSLATE_ASKS = ["both", "bar", "menu"];
-    // Keep deleted messages (#143): everywhere apart from places you never keep, or only places you always keep.
-    const NODELETE_WHERE = ["all", "chosen"];
+    // Where Keep deleted messages and Hide typing indicator work (#143): everywhere apart from places you turn them off,
+    // or only places you turn them on. Both start everywhere.
+    const PLACE_WHERE = ["all", "chosen"], WHERE_SETTINGS = {noDelete:"noDeleteWhere", noTyping:"noTypingWhere"};
     // Venus rules (#143): what a rules setting last parsed to, so a delete or a keystroke never parses it again.
     const RULES = {cache:new Map(), folders:null, folderList:null, folderOf:null}, RULES_MAX = 500;
     // Where the GIF picker's GIFs come from with Bring back Tenor GIFs on: Tenor first with Discord's own mixed in, or only Tenor.
@@ -476,7 +477,7 @@
         if (key === "translateSkip") return translateSkipText(value);
         if (key === "guildLurkIds") return guildLurkText(value);
         if (key === "noDeleteRules" || key === "noTypingRules") return rulesText(value);
-        if (key === "noDeleteWhere") return NODELETE_WHERE.includes(value) ? value : undefined;
+        if (key === "noDeleteWhere" || key === "noTypingWhere") return PLACE_WHERE.includes(value) ? value : undefined;
         if (key === "customIdleMinutes") return customIdleValue(value);
         if (key === "platformSpoofDevice") return SPOOF_DEVICES.includes(value) ? value : undefined;
         if (key === "backgroundMediaSkip") return [5, 10, 15, 30].includes(value) ? value : undefined;
@@ -587,7 +588,7 @@
             if (settings.translateSkip === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings.translateSkip = clean; dirty.add(key); save(); notify(key); translateChanged(); return true;
         }
-        if (key === "noDeleteRules" || key === "noTypingRules" || key === "noDeleteWhere") {
+        if (key === "noDeleteRules" || key === "noTypingRules" || key === "noDeleteWhere" || key === "noTypingWhere") {
             const clean = acceptedSetting(key, value);
             if (clean === undefined) return false;
             if (settings[key] === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
@@ -1326,8 +1327,8 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Get Nitro buttons", "Emoji and sticker menus", "Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Exceptions", "Keep deleted messages here", "Always keep", "Never keep", "Keep messages from"],
-        noTyping:["Exceptions", "Hide my typing here", "Hide my typing in", "Always hide", "Always show"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
+    const FEATURE_KEYWORDS = {hideAnything:["Get Nitro buttons", "Emoji and sticker menus", "Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Where it works", "Only places I choose", "Keep deleted messages here", "Stop keeping deleted messages here"],
+        noTyping:["Where it works", "Only places I choose", "Hide my typing here", "Stop hiding my typing here"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text", "Only in DMs and groups", "In the member list"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "While Discord is open", "Same theme on every account"],
@@ -3412,16 +3413,10 @@
         return typingHidden(args[0]) ? undefined : orig.apply(self, args);
     }
     typing.call1 = (orig, self, channelId) => typingHidden(channelId) ? undefined : orig.call(self, channelId);
-    // Where your typing is hidden (#143): an exception for the channel, its server or its folder first, then the switch for
-    // that kind of chat. A chat Discord hasn't loaded stays hidden, as it always was.
+    // Where your typing is hidden (#143): a place you turned it on or off for (the channel, its server or its folder), then
+    // Where it works.
     function typingHidden(channelId) {
-        if (!enabled("noTyping")) return false;
-        const rule = placeRule(settings.noTypingRules, channelId, null);
-        if (rule !== undefined) return rule;
-        const channel = rulesChannel(channelId);
-        if (!channel) return true;
-        if (channel.guild_id) return !!settings.noTypingServers;
-        return channel.type === 3 ? !!settings.noTypingGroups : !!settings.noTypingDms;
+        return enabled("noTyping") && placeOn("noTyping", channelId, null);
     }
     // Fake deafen: look deafened to everyone else while you can still hear. The mic is really muted, and the voice state
     // Discord sends (LocalVoiceStateManager 14755, didCommit) says muted and deafened. It lasts only while the mic stays
@@ -4162,9 +4157,9 @@
         if (count) entry.f = count;
         logAdd(logs.messages, entry);
     }
-    // Exceptions (#143): one server, folder, channel, DM, group or person that does the opposite of a feature's own
-    // settings. Hold any of them (or open a person's ⋯ menu): the menu says what tapping does ("Don't keep deleted messages
-    // here", "Hide my typing here"), so there's no sheet of choices to read. Saved as "kind+id:+/-" pairs (g server,
+    // Places (#143): a server, folder, channel, DM, group or person where Keep deleted messages or Hide typing indicator is
+    // turned on or off, against Where it works. Hold any of them (or open a person's ⋯ menu): one row per feature says what
+    // tapping does, worded the same way for both ("Stop keeping deleted messages here", "Stop hiding my typing here"). Saved as "kind+id:+/-" pairs (g server,
     // f folder, c channel, u person) in one setting per feature, so backups carry them like anything else. The most
     // specific one wins: a person, then the channel (or the channel a thread is in, then its category), then the server,
     // then its folder. So keeping one person in a channel you never keep keeps only them.
@@ -4224,11 +4219,13 @@
         const folder = rulesFolderOf(guild);
         return folder ? rules.get("f" + folder.folderId) : undefined;
     }
-    // Keep deleted messages: whether a message here, from this person, is kept and logged.
-    function noDeleteAllowed(channelId, authorId) {
-        const rule = placeRule(settings.noDeleteRules, channelId, authorId);
-        return rule !== undefined ? rule : settings.noDeleteWhere !== "chosen";
+    // Whether a feature works here: the closest place you turned it on or off for, else Where it works.
+    function placeOn(feature, channelId, userId) {
+        const rule = placeRule(settings[RULE_SETTINGS[feature]], channelId, userId);
+        return rule !== undefined ? rule : settings[WHERE_SETTINGS[feature]] !== "chosen";
     }
+    // Keep deleted messages: whether a message here, from this person, is kept and logged.
+    function noDeleteAllowed(channelId, authorId) { return placeOn("noDelete", channelId, authorId); }
     function rulesSet(feature, key, value) {
         const setting = RULE_SETTINGS[feature], map = new Map(rulesParse(settings[setting]));
         map.delete(key);
@@ -4236,10 +4233,7 @@
         haptic("SELECTION"); animateLayout();
         setSetting(setting, Array.from(map).map(([k, v]) => k + ":" + (v ? "+" : "-")).join(","));
     }
-    function ruleLabel(feature, value) {
-        if (feature === "noDelete") return value ? tr("Always keep") : tr("Never keep");
-        return value ? tr("Always hide") : tr("Always show");
-    }
+    function ruleLabel(value) { return value ? tr("On here") : tr("Off here"); }
     // Which features a place can have an exception for: people only matter to Keep deleted messages.
     function rulesFeaturesFor(kind) {
         return Object.keys(RULE_SETTINGS).filter(feature => features[feature] && enabled(feature) && (kind !== "u" || feature === "noDelete"));
@@ -4288,10 +4282,7 @@
     function ruleNow(feature, key, skipOwn) {
         const rules = rulesParse(settings[RULE_SETTINGS[feature]]), info = rulesChainOf(key);
         for (let i = skipOwn ? 1 : 0; i < info.chain.length; i++) { const value = rules.get(info.chain[i]); if (value !== undefined) return value; }
-        if (feature === "noDelete") return settings.noDeleteWhere !== "chosen";
-        if (info.server) return !!settings.noTypingServers;
-        if (!info.channel) return true;
-        return info.channel.type === 3 ? !!settings.noTypingGroups : !!settings.noTypingDms;
+        return settings[WHERE_SETTINGS[feature]] !== "chosen";
     }
     // Tapping a menu row does the opposite of what the place gets now. When that's what it would get anyway (the server or
     // your settings already say so), its exception is removed instead of saving one that changes nothing.
@@ -4301,16 +4292,14 @@
     }
     function ruleRowLabel(feature, key) {
         const now = ruleNow(feature, key);
-        if (feature === "noTyping") return now ? tr("Show my typing here") : tr("Hide my typing here");
-        if (key.charAt(0) === "u") return now ? tr("Don't keep their deleted messages") : tr("Keep their deleted messages");
-        return now ? tr("Don't keep deleted messages here") : tr("Keep deleted messages here");
+        if (feature === "noTyping") return now ? tr("Stop hiding my typing here") : tr("Hide my typing here");
+        if (key.charAt(0) === "u") return now ? tr("Stop keeping their deleted messages") : tr("Keep their deleted messages");
+        return now ? tr("Stop keeping deleted messages here") : tr("Keep deleted messages here");
     }
-    function ruleRowIcon(feature, key) {
-        if (feature === "noTyping") return venusIcon(13747, "KeyboardIcon");
-        return ruleNow(feature, key) ? venusIcon(6927, "EyeSlashIcon") : venusIcon(6929, "EyeIcon");
-    }
+    // Each feature's own icon, so the two rows look alike and say which feature they are.
+    function ruleRowIcon(feature) { return feature === "noTyping" ? venusIcon(13747, "KeyboardIcon") : venusIcon(5148, "TrashIcon"); }
     function rulesItems(key) {
-        return rulesFeaturesFor(key.charAt(0)).map(feature => ({IconComponent:ruleRowIcon(feature, key), label:ruleRowLabel(feature, key),
+        return rulesFeaturesFor(key.charAt(0)).map(feature => ({IconComponent:ruleRowIcon(feature), label:ruleRowLabel(feature, key),
             action:() => later(() => rulesFlip(feature, key), 60)}));
     }
     // The server icon's menu (17433) and a folder's (GuildsBarFolderMenuItems 17434): one row per feature, in the same shape.
@@ -4330,7 +4319,7 @@
             const channel = props.channel || props.thread || props.post, id = String(props.channelId || channel && channel.id || "");
             if (!/^\d{17,20}$/.test(id)) return tree;
             const key = "c" + id;
-            return rulesFeaturesFor("c").reduce((out, feature) => sheetAddRow(out, props, "venus-rules-" + feature, ruleRowLabel(feature, key), ruleRowIcon(feature, key),
+            return rulesFeaturesFor("c").reduce((out, feature) => sheetAddRow(out, props, "venus-rules-" + feature, ruleRowLabel(feature, key), ruleRowIcon(feature),
                 () => rulesFlip(feature, key), sheetKey(id)), tree);
         });
     }
@@ -4350,22 +4339,31 @@
             return Object.assign({}, nodeProps, {items:!grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]])});
         }, 0);
     }
-    // The exceptions on a feature's page, each with an X that removes it.
+    // Where it works and the places you changed, the same on both pages: Everywhere (apart from places you turn it off) or
+    // Only places I choose (the ones you turn it on for), then those places, each with an X.
     function RulesList(props) {
         useSettings(props.feature);
         const ui = reviewUI(), feature = props.feature, on = !!props.on, Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
-        const Press = RN.Pressable || RN.TouchableOpacity || RN.View, Remove = venusIcon(6485, "XSmallIcon");
+        const Press = RN.Pressable || RN.TouchableOpacity || RN.View, Remove = venusIcon(6485, "XSmallIcon"), chosen = settings[WHERE_SETTINGS[feature]] === "chosen";
         const rules = Array.from(rulesParse(settings[RULE_SETTINGS[feature]]));
         const rows = Row ? rules.map(([key, value]) => {
             const info = rulesPlaceInfo(key);
-            return el(Row, {key, label:info.name, subLabel:info.kind + " \u00b7 " + ruleLabel(feature, value), icon:info.icon, disabled:!on,
+            return el(Row, {key, label:info.name, subLabel:info.kind + " \u00b7 " + ruleLabel(value), icon:info.icon, disabled:!on,
                 trailing:el(Press, {onPress:() => rulesSet(feature, key, undefined), disabled:!on, hitSlop:12, accessibilityRole:"button",
                     accessibilityLabel:tr("Remove: {name}", {name:info.name})}, el(Remove, {size:"sm"}))});
         }) : [];
+        const icons = [rowIcon(9393, "GlobeEarthIcon"), rowIcon(9851, "StarIcon")];
+        const title = chosen ? tr("Turned on in") : tr("Turned off in");
         const hint = feature === "noDelete" ?
-            footnote("hint", "Hold a server, folder, channel or DM, or open someone's \u22ef menu, to make an exception.") :
-            footnote("hint", "Hold a server, folder, channel or DM to make an exception.");
-        return el(RN.View, {key:"rules", style:{gap:8}}, rows.length ? el(Group, {key:"list", title:tr("Exceptions")}, rows) : groupTitle("title", "Exceptions"), hint);
+            footnote("hint", "Hold a server, folder, channel or DM, or open someone's \u22ef menu, to turn it on or off there.") :
+            footnote("hint", "Hold a server, folder, channel or DM to turn it on or off there.");
+        return el(RN.View, {key:"places", style:{gap:20}},
+            feature === "noDelete" ?
+                radioGroup(ui, "where", "Where it works", "noDeleteWhere", on, [["all", "Everywhere", "Keeps deleted messages everywhere, except places you turn it off.", icons[0]],
+                    ["chosen", "Only places I choose", "Keeps them only in places you turn it on.", icons[1]]]) :
+                radioGroup(ui, "where", "Where it works", "noTypingWhere", on, [["all", "Everywhere", "Hides your typing everywhere, except places you turn it off.", icons[0]],
+                    ["chosen", "Only places I choose", "Hides it only in places you turn it on.", icons[1]]]),
+            el(RN.View, {key:"list", style:{gap:8}}, rows.length ? el(Group, {key:"rows", title}, rows) : groupTitle("title", title), hint));
     }
     function NoTypingSettings() {
         useSettings("noTyping");
@@ -4374,11 +4372,7 @@
         const on = enabled("noTyping"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
         const groups = [
             on ? null : offCard("status", venusIcon(13747, "KeyboardIcon"), "noTyping"),
-            el(Group, {key:"where", title:tr("Hide my typing in")},
-                switchRow(Switch, "noTypingServers", "Servers", null, rowIcon(9545, "ServerIcon")),
-                switchRow(Switch, "noTypingGroups", "Group DMs", null, rowIcon(8489, "GroupIcon")),
-                switchRow(Switch, "noTypingDms", "Direct messages", null, rowIcon(8471, "ChatIcon"))),
-            el(RulesList, {key:"rules", feature:"noTyping", on})];
+            el(RulesList, {key:"places", feature:"noTyping", on})];
         return settingsBody(ui, groups);
     }
     // A kept message's hold menu (LongPressMessageActionSheet 9978): Dismiss for a deleted message, Remove edit history
@@ -9571,9 +9565,7 @@
             el(Group,{key:"log",title:tr("Log")},
                 logOpenRow(ui,nav,"open",tr("Message log"),logs.messages,rowIcon(5150,"ClockIcon"),on),
                 logChoicesRow(ui,"choices","noDelete",choices,on)),
-            radioGroup(ui,"where","Keep messages from","noDeleteWhere",on,[["all","Everywhere","Every server, DM and group, apart from places you never keep.",rowIcon(9393,"GlobeEarthIcon")],
-                ["chosen","Only places you choose","Only servers, folders, channels and people you always keep.",rowIcon(9851,"StarIcon")]]),
-            el(RulesList,{key:"rules",feature:"noDelete",on}),
+            el(RulesList,{key:"places",feature:"noDelete",on}),
             el(Group,{key:"options",title:tr("In chat")},
                 toggle("noDeleteEdits","Show edit history","What a message said before it was edited, faded and crossed out above it. Up to 10 versions each.",rowIcon(10023,"PencilIcon")),
                 toggle("noDeleteSave","Keep after restarting","Deleted and edited messages survive closing Discord. Saved only on this phone, for this account.",rowIcon(5143,"DownloadIcon"))),
