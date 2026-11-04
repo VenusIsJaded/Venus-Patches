@@ -10686,7 +10686,7 @@
     const MENU_SPOTS = {"menu.mainProfile":["GISTta"], "menu.serverProfile":["DisZzB"], "menu.nickname":["BGYkaH", "8pOYUE"], "menu.invite":["Sd8Ixw"],
         "menu.ring":["bHa9kN", "ygslb0"], "menu.copyUsername":["y5MwJy"], "menu.copyLink":["WqhZss"], "menu.copyId":["/AXYnE"], "menu.copyInfo":["QvQeLv"],
         "menu.apps":["PHjkRE"], "menu.shopLook":["xNdRDO"], "menu.removeFromGroup":["n5zMI+"], "menu.ignore":["ytCpKs", "8wXU9B"],
-        "menu.block":["l4Emac", "XyHpKH"], "menu.report":["wqHXNt", "TbHyMG", "jhJzez"]};
+        "menu.block":["l4Emac", "XyHpKH"], "menu.report":["TbHyMG", "jhJzez"]};
     const MENU_FALLBACK = {"menu.mainProfile":"View Main Profile", "menu.serverProfile":"View Per-server Profile", "menu.nickname":"Add Friend Nickname",
         "menu.invite":"Invite to Server", "menu.ring":"Ring", "menu.copyUsername":"Copy Username", "menu.copyLink":"Copy Link", "menu.copyId":"Copy User ID",
         "menu.copyInfo":"Copy User Info", "menu.apps":"Apps", "menu.shopLook":"Shop This Look", "menu.removeFromGroup":"Remove from Group",

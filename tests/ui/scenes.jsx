@@ -703,7 +703,7 @@ const ROLE_RECORDS = ROLES.map(([name, color], i) => ({ id: "15000000000000000" 
   position: 5 - i, permissions: 1071698660929n, flags: 0, icon: null, unicodeEmoji: null, version: 1 }));
 const MSG_HEADER = 100, GUILD_HEADER = 122;
 const PROFILE_USER = { id: "1200000000000000004", username: "cynfulsolver", globalName: "Cyn" };
-const REPORT = ["wqHXNt", "TbHyMG", "jhJzez"].map(k => EN_TEXT[k]).find(Boolean) || "Report User Profile";
+const REPORT = ["TbHyMG", "jhJzez"].map(k => EN_TEXT[k]).find(Boolean) || "Report User Profile";
 const MENU_ITEMS = [[{ label: T_("GISTta"), action() {} }, { label: T_("Sd8Ixw"), action() {} }, { label: T_("y5MwJy"), action() {} }, { label: T_("PHjkRE"), action() {} }],
   [{ label: T_("ytCpKs"), action() {} }, { label: T_("l4Emac"), variant: "destructive", action() {} }, { label: REPORT, variant: "destructive", action() {} }]];
 function StubContextMenu(p) {
