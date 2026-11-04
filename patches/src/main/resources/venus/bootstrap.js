@@ -21454,6 +21454,7 @@
     // The preview: a phone's media notification you can play with (play/pause and both skip buttons work, at the length picked
     // below), and the picture-in-picture window floating over a home screen. Each half fades back when its switch is off.
     const MEDIA_PREVIEW_MS = 47000;
+    const MEDIA_PREVIEW_TIME = {fontSize:11, lineHeight:14, minWidth:44, flexShrink:0, includeFontPadding:false, fontVariant:["tabular-nums"]};
     function BackgroundMediaPreview(props) {
         useSettings("backgroundMedia");
         const s = useChatPreviewStyles(), k = usePreviewChrome(), Press = RN.Pressable || RN.View;
@@ -21493,9 +21494,11 @@
                 el(RN.View, {style:{gap:4}},
                     el(RN.View, {style:{height:4, borderRadius:2, backgroundColor:"#80848e55", overflow:"hidden"}},
                         el(RN.View, {style:[k.brand, {height:4, width}]})),
-                    el(RN.View, {style:{flexDirection:"row", justifyContent:"space-between"}},
-                        el(RN.Text, {style:[s.muted, {fontSize:11}]}, clockText(state.at)),
-                        el(RN.Text, {style:[s.muted, {fontSize:11}]}, clockText(MEDIA_PREVIEW_MS)))),
+                    // One line each, room for the widest time and digits of equal width (#145): on some phones (Samsung's
+                    // font) a short Text was measured too narrow, so its last digits wrapped into a clipped second row.
+                    el(RN.View, {style:{flexDirection:"row", justifyContent:"space-between", gap:8}},
+                        el(RN.Text, {numberOfLines:1, style:[s.muted, MEDIA_PREVIEW_TIME]}, clockText(state.at)),
+                        el(RN.Text, {numberOfLines:1, style:[s.muted, MEDIA_PREVIEW_TIME, {textAlign:"right"}]}, clockText(MEDIA_PREVIEW_MS)))),
                 el(RN.View, {style:{flexDirection:"row", alignItems:"center", justifyContent:"center", gap:28}},
                     skipButton("back", false, true, k.icon.color, audio), playButton("play", true, audio), skipButton("forward", true, true, k.icon.color, audio))));
         const APP_COLORS = ["#57f287", "#fee75c", "#5865f2", "#eb459e", "#ed4245", "#00a8fc", "#f0b232", "#9b84ee"];
