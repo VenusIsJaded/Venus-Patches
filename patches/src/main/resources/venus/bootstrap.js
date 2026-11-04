@@ -23,7 +23,7 @@
     if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978, 11114, 10596, 14015, 17245, 17433, 17434]);
     if (features.jumpToTop) selectModules([12920, 12921, 12922, 9683, 7445, 5532]);
     if (features.hiddenChannels) selectModules([1087, 1098, 1114, 2068, 2119, 4843, 7517, 4845, 5521, 7445, 584, 1392, 17357, 8495, 6291, 6362, 14975, 7748, 14788, 17190, 8727]);
-    if (features.pastelize) selectModules([8013, 1266, 2128]);
+    if (features.pastelize) selectModules([8013, 1266, 2128, 10531]);
     if (features.platformIndicators) selectModules([5207, 5211, 1392, 2068, 10858, 10531, 13788, 17165, 9069, 15185, 14076]);
     if (features.reviewDB) selectModules([14101, 14995, 15048, 11024, 6542, 7172, 1392, 584]);
     if (features.readAll) targetModules[17439] = 1;
@@ -48,7 +48,7 @@
     if (features.fixEmbeds) selectModules([1392, 7445]);
     if (features.tenorGifs) selectModules([1297, 10036]);
     if (features.hideBlocked) selectModules([584, 2068, 2119, 4855, 5532, 7290, 7579, 12809]);
-    if (features.staffTag) targetModules[8013] = 1;
+    if (features.staffTag) selectModules([8013, 10531]);
     if (features.fullImages) selectModules([1417, 1498, 8666]);
     if (features.alwaysTrust) selectModules([8537, 8766]);
     if (features.noConfirmPin) selectModules([5400, 1128]);
@@ -90,7 +90,7 @@
     // their own defaults, so turning a feature on does what it says straight away.
     const settings = { debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
         noTyping: false, noTypingServers: true, noTypingGroups: true, noTypingDms: true, noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
-        jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
+        jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, pastelDms:false, pastelMembers:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
         quests:false, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true,
         badges:false, badgesGameTime:true, badgesUniqueGames:true, badgesCycleMinutes:15, badgesGamesAtOnce:2, systemFont:false, systemFontSource:"phone",
         systemEmoji:false, systemEmojiSource:"phone", gestures:false, gestureOwn:"edit", gestureTripleDelete:true,
@@ -100,7 +100,7 @@
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, accountSwitcherNotifyOpen:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, staffTagMembers:false, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
         hypeSquad:false, customIdle:false, customIdleMinutes:10, pauseInvites:false, fastDeleteChannels:false, fastDeleteChannelsConfirm:true, fastDeleteChannelsMenu:true, mutualGroupDMs:false, platformSpoof:false, platformSpoofDevice:"desktop" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
@@ -108,7 +108,7 @@
         return DEFAULT_SETTINGS || (DEFAULT_SETTINGS = Object.freeze({
             debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
             noTyping: false, noTypingServers: true, noTypingGroups: true, noTypingDms: true, noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
-            jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
+            jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, pastelDms: false, pastelMembers: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
             quests: false, questsVideo: true, questsPlay: true, questsActivity: true, questsEnroll: true,
             badges: false, badgesGameTime: true, badgesUniqueGames: true, badgesCycleMinutes: 15, badgesGamesAtOnce: 2, systemFont: false, systemFontSource: "phone",
             systemEmoji: false, systemEmojiSource: "phone", gestures: false, gestureOwn: "edit", gestureTripleDelete: true,
@@ -118,7 +118,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, accountSwitcherNotifyOpen: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, staffTagMembers: false, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
             hypeSquad: false, customIdle: false, customIdleMinutes: 10, pauseInvites: false, fastDeleteChannels: false, fastDeleteChannelsConfirm: true, fastDeleteChannelsMenu: true, mutualGroupDMs: false, platformSpoof: false, platformSpoofDevice: "desktop"
         }));
     }
@@ -1223,7 +1223,7 @@
     const featureFor = key => {
         const cached = featureTable[key];
         if (cached !== undefined) return cached;
-        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^compressUploads[A-Z]/.test(key) ? "compressUploads" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : /^expandBar[A-Z]/.test(key) ? "expandBar" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^noTyping[A-Z]/.test(key) ? "noTyping" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^viewRaw[A-Z]/.test(key) ? "viewRaw" : /^timezones[A-Z]/.test(key) ? "timezones" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : /^customIdle[A-Z]/.test(key) ? "customIdle" : /^fastDeleteChannels[A-Z]/.test(key) ? "fastDeleteChannels" : /^platformSpoof[A-Z]/.test(key) ? "platformSpoof" : /^silentEdit[A-Z]/.test(key) ? "silentEdit" : /^localEdit[A-Z]/.test(key) ? "localEdit" : /^listenAlong[A-Z]/.test(key) ? "listenAlong" : /^backgroundMedia[A-Z]/.test(key) ? "backgroundMedia" : /^fakeDeafen[A-Z]/.test(key) ? "fakeDeafen" : key;
+        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : /^pastel[A-Z]/.test(key) ? "pastelize" : key === "readAllMode" ? "readAll" : /^compressUploads[A-Z]/.test(key) ? "compressUploads" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : /^expandBar[A-Z]/.test(key) ? "expandBar" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^noTyping[A-Z]/.test(key) ? "noTyping" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^viewRaw[A-Z]/.test(key) ? "viewRaw" : /^timezones[A-Z]/.test(key) ? "timezones" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : /^customIdle[A-Z]/.test(key) ? "customIdle" : /^fastDeleteChannels[A-Z]/.test(key) ? "fastDeleteChannels" : /^platformSpoof[A-Z]/.test(key) ? "platformSpoof" : /^silentEdit[A-Z]/.test(key) ? "silentEdit" : /^localEdit[A-Z]/.test(key) ? "localEdit" : /^listenAlong[A-Z]/.test(key) ? "listenAlong" : /^backgroundMedia[A-Z]/.test(key) ? "backgroundMedia" : /^fakeDeafen[A-Z]/.test(key) ? "fakeDeafen" : key;
     };
     // Section titles are read whenever Discord draws the list, so they follow the language too. "Venus" is a name.
     function section(label, keys) {
@@ -1293,7 +1293,7 @@
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
     const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Venus rules", "Always keep", "Never keep", "Keep messages from"],
         noTyping:["Venus rules", "Hide my typing in", "Always hide", "Always show"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
-        freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
+        freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text", "Only in DMs and groups", "In the member list"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "While Discord is open", "Same theme on every account"],
         hiddenChannels:["Show its details"], serverEdit:["Edit locally", "Name", "Icon", "Server icon", "Choose from your phone", "Use a link"], serverInfo:["Look up friends in the server", "Boosts", "Owner", "Server ID"], customThemes:["Show theme background image", "Browse Revenge themes"],
@@ -1303,7 +1303,7 @@
             "Post style", "Translate posts", "Full post", "Media", "Text", "File", "Translate", "Gallery", "Service", "Settings", "Dark posts"], tenorGifs:["Tenor", "GIF", "GIFs", "Klipy", "GIFs from", "Only Tenor"],
         hideBlocked:["Blocked messages", "Ignored messages", "Replies to them", "Remove blocked users", "RemoveBlockedUsers", "Close their DM", "blocked", "ignored", "replies"],
         anonFiles:["File names", "Random name", "Privacy", "Rename"],
-        staffTag:["Owner", "Admin", "Manager", "Mod", "Crown", "Staff", "Moderator", "Tags", "Staff tags", "StaffTag", "Label", "Badge"],
+        staffTag:["In the member list", "Owner", "Admin", "Manager", "Mod", "Crown", "Staff", "Moderator", "Tags", "Staff tags", "StaffTag", "Label", "Badge"],
         alwaysTrust:["AlwaysTrust", "Always Trust", "Leaving Discord", "Untrusted domain", "Suspicious file", "Dangerous download", "Links", "Downloads"],
         noConfirmPin:["NoConfirmPin", "Pin", "Unpin", "Pinned messages"],
         listenAlong:["Listen along", "Spotify", "Music", "Friends", "Profile", "Sync"],
@@ -4941,6 +4941,8 @@
     }
     function pastelMessage(message, source) {
         if (!message || !message.authorId) return message;
+        // Only in DMs and groups (#143): every name in a server keeps Discord's own color.
+        if (settings.pastelDms && message.guildId) return message;
         const webhook = pastelWebhook(message,source);
         if (message.guildId && (!guildMembers || !guildMembers.getMember(message.guildId,message.authorId)) && !webhook) return message;
         let seed;
@@ -8669,6 +8671,9 @@
             el(Group,{key:"colors",title:tr("Colors")},
                 switchRow(Switch,"pastelAll","Replace role colors","Every name uses its pastel color, even with a role color.",rowIcon(10563,"CrownIcon")),
                 switchRow(Switch,"pastelContent","Color message text","What people write is colored too, in a lighter shade of their name.",rowIcon(8480,"TextIcon"))),
+            el(Group,{key:"where",title:tr("Where colors show")},
+                switchRow(Switch,"pastelDms","Only in DMs and groups","Names in servers keep Discord's own colors.",rowIcon(8471,"ChatIcon")),
+                switchRow(Switch,"pastelMembers","In the member list","Names in the member list get the same color as in chat.",rowIcon(8489,"GroupIcon"))),
             footnote("note","Each person always gets the same color, on every device.")];
         return settingsBody(ui,groups);
     }
@@ -19452,6 +19457,45 @@
         copy.tagBackgroundColor = tint;
         return copy;
     }
+    // The member list (#143): UserRow (10531) draws every person in a server's or group's member list. Pastel name colors
+    // gives the name its pastel color, by the same rules as chat (no role color, or every name with Replace role colors),
+    // and Show owner and mod tags puts the same tag as in chat after the name. Each has its own switch, off to start.
+    function memberListProps(props) {
+        if (!props || !props.user || !props.user.id || !enabled("pastelize") || !settings.pastelMembers) return props;
+        const guildId = props.guildId;
+        if (guildId && settings.pastelDms) return props;
+        if (guildId && (!guildMembers || !guildMembers.getMember(guildId, props.user.id))) return props;
+        if (props.usernameColor && !settings.pastelAll) return props;
+        const color = pastelColor(props.user.id, 0.75, 0.6);
+        if (!color) return props;
+        const next = Object.assign({}, props, {usernameColor:color.hex});
+        if (settings.pastelAll) next.roleColors = undefined;
+        return next;
+    }
+    function memberListTag(tree, props) {
+        if (!tree || !React || !RN || !props || !props.guildId || !props.user || !props.user.id || props.user.bot || !enabled("staffTag") || !settings.staffTagMembers) return tree;
+        const kind = staffTagKind(String(props.guildId), String(props.user.id));
+        if (!kind || !settings["staffTag" + kind.charAt(0).toUpperCase() + kind.slice(1)]) return tree;
+        const color = STAFF_TAG_COLORS[kind], label = staffTagText(kind);
+        const chip = el(RN.View, {key:"venus-staff-tag", accessible:true, accessibilityLabel:label,
+            style:{paddingHorizontal:5, paddingVertical:1, borderRadius:4, backgroundColor:color + "33", flexShrink:0}},
+            el(RN.Text, {style:{color, fontSize:11, fontWeight:"700"}, numberOfLines:1}, label));
+        let added = false;
+        return cloneTree(tree, (node, p) => {
+            if (added || p.label == null || typeof p.label === "string" || typeof p.label === "number") return p;
+            added = true;
+            return Object.assign({}, p, {label:el(RN.View, {key:"venus-staff-label", style:{flexDirection:"row", alignItems:"center", gap:6, flexShrink:1}}, p.label, chip)});
+        }, 0, () => added);
+    }
+    function memberListRow(orig, self, args) {
+        const props = memberListProps(args[0]);
+        if (props === args[0]) return memberListTag(orig.apply(self, args), props);
+        const next = Array.from(args); next[0] = props;
+        return memberListTag(orig.apply(self, next), props);
+    }
+    // Every row of the list renders through here as (props) or (props, ref): no arguments object on those calls.
+    memberListRow.call1 = (orig, self, props) => { const shown = memberListProps(props); return memberListTag(orig.call(self, shown), shown); };
+    memberListRow.call2 = (orig, self, props, ref) => { const shown = memberListProps(props); return memberListTag(orig.call(self, shown, ref), shown); };
     // Switched on or off, or an option changed: redraw the chat that's open, the way Message highlights does.
     function staffTagChanged() {
         staffTag.cache.clear(); staffTag.size = 0;
@@ -19504,6 +19548,8 @@
                 switchRow(Switch, "staffTagAdmin", "Admins", "Anyone with the Administrator permission.", rowIcon(10733, "ShieldIcon")),
                 switchRow(Switch, "staffTagManager", "Managers", "Anyone who can manage the server, its roles or its channels.", rowIcon(16625, "WrenchIcon")),
                 switchRow(Switch, "staffTagMod", "Moderators", "Anyone who can kick, ban, time out or delete messages.", rowIcon(8895, "ShieldUserIcon"))),
+            el(Group, {key:"where", title:tr("Where tags show")},
+                switchRow(Switch, "staffTagMembers", "In the member list", "The tag shows after names in the server's member list too.", rowIcon(8489, "GroupIcon"))),
             footnote("note", "Tags come from the roles you can see, and each person only gets their highest one. Bots keep their own tags.")
         ];
         return settingsBody(ui, groups);
@@ -24021,7 +24067,9 @@
             case 13788: return features.platformIndicators ? hookComponent(exports, platformHeader) : exports;
             case 17165: return features.platformIndicators ? hookComponent(exports, platformDmRow) : exports;
             // User list rows (UserRow, default export) and voice panel rows (FormComponents' named MemberRowItem).
-            case 10531: return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList")) : exports;
+            case 10531:
+                if (features.pastelize || features.staffTag) exports = hookComponent(exports, memberListRow);
+                return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList")) : exports;
             case 9069: return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList"), "MemberRowItem") : exports;
             // Profile "in voice" users (UserProfileActivityVoiceChannelUsers): private UserRow rows.
             case 14076:
