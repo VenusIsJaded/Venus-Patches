@@ -53,6 +53,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Edit without "(edited)" | Edits your latest message without the tag by resending it |
 | | Delete without a trace | Blanks a message before deleting it, so loggers keep nothing |
 | | Edit messages on this phone | Change how any message reads, only on your phone |
+| | Local bookmarks | Bookmark as many messages as you like, kept on this phone instead of your account |
 | **People** | Pastel name colors | Soft colors for names without a role color |
 | | Show device indicators | Device icons next to names |
 | | Show owner and mod tags | Owner, Admin and Mod tags in chat (based on StaffTag by mwittrien) |
