@@ -59,6 +59,8 @@ object BackgroundMedia {
     const val NOTIFICATION_ID = 0x7e5a5
     private const val PREFS = "venus-patches.json"
     private const val MAX_PREFS = 4 * 1024 * 1024
+    private const val MAX_ART_BYTES = 2 * 1024 * 1024
+    private const val MAX_ART_SIDE = 512
     private const val CHANNEL = "venus_media"
     private const val ACTION_TOGGLE = "app.venus.media.TOGGLE"
     private const val ACTION_BACK = "app.venus.media.BACK"
@@ -629,17 +631,44 @@ object BackgroundMedia {
             var bitmap: Bitmap? = null
             try {
                 val connection = URL(wanted).openConnection() as HttpURLConnection
-                connection.connectTimeout = 8000
-                connection.readTimeout = 8000
-                val stream = connection.inputStream
-                try { bitmap = BitmapFactory.decodeStream(stream) } finally { stream.close(); connection.disconnect() }
+                try {
+                    connection.connectTimeout = 8000
+                    connection.readTimeout = 8000
+                    if (connection.contentLength > MAX_ART_BYTES) return@Runnable
+                    val bytes = java.io.ByteArrayOutputStream()
+                    val stream = connection.inputStream
+                    try {
+                        val buffer = ByteArray(8192)
+                        while (true) {
+                            val count = stream.read(buffer)
+                            if (count < 0) break
+                            if (count == 0) continue
+                            if (bytes.size() > MAX_ART_BYTES - count) return@Runnable
+                            bytes.write(buffer, 0, count)
+                        }
+                    } finally { stream.close() }
+                    val data = bytes.toByteArray()
+                    val bounds = BitmapFactory.Options()
+                    bounds.inJustDecodeBounds = true
+                    BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
+                    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@Runnable
+                    val options = BitmapFactory.Options()
+                    // Power-of-two subsampling also bounds decoded memory when a small file declares a huge image.
+                    while ((bounds.outWidth.toLong() + options.inSampleSize - 1) / options.inSampleSize > MAX_ART_SIDE ||
+                        (bounds.outHeight.toLong() + options.inSampleSize - 1) / options.inSampleSize > MAX_ART_SIDE) {
+                        options.inSampleSize *= 2
+                    }
+                    bitmap = BitmapFactory.decodeByteArray(data, 0, data.size, options)
+                } finally { connection.disconnect() }
             } catch (_: Throwable) { }
             val loaded = bitmap ?: return@Runnable
             main.post(Runnable {
-                if (artUrl != wanted || session == null) return@Runnable
-                art = loaded
-                refreshAudio(true)
-                if (foreground) MediaService.instance?.promote() else post()
+                try {
+                    if (artUrl != wanted || session == null) return@Runnable
+                    art = loaded
+                    refreshAudio(true)
+                    if (foreground) MediaService.instance?.promote() else post()
+                } catch (_: Throwable) { }
             })
         }, "venus-media-art").start()
     }
@@ -684,7 +713,7 @@ object BackgroundMedia {
         }
         // A skip doesn't change play/pause, so sync() alone never published the new position: the notification's and lock
         // screen's seek bar stayed where it was (#145). Refresh the playback state after every action.
-        main.postDelayed(Runnable { sync(); if (session != null && audioPlayer != null) refreshAudio(false) }, 120)
+        main.postDelayed(Runnable { try { sync(); if (session != null && audioPlayer != null) refreshAudio(false) } catch (_: Throwable) { } }, 120)
     }
 
     private fun videoAction(action: String) {
@@ -694,7 +723,7 @@ object BackgroundMedia {
             ACTION_BACK -> call(player, "seekTo", Math.max(0L, position(player) - skipMs()))
             ACTION_FORWARD -> { val end = duration(player); val to = position(player) + skipMs(); call(player, "seekTo", if (end > 0) Math.min(end, to) else to) }
         }
-        main.postDelayed(Runnable { sync() }, 120)
+        main.postDelayed(Runnable { try { sync() } catch (_: Throwable) { } }, 120)
     }
 
     /** Follows the players: play/pause from anywhere (the message's own button too), and the end of the recording. */
@@ -738,18 +767,23 @@ object BackgroundMedia {
     private object NoisyReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             // Headphones unplugged or disconnected: pause instead of playing out loud.
-            if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY && audioPlaying) audioAction(ACTION_TOGGLE)
+            try { if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY && audioPlaying) audioAction(ACTION_TOGGLE) } catch (_: Throwable) { }
         }
     }
 
     private object SessionCallback : MediaSession.Callback() {
-        override fun onPlay() { if (!audioPlaying) audioAction(ACTION_TOGGLE) }
-        override fun onPause() { if (audioPlaying) audioAction(ACTION_TOGGLE) }
-        override fun onStop() { audioAction(ACTION_STOP) }
-        override fun onRewind() { audioAction(ACTION_BACK) }
-        override fun onFastForward() { audioAction(ACTION_FORWARD) }
-        override fun onSeekTo(pos: Long) { call(audioPlayer, "seekTo", Math.max(0L, pos)); main.postDelayed(Runnable { refreshAudio(false); post() }, 120) }
-        override fun onCustomAction(action: String, extras: android.os.Bundle?) { audioAction(action) }
+        override fun onPlay() { try { if (!audioPlaying) audioAction(ACTION_TOGGLE) } catch (_: Throwable) { } }
+        override fun onPause() { try { if (audioPlaying) audioAction(ACTION_TOGGLE) } catch (_: Throwable) { } }
+        override fun onStop() { try { audioAction(ACTION_STOP) } catch (_: Throwable) { } }
+        override fun onRewind() { try { audioAction(ACTION_BACK) } catch (_: Throwable) { } }
+        override fun onFastForward() { try { audioAction(ACTION_FORWARD) } catch (_: Throwable) { } }
+        override fun onSeekTo(pos: Long) {
+            try {
+                call(audioPlayer, "seekTo", Math.max(0L, pos))
+                main.postDelayed(Runnable { try { refreshAudio(false); post() } catch (_: Throwable) { } }, 120)
+            } catch (_: Throwable) { }
+        }
+        override fun onCustomAction(action: String, extras: android.os.Bundle?) { try { audioAction(action) } catch (_: Throwable) { } }
     }
 
     // ===================================================================== bridge
@@ -777,11 +811,13 @@ object BackgroundMedia {
                 "meta" -> {
                     val id = json.optString("messageId", "")
                     main.post(Runnable {
-                        if (id.length > 0) {
-                            if (metas.length() > 30) { val keys = metas.keys(); while (keys.hasNext()) { keys.next(); keys.remove() } }
-                            metas.put(id, json)
-                            if (session != null && jstr(audioKey).startsWith("$id|")) { refreshAudio(true); if (foreground) MediaService.instance?.promote() else post() }
-                        }
+                        try {
+                            if (id.length > 0) {
+                                if (metas.length() > 30) { val keys = metas.keys(); while (keys.hasNext()) { keys.next(); keys.remove() } }
+                                metas.put(id, json)
+                                if (session != null && jstr(audioKey).startsWith("$id|")) { refreshAudio(true); if (foreground) MediaService.instance?.promote() else post() }
+                            }
+                        } catch (_: Throwable) { }
                     })
                     promise.resolve(true)
                 }
