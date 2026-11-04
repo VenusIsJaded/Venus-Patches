@@ -21614,8 +21614,12 @@
         bookmarkIndex().sorted.forEach(entry => { if (!bookmarks.serverSaved(entry.c, entry.m)) n++; });
         return n;
     }
+    // Discord asks isMessageBookmarked(channelId, messageId) (LongPressMessageActionSheet 9978).
     function bookmarkIsMarked(orig, self, args) {
-        if (bookmarksOn() && args[0] != null && bookmarkIndex().byId.has(String(args[0]))) return true;
+        if (bookmarksOn()) {
+            const idx = bookmarkIndex();
+            if (args.length > 1 ? idx.byKey.has(args[0] + "-" + args[1]) : args[0] != null && idx.byId.has(String(args[0]))) return true;
+        }
         return orig.apply(self, args);
     }
     function bookmarkGetSaved(orig, self, args) {
