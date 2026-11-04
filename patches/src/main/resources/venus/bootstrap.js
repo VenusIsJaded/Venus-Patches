@@ -29,7 +29,7 @@
     if (features.readAll) targetModules[17439] = 1;
     if (features.quests) selectModules([584, 7656, 10002, 14713, 14748]);
     if (features.badges) selectModules([584, 1392, 6015, 8590, 10002, 14713, 14748]);
-    if (features.systemEmoji) targetModules[7098] = 1;
+    if (features.systemEmoji) selectModules([7098, 9840, 9841]);
     if (features.gestures) selectModules([8254, 9738, 13762, 12935, 1392, 11114]);
     if (features.validUser) selectModules([584, 1392]);
     if (features.youBarSettings) targetModules[17538] = 1;
@@ -11958,6 +11958,48 @@
             textEmojiStyle:[props.textEmojiStyle, {fontFamily:"VenusEmoji"}]});
         return Object.assign({}, props, {forceTextEmoji:true});
     }
+    // The sheet you get by tapping an emoji in chat (#145) draws its big emoji with an Emoji of its own
+    // (StandardEmojiContent 9840), not the shared one above: an image from getURL, or the surrogate as text only when
+    // there's no URL. So it kept Discord's picture. That inner element ({surrogate}) is swapped for the text branch,
+    // with Discord's own styles (useSharedMessageEmojiStyles 9841), which the phone's or the imported font draws.
+    const sheetEmoji = {useStyles:undefined};
+    function SystemSheetEmoji(props) {
+        if (sheetEmoji.useStyles === undefined) sheetEmoji.useStyles = inspectedExport(9841, "useSharedMessageEmojiStyles") || null;
+        // Always called when found (it's a hook), so the hook count never changes between renders.
+        const styles = typeof sheetEmoji.useStyles === "function" ? sheetEmoji.useStyles() || {} : {};
+        const font = emojiSourceInUse === "file" ? {fontFamily:"VenusEmoji"} : null;
+        return el(RN.View, {style:styles.emojiWrapper},
+            el(RN.Text, {style:font ? [styles.emojiSurrogate, font] : styles.emojiSurrogate, accessible:false}, props.surrogate));
+    }
+    function systemEmojiSheet(orig, self, args) {
+        const tree = orig.apply(self, args);
+        return !emojiInUse || !features.systemEmoji || !React || !RN || !tree ? tree : swapSheetEmoji(tree);
+    }
+    // Replaces the first function element with a surrogate prop (the sheet's own Emoji), never the sheet itself.
+    function swapSheetEmoji(tree) {
+        let swapped = false;
+        const walk = (node, depth) => {
+            if (!node || typeof node !== "object" || depth > 24 || swapped) return node;
+            if (Array.isArray(node)) {
+                let out = node;
+                for (let i = 0; i < node.length; i++) {
+                    const next = walk(node[i], depth + 1);
+                    if (next !== node[i]) { if (out === node) out = node.slice(); out[i] = next; }
+                }
+                return out;
+            }
+            const props = node.props;
+            if (!props) return node;
+            if (node !== tree && typeof node.type === "function" && node.type !== SystemSheetEmoji && typeof props.surrogate === "string" && props.surrogate) {
+                swapped = true;
+                return React.createElement(SystemSheetEmoji, {key:node.key, surrogate:props.surrogate});
+            }
+            const kids = props.children;
+            const next = kids && typeof kids === "object" ? walk(kids, depth + 1) : kids;
+            return next === kids ? node : React.cloneElement(node, Object.assign({}, props, {children:next}));
+        };
+        return walk(tree, 0);
+    }
     function cloneWith(object, key, value) {
         // ES module markers, React tags, symbols and lazy getters are not necessarily enumerable.
         // Object.assign loses them and Metro imports the exports object as a component.
@@ -22990,6 +23032,7 @@
             case 15048: return features.reviewDB ? hookExport(exports, "ContextMenuPopout", reviewMenu) : exports;
             case 14995: return features.reviewDB ? hookComponent(exports, reviewGuild) : exports;
             case 7098: return features.systemEmoji && exports && exports.default ? replaceValue(exports, "default", propsComponent(exports.default, systemEmojiProps)) : exports;
+            case 9840: return features.systemEmoji ? hookComponent(exports, systemEmojiSheet) : exports;
             case 15602: exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG); return exports;
             case 11084: return hookExport(exports, "createList", settingsSections);
             case 15733: SettingsList = exports.SettingsList; return exports;

@@ -263,6 +263,8 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 9738 | `modules/double_tap_to_react/native/DoubleTapReminderToast.tsx` | maybeShowDoubleTapReminderToast | DoubleTapReminderToast |
 | 9767 | `modules/app_icons/native/AppIconConstants.tsx` | getDefaultIcon, getOfficialAlternateIcons, getLimitedAlternateIcons | AppIconConstants |
 | 9839 | `modules/messages/native/emoji/MessageEmojiActionSheet.tsx` | default | MessageEmojiActionSheet (Clone emojis and stickers) |
+| 9840 | `modules/messages/native/emoji/StandardEmojiContent.tsx` | default | StandardEmojiContent (Use your phone's emojis: emoji sheet) |
+| 9841 | `modules/messages/native/emoji/useSharedMessageEmojiStyles.tsx` | useSharedMessageEmojiStyles | useSharedMessageEmojiStyles (Use your phone's emojis: emoji sheet) |
 | 9845 | `actions/EmojiActionCreators.tsx` | uploadEmoji | EmojiActionCreators (Clone emojis and stickers) |
 | 9851 | `design/components/Icon/native/redesign/generated/StarIcon.tsx` | StarIcon | StarIcon |
 | 9873 | `design/components/Icon/native/redesign/generated/FlagIcon.tsx` | FlagIcon | FlagIcon (Remove anything: Report) |

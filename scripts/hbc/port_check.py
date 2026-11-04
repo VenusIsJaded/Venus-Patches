@@ -150,6 +150,8 @@ BOOTSTRAP_MODULES = [
     (7017, 'design/components/Icon/native/redesign/generated/MagnifyingGlassIcon.tsx', ['MagnifyingGlassIcon'], 'MagnifyingGlassIcon'),
     (7077, 'actions/ReadStateActionCreators.tsx', ['ack', 'ackCategory', 'ackChannel'], 'ReadStateActionCreators'),
     (7098, 'modules/emojis/native/Emoji.tsx', ['default'], 'Emoji'),
+    (9840, 'modules/messages/native/emoji/StandardEmojiContent.tsx', ['default'], 'StandardEmojiContent (Use your phone\'s emojis: emoji sheet)'),
+    (9841, 'modules/messages/native/emoji/useSharedMessageEmojiStyles.tsx', ['useSharedMessageEmojiStyles'], 'useSharedMessageEmojiStyles (Use your phone\'s emojis: emoji sheet)'),
     (7101, 'design/components/Icon/native/redesign/generated/CheckmarkSmallIcon.tsx', ['CheckmarkSmallIcon'], 'CheckmarkSmallIcon'),
     (7117, 'design/components/Sheet/native/BottomSheetTitleHeader.native.tsx', ['BottomSheetTitleHeader'], 'BottomSheetTitleHeader'),
     (7165, None, ['Clipboard', 'Platform', 'addListener'], 'Clipboard'),
