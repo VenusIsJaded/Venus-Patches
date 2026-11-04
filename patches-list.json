@@ -8,6 +8,7 @@
       "default": true,
       "category": "Features",
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": [
