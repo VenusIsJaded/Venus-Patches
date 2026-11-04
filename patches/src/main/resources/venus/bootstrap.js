@@ -17,10 +17,10 @@
     if (features.cleanChannels) selectModules([2068, 5521, 5512, 7635]);
     if (features.favouriteAnything) selectModules([13989, 10035, 10038]);
     if (features.freeNitro) selectModules([1392, 2068, 6243, 6286, 4864, 15066, 7323, 7445]);
-    if (features.noTyping) targetModules[12849] = 1;
+    if (features.noTyping) selectModules([12849, 2068, 10596, 17245, 17433, 17434]);
     if (features.fakeDeafen) selectModules([14755, 18341]);
     if (features.quickDelete) selectModules([5400, 1128]);
-    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978, 11114]);
+    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978, 11114, 10596, 14015, 17245, 17433, 17434]);
     if (features.jumpToTop) selectModules([12920, 12921, 12922, 9683, 7445, 5532]);
     if (features.hiddenChannels) selectModules([1087, 1098, 1114, 2068, 2119, 4843, 7517, 4845, 5521, 7445, 584, 1392, 17357, 8495, 6291, 6362, 14975, 7748, 14788, 17190, 8727]);
     if (features.pastelize) selectModules([8013, 1266, 2128]);
@@ -87,7 +87,7 @@
     // Every feature starts off: nothing changes in Discord until you turn it on. Options inside a feature keep
     // their own defaults, so turning a feature on does what it says straight away.
     const settings = { debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
-        noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
+        noTyping: false, noTypingServers: true, noTypingGroups: true, noTypingDms: true, noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
         jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
         quests:false, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true,
         badges:false, badgesGameTime:true, badgesUniqueGames:true, badgesCycleMinutes:15, badgesGamesAtOnce:2, systemFont:false, systemFontSource:"phone",
@@ -105,7 +105,7 @@
     function defaultSettings() {
         return DEFAULT_SETTINGS || (DEFAULT_SETTINGS = Object.freeze({
             debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
-            noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
+            noTyping: false, noTypingServers: true, noTypingGroups: true, noTypingDms: true, noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
             jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
             quests: false, questsVideo: true, questsPlay: true, questsActivity: true, questsEnroll: true,
             badges: false, badgesGameTime: true, badgesUniqueGames: true, badgesCycleMinutes: 15, badgesGamesAtOnce: 2, systemFont: false, systemFontSource: "phone",
@@ -190,6 +190,10 @@
     // How you ask in "Only when you ask" (#82): the bar at the top of a chat, Translate in a message's menu, or both.
     // One choice instead of two switches, so there's always a way to translate.
     const TRANSLATE_ASKS = ["both", "bar", "menu"];
+    // Keep deleted messages (#143): everywhere apart from places you never keep, or only places you always keep.
+    const NODELETE_WHERE = ["all", "chosen"];
+    // Venus rules (#143): what a rules setting last parsed to, so a delete or a keystroke never parses it again.
+    const RULES = {cache:new Map(), folders:null, folderList:null, folderOf:null}, RULES_MAX = 500;
     // Where the GIF picker's GIFs come from with Bring back Tenor GIFs on: Tenor first with Discord's own mixed in, or only Tenor.
     const TENOR_SOURCES = ["both", "tenor"];
     // Where Use your phone's font / emojis get their look: the phone's own, or a font file you imported.
@@ -467,6 +471,8 @@
         if (key === "fixEmbedsOptions") return fixOptionsClean(value);
         if (key === "translateSkip") return translateSkipText(value);
         if (key === "guildLurkIds") return guildLurkText(value);
+        if (key === "noDeleteRules" || key === "noTypingRules") return rulesText(value);
+        if (key === "noDeleteWhere") return NODELETE_WHERE.includes(value) ? value : undefined;
         if (key === "customIdleMinutes") return customIdleValue(value);
         if (key === "platformSpoofDevice") return SPOOF_DEVICES.includes(value) ? value : undefined;
         if (key === "backgroundMediaSkip") return [5, 10, 15, 30].includes(value) ? value : undefined;
@@ -571,6 +577,12 @@
             if (clean === undefined) return false;
             if (settings.translateSkip === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings.translateSkip = clean; dirty.add(key); save(); notify(key); translateChanged(); return true;
+        }
+        if (key === "noDeleteRules" || key === "noTypingRules" || key === "noDeleteWhere") {
+            const clean = acceptedSetting(key, value);
+            if (clean === undefined) return false;
+            if (settings[key] === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings[key] = clean; dirty.add(key); save(); notify(key); return true;
         }
         if (key === "guildLurkIds") {
             const clean = guildLurkText(value);
@@ -1197,7 +1209,7 @@
     const featureFor = key => {
         const cached = featureTable[key];
         if (cached !== undefined) return cached;
-        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^compressUploads[A-Z]/.test(key) ? "compressUploads" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : /^expandBar[A-Z]/.test(key) ? "expandBar" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^viewRaw[A-Z]/.test(key) ? "viewRaw" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : /^customIdle[A-Z]/.test(key) ? "customIdle" : /^fastDeleteChannels[A-Z]/.test(key) ? "fastDeleteChannels" : /^platformSpoof[A-Z]/.test(key) ? "platformSpoof" : /^silentEdit[A-Z]/.test(key) ? "silentEdit" : /^localEdit[A-Z]/.test(key) ? "localEdit" : /^listenAlong[A-Z]/.test(key) ? "listenAlong" : /^backgroundMedia[A-Z]/.test(key) ? "backgroundMedia" : /^fakeDeafen[A-Z]/.test(key) ? "fakeDeafen" : key;
+        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^compressUploads[A-Z]/.test(key) ? "compressUploads" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : /^expandBar[A-Z]/.test(key) ? "expandBar" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^noTyping[A-Z]/.test(key) ? "noTyping" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^viewRaw[A-Z]/.test(key) ? "viewRaw" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : /^customIdle[A-Z]/.test(key) ? "customIdle" : /^fastDeleteChannels[A-Z]/.test(key) ? "fastDeleteChannels" : /^platformSpoof[A-Z]/.test(key) ? "platformSpoof" : /^silentEdit[A-Z]/.test(key) ? "silentEdit" : /^localEdit[A-Z]/.test(key) ? "localEdit" : /^listenAlong[A-Z]/.test(key) ? "listenAlong" : /^backgroundMedia[A-Z]/.test(key) ? "backgroundMedia" : /^fakeDeafen[A-Z]/.test(key) ? "fakeDeafen" : key;
     };
     // Section titles are read whenever Discord draws the list, so they follow the language too. "Venus" is a name.
     function section(label, keys) {
@@ -1265,7 +1277,8 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
+    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Venus rules", "Always keep", "Never keep", "Keep messages from"],
+        noTyping:["Venus rules", "Hide my typing in", "Always hide", "Always show"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "While Discord is open", "Same theme on every account"],
@@ -1771,7 +1784,7 @@
         withOptions("sending", "fixEmbeds", "VENUS_FIXEMBEDS", "Fix link previews", "Links to X, Instagram, TikTok, Tumblr and more show the post.", "Link previews", FixEmbedsSettings);
         toggle("sending", "voice", "Send audio as voice messages", "Audio files are sent as voice messages. Android 10 or newer.");
         toggle("sending", "splitMessages", "Send long messages", "Type past the limit. Long messages are sent in parts.");
-        toggle("sending", "noTyping", "Hide typing indicator", "Others won't see when you're typing.");
+        withOptions("sending", "noTyping", "VENUS_NOTYPING", "Hide typing indicator", "Others won't see when you're typing.", "Hide typing indicator", NoTypingSettings);
         toggle("sending", "picker", "Show file sizes when attaching", "Photos and videos in the picker show their size.");
         toggle("sending", "anonFiles", "Anonymous file names", "Files you send get a random name instead of the one on your phone.");
         withOptions("sending", "compressUploads", "VENUS_COMPRESSUPLOADS", "Compress big files", "Photos, videos and audio over Discord's file size limit are made smaller to fit as you send them, instead of being refused.", "Compress big files", CompressUploadsSettings);
@@ -3333,9 +3346,20 @@
     // startTyping(channelId) and stopTyping(channelId) take one argument: the one-argument call skips the arguments
     // object and apply (Hermes HBC98: 35.6 -> 16.4 us per 100 calls, 1.97x).
     function typing(orig, self, args) {
-        return enabled("noTyping") ? undefined : orig.apply(self, args);
+        return typingHidden(args[0]) ? undefined : orig.apply(self, args);
     }
-    typing.call1 = (orig, self, channelId) => enabled("noTyping") ? undefined : orig.call(self, channelId);
+    typing.call1 = (orig, self, channelId) => typingHidden(channelId) ? undefined : orig.call(self, channelId);
+    // Where your typing is hidden (#143): a Venus rule for the channel, its server or its folder first, then the switch for
+    // that kind of chat. A chat Discord hasn't loaded stays hidden, as it always was.
+    function typingHidden(channelId) {
+        if (!enabled("noTyping")) return false;
+        const rule = placeRule(settings.noTypingRules, channelId, null);
+        if (rule !== undefined) return rule;
+        const channel = rulesChannel(channelId);
+        if (!channel) return true;
+        if (channel.guild_id) return !!settings.noTypingServers;
+        return channel.type === 3 ? !!settings.noTypingGroups : !!settings.noTypingDms;
+    }
     // Fake deafen: look deafened to everyone else while you can still hear. The mic is really muted, and the voice state
     // Discord sends (LocalVoiceStateManager 14755, didCommit) says muted and deafened. It lasts only while the mic stays
     // muted, so nothing you do can leave you talking while you look deafened. It's switched from the voice controls
@@ -3779,6 +3803,7 @@
         if (silentRemoving.size && silentRemoving.has(key)) return false;
         const message = msgStore && msgStore.getMessage(event.channelId,event.id);
         if (!retainable(message, event)) return false;
+        if (!noDeleteAllowed(event.channelId, message.author && message.author.id)) return false;
         logMessage("d", message, event.channelId, message.content || "");
         while (deleted.size >= keepCap()) {
             const pending = dropDeleted(deleted.keys().next().value);
@@ -3851,6 +3876,7 @@
         try { current = msgStore.getMessage(update.channel_id, update.id); } catch (_) { return; }
         const before = current && current.content;
         if (typeof before !== "string" || before === update.content) return;
+        if (!noDeleteAllowed(update.channel_id, current.author && current.author.id)) return;
         logMessage("e", current, update.channel_id, update.content, before);
         if (!settings.noDeleteEdits) return;
         const key = deletedKey(update.channel_id, update.id);
@@ -4072,6 +4098,204 @@
         const count = Array.isArray(message.attachments) ? message.attachments.length : 0;
         if (count) entry.f = count;
         logAdd(logs.messages, entry);
+    }
+    // Venus rules (#143): a choice for one server, folder, channel, DM, group or person that wins over a feature's own
+    // settings. Hold any of them (or open a person's ⋯ menu) and tap Venus rules. Saved as "kind+id:+/-" pairs
+    // (g server, f folder, c channel, u person) in one setting per feature, so backups carry them like anything else.
+    // The most specific rule wins: a person, then the channel (or the channel a thread is in, then its category), then the
+    // server, then its folder. So keeping one person in a channel you never keep keeps only them.
+    const RULES_SHEET = "VenusRules", RULE_SETTINGS = {noDelete:"noDeleteRules", noTyping:"noTypingRules"};
+    function rulesParse(text) {
+        let hit = RULES.cache.get(text);
+        if (hit) return hit;
+        hit = new Map();
+        if (text) text.split(",").forEach(part => { const m = /^([gfcu])(\d{1,20}):([+-])$/.exec(part); if (m) hit.set(m[1] + m[2], m[3] === "+"); });
+        if (RULES.cache.size > 8) RULES.cache.clear();
+        RULES.cache.set(text, hit);
+        return hit;
+    }
+    function rulesText(raw) {
+        if (typeof raw !== "string" || raw.length > 16000) return undefined;
+        const seen = new Map();
+        raw.split(",").forEach(part => { const m = /^([gfcu])(\d{1,20}):([+-])$/.exec(part.trim()); if (m) { seen.delete(m[1] + m[2]); seen.set(m[1] + m[2], m[3]); } });
+        return Array.from(seen).slice(-RULES_MAX).map(([key, value]) => key + ":" + value).join(",");
+    }
+    // The folder a server sits in, from SortedGuildStore (6219), rebuilt only when Discord hands out a new folder list.
+    function rulesFolders() {
+        const store = RULES.folders || (RULES.folders = inspectedExport(6219, "default"));
+        let list = null;
+        try { list = store && typeof store.getGuildFolders === "function" ? store.getGuildFolders() : null; } catch (_) { list = null; }
+        return Array.isArray(list) ? list : [];
+    }
+    function rulesFolderOf(guildId) {
+        const list = rulesFolders();
+        if (RULES.folderList !== list) {
+            RULES.folderList = list; RULES.folderOf = new Map();
+            list.forEach(folder => { if (folder && folder.folderId != null && Array.isArray(folder.guildIds)) folder.guildIds.forEach(id => RULES.folderOf.set(String(id), folder)); });
+        }
+        return RULES.folderOf.get(String(guildId)) || null;
+    }
+    function rulesChannel(id) {
+        try { const store = channelStore || inspectedExport(2068, "default"); return store && id != null ? store.getChannel(String(id)) : null; } catch (_) { return null; }
+    }
+    // true / false from the most specific rule that matches, or undefined when none does.
+    function placeRule(text, channelId, userId) {
+        if (!text) return undefined;
+        const rules = rulesParse(text);
+        if (!rules.size) return undefined;
+        let rule = userId != null ? rules.get("u" + userId) : undefined;
+        if (rule !== undefined || channelId == null) return rule;
+        let channel = rulesChannel(channelId), id = String(channelId);
+        for (let depth = 0; depth < 3; depth++) {
+            rule = rules.get("c" + id);
+            if (rule !== undefined) return rule;
+            if (!channel || !channel.parent_id) break;
+            id = String(channel.parent_id); channel = rulesChannel(id);
+        }
+        channel = rulesChannel(channelId);
+        const guild = channel && channel.guild_id;
+        if (!guild) return undefined;
+        rule = rules.get("g" + guild);
+        if (rule !== undefined) return rule;
+        const folder = rulesFolderOf(guild);
+        return folder ? rules.get("f" + folder.folderId) : undefined;
+    }
+    // Keep deleted messages: whether a message here, from this person, is kept and logged.
+    function noDeleteAllowed(channelId, authorId) {
+        const rule = placeRule(settings.noDeleteRules, channelId, authorId);
+        return rule !== undefined ? rule : settings.noDeleteWhere !== "chosen";
+    }
+    function rulesSet(feature, key, value) {
+        const setting = RULE_SETTINGS[feature], map = new Map(rulesParse(settings[setting]));
+        map.delete(key);
+        if (value !== undefined) map.set(key, value);
+        haptic("SELECTION"); animateLayout();
+        setSetting(setting, Array.from(map).map(([k, v]) => k + ":" + (v ? "+" : "-")).join(","));
+    }
+    function ruleLabel(feature, value) {
+        if (feature === "noDelete") return value ? tr("Always keep") : tr("Never keep");
+        return value ? tr("Always hide") : tr("Always show");
+    }
+    // Which features a place can have a rule for: people only matter to Keep deleted messages.
+    function rulesFeaturesFor(kind) {
+        return Object.keys(RULE_SETTINGS).filter(feature => features[feature] && enabled(feature) && (kind !== "u" || feature === "noDelete"));
+    }
+    function rulesPlaceInfo(key) {
+        const kind = key.charAt(0), id = key.slice(1), users = userStore || inspectedExport(1392, "default");
+        if (kind === "g") {
+            let guild = null;
+            try { const store = inspectedExport(2090, "default"); guild = store && store.getGuild(id); } catch (_) {}
+            return {kind:tr("Server"), name:guild && guild.name || id, icon:rowIcon(9545, "ServerIcon")};
+        }
+        if (kind === "f") {
+            const folder = rulesFolders().find(entry => entry && String(entry.folderId) === id);
+            return {kind:tr("Folder"), name:folder && folder.folderName || tr("Folder"), icon:rowIcon(8474, "FolderIcon")};
+        }
+        if (kind === "u") {
+            let user = null;
+            try { user = users && users.getUser(id); } catch (_) {}
+            return {kind:tr("Person"), name:user && (user.globalName || user.username) || id, icon:rowIcon(11671, "UserIcon")};
+        }
+        const channel = rulesChannel(id);
+        if (channel && channel.type === 1) {
+            let user = null;
+            try { user = users && channel.recipients && users.getUser(channel.recipients[0]); } catch (_) {}
+            return {kind:tr("Direct message"), name:user && (user.globalName || user.username) || id, icon:rowIcon(8471, "ChatIcon")};
+        }
+        if (channel && channel.type === 3) return {kind:tr("Group DM"), name:mutualGroupName(channel), icon:rowIcon(8489, "GroupIcon")};
+        return {kind:tr("Channel"), name:channel && channel.name ? (channel.type === 4 ? channel.name : "#" + channel.name) : id, icon:rowIcon(18679, "ChannelListIcon")};
+    }
+    // The sheet: the place's name, then one choice per feature, in Discord's own radio list.
+    function RulesSheet(props) {
+        useSettings();
+        const ui = reviewUI(), key = props.place, info = rulesPlaceInfo(key), Group = ui.TableRowGroup || RN.View;
+        const RadioGroup = inspectedExport(6540, "TableRadioGroup"), RadioRow = inspectedExport(6539, "TableRadioRow");
+        const sections = rulesFeaturesFor(key.charAt(0)).map(feature => {
+            const current = rulesParse(settings[RULE_SETTINGS[feature]]).get(key), value = current === undefined ? "default" : current ? "on" : "off";
+            const choices = feature === "noDelete" ?
+                [["default", tr("Use your settings"), rowIcon(7368, "SettingsIcon")], ["on", ruleLabel(feature, true), rowIcon(6929, "EyeIcon")], ["off", ruleLabel(feature, false), rowIcon(6927, "EyeSlashIcon")]] :
+                [["default", tr("Use your settings"), rowIcon(7368, "SettingsIcon")], ["on", ruleLabel(feature, true), rowIcon(6927, "EyeSlashIcon")], ["off", ruleLabel(feature, false), rowIcon(13747, "KeyboardIcon")]];
+            const title = feature === "noDelete" ? tr("Keep deleted messages") : tr("Hide typing indicator");
+            const change = next => { if (next !== value) rulesSet(feature, key, next === "default" ? undefined : next === "on"); };
+            return RadioGroup && RadioRow ? el(RadioGroup, {key:feature, title, value, onChange:change}, choices.map(([v, label, icon]) => el(RadioRow, {key:v, value:v, label, icon}))) :
+                el(Group, {key:feature, title}, choices.map(([v, label, icon]) => ui.TableRow && el(ui.TableRow, {key:v, label:(value === v ? "\u2713 " : "") + label, icon, onPress:() => change(v)})));
+        });
+        const Sheet = ui.ActionSheet || RN.View;
+        return el(Sheet, {startExpanded:true},
+            ui.Header ? el(ui.Header, {title:info.name, subtitle:info.kind, trailing:ui.Close ? el(ui.Close, {onPress:() => hideReviewSheet(ui, RULES_SHEET)}) : undefined}) : null,
+            el(RN.View, {style:{paddingHorizontal:16, paddingBottom:24, gap:20}}, sections));
+    }
+    function rulesOpen(key) {
+        const ui = reviewUI();
+        if (!React || !RN || !rulesFeaturesFor(key.charAt(0)).length || typeof ui.showSheet !== "function") return;
+        try { ui.showSheet({key:RULES_SHEET, content:el(RulesSheet, {place:key}), stackingBehavior:"stack"}); } catch (_) {}
+    }
+    function rulesItem(key) { return {IconComponent:venusIcon(18745, "ListBulletsIcon"), label:tr("Venus rules"), action:() => later(() => rulesOpen(key), 60)}; }
+    // The server icon's menu (17433) and a folder's (GuildsBarFolderMenuItems 17434): one more row in the same shape.
+    function rulesServerMenu(orig, self, args) {
+        const items = orig.apply(self, args), id = args[0] == null ? "" : String(args[0]);
+        return Array.isArray(items) && /^\d{17,20}$/.test(id) && rulesFeaturesFor("g").length ? items.concat([rulesItem("g" + id)]) : items;
+    }
+    function rulesFolderMenu(orig, self, args) {
+        const items = orig.apply(self, args), raw = args[0];
+        const id = String(raw != null && typeof raw === "object" ? (raw.folderId != null ? raw.folderId : raw.id) : raw);
+        return Array.isArray(items) && /^\d{1,20}$/.test(id) && rulesFeaturesFor("f").length ? items.concat([rulesItem("f" + id)]) : items;
+    }
+    // Channel, DM, group and thread menus: a row like Discord's own, the way View raw data adds one.
+    function rulesChannelHook(sheetKey) {
+        return sheetInnerHook(function (tree, props) {
+            if (!React || !tree || !props || !rulesFeaturesFor("c").length) return tree;
+            const channel = props.channel || props.thread || props.post, id = String(props.channelId || channel && channel.id || "");
+            if (!/^\d{17,20}$/.test(id)) return tree;
+            return sheetAddRow(tree, props, "venus-rules", tr("Venus rules"), venusIcon(18745, "ListBulletsIcon"), () => rulesOpen("c" + id), sheetKey(id));
+        });
+    }
+    const rulesChannelMenu = rulesChannelHook(id => "ChannelLongPress-" + id);
+    const rulesThreadMenu = rulesChannelHook(() => "ThreadLongPressActionSheet");
+    // A person's ⋯ menu: Keep deleted messages can always or never keep what they write.
+    function rulesProfileMenu(orig, self, args) {
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!React || !rendered || !props || !rulesFeaturesFor("u").length) return rendered;
+        const userId = String(props.userId || props.user && props.user.id || ""), Menu = inspectedExport(9662, "ContextMenu"), me = currentUser();
+        if (!Menu || !/^\d{17,20}$/.test(userId) || me && me.id === userId) return rendered;
+        const item = {label:tr("Venus rules"), venusRules:true, action:() => later(() => rulesOpen("u" + userId), 60)};
+        return cloneTree(rendered, (node, nodeProps) => {
+            if (node.type !== Menu || !Array.isArray(nodeProps.items) || nodeProps.items.some(entry => entry && entry.venusRules || Array.isArray(entry) && entry.some(e => e && e.venusRules))) return nodeProps;
+            const items = nodeProps.items, last = items[items.length - 1], grouped = items.some(Array.isArray);
+            const danger = Array.isArray(last) && last.some(entry => entry && entry.variant === "destructive");
+            return Object.assign({}, nodeProps, {items:!grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]])});
+        }, 0);
+    }
+    // The rules on a feature's page: each one opens its sheet again, and its X removes it.
+    function RulesList(props) {
+        useSettings(props.feature);
+        const ui = reviewUI(), feature = props.feature, on = !!props.on, Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
+        const Press = RN.Pressable || RN.TouchableOpacity || RN.View, Remove = venusIcon(6485, "XSmallIcon");
+        const rules = Array.from(rulesParse(settings[RULE_SETTINGS[feature]]));
+        const rows = Row ? rules.map(([key, value]) => {
+            const info = rulesPlaceInfo(key);
+            return el(Row, {key, label:info.name, subLabel:info.kind + " \u00b7 " + ruleLabel(feature, value), icon:info.icon, disabled:!on, onPress:() => rulesOpen(key),
+                trailing:el(Press, {onPress:() => rulesSet(feature, key, undefined), disabled:!on, hitSlop:12, accessibilityRole:"button",
+                    accessibilityLabel:tr("Remove: {name}", {name:info.name})}, el(Remove, {size:"sm"}))});
+        }) : [];
+        const hint = feature === "noDelete" ?
+            footnote("hint", rows.length ? "A rule for a person beats any place, and a channel's beats its server's and folder's." : "Hold a server, folder, channel or DM, or open someone's \u22ef menu, and tap Venus rules.") :
+            footnote("hint", rows.length ? "A rule for a channel beats its server's, and a server's beats its folder's." : "Hold a server, folder, channel or DM and tap Venus rules.");
+        return el(RN.View, {key:"rules", style:{gap:8}}, rows.length ? el(Group, {key:"list", title:tr("Venus rules")}, rows) : groupTitle("title", "Venus rules"), hint);
+    }
+    function NoTypingSettings() {
+        useSettings("noTyping");
+        const ui = reviewUI();
+        if (!React || !RN) return null;
+        const on = enabled("noTyping"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
+        const groups = [
+            on ? null : offCard("status", venusIcon(13747, "KeyboardIcon"), "noTyping"),
+            el(Group, {key:"where", title:tr("Hide my typing in")},
+                switchRow(Switch, "noTypingServers", "Servers", null, rowIcon(9545, "ServerIcon")),
+                switchRow(Switch, "noTypingGroups", "Group DMs", null, rowIcon(8489, "GroupIcon")),
+                switchRow(Switch, "noTypingDms", "Direct messages", null, rowIcon(8471, "ChatIcon"))),
+            el(RulesList, {key:"rules", feature:"noTyping", on})];
+        return settingsBody(ui, groups);
     }
     // A kept message's hold menu (LongPressMessageActionSheet 9978): Dismiss for a deleted message, Remove edit history
     // for an edited one, first in the menu, besides the links in the chat (#130).
@@ -9172,6 +9396,9 @@
             el(Group,{key:"log",title:tr("Log")},
                 logOpenRow(ui,nav,"open",tr("Message log"),logs.messages,rowIcon(5150,"ClockIcon"),on),
                 logChoicesRow(ui,"choices","noDelete",choices,on)),
+            radioGroup(ui,"where","Keep messages from","noDeleteWhere",on,[["all","Everywhere","Every server, DM and group, apart from places you never keep.",rowIcon(9393,"GlobeEarthIcon")],
+                ["chosen","Only places you choose","Only servers, folders, channels and people you always keep.",rowIcon(9851,"StarIcon")]]),
+            el(RulesList,{key:"rules",feature:"noDelete",on}),
             el(Group,{key:"options",title:tr("In chat")},
                 toggle("noDeleteEdits","Show edit history","What a message said before it was edited, faded and crossed out above it. Up to 10 versions each.",rowIcon(10023,"PencilIcon")),
                 toggle("noDeleteSave","Keep after restarting","Deleted and edited messages survive closing Discord. Saved only on this phone, for this account.",rowIcon(5143,"DownloadIcon"))),
@@ -23069,7 +23296,9 @@
                 if (features.serverEdit) exports = hookExport(exports, "default", serverEditMenu);
                 if (features.pauseInvites) exports = hookExport(exports, "default", pauseInvitesMenu);
                 if (features.serverInfo) exports = hookExport(exports, "default", serverInfoMenu);
+                if (features.noDelete || features.noTyping) exports = hookExport(exports, "default", rulesServerMenu);
                 return features.viewRaw ? hookExport(exports, "default", viewRawServerMenu) : exports;
+            case 17434: return features.noDelete || features.noTyping ? hookExport(exports, "getGuildFolderMenuItems", rulesFolderMenu) : exports;
             case 11024: if (features.reviewDB) oauthModal = exports.default; return exports;
             case 6542: if (features.reviewDB) nativeRowGroup = exports.TableRowGroup; return exports;
             case 7172: if (features.reviewDB) nativeSwitchRow = exports.TableSwitchRow; return exports;
@@ -23110,10 +23339,15 @@
             case 12849: return features.noTyping ? replaceValue(exports, "default", hookExport(hookExport(exports.default, "startTyping", typing), "stopTyping", typing)) : exports;
             case 10596:
                 if (features.fastDeleteChannels) exports = hookComponent(exports, fastDeleteSheet);
+                if (features.noDelete || features.noTyping) exports = hookComponent(exports, rulesChannelMenu);
                 return features.viewRaw ? hookComponent(exports, viewRawChannelMenu) : exports;
-            case 17245: return features.viewRaw ? hookComponent(exports, viewRawThreadMenu) : exports;
+            case 17245:
+                if (features.noDelete || features.noTyping) exports = hookComponent(exports, rulesThreadMenu);
+                return features.viewRaw ? hookComponent(exports, viewRawThreadMenu) : exports;
             case 10780: return features.viewRaw ? hookComponent(exports, viewRawPostMenu) : exports;
-            case 14015: return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
+            case 14015:
+                if (features.noDelete) exports = hookComponent(exports, rulesProfileMenu);
+                return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
             case 7158: return features.viewRaw ? hookComponent(exports, viewRawRolesCard) : exports;
             case 7167: return features.viewRaw ? hookExport(exports, "showSimpleActionSheet", viewRawSimpleSheet) : exports;
             case 1128: if (features.quickDelete || features.noConfirmPin || features.fastDeleteChannels) locale = exports; return exports;
