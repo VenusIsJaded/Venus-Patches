@@ -7407,16 +7407,24 @@
     }
     // A text box with Discord's button (Button 5479) beside it, like its own "add" fields.
     function inputWithButton(ui,key,inputProps,onChange,buttonText,onPress,disabled) {
-        const Button=inspectedExport(5479,"Button");
+        const Button=inspectedExport(5479,"Button"), Text=inspectedExport(5187,"Text");
+        // The label goes above the row, not inside Discord's field: the field keeps room under its box, so a button lined up
+        // with a labelled field's bottom sat low next to every pencil's number box and hex field (#145). With the label out,
+        // the button is always centered on the box itself, as it already was on Preview servers' unlabelled field.
+        const label=inputProps && inputProps.label;
+        if (label) inputProps=Object.assign({},inputProps,{label:undefined,accessibilityLabel:inputProps.accessibilityLabel || label});
         const input=ui.TextInput ? el(ui.TextInput,Object.assign({onChange},inputProps)) :
             el(RN.TextInput,Object.assign({onChangeText:onChange,style:{fontSize:16,padding:12}},inputProps));
         const button=Button ? el(Button,{text:tr(buttonText),size:"md",variant:"primary",disabled:!!disabled,onPress}) :
             el(RN.Pressable || RN.View,{onPress:disabled ? undefined : onPress,accessibilityRole:"button",accessibilityLabel:tr(buttonText),disabled:!!disabled,
                 style:{paddingHorizontal:16,height:40,borderRadius:20,justifyContent:"center",backgroundColor:"#5865f2",opacity:disabled ? 0.5 : 1}},
                 el(RN.Text,{style:{color:"#ffffff",fontWeight:"600"}},tr(buttonText)));
-        // With a label above the field the button lines up with the field's bottom edge; without one it's centered on the
-        // field. Bottom-aligned, it sat low next to Discord's field, which keeps room under its box (#145, Preview servers).
-        return el(RN.View,{key,style:{flexDirection:"row",alignItems:inputProps && inputProps.label ? "flex-end" : "center",gap:8}},el(RN.View,{style:{flex:1}},input),button);
+        const row=el(RN.View,{key:label ? "row" : key,style:{flexDirection:"row",alignItems:"center",gap:8}},el(RN.View,{style:{flex:1}},input),button);
+        if (!label) return row;
+        return el(RN.View,{key,style:{gap:8}},
+            Text ? el(Text,{key:"label",variant:"text-sm/medium",color:"text-muted"},label) :
+                el(RN.Text,{key:"label",style:{color:"#949ba4",fontSize:14,fontWeight:"500"}},label),
+            row);
     }
     function hexInt(hex) { const m=/^#?([0-9a-f]{6})$/i.exec(String(hex || "").trim()); return m ? parseInt(m[1],16) : null; }
     function intHex(n) { return typeof n==="number" && isFinite(n) ? "#"+(n & 0xffffff).toString(16).padStart(6,"0") : null; }
