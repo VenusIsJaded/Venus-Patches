@@ -1866,7 +1866,7 @@
         withOptions("messages", "silentEdit", "VENUS_SILENTEDIT", "Edit without the (edited) mark", "Only works when your message is the latest in the chat. Others see a new message, not an edit.", "Silent edit", SilentEditSettings);
         toggle("messages", "silentDelete", "Delete without a trace", "Blanks your message before deleting it, so message loggers have nothing to keep.");
         withOptions("messages", "localEdit", "VENUS_LOCALEDIT", "Edit messages locally", "Change how any message reads on this phone. Only you see it.", "Edit locally", LocalEditSettings);
-        withOptions("messages", "localBookmarks", "VENUS_LOCALBOOKMARKS", "Local bookmarks", "Bookmark as many messages as you like. They're kept on this phone instead of your account.", "Local bookmarks", LocalBookmarksSettings);
+        toggle("messages", "localBookmarks", "Local bookmarks", "Bookmark as many messages as you like. They're kept on this phone instead of your account.");
         withOptions("people", "timezones", "VENUS_TIMEZONES", "Time zones", "Set someone's time zone to see their local time on their messages and profile.", "Time zones", TimezonesSettings);
         withOptions("people", "reviewDB", "VENUS_REVIEWDB", "User and server reviews", "Read and write ReviewDB reviews on profiles and servers.", "Reviews", ReviewSettings);
         withOptions("people", "userNotif", "VENUS_USERNOTIF", "User activity notifications", "Get notified when chosen people change status, type or message.", "Activity notifications", UserNotifSettings);
@@ -21889,35 +21889,6 @@
         bookmarks.replaced = true; bookmarks.loaded = !bookmarks.loading;
         bookmarksIdsRebuild(); bookmarksSave(); bookmarksChanged();
         later(bookmarksFill, 0);
-    }
-    function bookmarksClear() {
-        const user = bookmarkUser();
-        if (!user) return;
-        Array.from(bookmarks.list.keys()).forEach(key => { if (bookmarks.list.get(key).u === user) bookmarks.list.delete(key); });
-        bookmarksIdsRebuild(); bookmarksSave(); bookmarksChanged();
-        haptic("IMPACT_LIGHT");
-        reviewToast(reviewUI(), "Bookmarks removed", venusIcon(5148, "TrashIcon"));
-    }
-    function LocalBookmarksSettings() {
-        useSettings("localBookmarks");
-        const ui = reviewUI();
-        if (!React || !RN) return null;
-        const on = enabled("localBookmarks"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Icon = venusIcon(13592, "BookmarkIcon");
-        const n = bookmarkIndex().sorted.length, open = inspectedExport(13581, "showForLaterModal");
-        const groups = [
-            !on ? offCard("status", Icon, "localBookmarks") :
-                n ? statusCard("status", "Kept on this phone, with no limit.", {title:pl(n, "{n} bookmark", "{n} bookmarks"), IconComponent:Icon}) :
-                statusCard("status", "Hold any message and tap Bookmark Message. It's saved on this phone instead of your account, with no limit.",
-                    {title:tr("No bookmarks yet"), IconComponent:Icon}),
-            on && n && Row && typeof open === "function" ? el(Group, {key:"open", title:tr("Bookmarks")},
-                el(Row, {key:"open", label:tr("Open bookmarks"), subLabel:tr("Everything you saved, newest first."), icon:rowIcon(13592, "BookmarkIcon"), arrow:true,
-                    onPress:() => { try { open("BOOKMARK"); } catch (_) {} }})) : null,
-            n ? el(Group, {key:"manage", title:tr("Manage")},
-                actionRow(ui, "clear", "Remove all bookmarks", "Only the ones on this phone. Reminders stay.",
-                    () => confirmAction("Remove all bookmarks?", "Every bookmark you kept on this phone goes away. This can't be undone.", "Remove all", bookmarksClear),
-                    !on, true, rowIcon(5148, "TrashIcon"))) : null,
-            footnote("note", "Reminders still sync with your account. Backup and restore includes your bookmarks, so a new phone gets them back.")];
-        return settingsBody(ui, groups);
     }
     // HypeSquad, Custom idle, Pause invites, Fast delete channels, Mutual group DMs and Platform spoof (issue #129 and the
     // requests that came with it). HypeSquad and Pause invites are plain API calls; Custom idle swaps Discord's idle time

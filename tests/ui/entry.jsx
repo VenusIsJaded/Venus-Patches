@@ -65,7 +65,7 @@ const LOGS = {
   ],
 };
 const logText = path => { const m = q.get("log") === "1" && /venus-log-(messages|activity)-\d+\.json$/.exec(path); return m ? JSON.stringify({ version: 1, entries: LOGS[m[1]] }) : null; };
-// Local bookmarks: bookmarks=N gives the signed-in account N saved bookmarks (venus-bookmarks.json).
+// Local bookmarks: bookmarks=N gives the signed-in account N saved bookmarks (venus-bookmarks.json), shown on Backup and restore.
 const bookmarksText = +q.get("bookmarks") > 0 ? JSON.stringify({ version: 1, bookmarks: Array.from({ length: +q.get("bookmarks") }, (_, i) =>
   ({ u: "123456789012345678", c: "110000000000000011", m: String(1300000000000000000n + BigInt(i)), t: Date.now() - i * 3600000 })) }) : null;
 const files = { getConstants: () => ({ DocumentsDirPath: "/docs", CacheDirPath: "/cache" }), getSize() {},
