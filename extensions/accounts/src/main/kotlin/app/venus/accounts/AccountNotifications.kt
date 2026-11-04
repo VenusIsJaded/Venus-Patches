@@ -24,6 +24,11 @@ object AccountNotifications {
     // The settings file is read again only when it changed, so a burst of pushes costs one stat each.
     @Volatile private var stamp = Long.MIN_VALUE
     @Volatile private var allowed = false
+    @Volatile private var labels = false
+
+    /** display$1's captured account label, and Discord's getTitle(NotificationData, Context), looked up once. */
+    @Volatile private var labelField: java.lang.reflect.Field? = null
+    @Volatile private var titleGetter: java.lang.reflect.Method? = null
 
     /** NotificationData's receiving account getter (Kotlin's mangled name for a value-class result), looked up once. */
     @Volatile private var receivingGetter: java.lang.reflect.Method? = null
@@ -52,19 +57,62 @@ object AccountNotifications {
         }
     }
 
+    /**
+     * Which account a notification is for (#152). Discord puts the receiving account's name (getAccountLabel) in the
+     * notification's subtext, but Android's conversation layout (Android 11 and newer, every Discord message with a
+     * shortcut) never draws the subtext, so the name never showed. The patched renderer passes the conversation title
+     * through here: for another saved account it becomes "#channel · account" or, in a DM, "Mika · account", which every
+     * layout shows. [owner] is the renderer's coroutine, which holds the label Discord worked out ($accountLabel: null
+     * for the account you're on, or with fewer than two saved accounts). Any problem keeps Discord's own title.
+     */
+    @JvmStatic
+    fun title(title: CharSequence?, notification: Any?, context: Context?, owner: Any?): CharSequence? {
+        try {
+            if (context == null || notification == null || owner == null || !labelsOn(context)) return title
+            var field = labelField
+            if (field == null || field.declaringClass != owner.javaClass) {
+                field = owner.javaClass.getDeclaredField("\$accountLabel")
+                field!!.isAccessible = true
+                labelField = field
+            }
+            val label = field!!.get(owner) as? String ?: return title
+            if (label.length == 0) return title
+            var base: CharSequence? = title
+            if (base == null || base.length == 0) {
+                var getter = titleGetter
+                if (getter == null) {
+                    getter = Class.forName("com.discord.notifications.renderer.utils.NotificationDataUtilsKt", false, notification.javaClass.classLoader)
+                        .getMethod("getTitle", notification.javaClass, Context::class.java)
+                    titleGetter = getter
+                }
+                base = getter!!.invoke(null, notification, context) as? CharSequence
+            }
+            if (base == null || base.length == 0) return label
+            return StringBuilder(base.length + label.length + 3).append(base).append(" \u00b7 ").append(label).toString()
+        } catch (_: Throwable) {
+            return title
+        }
+    }
+
     /** Account switcher on, Notifications from every account on and While Discord is open on, in Venus' saved settings. */
-    private fun turnedOn(context: Context): Boolean {
+    private fun turnedOn(context: Context): Boolean = refresh(context) && allowed
+
+    /** Account switcher and Notifications from every account on: other accounts' notifications say which account they're for. */
+    private fun labelsOn(context: Context): Boolean = refresh(context) && labels
+
+    /** Reads Venus' saved settings again when the file changed; false when there's no file to read. */
+    private fun refresh(context: Context): Boolean {
         val file = File(context.filesDir, PREFS)
         if (!file.isFile) return false
         val length = file.length()
         if (length > MAX_PREFS) return false
         val now = file.lastModified() * 31 + length
-        if (now == stamp) return allowed
+        if (now == stamp) return true
         val json = org.json.JSONObject(String(java.nio.file.Files.readAllBytes(file.toPath()), java.nio.charset.StandardCharsets.UTF_8))
-        val on = json.optBoolean("accountSwitcher", false) && json.optBoolean("accountSwitcherNotify", true) &&
-            json.optBoolean("accountSwitcherNotifyOpen", true)
-        allowed = on
+        val every = json.optBoolean("accountSwitcher", false) && json.optBoolean("accountSwitcherNotify", true)
+        labels = every
+        allowed = every && json.optBoolean("accountSwitcherNotifyOpen", true)
         stamp = now
-        return on
+        return true
     }
 }
