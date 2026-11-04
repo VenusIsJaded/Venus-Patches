@@ -71,8 +71,9 @@ private const val NATIVE_PROBE = "/libreactnative.so"
  * That's what the S23 Ultra in #158 and the Tab A7 in #147 logged. APKMirror's APKM has all four ABIs, so it never
  * hit this.
  *
- * Reads only the archive's entry names (no extraction). Off-device (Morphe CLI) the phone's ABIs are unknown, so only
- * an APK with no Discord native code at all is refused. A patcher too old to list entries skips the check.
+ * Reads only the archive's entry names (no extraction). Where the phone's ABIs can't be read ([deviceAbis]; always on
+ * a computer), only an APK with no Discord native code at all is refused. A patcher too old to list entries skips the
+ * check.
  */
 private fun checkNativeLibraries(context: app.morphe.patcher.patch.ResourcePatchContext) {
     val entries = try {
@@ -101,19 +102,102 @@ internal fun nativeAbis(entries: Collection<String>): List<String> {
  * unknown, as on a computer), or null when it can.
  */
 internal fun nativeLibraryProblem(shipped: List<String>, device: List<String>?): String? {
-    val fix = "Use the full Discord 351.11 - Stable APKM from APKMirror, which has all 4 architectures. APKPure and " +
-        "Uptodown files only carry the parts for one kind of phone. If you must use one, turn off \"Optimize for " +
-        "device architecture\" in Morphe's settings and patch again."
-    if (shipped.isEmpty()) return "This Discord file has none of Discord's native libraries, so it would crash as soon as it opens. $fix"
+    val apkm = "Use the full Discord 351.11 - Stable APKM from APKMirror, which has all 4 architectures. APKPure and " +
+        "Uptodown files only carry the parts for one kind of phone."
+    if (shipped.isEmpty()) return "This Discord file has none of Discord's native libraries, so it would crash as " +
+        "soon as it opens. $apkm If you must use one, turn off \"Optimize for device architecture\" in Morphe's " +
+        "settings and patch again."
     if (device == null || device.isEmpty() || shipped.any { it in device }) return null
-    return "This Discord file only has native libraries for ${shipped.joinToString()}, but this phone runs " +
-        "${device.joinToString()}, so it would crash as soon as it opens. $fix"
+    return "This Discord file only has native libraries for ${shipped.joinToString()}, but this phone only runs " +
+        "${device.joinToString()}, so Discord can't run from it. $apkm"
 }
 
-/** `Build.SUPPORTED_ABIS` when patching on a phone, null on a computer. Read reflectively: patches build without Android. */
-private fun deviceAbis(): List<String>? = try {
+private val log = java.util.logging.Logger.getLogger("Venus")
+
+/**
+ * The ABIs this phone runs, most preferred first (what `Build.SUPPORTED_ABIS` holds), or null off a phone, as with
+ * Morphe CLI on a computer.
+ *
+ * Morphe Manager patches in a HotSpot JVM it embeds, not in Android's runtime, so `android.os.Build` doesn't exist
+ * there: reading only that saw every phone as a computer, and a 32-bit-only file passed on a 64-bit-only phone. The
+ * list Build reads, `ro.product.cpu.abilist`, comes from the partitions' build.prop files, which any app can read, so
+ * those are read next, then `getprop`. Anything unreadable gives null, which only refuses a file with no native code.
+ */
+internal fun deviceAbis(): List<String>? {
+    buildSupportedAbis()?.let { log.info("Venus: phone ABIs from Build: ${it.joinToString()}"); return it }
+    if (System.getenv("ANDROID_ROOT") == null && !java.io.File("/system/build.prop").isFile) return null
+    abisFromBuildProps(BUILD_PROPS.mapNotNull(::readOrNull))?.let {
+        log.info("Venus: phone ABIs from build.prop: ${it.joinToString()}"); return it
+    }
+    getpropAbis()?.let { log.info("Venus: phone ABIs from getprop: ${it.joinToString()}"); return it }
+    linkerAbis()?.let { log.info("Venus: phone ABIs from its linkers: ${it.joinToString()}"); return it }
+    log.warning("Venus: couldn't read this phone's ABIs; only checking that Discord's native libraries are there")
+    return null
+}
+
+/** Read reflectively: patches build without Android, and Morphe Manager's JVM doesn't have it. */
+private fun buildSupportedAbis(): List<String>? = try {
     (Class.forName("android.os.Build").getField("SUPPORTED_ABIS").get(null) as? Array<*>)
-        ?.mapNotNull { (it as? String)?.takeIf(String::isNotBlank) }
+        ?.mapNotNull { (it as? String)?.trim()?.takeIf(String::isNotEmpty) }?.takeIf { it.isNotEmpty() }
+} catch (_: Throwable) {
+    null
+}
+
+/** In the order init loads them, so a later file wins like it does on the phone. */
+private val BUILD_PROPS = listOf(
+    "/system/build.prop", "/system/system/build.prop", "/system_ext/etc/build.prop", "/vendor/build.prop",
+    "/vendor/default.prop", "/odm/etc/build.prop", "/vendor/odm/etc/build.prop", "/product/etc/build.prop"
+)
+
+private fun readOrNull(path: String): String? = try {
+    java.io.File(path).takeIf { it.isFile && it.length() < 4L * 1024 * 1024 }?.readText()
+} catch (_: Throwable) {
+    null
+}
+
+/**
+ * `ro.product.cpu.abilist` as init builds it from [texts] (build.prop contents): the property itself when a file sets
+ * it, otherwise the first partition in Android's default `ro.product.property_source_order` that sets
+ * `ro.<partition>.product.cpu.abilist64`/`abilist32` (64-bit first) or `ro.<partition>.product.cpu.abilist`.
+ */
+internal fun abisFromBuildProps(texts: List<String>): List<String>? {
+    val props = HashMap<String, String>()
+    for (text in texts) for (raw in text.lineSequence()) {
+        val line = raw.trim()
+        if (line.isEmpty() || line.startsWith("#")) continue
+        val eq = line.indexOf('=')
+        if (eq > 0) props[line.substring(0, eq).trim()] = line.substring(eq + 1).trim()
+    }
+    fun list(key: String) = props[key]?.split(',')?.map(String::trim)?.filter(String::isNotEmpty)
+    list("ro.product.cpu.abilist")?.takeIf { it.isNotEmpty() }?.let { return it }
+    for (source in listOf("product", "odm", "vendor", "system_ext", "system")) {
+        val bits64 = list("ro.$source.product.cpu.abilist64")
+        val bits32 = list("ro.$source.product.cpu.abilist32")
+        if (bits64 != null || bits32 != null) (bits64.orEmpty() + bits32.orEmpty()).takeIf { it.isNotEmpty() }?.let { return it }
+        list("ro.$source.product.cpu.abilist")?.takeIf { it.isNotEmpty() }?.let { return it }
+    }
+    return null
+}
+
+/**
+ * Last resort on ARM: a phone runs 32-bit code only if it has the 32-bit linker, which 64-bit-only phones (Galaxy S25,
+ * Pixel 7 and later) don't ship. Null when the JVM isn't 64-bit ARM, where this can't tell.
+ */
+private fun linkerAbis(): List<String>? {
+    if (System.getProperty("os.arch") != "aarch64" || !java.io.File("/system/bin/linker64").exists()) return null
+    return if (java.io.File("/system/bin/linker").exists()) listOf("arm64-v8a", "armeabi-v7a", "armeabi") else listOf("arm64-v8a")
+}
+
+/** Next to last: the property itself. The embedded JVM may be unable to start processes, so any failure is null. */
+private fun getpropAbis(): List<String>? = try {
+    val process = ProcessBuilder("/system/bin/getprop", "ro.product.cpu.abilist").redirectErrorStream(true).start()
+    try {
+        if (!process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) null
+        else process.inputStream.bufferedReader().readText().split(',').map(String::trim).filter(String::isNotEmpty)
+            .takeIf { it.isNotEmpty() }
+    } finally {
+        process.destroy()
+    }
 } catch (_: Throwable) {
     null
 }
