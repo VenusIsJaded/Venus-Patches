@@ -400,7 +400,7 @@ val localEdit = bundledPlugin("localEdit", "Edit messages on this phone",
 
 @Suppress("unused")
 val localBookmarks = bundledPlugin("localBookmarks", "Local bookmarks",
-    "Bookmark as many messages as you like. They're kept on this phone instead of your account, so Discord's limit doesn't apply.")
+    "Bookmark as many messages as you like. They're kept on this phone instead of your account.")
 
 @Suppress("unused")
 val hypeSquad = bundledPlugin("hypeSquad", "HypeSquad house",
