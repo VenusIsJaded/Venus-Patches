@@ -4194,7 +4194,7 @@
         if (kind === "g") {
             let guild = null;
             try { const store = inspectedExport(2090, "default"); guild = store && store.getGuild(id); } catch (_) {}
-            return {kind:tr("Server"), name:guild && guild.name || id, icon:rowIcon(9545, "ServerIcon")};
+            return {kind:tr("Server"), name:guild && guild.name || tr("Unknown server"), icon:rowIcon(9545, "ServerIcon")};
         }
         if (kind === "f") {
             const folder = rulesFolders().find(entry => entry && String(entry.folderId) === id);
