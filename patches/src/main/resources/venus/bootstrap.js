@@ -20486,7 +20486,8 @@
         const header = ui.Header ? el(ui.Header, {title:current ? tr("Change time zone") : tr("Set time zone"), trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : undefined;
         const words = searchFold(query).split(/\s+/).filter(Boolean), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
         const all = tzList(), seen = new Set(), list = [];
-        const add = zone => { if (zone && !seen.has(zone) && list.length < TIMEZONE_ROWS) { seen.add(zone); list.push(zone); } };
+        // A zone this phone's Android doesn't know yet (a city renamed after its last time zone update) is left out.
+        const add = zone => { if (zone && !seen.has(zone) && list.length < TIMEZONE_ROWS) { seen.add(zone); if (tzOffset(zone, Date.now()) !== null) list.push(zone); } };
         if (words.length) all.forEach(zone => { const hay = searchFold(zone.replace(/[_/]/g, " ")); if (words.every(w => hay.indexOf(w) >= 0)) add(zone); });
         else { add(current); add(mine); all.forEach(add); }
         const now = Date.now(), hour12 = tzHour12();
@@ -20555,7 +20556,7 @@
             el(TimezonesPreview, {key:"preview", on}),
             el(Group, {key:"where", title:tr("Where it shows")},
                 switchRow(Switch, "timezonesChat", "In chat", "Their time next to the time on each of their messages.", rowIcon(8471, "ChatIcon")),
-                switchRow(Switch, "timezonesDmOwn", "Your messages in DMs", "In a DM with someone who has a time zone, your messages show their time too.", rowIcon(8490, "AtIcon")),
+                settings.timezonesChat ? switchRow(Switch, "timezonesDmOwn", "Your messages in DMs", "In a DM with someone who has a time zone, your messages show their time too.", rowIcon(8490, "AtIcon")) : null,
                 switchRow(Switch, "timezonesProfile", "On profiles", "A Local time card with their time right now.", rowIcon(11671, "UserIcon"))),
             radioGroup(ui, "clock", "Clock", "timezonesClock", on, [["discord", "Like Discord", "Follows Discord's 12 or 24-hour setting.", rowIcon(5150, "ClockIcon")],
                 ["12", "12-hour", undefined, rowIcon(5150, "ClockIcon")], ["24", "24-hour", undefined, rowIcon(5150, "ClockIcon")]]),
