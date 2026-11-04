@@ -22,11 +22,11 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 
 | Group | Feature | What it does |
 | --- | --- | --- |
-| **Messages** | Keep deleted messages | Deleted messages and edit history stay in chat, with a searchable message log |
+| **Messages** | Keep deleted messages | Deleted messages and edit history stay in chat, with a searchable message log and Venus rules to always or never keep servers, folders, channels and people |
 | | Bulk delete messages | Select and delete many messages at once, even across chats |
 | | Hide blocked or ignored messages | Removes blocked and ignored message rows (based on RemoveBlockedUsers) |
 | | Message highlights | Custom colors and bar width for replies and mentions |
-| | Translate messages | Translate a whole chat or a single message, automatically or on request |
+| | Translate messages | Translate a whole chat or a single message, automatically or on request, saved on your phone or only until a restart |
 | | Double-tap to reply | Double-tap to reply or edit your own message; optional triple-tap to delete |
 | | Load full-quality images | Loads original images instead of compressed copies (based on Uncompressed Discord Images by Knewest and HighResProfileImages by Kawtious) |
 | | Skip delete confirmation | No "Are you sure?" when deleting messages |
@@ -37,14 +37,14 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Always trust links and files | No link or download warnings (based on AlwaysTrust by zt and Trwy) |
 | | Jump to first message | Go straight to the start of a chat |
 | | Favourite any image or video | Save any image or video to your GIF favourites |
-| **Sending** | Send Nitro stickers and emojis as links | Sends Nitro emojis and stickers as image links |
+| **Sending** | Send Nitro stickers and emojis as links | Sends Nitro emojis and stickers as image links, and shows links like these as real emojis and stickers with their usual menu |
 | | Bring back Tenor GIFs | Tenor GIFs in Discord's GIF picker |
 | | Fix link previews | Working embeds for X, Instagram, TikTok, Reddit and more, with tracking removed |
 | | Send audio as voice messages | Audio files are sent as voice messages |
 | | Send long messages | Messages over the limit are sent in parts |
-| | Hide typing indicator | Others won't see you typing |
+| | Hide typing indicator | Others won't see you typing, in servers, groups or DMs, with Venus rules for any server, folder or channel |
 | | Show file sizes when attaching | File sizes in the media picker |
-| | Anonymous file names | Sent files get random names (based on Anonymous File Names by k1ng_op) |
+| | Anonymous file names | Sent files get random names, or keep their real one per file (based on Anonymous File Names by k1ng_op) |
 | | Tap mentions to open profiles | Tap a typed @mention to open that profile (based on ClickableMentions by mwittrien) |
 | | Expand the message bar | A button that makes the message bar taller |
 | | Compress big files | Shrinks photos, videos and audio to fit the upload limit |
@@ -54,9 +54,9 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Delete without a trace | Blanks a message before deleting it, so loggers keep nothing |
 | | Edit messages on this phone | Change how any message reads, only on your phone |
 | | Local bookmarks | Bookmark as many messages as you like, kept on this phone instead of your account |
-| **People** | Pastel name colors | Soft colors for names without a role color |
+| **People** | Pastel name colors | Soft colors for names without a role color, in chat and the member list, or only in DMs and groups |
 | | Show device indicators | Device icons next to names |
-| | Show owner and mod tags | Owner, Admin and Mod tags in chat (based on StaffTag by mwittrien) |
+| | Show owner and mod tags | Owner, Admin and Mod tags in chat and the member list (based on StaffTag by mwittrien) |
 | | Alert when you're removed | Know when you're unfriended, kicked or banned (based on RemovedConnectionAlerts by iyu46) |
 | | Fix unknown mentions | Shows names instead of @unknown-user |
 | | Copy profile bios | Select and copy profile bios |
@@ -82,7 +82,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Fast delete channels | Delete channels without confirmation. **No undo** |
 | **Appearance** | Use your phone's font | Your phone's font everywhere |
 | | Use your phone's emojis | Your phone's emojis, or an imported emoji font |
-| | Remove anything | Hide almost any button or menu row in Discord |
+| | Remove anything | Hide almost any button or menu row in Discord, including Get Nitro in emoji and sticker menus |
 | | Venus button on profile bar | A shortcut to Venus settings |
 | | Unlock app icons | Any app icon without Nitro |
 | | Unlock Nitro themes | Gradient themes without Nitro, only on your phone |
