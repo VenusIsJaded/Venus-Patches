@@ -41,8 +41,8 @@ import java.io.RandomAccessFile
  *   the wanted name is seen — which on a mount, where the file *does* ship the library, is well before the end.
  * - **The local file header is never read.** Only the end-of-central-directory record (the last 22 bytes: an APK has
  *   no zip comment) and the directory it points at are needed, so no seek walks the ~124 MB of entry data.
- * - **The answer is memoized per APK path.** SoLoader can build more than one `DirectApkSoSource` per process and the
- *   file cannot change mid-process, so the second and later calls are a string compare.
+ * - **The answer is memoized per APK path and library entry.** SoLoader can build more than one `DirectApkSoSource`
+ *   per process, and each ABI's library must be checked separately.
  *
  * Measured on the JVM with both revisions really compiled, driven through one whole `soLoaderFolders` call each
  * (interleaved rounds with rotating order; the JVM's own per-thread allocation counter reset immediately before the
@@ -84,10 +84,9 @@ object NativeLibraries {
     private val lock = Any()
     private var window = ByteArray(CHUNK)
 
-    /** The last answer, keyed by APK path: the file cannot change mid-process, and SoLoader may build several sources. */
-    @Volatile
+    /** The last answer is keyed by both APK path and library entry; all fields are guarded by [lock]. */
     private var probedApk: String? = null
-    @Volatile
+    private var probedEntry: String? = null
     private var probedShips = false
 
     @JvmStatic
@@ -118,13 +117,13 @@ object NativeLibraries {
         } catch (_: Throwable) { }
     }
 
-    /** Whether [apk]'s zip carries [entry], memoized per path. */
+    /** Whether [apk]'s zip carries [entry], memoized by path and ABI-specific entry. */
     private fun shipsReactNative(apk: String, entry: String): Boolean {
-        if (apk == probedApk) return probedShips
         synchronized(lock) {
-            if (apk == probedApk) return probedShips
+            if (apk == probedApk && entry == probedEntry) return probedShips
             val answer = hasEntry(apk, entry)
             probedApk = apk
+            probedEntry = entry
             probedShips = answer
             return answer
         }
