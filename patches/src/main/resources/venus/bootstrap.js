@@ -255,6 +255,9 @@
         cachedLocale = locale;
         return cachedLocaleCode = languageFor(locale);
     }
+    // The {name} placeholder pattern, built once: a regex literal inside tr() and pl() allocated a RegExp on every call with
+    // values (Hermes HBC98: 234.4 -> 214.8 us per 100 fills, 1.09x). A global replace restarts from 0 each time.
+    const TR_PLACEHOLDER = /\{(\w+)\}/g, PL_COUNT = /\{n\}/g;
     // Every Venus text goes through here: the chosen language's wording, or the English one until it has loaded
     // (or when it has no wording for it). {name} parts are filled in afterwards, so numbers are never translated.
     function tr(text, vars) {
@@ -265,7 +268,7 @@
             if (pack) { const found = pack[text]; if (typeof found === "string" && found) out = found; }
             else loadLanguage(code);
         }
-        return vars ? out.replace(/\{(\w+)\}/g, (match, name) => vars[name] != null ? String(vars[name]) : match) : out;
+        return vars ? out.replace(TR_PLACEHOLDER, (match, name) => vars[name] != null ? String(vars[name]) : match) : out;
     }
     // Which plural form a whole number takes in each Venus language (CLDR's rules). Discord's Hermes has no
     // Intl.PluralRules, so these are built in: Russian needs "21 перевод" and "22 перевода", French "0 traduction".
@@ -292,8 +295,8 @@
         let text;
         if (forms && typeof forms === "object") text = typeof forms[kind] === "string" ? forms[kind] : typeof forms.other === "string" ? forms.other : tr(kind === "one" ? one : other);
         else text = tr(kind === "one" ? one : other);
-        const out = text.replace(/\{n\}/g, String(n));
-        return vars ? out.replace(/\{(\w+)\}/g, (match, name) => vars[name] != null ? String(vars[name]) : match) : out;
+        const out = text.replace(PL_COUNT, String(n));
+        return vars ? out.replace(TR_PLACEHOLDER, (match, name) => vars[name] != null ? String(vars[name]) : match) : out;
     }
     function loadLanguage(code) {
         if (code === "en" || i18n.packs.has(code) || i18n.loading.has(code) || !files || typeof files.readAsset !== "function") return;
@@ -11270,10 +11273,11 @@
     function serverHeaderEmpty() { return spotHidden("server.search") && spotHidden("server.invite") && spotHidden("server.events"); }
     // useRedesignGuildHeaderHeight(guild) is read on every server header render: the one-argument call skips the arguments
     // object and apply (Hermes HBC98: 60.6 -> 43.0 us per 100 calls, 1.41x).
+    const SNOWFLAKE_15 = /^\d{15,}$/;
     function guildHeaderHeightFinish(height, guild) {
         if (typeof height !== "number" || !enabled("hideAnything") || !serverHeaderEmpty()) return height;
         // Only real servers have the row (not Favorites).
-        if (!guild || typeof guild.id !== "string" || !/^\d{15,}$/.test(guild.id)) return height;
+        if (!guild || typeof guild.id !== "string" || !SNOWFLAKE_15.test(guild.id)) return height;
         const button = inspectedExport(5484, "SMALL_BUTTON_HEIGHT"), margin = inspectedExport(11895, "SEARCH_BAR_MARGIN_BOTTOM");
         return Math.max(0, height - (typeof button === "number" ? button : 32) - (typeof margin === "number" ? margin : 0));
     }
