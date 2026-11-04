@@ -22,7 +22,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 
 | Group | Feature | What it does |
 | --- | --- | --- |
-| **Messages** | Keep deleted messages | Deleted messages and edit history stay in chat, with a searchable message log and Venus rules to always or never keep servers, folders, channels and people |
+| **Messages** | Keep deleted messages | Deleted messages and edit history stay in chat, with a searchable message log. Works everywhere or only where you choose, and any server, folder, channel or person can be turned on or off |
 | | Bulk delete messages | Select and delete many messages at once, even across chats |
 | | Hide blocked or ignored messages | Removes blocked and ignored message rows (based on RemoveBlockedUsers) |
 | | Message highlights | Custom colors and bar width for replies and mentions |
@@ -42,7 +42,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Fix link previews | Working embeds for X, Instagram, TikTok, Reddit and more, with tracking removed |
 | | Send audio as voice messages | Audio files are sent as voice messages |
 | | Send long messages | Messages over the limit are sent in parts |
-| | Hide typing indicator | Others won't see you typing, in servers, groups or DMs, with Venus rules for any server, folder or channel |
+| | Hide typing indicator | Others won't see you typing. Works everywhere or only where you choose, and any server, folder or channel can be turned on or off |
 | | Show file sizes when attaching | File sizes in the media picker |
 | | Anonymous file names | Sent files get random names, or keep their real one per file (based on Anonymous File Names by k1ng_op) |
 | | Tap mentions to open profiles | Tap a typed @mention to open that profile (based on ClickableMentions by mwittrien) |
@@ -53,7 +53,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Edit without "(edited)" | Edits your latest message without the tag by resending it |
 | | Delete without a trace | Blanks a message before deleting it, so loggers keep nothing |
 | | Edit messages on this phone | Change how any message reads, only on your phone |
-| | Local bookmarks | Bookmark as many messages as you like, kept on this phone instead of your account |
+| | Local bookmarks | Bookmark as many messages as you like, kept on this phone instead of your account. They show in Discord's own Bookmarks |
 | **People** | Pastel name colors | Soft colors for names without a role color, in chat and the member list, or only in DMs and groups |
 | | Show device indicators | Device icons next to names |
 | | Show owner and mod tags | Owner, Admin and Mod tags in chat and the member list (based on StaffTag by mwittrien) |
