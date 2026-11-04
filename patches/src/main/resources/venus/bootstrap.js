@@ -54,7 +54,7 @@
     if (features.noConfirmPin) selectModules([5400, 1128]);
     if (features.listenAlong) targetModules[14082] = 1;
     if (features.clickableMentions) selectModules([1392, 2068, 2119, 12337]);
-    if (features.expandBar) selectModules([584, 1392, 2068, 2119, 12337, 12338, 12887, 12818]);
+    if (features.expandBar) selectModules([584, 1392, 2068, 2119, 10692, 12337, 12338, 12887, 12818]);
     if (features.silentLeave) selectModules([2068, 7290]);
     if (features.silentEdit || features.silentDelete) selectModules([584, 1392, 5532, 7445]);
     if (features.localEdit) selectModules([584, 1392, 5532, 8013, 9978]);
@@ -22686,19 +22686,90 @@
     // at the top-right of the text area flips the shared value, then re-runs the animation once from JS so the bar moves
     // right away instead of at the next keystroke. Nothing else about the bar is touched: sending, drafts and the native
     // text field work as before, and if a worklet isn't where Venus expects, the bar is simply left alone.
-    const expandBar = {expanded:false, multiline:false, pill:false, content:0, shared:null, worklets:null, live:null, subscribed:false};
-    // Room kept free above the open bar (the status bar and the channel header), plus a little air under the header.
-    const EXPAND_BAR_RESERVE = 128;
-    // Threads and forum posts draw a second bar under the channel name (the post's title, Follow and the parent channel),
-    // which covered the top of the open bar and its collapse button (#145), so they keep that much more room free.
-    const EXPAND_BAR_THREAD_EXTRA = 64;
+    const expandBar = {expanded:false, multiline:false, pill:false, content:0, shared:null, worklets:null, live:null, subscribed:false,
+        reserve:0, context:0, box:null, chatNodes:new Map(), stickyNodes:new Map(), fitted:new Map(), fitTimer:undefined};
+    // A first guess at the room kept free above the open bar (the status bar and the channel header), used until the bar has
+    // been measured in this chat. Threads and forum posts draw a second bar under the channel name, so they guess higher.
+    const EXPAND_BAR_RESERVE = 128, EXPAND_BAR_THREAD_EXTRA = 64;
+    // Air left between the open bar and whatever sits above it (the channel header, or the post's bar in a forum post).
+    const EXPAND_BAR_GAP = 8, EXPAND_BAR_MIN_RESERVE = 24;
     function expandBarReserve() {
         const id = selectedChannelId();
+        const fitted = id ? expandBar.fitted.get(String(id)) : 0;
+        if (fitted > 0) return fitted;
         let channel = null;
         try { channel = id && channelStore && typeof channelStore.getChannel === "function" ? channelStore.getChannel(String(id)) : null; } catch (_) {}
         const type = channel && channel.type;
         return EXPAND_BAR_RESERVE + (type === 10 || type === 11 || type === 12 ? EXPAND_BAR_THREAD_EXTRA : 0);
     }
+    // The guess above was a fixed number, which left the open bar a little too tall in a plain channel (its top ran under the
+    // header) and short of the post's bar in a forum post (#145). So once the bar has opened, it is measured: the top of the
+    // chat (a marker in ChatViewWrapper) and the bottom of Discord's sticky header under it (the forum post's Follow bar,
+    // thread and safety banners) say where the bar should start, and the bar's own box says where it did. The box's top
+    // moves one for one with the reserve (the bar grows up from the keyboard), so one correction lands it, whatever the
+    // padding, the reply bar or the phone's insets add. The result is remembered per chat, so it opens right the next time.
+    function expandBarMeasure(node) {
+        return new Promise(resolve => {
+            if (!node || typeof node.measureInWindow !== "function") { resolve(null); return; }
+            try { node.measureInWindow((x, y, width, height) => resolve(typeof y === "number" && isFinite(y) ? {y, height:Number(height) || 0} : null)); }
+            catch (_) { resolve(null); }
+        });
+    }
+    function expandBarUseReserve(reserve) {
+        expandBar.reserve = reserve;
+        if (expandBar.shared) try { expandBar.shared.set(reserve); } catch (_) {}
+        expandBarApply();
+    }
+    function expandBarSettle() { const w = expandBar.worklets; return (w && w.duration > 0 ? w.duration : 200) + 80; }
+    function expandBarFit(tries) {
+        expandBar.fitTimer = undefined;
+        if (!expandBar.expanded || !expandBar.box || !expandBar.worklets || !(expandBar.reserve > 0)) return;
+        const id = String(selectedChannelId() || "");
+        Promise.all([expandBarMeasure(expandBar.box), expandBarMeasure(expandBar.chatNodes.get(id)), expandBarMeasure(expandBar.stickyNodes.get(id))]).then(found => {
+            const box = found[0], chat = found[1], sticky = found[2], reserve = expandBar.reserve;
+            if (!expandBar.expanded || !box || !(box.height > 0) || String(selectedChannelId() || "") !== id) return;
+            let top = chat ? chat.y : null;
+            if (sticky && sticky.height > 0) top = Math.max(top == null ? 0 : top, sticky.y + sticky.height);
+            if (top == null) return;
+            const next = Math.max(EXPAND_BAR_MIN_RESERVE, Math.round(reserve + top + EXPAND_BAR_GAP - box.y));
+            if (settings.debugLog) dlog("I", "hooks", "expand message bar: starts at " + Math.round(box.y) + ", room ends at " + Math.round(top) + ", reserve " + reserve + " -> " + next);
+            if (Math.abs(next - reserve) < 2) { if (id) expandBar.fitted.set(id, reserve); return; }
+            if (id) { if (expandBar.fitted.size > 100) expandBar.fitted.clear(); expandBar.fitted.set(id, next); }
+            expandBarUseReserve(next);
+            if (tries > 1) expandBar.fitTimer = later(() => expandBarFit(tries - 1), expandBarSettle(), false);
+        }).catch(() => {});
+    }
+    // After the bar opens, and whenever its box or the header above it changes size (a reply bar, the keyboard, a banner).
+    function expandBarRefitSoon() {
+        if (!expandBar.expanded) return;
+        if (expandBar.fitTimer !== undefined && typeof global.clearTimeout === "function") global.clearTimeout(expandBar.fitTimer);
+        expandBar.fitTimer = later(() => expandBarFit(3), expandBarSettle(), false);
+    }
+    // Where the chat starts, and Discord's sticky header: one marker each, keyed by channel. Neither takes a touch.
+    const EXPAND_BAR_SPOT = {position:"absolute", top:0, left:0, width:0, height:0};
+    function ExpandBarSpot(props) {
+        const id = String(props.channelId), map = props.sticky ? expandBar.stickyNodes : expandBar.chatNodes;
+        const mine = React.useRef(null);
+        const ref = React.useCallback(node => {
+            if (node) { mine.current = node; map.set(id, node); }
+            else { if (map.get(id) === mine.current) map.delete(id); mine.current = null; }
+        }, [id, map]);
+        if (props.sticky) return el(RN.View, {ref, pointerEvents:"box-none", collapsable:false, onLayout:expandBarRefitSoon}, props.children);
+        return el(RN.View, {ref, pointerEvents:"none", collapsable:false, style:EXPAND_BAR_SPOT});
+    }
+    // ChatViewWrapper {channelId, stickyHeader, children}. Only a header Discord already passes is wrapped (see translateBarProps).
+    function expandBarChatProps(props) {
+        const spot = el(ExpandBarSpot, {key:"venus-expand-top", channelId:props.channelId});
+        const children = Array.isArray(props.children) ? props.children.concat([spot]) : [props.children, spot];
+        return Object.assign({}, props, props.stickyHeader ? {children, stickyHeader:el(ExpandBarSpot, {channelId:props.channelId, sticky:true}, props.stickyHeader)} : {children});
+    }
+    function expandBarChatView(orig, self, args) {
+        const props = args[0];
+        if (!props || !props.channelId || !React || !RN || !enabled("expandBar")) return orig.apply(self, args);
+        return orig.apply(self, [expandBarChatProps(props)].concat(Array.prototype.slice.call(args, 1)));
+    }
+    expandBarChatView.call1 = (orig, self, props) => !props || !props.channelId || !React || !RN || !enabled("expandBar") ? orig.call(self, props) : orig.call(self, expandBarChatProps(props));
+    expandBarChatView.call2 = (orig, self, props, ref) => !props || !props.channelId || !React || !RN || !enabled("expandBar") ? orig.call(self, props, ref) : orig.call(self, expandBarChatProps(props), ref);
     const expandBarHandlers = new WeakMap();
     const EXPAND_BAR_DARK = {button:{position:"absolute", top:4, right:6, width:32, height:32, borderRadius:16, alignItems:"center", justifyContent:"center"},
         pressed:{backgroundColor:"#4e50584d"}, icon:{color:"#b5bac1"}};
@@ -22801,7 +22872,7 @@
         const content = expandBar.content > 0 ? expandBar.content : min;
         try {
             let top = 0, timing = null, options = {duration:200};
-            if (w) { top = w.cap(expandBar.expanded ? expandBarReserve() : 0); timing = w.withTiming; options = {duration:w.duration, easing:w.easing}; }
+            if (w) { top = w.cap(expandBar.expanded ? expandBar.reserve || expandBarReserve() : 0); timing = w.withTiming; options = {duration:w.duration, easing:w.easing}; }
             if (!(top > 0)) {
                 // The height worklets aren't in place: use the window's height instead.
                 const win = RN && RN.Dimensions ? RN.Dimensions.get("window").height : 800;
@@ -22817,8 +22888,10 @@
         next = !!next;
         if (expandBar.expanded === next) return;
         expandBar.expanded = next;
-        if (expandBar.shared) try { expandBar.shared.set(next ? expandBarReserve() : 0); } catch (_) {}
+        expandBar.reserve = next ? expandBarReserve() : 0;
+        if (expandBar.shared) try { expandBar.shared.set(expandBar.reserve); } catch (_) {}
         expandBarApply();
+        if (next) expandBarRefitSoon();
         notify("expandBar");
     }
     // The button shows once the text has grown past one line (like the bar does), and while it is expanded.
@@ -22868,7 +22941,7 @@
         if (handler === orig && !open) return props;
         return Object.assign({}, props, open ? {maxHeight:4000, onChangeContentSize:handler} : {onChangeContentSize:handler});
     }
-    function ExpandBarButton() {
+    function ExpandBarButton(props) {
         useSettings("expandBar");
         useLanguage();
         const s = useExpandBarStyles();
@@ -22876,9 +22949,11 @@
         if (!enabled("expandBar") || !(open || expandBar.multiline) || !RN) return null;
         const Press = RN.Pressable;
         if (!Press) return null;
+        // On the bar's corner it sits under the Replying to / Editing bar, never on top of its close button (#145).
+        const below = props && props.corner && expandBar.context > 0 ? expandBar.context : 0;
         return el(Press, {onPress:() => { haptic("IMPACT_LIGHT"); expandBarSet(!expandBar.expanded); }, accessibilityRole:"button",
-            accessibilityLabel:tr(open ? "Collapse message bar" : "Expand message bar"), hitSlop:{top:8, bottom:8, left:8, right:8},
-            style:state => [s.button, state && state.pressed ? s.pressed : null]}, expandBarGlyph(open, s.icon.color, 20));
+            accessibilityLabel:tr(open ? "Collapse message bar" : "Expand message bar"), hitSlop:{top:below ? 2 : 8, bottom:8, left:8, right:8},
+            style:state => [s.button, below ? {top:s.button.top + below} : null, state && state.pressed ? s.pressed : null]}, expandBarGlyph(open, s.icon.color, 20));
     }
     // The message bar's native text view, with the button beside it and the height cap lifted while expanded.
     function expandBarWrap(component) {
@@ -22913,11 +22988,45 @@
             if (added || !("onStartShouldSetResponder" in props) || !("onResponderRelease" in props) || !("accessibilityElementsHidden" in props) || props.collapsable !== false) return props;
             added = true;
             const kids = Array.isArray(props.children) ? props.children : props.children == null ? [] : [props.children];
-            return Object.assign({}, props, {children:kids.concat([el(ExpandBarButton, {key:"venus-expand-button"})])});
+            // The Replying to / Editing bar (ChatInputContextBar {channel, chatInputRef, pendingEdit, pendingReply}) is the box's
+            // first row: it's measured, so the button goes under it instead of over its close button (#145).
+            let context = false;
+            const children = kids.map(kid => {
+                if (context || !kid || typeof kid !== "object" || !kid.props || !("pendingReply" in kid.props) || !("pendingEdit" in kid.props)) return kid;
+                context = true;
+                return el(RN.View, {key:"venus-expand-context", collapsable:false, onLayout:expandBarContextLayout}, kid);
+            });
+            if (!context && expandBar.context) { expandBar.context = 0; later(() => notify("expandBar"), 0); }
+            const orig = props.onLayout;
+            let onLayout = expandBarBoxLayouts.get(orig || expandBarBoxLayouts);
+            if (!onLayout) {
+                onLayout = function (event) {
+                    expandBarBoxLayout(event);
+                    return typeof orig === "function" ? orig.apply(this, arguments) : undefined;
+                };
+                expandBarBoxLayouts.set(orig || expandBarBoxLayouts, onLayout);
+            }
+            return Object.assign({}, props, {onLayout, children:children.concat([el(ExpandBarButton, {key:"venus-expand-button", corner:true})])});
         }, 0, () => added);
         expandBar.pill = added;
         if (!added && settings.debugLog) dlog("W", "hooks", "expand message bar: the bar's box wasn't found, so the button goes beside the text");
         return next;
+    }
+    const expandBarBoxLayouts = new WeakMap();
+    // The box is the view the open bar is measured by; its size changes when the bar opens, a reply bar shows or the
+    // keyboard moves, and the bar is fitted again then.
+    function expandBarBoxLayout(event) {
+        const target = event && (event.currentTarget || event.target);
+        if (target && typeof target.measureInWindow === "function") expandBar.box = target;
+        expandBarRefitSoon();
+    }
+    function expandBarContextLayout(event) {
+        const layout = event && event.nativeEvent && event.nativeEvent.layout;
+        const height = layout ? Math.max(0, Math.round(layout.height)) : 0;
+        if (height === expandBar.context) return;
+        expandBar.context = height;
+        notify("expandBar");
+        expandBarRefitSoon();
     }
     function expandBarInit(flux) {
         if (expandBar.subscribed || !flux || typeof flux.subscribe !== "function") return;
@@ -22927,7 +23036,7 @@
                 if (!expandBar.expanded) return;
                 if (settings.expandBarChats) { expandBarSet(false); return; }
                 // Still open in the next chat: its header may be taller or shorter (a thread), so the room above follows.
-                later(() => { if (!expandBar.expanded) return; if (expandBar.shared) try { expandBar.shared.set(expandBarReserve()); } catch (_) {} expandBarApply(); }, 0);
+                later(() => { if (!expandBar.expanded) return; expandBarUseReserve(expandBarReserve()); expandBarRefitSoon(); }, 0);
             });
             // Only a message you send from this phone (Discord adds it to the chat before the server confirms it).
             flux.subscribe("MESSAGE_CREATE", event => { if (expandBar.expanded && settings.expandBarSending && event && event.optimistic === true) expandBarSet(false); });
@@ -24039,6 +24148,8 @@
                 // in the sticky header slot above the messages, where Discord shows its own New messages bar.
                 if (features.translate) exports = hookComponent(exports, translateBarHeader);
                 if (features.bulkDelete) exports = hookComponent(exports, bulkDeleteChatFooter);
+                // Expand the message bar: where the chat and its sticky header are, so the open bar stops right under them (#145).
+                if (features.expandBar) exports = hookComponent(exports, expandBarChatView);
                 return features.customThemes ? hookComponent(exports, chatViewWrapperThemeBackground) : exports;
             case 13074: return features.accountSwitcher ? hookMultiAccountStore(exports) : exports;
             case 13073: return features.accountSwitcher ? hookPushNotificationActions(exports) : exports;

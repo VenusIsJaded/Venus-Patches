@@ -236,7 +236,7 @@ BOOTSTRAP_MODULES = [
     (10081, 'modules/premium/components/native/NitroUpsellButton.tsx', ['default'], 'NitroUpsellButton'),
     (11492, 'design/components/Icon/native/redesign/generated/MicrophoneIcon.tsx', ['MicrophoneIcon'], 'MicrophoneIcon (preview message bar)'),
     (11577, 'design/components/ThemeContextProvider/native/RootThemeContextProvider.native.tsx', ['RootThemeContextProvider', 'DisableCustomTheme'], 'RootThemeContextProvider (Custom themes re-keys its memoized context)'),
-    (10692, 'modules/chat/native/ChatViewWrapper.tsx', ['default'], 'ChatViewWrapper'),
+    (10692, 'modules/chat/native/ChatViewWrapper.tsx', ['default'], 'ChatViewWrapper (Expand the message bar: where the chat and its sticky header start)'),
     (10654, 'design/components/Icon/native/redesign/generated/BellSlashIcon.tsx', ['BellSlashIcon'], 'BellSlashIcon'),
     (13603, 'design/components/Icon/native/redesign/generated/BellZIcon.tsx', ['BellZIcon'], 'BellZIcon (Banners in Do Not Disturb)'),
     (9738, 'modules/double_tap_to_react/native/DoubleTapReminderToast.tsx', ['maybeShowDoubleTapReminderToast'], 'DoubleTapReminderToast'),
