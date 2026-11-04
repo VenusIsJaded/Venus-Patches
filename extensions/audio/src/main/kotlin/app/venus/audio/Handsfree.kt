@@ -70,15 +70,7 @@ object Handsfree {
             leaveCallMode(manager)
             return false
         }
-        // Discord releases its communication device by passing null. AudioManager.setCommunicationDevice starts with
-        // Objects.requireNonNull(device) (AOSP), so the old `device!!` threw a NullPointerException into Discord's audio
-        // code, outside any try block. The release goes through clearCommunicationDevice() instead, which is void, so
-        // true is returned: the request was accepted, and nothing is left selected.
-        if (device == null) {
-            manager.clearCommunicationDevice()
-            return true
-        }
-        return manager.setCommunicationDevice(device)
+        return manager.setCommunicationDevice(device!!)
     }
 
     /** Headphones that connect in the middle of a call: drop call mode so their A2DP side carries the sound. */
