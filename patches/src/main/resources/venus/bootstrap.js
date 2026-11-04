@@ -1326,8 +1326,8 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Get Nitro buttons", "Emoji and sticker menus", "Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Venus rules", "Always keep", "Never keep", "Keep messages from"],
-        noTyping:["Venus rules", "Hide my typing in", "Always hide", "Always show"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
+    const FEATURE_KEYWORDS = {hideAnything:["Get Nitro buttons", "Emoji and sticker menus", "Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Exceptions", "Keep deleted messages here", "Always keep", "Never keep", "Keep messages from"],
+        noTyping:["Exceptions", "Hide my typing here", "Hide my typing in", "Always hide", "Always show"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text", "Only in DMs and groups", "In the member list"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "While Discord is open", "Same theme on every account"],
@@ -3412,7 +3412,7 @@
         return typingHidden(args[0]) ? undefined : orig.apply(self, args);
     }
     typing.call1 = (orig, self, channelId) => typingHidden(channelId) ? undefined : orig.call(self, channelId);
-    // Where your typing is hidden (#143): a Venus rule for the channel, its server or its folder first, then the switch for
+    // Where your typing is hidden (#143): an exception for the channel, its server or its folder first, then the switch for
     // that kind of chat. A chat Discord hasn't loaded stays hidden, as it always was.
     function typingHidden(channelId) {
         if (!enabled("noTyping")) return false;
@@ -4162,12 +4162,13 @@
         if (count) entry.f = count;
         logAdd(logs.messages, entry);
     }
-    // Venus rules (#143): a choice for one server, folder, channel, DM, group or person that wins over a feature's own
-    // settings. Hold any of them (or open a person's ⋯ menu) and tap Venus rules. Saved as "kind+id:+/-" pairs
-    // (g server, f folder, c channel, u person) in one setting per feature, so backups carry them like anything else.
-    // The most specific rule wins: a person, then the channel (or the channel a thread is in, then its category), then the
-    // server, then its folder. So keeping one person in a channel you never keep keeps only them.
-    const RULES_SHEET = "VenusRules", RULE_SETTINGS = {noDelete:"noDeleteRules", noTyping:"noTypingRules"};
+    // Exceptions (#143): one server, folder, channel, DM, group or person that does the opposite of a feature's own
+    // settings. Hold any of them (or open a person's ⋯ menu): the menu says what tapping does ("Don't keep deleted messages
+    // here", "Hide my typing here"), so there's no sheet of choices to read. Saved as "kind+id:+/-" pairs (g server,
+    // f folder, c channel, u person) in one setting per feature, so backups carry them like anything else. The most
+    // specific one wins: a person, then the channel (or the channel a thread is in, then its category), then the server,
+    // then its folder. So keeping one person in a channel you never keep keeps only them.
+    const RULE_SETTINGS = {noDelete:"noDeleteRules", noTyping:"noTypingRules"};
     function rulesParse(text) {
         let hit = RULES.cache.get(text);
         if (hit) return hit;
@@ -4239,7 +4240,7 @@
         if (feature === "noDelete") return value ? tr("Always keep") : tr("Never keep");
         return value ? tr("Always hide") : tr("Always show");
     }
-    // Which features a place can have a rule for: people only matter to Keep deleted messages.
+    // Which features a place can have an exception for: people only matter to Keep deleted messages.
     function rulesFeaturesFor(kind) {
         return Object.keys(RULE_SETTINGS).filter(feature => features[feature] && enabled(feature) && (kind !== "u" || feature === "noDelete"));
     }
@@ -4268,60 +4269,80 @@
         if (channel && channel.type === 3) return {kind:tr("Group DM"), name:mutualGroupName(channel), icon:rowIcon(8489, "GroupIcon")};
         return {kind:tr("Channel"), name:channel && channel.name ? (channel.type === 4 ? channel.name : "#" + channel.name) : id, icon:rowIcon(18679, "ChannelListIcon")};
     }
-    // The sheet: the place's name, then one choice per feature, in Discord's own radio list.
-    function RulesSheet(props) {
-        useSettings();
-        const ui = reviewUI(), key = props.place, info = rulesPlaceInfo(key), Group = ui.TableRowGroup || RN.View;
-        const RadioGroup = inspectedExport(6540, "TableRadioGroup"), RadioRow = inspectedExport(6539, "TableRadioRow");
-        const sections = rulesFeaturesFor(key.charAt(0)).map(feature => {
-            const current = rulesParse(settings[RULE_SETTINGS[feature]]).get(key), value = current === undefined ? "default" : current ? "on" : "off";
-            const choices = feature === "noDelete" ?
-                [["default", tr("Use your settings"), rowIcon(7368, "SettingsIcon")], ["on", ruleLabel(feature, true), rowIcon(6929, "EyeIcon")], ["off", ruleLabel(feature, false), rowIcon(6927, "EyeSlashIcon")]] :
-                [["default", tr("Use your settings"), rowIcon(7368, "SettingsIcon")], ["on", ruleLabel(feature, true), rowIcon(6927, "EyeSlashIcon")], ["off", ruleLabel(feature, false), rowIcon(13747, "KeyboardIcon")]];
-            const title = feature === "noDelete" ? tr("Keep deleted messages") : tr("Hide typing indicator");
-            const change = next => { if (next !== value) rulesSet(feature, key, next === "default" ? undefined : next === "on"); };
-            return RadioGroup && RadioRow ? el(RadioGroup, {key:feature, title, value, onChange:change}, choices.map(([v, label, icon]) => el(RadioRow, {key:v, value:v, label, icon}))) :
-                el(Group, {key:feature, title}, choices.map(([v, label, icon]) => ui.TableRow && el(ui.TableRow, {key:v, label:(value === v ? "\u2713 " : "") + label, icon, onPress:() => change(v)})));
-        });
-        const Sheet = ui.ActionSheet || RN.View;
-        return el(Sheet, {startExpanded:true},
-            ui.Header ? el(ui.Header, {title:info.name, subtitle:info.kind, trailing:ui.Close ? el(ui.Close, {onPress:() => hideReviewSheet(ui, RULES_SHEET)}) : undefined}) : null,
-            el(RN.View, {style:{paddingHorizontal:16, paddingBottom:24, gap:20}}, sections));
+    // The places above one, closest first: a channel (or thread) looks at its parent channels, then its server, then the
+    // server's folder; a server looks at its folder.
+    function rulesChainOf(key) {
+        const kind = key.charAt(0), id = key.slice(1), chain = [key];
+        let guild = kind === "g" ? id : null, channel = null;
+        if (kind === "c") {
+            channel = rulesChannel(id);
+            let parent = channel;
+            for (let depth = 0; parent && parent.parent_id && depth < 2; depth++) { chain.push("c" + parent.parent_id); parent = rulesChannel(parent.parent_id); }
+            if (channel && channel.guild_id) { guild = String(channel.guild_id); chain.push("g" + guild); }
+        }
+        if (guild) { const folder = rulesFolderOf(guild); if (folder) chain.push("f" + folder.folderId); }
+        return {chain, channel, server:kind === "g" || kind === "f" || !!guild};
     }
-    function rulesOpen(key) {
-        const ui = reviewUI();
-        if (!React || !RN || !rulesFeaturesFor(key.charAt(0)).length || typeof ui.showSheet !== "function") return;
-        try { ui.showSheet({key:RULES_SHEET, content:el(RulesSheet, {place:key}), stackingBehavior:"stack"}); } catch (_) {}
+    // What a place gets right now (true = kept / typing hidden): its own exception, else the closest one above it, else the
+    // feature's settings. skipOwn asks what it would get without its own exception.
+    function ruleNow(feature, key, skipOwn) {
+        const rules = rulesParse(settings[RULE_SETTINGS[feature]]), info = rulesChainOf(key);
+        for (let i = skipOwn ? 1 : 0; i < info.chain.length; i++) { const value = rules.get(info.chain[i]); if (value !== undefined) return value; }
+        if (feature === "noDelete") return settings.noDeleteWhere !== "chosen";
+        if (info.server) return !!settings.noTypingServers;
+        if (!info.channel) return true;
+        return info.channel.type === 3 ? !!settings.noTypingGroups : !!settings.noTypingDms;
     }
-    function rulesItem(key) { return {IconComponent:venusIcon(18745, "ListBulletsIcon"), label:tr("Venus rules"), action:() => later(() => rulesOpen(key), 60)}; }
-    // The server icon's menu (17433) and a folder's (GuildsBarFolderMenuItems 17434): one more row in the same shape.
+    // Tapping a menu row does the opposite of what the place gets now. When that's what it would get anyway (the server or
+    // your settings already say so), its exception is removed instead of saving one that changes nothing.
+    function rulesFlip(feature, key) {
+        const next = !ruleNow(feature, key);
+        rulesSet(feature, key, next === ruleNow(feature, key, true) ? undefined : next);
+    }
+    function ruleRowLabel(feature, key) {
+        const now = ruleNow(feature, key);
+        if (feature === "noTyping") return now ? tr("Show my typing here") : tr("Hide my typing here");
+        if (key.charAt(0) === "u") return now ? tr("Don't keep their deleted messages") : tr("Keep their deleted messages");
+        return now ? tr("Don't keep deleted messages here") : tr("Keep deleted messages here");
+    }
+    function ruleRowIcon(feature, key) {
+        if (feature === "noTyping") return venusIcon(13747, "KeyboardIcon");
+        return ruleNow(feature, key) ? venusIcon(6927, "EyeSlashIcon") : venusIcon(6929, "EyeIcon");
+    }
+    function rulesItems(key) {
+        return rulesFeaturesFor(key.charAt(0)).map(feature => ({IconComponent:ruleRowIcon(feature, key), label:ruleRowLabel(feature, key),
+            action:() => later(() => rulesFlip(feature, key), 60)}));
+    }
+    // The server icon's menu (17433) and a folder's (GuildsBarFolderMenuItems 17434): one row per feature, in the same shape.
     function rulesServerMenu(orig, self, args) {
         const items = orig.apply(self, args), id = args[0] == null ? "" : String(args[0]);
-        return Array.isArray(items) && /^\d{17,20}$/.test(id) && rulesFeaturesFor("g").length ? items.concat([rulesItem("g" + id)]) : items;
+        return Array.isArray(items) && /^\d{17,20}$/.test(id) ? items.concat(rulesItems("g" + id)) : items;
     }
     function rulesFolderMenu(orig, self, args) {
         const items = orig.apply(self, args), raw = args[0];
         const id = String(raw != null && typeof raw === "object" ? (raw.folderId != null ? raw.folderId : raw.id) : raw);
-        return Array.isArray(items) && /^\d{1,20}$/.test(id) && rulesFeaturesFor("f").length ? items.concat([rulesItem("f" + id)]) : items;
+        return Array.isArray(items) && /^\d{1,20}$/.test(id) ? items.concat(rulesItems("f" + id)) : items;
     }
-    // Channel, DM, group and thread menus: a row like Discord's own, the way View raw data adds one.
+    // Channel, DM, group and thread menus: rows like Discord's own, the way View raw data adds one.
     function rulesChannelHook(sheetKey) {
         return sheetInnerHook(function (tree, props) {
-            if (!React || !tree || !props || !rulesFeaturesFor("c").length) return tree;
+            if (!React || !tree || !props) return tree;
             const channel = props.channel || props.thread || props.post, id = String(props.channelId || channel && channel.id || "");
             if (!/^\d{17,20}$/.test(id)) return tree;
-            return sheetAddRow(tree, props, "venus-rules", tr("Venus rules"), venusIcon(18745, "ListBulletsIcon"), () => rulesOpen("c" + id), sheetKey(id));
+            const key = "c" + id;
+            return rulesFeaturesFor("c").reduce((out, feature) => sheetAddRow(out, props, "venus-rules-" + feature, ruleRowLabel(feature, key), ruleRowIcon(feature, key),
+                () => rulesFlip(feature, key), sheetKey(id)), tree);
         });
     }
     const rulesChannelMenu = rulesChannelHook(id => "ChannelLongPress-" + id);
     const rulesThreadMenu = rulesChannelHook(() => "ThreadLongPressActionSheet");
-    // A person's ⋯ menu: Keep deleted messages can always or never keep what they write.
+    // A person's ⋯ menu: Keep deleted messages can keep or skip what they write.
     function rulesProfileMenu(orig, self, args) {
         const rendered = orig.apply(self, args), props = args[0];
         if (!React || !rendered || !props || !rulesFeaturesFor("u").length) return rendered;
         const userId = String(props.userId || props.user && props.user.id || ""), Menu = inspectedExport(9662, "ContextMenu"), me = currentUser();
         if (!Menu || !/^\d{17,20}$/.test(userId) || me && me.id === userId) return rendered;
-        const item = {label:tr("Venus rules"), venusRules:true, action:() => later(() => rulesOpen("u" + userId), 60)};
+        const key = "u" + userId, item = {label:ruleRowLabel("noDelete", key), venusRules:true, action:() => later(() => rulesFlip("noDelete", key), 60)};
         return cloneTree(rendered, (node, nodeProps) => {
             if (node.type !== Menu || !Array.isArray(nodeProps.items) || nodeProps.items.some(entry => entry && entry.venusRules || Array.isArray(entry) && entry.some(e => e && e.venusRules))) return nodeProps;
             const items = nodeProps.items, last = items[items.length - 1], grouped = items.some(Array.isArray);
@@ -4329,7 +4350,7 @@
             return Object.assign({}, nodeProps, {items:!grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]])});
         }, 0);
     }
-    // The rules on a feature's page: each one opens its sheet again, and its X removes it.
+    // The exceptions on a feature's page, each with an X that removes it.
     function RulesList(props) {
         useSettings(props.feature);
         const ui = reviewUI(), feature = props.feature, on = !!props.on, Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
@@ -4337,14 +4358,14 @@
         const rules = Array.from(rulesParse(settings[RULE_SETTINGS[feature]]));
         const rows = Row ? rules.map(([key, value]) => {
             const info = rulesPlaceInfo(key);
-            return el(Row, {key, label:info.name, subLabel:info.kind + " \u00b7 " + ruleLabel(feature, value), icon:info.icon, disabled:!on, onPress:() => rulesOpen(key),
+            return el(Row, {key, label:info.name, subLabel:info.kind + " \u00b7 " + ruleLabel(feature, value), icon:info.icon, disabled:!on,
                 trailing:el(Press, {onPress:() => rulesSet(feature, key, undefined), disabled:!on, hitSlop:12, accessibilityRole:"button",
                     accessibilityLabel:tr("Remove: {name}", {name:info.name})}, el(Remove, {size:"sm"}))});
         }) : [];
         const hint = feature === "noDelete" ?
-            footnote("hint", rows.length ? "A rule for a person beats any place, and a channel's beats its server's and folder's." : "Hold a server, folder, channel or DM, or open someone's \u22ef menu, and tap Venus rules.") :
-            footnote("hint", rows.length ? "A rule for a channel beats its server's, and a server's beats its folder's." : "Hold a server, folder, channel or DM and tap Venus rules.");
-        return el(RN.View, {key:"rules", style:{gap:8}}, rows.length ? el(Group, {key:"list", title:tr("Venus rules")}, rows) : groupTitle("title", "Venus rules"), hint);
+            footnote("hint", "Hold a server, folder, channel or DM, or open someone's \u22ef menu, to keep or stop keeping deleted messages there.") :
+            footnote("hint", "Hold a server, folder, channel or DM to hide or show your typing there.");
+        return el(RN.View, {key:"rules", style:{gap:8}}, rows.length ? el(Group, {key:"list", title:tr("Exceptions")}, rows) : groupTitle("title", "Exceptions"), hint);
     }
     function NoTypingSettings() {
         useSettings("noTyping");

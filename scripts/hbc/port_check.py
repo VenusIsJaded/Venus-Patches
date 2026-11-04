@@ -433,7 +433,7 @@ BOOTSTRAP_MODULES = [
     (17357, 'modules/guild_sidebar/native/ChannelInfo.tsx', ['default'], 'ChannelInfo'),
     (17429, 'modules/guilds_bar/native/GuildsBarConstants.tsx', ['MESSAGES', 'FAVORITES', 'PENDING_JOIN_REQUESTS'], 'FastListRenderSections'),
     (17433, 'modules/guilds_bar/native/utils/getGuildsBarGuildMenuItems.tsx', ['default'], 'getGuildsBarGuildMenuItems (Server info menu row)'),
-    (17434, 'modules/guilds_bar/native/GuildsBarFolderMenuItems.tsx', ['getGuildFolderMenuItems'], 'GuildsBarFolderMenuItems (Venus rules folder menu row)'),
+    (17434, 'modules/guilds_bar/native/GuildsBarFolderMenuItems.tsx', ['getGuildFolderMenuItems'], 'GuildsBarFolderMenuItems (exceptions folder menu row)'),
     (17439, 'modules/guilds_bar/native/hooks/useGuildsBarProps.tsx', ['MESSAGES', 'FAVORITES', 'PENDING_JOIN_REQUESTS'], 'useGuildsBarProps'),
     (17514, 'modules/main_tabs_v2/native/tabs/you/utils/showYouAccountActionSheet.tsx', ['showYouAccountActionSheet'], 'showYouAccountActionSheet'),
     (17519, 'modules/multi_account/native/openManageAccountsModal.tsx', ['default'], 'openManageAccountsModal'),
@@ -521,8 +521,8 @@ BOOTSTRAP_MODULES = [
     (13951, 'design/components/Icon/native/redesign/generated/ShieldLockIcon.tsx', ['ShieldLockIcon'], 'ShieldLockIcon (View raw data)'),
     (2044, 'modules/user_settings/UserSettings.tsx', ['TimestampHourCycle'], 'UserSettings (Time zones: 12 or 24-hour like Discord)'),
     (15315, None, ['timezones'], 'Intl time zone list (Time zones picker)'),
-    (17434, 'modules/guilds_bar/native/GuildsBarFolderMenuItems.tsx', ['getGuildFolderMenuItems'], 'GuildsBarFolderMenuItems (Venus rules: folder menu row)'),
-    (18745, 'design/components/Icon/native/redesign/generated/ListBulletsIcon.tsx', ['ListBulletsIcon'], 'ListBulletsIcon (Venus rules)'),
+    (17434, 'modules/guilds_bar/native/GuildsBarFolderMenuItems.tsx', ['getGuildFolderMenuItems'], 'GuildsBarFolderMenuItems (exceptions: folder menu row)'),
+    (18745, 'design/components/Icon/native/redesign/generated/ListBulletsIcon.tsx', ['ListBulletsIcon'], 'ListBulletsIcon'),
 ]
 
 
