@@ -14118,43 +14118,6 @@
         const activeName = me && (me.globalName || me.global_name || me.username);
         return activeName ? tr("Signed in as {name}.", {name:activeName}) + "\n" + room : room;
     }
-    // Notifications from every account: a phone notification the way Android draws one from another saved account, with the
-    // account's name in its header (Discord's own label). It dims while the switch is off, and the line under it says when it
-    // shows: in the background only, or while Discord is open too (#152).
-    const ACCOUNT_NOTIFY_DARK = {card:{marginHorizontal:12, marginVertical:8, padding:14, borderRadius:20, backgroundColor:"#2b2d31", gap:10},
-        head:{flexDirection:"row", alignItems:"center", gap:6}, app:{width:18, height:18, borderRadius:9, backgroundColor:"#5865f2", alignItems:"center", justifyContent:"center"},
-        account:{color:"#c9cdfb", fontSize:12, fontWeight:"700"}, dot:{color:"#949ba4", fontSize:12}, pill:{flexDirection:"row", alignItems:"center", gap:6,
-        alignSelf:"center", paddingHorizontal:10, paddingVertical:4, borderRadius:12, backgroundColor:"#ffffff0f", marginBottom:4}};
-    function AccountNotifyPreview(props) {
-        useSettings("accountSwitcher");
-        const s = useChatPreviewStyles();
-        const k = useThemed("accountNotify", c => ({head:ACCOUNT_NOTIFY_DARK.head, card:Object.assign({}, ACCOUNT_NOTIFY_DARK.card, {backgroundColor:c.BACKGROUND_SURFACE_HIGH || c.BACKGROUND_BASE_LOW || c.BACKGROUND_MOD_SUBTLE}),
-            app:Object.assign({}, ACCOUNT_NOTIFY_DARK.app, {backgroundColor:c.BACKGROUND_BRAND || "#5865f2"}), account:Object.assign({}, ACCOUNT_NOTIFY_DARK.account, {color:c.TEXT_BRAND || c.TEXT_LINK}),
-            dot:Object.assign({}, ACCOUNT_NOTIFY_DARK.dot, {color:c.TEXT_MUTED}), pill:Object.assign({}, ACCOUNT_NOTIFY_DARK.pill, {backgroundColor:c.BACKGROUND_MOD_SUBTLE})}), ACCOUNT_NOTIFY_DARK);
-        const me = props.me, other = (props.accounts || []).find(acc => acc && acc.id && (!me || acc.id !== me.id));
-        const account = other && other.username || "alt.account";
-        const live = !!props.on && settings.accountSwitcherNotify, open = live && settings.accountSwitcherNotifyOpen;
-        const Bell = venusIcon(9045, "BellIcon"), Phone = venusIcon(6919, "MobilePhoneIcon");
-        const card = el(RN.View, {style:[k.card, {opacity:live ? 1 : 0.45}]},
-            el(RN.View, {style:k.head},
-                el(RN.View, {style:k.app}, el(Bell, {size:"xxs", color:"#ffffff"})),
-                el(RN.Text, {style:[s.muted, {fontWeight:"600"}]}, "Discord"),
-                el(RN.Text, {style:k.dot}, "\u00b7"),
-                el(RN.Text, {style:k.account, numberOfLines:1}, account),
-                el(RN.Text, {style:k.dot}, "\u00b7"),
-                el(RN.Text, {style:k.dot}, tr("just now"))),
-            el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:12}},
-                el(RN.View, {style:{flex:1, gap:2}},
-                    el(RN.Text, {style:[s.name, {fontSize:14}], numberOfLines:1}, "Mika"),
-                    el(RN.Text, {style:[s.text, {fontSize:14, lineHeight:19}], numberOfLines:2}, tr("Are we still on for tonight?"))),
-                avatarBubble({id:"152", username:"Mika"}, 40)));
-        return el(RN.View, {key:"preview", accessible:true, accessibilityLabel:tr("Notification preview")},
-            previewScreen(s, "preview", "Notification preview", [
-                live ? popIn("card:" + account, card) : card,
-                el(RN.View, {key:"when", style:k.pill},
-                    el(open ? Phone : Bell, {size:"xs", color:s.muted.color}),
-                    el(RN.Text, {style:s.muted}, tr(!live ? "Only from the account you're using" : open ? "Shows even while Discord is open" : "Shows while Discord is in the background")))]));
-    }
     function AccountSwitcherSettings() {
         useSettings("accountSwitcher");
         const [, forceUpdate] = React.useState(0);
@@ -14212,7 +14175,6 @@
                 Row ? el(Row, {key:"manage", label:tr("Manage accounts"), subLabel:tr("Open Discord's account manager to reorder or remove accounts."), icon:rowIcon(7368, "SettingsIcon"),
                     arrow:true, disabled:!on, onPress:() => openManageAccounts()}) : null,
                 null),
-            el(AccountNotifyPreview, {key:"notifyPreview", on, accounts, me}),
             el(Group, {key:"notify", title:tr("Notifications")},
                 switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notifications for all your saved accounts, not just the one you're using. Each one shows which account it's for.", rowIcon(9045, "BellIcon")),
                 settings.accountSwitcherNotify ? switchRow(Switch, "accountSwitcherNotifyOpen", "While Discord is open", "Also show your other accounts' notifications while you're using Discord. The account you're on keeps its in-app banners.", rowIcon(6919, "MobilePhoneIcon")) : null),
