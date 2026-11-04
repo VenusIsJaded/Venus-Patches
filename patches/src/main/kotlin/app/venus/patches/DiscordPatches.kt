@@ -951,7 +951,7 @@ private const val NOTIFICATION_DATA = "Lcom/discord/notifications/api/Notificati
  * Notifications from every account while Discord is open (#152). showNotification asks shouldDisplayNotification() (false
  * while Discord is in front) and drops the push unless it's a call ring, since the signed-in account shows its own in-app
  * banners. Saved accounts you aren't on have no connection, so their pushes vanished. Right before that branch Venus asks
- * [app.venus.accounts.AccountNotifications.showWhileOpen] with the push's receiving account: true for another saved account,
+ * [app.venus.accounts.AccountNotifications.display] with Discord's answer and the push: true for another saved account,
  * and the push is shown as in the background, with Discord's own account label. The signed-in account is unchanged.
  */
 internal fun otherAccountsWhileOpen(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
@@ -977,14 +977,12 @@ internal fun otherAccountsWhileOpen(method: app.morphe.patcher.util.proxy.mutabl
             it.opcode.setsRegister() } || maxOf(flag, data, context) > 15)
         throw PatchException("showNotification's registers changed")
     requireUnpatched(method, "venus-")
+    // No labels or branches here: a label inside code added mid-method resolved against the method's start, so the branch
+    // jumped back to the top of showNotification. The helper takes Discord's answer and returns the final one into the same
+    // register, right before Discord's own if-nez reads it.
     method.addInstructions(branch, """
-        if-nez v$flag, :venus_in_front
-        invoke-virtual {v$data}, $NOTIFICATION_DATA->getReceivingUserId-wUX8bhU()Lcom/discord/primitives/UserId;
-        move-result-object v$flag
-        invoke-static {v$context, v$flag}, $ACCOUNT_NOTIFICATIONS->showWhileOpen(Landroid/content/Context;Ljava/lang/Object;)Z
+        invoke-static {v$flag, v$context, v$data}, $ACCOUNT_NOTIFICATIONS->display(ZLandroid/content/Context;Ljava/lang/Object;)Z
         move-result v$flag
-        :venus_in_front
-        nop
     """)
 }
 

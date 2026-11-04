@@ -8,8 +8,8 @@ import java.io.File
  *
  * NotificationClient.showNotification drops every push while Discord is in front (shouldDisplayNotification() is false),
  * because the account you're on gets its own in-app banners from the gateway. Your other saved accounts have no gateway
- * connection, so their pushes were thrown away and you missed them until you left Discord. The patched check asks
- * [showWhileOpen] before dropping one: a push for another saved account is shown like it would be in the background,
+ * connection, so their pushes were thrown away and you missed them until you left Discord. The patched check passes
+ * Discord's answer through [display] before dropping one: a push for another saved account is shown like it would be in the background,
  * with Discord's own account label in its header. Pushes for the signed-in account stay in-app, as before.
  *
  * Java/Android APIs only: the host's Kotlin helpers are obfuscated.
@@ -25,16 +25,26 @@ object AccountNotifications {
     @Volatile private var stamp = Long.MIN_VALUE
     @Volatile private var allowed = false
 
+    /** NotificationData's receiving account getter (Kotlin's mangled name for a value-class result), looked up once. */
+    @Volatile private var receivingGetter: java.lang.reflect.Method? = null
+
     /**
-     * Whether a push Discord is about to drop because it is in front should be shown anyway. [receivingUserId] is the
-     * push's UserId (or null); any problem keeps Discord's own answer (drop it).
+     * Discord's answer to "show this push?" ([shown], false while Discord is in front) and Venus' final one. While Discord
+     * is in front, a push for another saved account is shown anyway. One call with no branch in the patched code: the
+     * answer goes straight back into Discord's register. Any problem keeps Discord's own answer.
      */
     @JvmStatic
-    fun showWhileOpen(context: Context?, receivingUserId: Any?): Boolean {
+    fun display(shown: Boolean, context: Context?, notification: Any?): Boolean {
+        if (shown) return true
         try {
-            if (context == null || receivingUserId == null) return false
-            val receiving = receivingUserId.toString()
-            if (receiving.length == 0 || !turnedOn(context)) return false
+            if (context == null || notification == null || !turnedOn(context)) return false
+            var getter = receivingGetter
+            if (getter == null || getter.declaringClass != notification.javaClass) {
+                getter = notification.javaClass.getMethod("getReceivingUserId-wUX8bhU")
+                receivingGetter = getter
+            }
+            val receiving = getter!!.invoke(notification)?.toString() ?: return false
+            if (receiving.length == 0) return false
             val current = context.getSharedPreferences(CACHE, Context.MODE_PRIVATE).getString(CURRENT_USER, null)
             return current != null && current.length > 0 && current != receiving
         } catch (_: Throwable) {
