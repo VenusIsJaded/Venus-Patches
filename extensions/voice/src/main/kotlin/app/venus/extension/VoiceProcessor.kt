@@ -70,6 +70,12 @@ object VoiceProcessor {
                     } catch (_: RejectedExecutionException) {
                         jobs.remove(id, cancelled)
                         promise.reject("VENUS_BUSY", "Audio conversion queue is full; try again shortly")
+                    } catch (error: Throwable) {
+                        // Thread.start() inside ThreadPoolExecutor.addWorker throws OutOfMemoryError when ART can't create
+                        // the thread. The outer catch answered the Promise but left this job id registered, so a retry of
+                        // the same upload failed with "Audio job already exists" until Discord restarted.
+                        jobs.remove(id, cancelled)
+                        promise.reject("VENUS_AUDIO", error.message ?: "Audio conversion failed to start")
                     }
                 }
                 else -> throw IllegalArgumentException("Unknown audio action")
