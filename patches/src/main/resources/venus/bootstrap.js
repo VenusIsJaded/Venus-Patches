@@ -20558,7 +20558,7 @@
                 switchRow(Switch, "timezonesChat", "In chat", "Their time next to the time on each of their messages.", rowIcon(8471, "ChatIcon")),
                 settings.timezonesChat ? switchRow(Switch, "timezonesDmOwn", "Your messages in DMs", "In a DM with someone who has a time zone, your messages show their time too.", rowIcon(8490, "AtIcon")) : null,
                 switchRow(Switch, "timezonesProfile", "On profiles", "A Local time card with their time right now.", rowIcon(11671, "UserIcon"))),
-            radioGroup(ui, "clock", "Clock", "timezonesClock", on, [["discord", "Like Discord", "Follows Discord's 12 or 24-hour setting.", rowIcon(5150, "ClockIcon")],
+            radioGroup(ui, "clock", "Clock", "timezonesClock", on, [["discord", "Same as Discord", "Follows Discord's 12 or 24-hour setting.", rowIcon(5150, "ClockIcon")],
                 ["12", "12-hour", undefined, rowIcon(5150, "ClockIcon")], ["24", "24-hour", undefined, rowIcon(5150, "ClockIcon")]]),
             el(Group, {key:"offset"}, switchRow(Switch, "timezonesOffset", "Show the UTC offset", "Adds the offset after their time, like GMT+1.", rowIcon(9393, "GlobeEarthIcon"))),
             rows.length ? el(Group, {key:"people", title:tr("People")}, rows) :
