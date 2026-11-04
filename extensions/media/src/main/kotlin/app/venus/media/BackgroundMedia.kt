@@ -457,7 +457,10 @@ object BackgroundMedia {
         audioPlaying = true
         if (Build.VERSION.SDK_INT >= 26) {
             val manager = context.getSystemService(NotificationManager::class.java)
-            if (manager.getNotificationChannel(CHANNEL) == null || manager.getNotificationChannel(CHANNEL).name.toString() != label("channel", "Media playback")) {
+            // Read once: the channel can be deleted in the settings between two reads, and the second read's
+            // null then threw a NullPointerException into Discord's pause call.
+            val existing = manager.getNotificationChannel(CHANNEL)
+            if (existing == null || existing.name.toString() != label("channel", "Media playback")) {
                 val channel = NotificationChannel(CHANNEL, label("channel", "Media playback"), NotificationManager.IMPORTANCE_LOW)
                 channel.setShowBadge(false)
                 channel.setSound(null, null)
