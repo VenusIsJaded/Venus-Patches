@@ -4227,11 +4227,13 @@
     }
     // Keep deleted messages: whether a message here, from this person, is kept and logged.
     function noDeleteAllowed(channelId, authorId) { return placeOn("noDelete", channelId, authorId); }
-    function rulesSet(feature, key, value) {
+    // quiet: a switch already buzzes by itself (FormSwitch), so the sheet's switches skip the extra haptic.
+    function rulesSet(feature, key, value, quiet) {
         const setting = RULE_SETTINGS[feature], map = new Map(rulesParse(settings[setting]));
         map.delete(key);
         if (value !== undefined) map.set(key, value);
-        haptic("SELECTION"); animateLayout();
+        if (!quiet) haptic("SELECTION");
+        animateLayout();
         setSetting(setting, Array.from(map).map(([k, v]) => k + ":" + (v ? "+" : "-")).join(","));
     }
     function ruleLabel(value) { return value ? tr("On here") : tr("Off here"); }
@@ -4287,9 +4289,9 @@
     }
     // Tapping a menu row does the opposite of what the place gets now. When that's what it would get anyway (the server or
     // your settings already say so), its exception is removed instead of saving one that changes nothing.
-    function rulesFlip(feature, key) {
+    function rulesFlip(feature, key, quiet) {
         const next = !ruleNow(feature, key);
-        rulesSet(feature, key, next === ruleNow(feature, key, true) ? undefined : next);
+        rulesSet(feature, key, next === ruleNow(feature, key, true) ? undefined : next, quiet);
     }
     function ruleRowLabel(feature, key) {
         const now = ruleNow(feature, key);
@@ -4299,8 +4301,30 @@
     }
     // Each feature's own icon, so the two rows look alike and say which feature they are.
     function ruleRowIcon(feature) { return feature === "noTyping" ? venusIcon(13747, "KeyboardIcon") : venusIcon(5148, "TrashIcon"); }
+    // Hold menus stay short: with one feature on, its row toggles it straight away; with both, a single Venus options row
+    // opens a small sheet for that place with one switch per feature, instead of two long rows in Discord's menu.
+    const RULES_SHEET = "VenusPlaceOptions";
+    function PlaceOptionsSheet(props) {
+        useSettings();
+        const ui = reviewUI(), key = props.place, info = rulesPlaceInfo(key), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
+        const rows = Switch ? rulesFeaturesFor(key.charAt(0)).map(feature => el(Switch, {key:feature,
+            label:feature === "noTyping" ? tr("Hide typing indicator") : tr("Keep deleted messages"),
+            icon:feature === "noTyping" ? rowIcon(13747, "KeyboardIcon") : rowIcon(5148, "TrashIcon"),
+            value:ruleNow(feature, key), onValueChange:() => rulesFlip(feature, key, true)})) : [];
+        const Sheet = ui.ActionSheet || RN.View;
+        return el(Sheet, {startExpanded:true},
+            ui.Header ? el(ui.Header, {title:info.name, subtitle:info.kind, trailing:ui.Close ? el(ui.Close, {onPress:() => hideReviewSheet(ui, RULES_SHEET)}) : undefined}) : null,
+            el(RN.View, {style:{paddingHorizontal:16, paddingBottom:24}}, el(Group, {key:"options"}, rows)));
+    }
+    function rulesOpen(key) {
+        const ui = reviewUI();
+        if (!React || !RN || typeof ui.showSheet !== "function") return;
+        try { ui.showSheet({key:RULES_SHEET, content:el(PlaceOptionsSheet, {place:key}), stackingBehavior:"stack"}); } catch (_) {}
+    }
     function rulesItems(key) {
-        return rulesFeaturesFor(key.charAt(0)).map(feature => ({IconComponent:ruleRowIcon(feature), label:ruleRowLabel(feature, key),
+        const list = rulesFeaturesFor(key.charAt(0));
+        if (list.length > 1) return [{IconComponent:venusIcon(7368, "SettingsIcon"), label:tr("Venus options"), action:() => later(() => rulesOpen(key), 60)}];
+        return list.map(feature => ({IconComponent:ruleRowIcon(feature), label:ruleRowLabel(feature, key),
             action:() => later(() => rulesFlip(feature, key), 60)}));
     }
     // The server icon's menu (17433) and a folder's (GuildsBarFolderMenuItems 17434): one row per feature, in the same shape.
@@ -4319,8 +4343,9 @@
             if (!React || !tree || !props) return tree;
             const channel = props.channel || props.thread || props.post, id = String(props.channelId || channel && channel.id || "");
             if (!/^\d{17,20}$/.test(id)) return tree;
-            const key = "c" + id;
-            return rulesFeaturesFor("c").reduce((out, feature) => sheetAddRow(out, props, "venus-rules-" + feature, ruleRowLabel(feature, key), ruleRowIcon(feature),
+            const key = "c" + id, list = rulesFeaturesFor("c");
+            if (list.length > 1) return sheetAddRow(tree, props, "venus-rules", tr("Venus options"), venusIcon(7368, "SettingsIcon"), () => rulesOpen(key), sheetKey(id));
+            return list.reduce((out, feature) => sheetAddRow(out, props, "venus-rules-" + feature, ruleRowLabel(feature, key), ruleRowIcon(feature),
                 () => rulesFlip(feature, key), sheetKey(id)), tree);
         });
     }
