@@ -101,6 +101,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 5532 | `stores/MessageStore.tsx` | default | MessageStore |
 | 5534 | `modules/messages/MessageRecordUtils.tsx` | createMessageRecord, updateServerMessage, updateMessageRecord | MessageRecordUtils |
 | 5888 | `modules/messages/isMessageMentioned.tsx` | isRawMessageMentioned, isMentioned, mention_roles | isMessageMentioned (Message highlights: role mentions) |
+| 6014 | `stores/CallStore.tsx` | default | CallStore (Voice channel options: rejoin the call) |
 | 6015 | `stores/SelfPresenceStore.tsx` | default | SelfPresenceStore (Badge Completer) |
 | 6017 | `stores/ConnectedAccountsStore.tsx` | default | ConnectedAccountsStore (Listen along) |
 | 6145 | `actions/SelectedChannelActionCreators.tsx` | default | SelectedChannelActionCreators (Voice channel options) |
