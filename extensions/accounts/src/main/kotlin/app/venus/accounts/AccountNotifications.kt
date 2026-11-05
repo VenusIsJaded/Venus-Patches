@@ -108,7 +108,9 @@ object AccountNotifications {
             val label = labelFor(notification, context, owner) ?: return
             // androidx ShortcutInfoCompat as Discord 351.11 ships it: e = short label, f = long label.
             val long = info.javaClass.getField("f")
-            val base = (long.get(info) as? CharSequence)?.takeIf { it.length > 0 } ?: info.javaClass.getField("e").get(info) as? CharSequence ?: return
+            var base = long.get(info) as? CharSequence
+            if (base == null || base.length == 0) base = info.javaClass.getField("e").get(info) as? CharSequence
+            if (base == null || base.length == 0) return
             long.set(info, join(base, label))
         } catch (_: Throwable) {
         }
@@ -137,9 +139,11 @@ object AccountNotifications {
         }
     }
 
+    // Java's String.endsWith on purpose: Kotlin's compiles to kotlin.text.StringsKt, which the build refuses (host helpers are obfuscated).
     private fun join(base: CharSequence, label: String): CharSequence {
         val tail = " \u00b7 " + label
-        return if (base.toString().endsWith(tail)) base else StringBuilder(base.length + tail.length).append(base).append(tail).toString()
+        if ((base.toString() as java.lang.String).endsWith(tail)) return base
+        return StringBuilder(base.length + tail.length).append(base).append(tail).toString()
     }
 
     private fun ownerField(owner: Any, name: String): Any? {
@@ -172,7 +176,7 @@ object AccountNotifications {
         return if (own != null && own.length > 0) own else savedName(context, notification)
     }
 
-    private fun tail(id: String?): String = if (id == null || id.length == 0) "?" else id.substring(maxOf(0, id.length - 4))
+    private fun tail(id: String?): String = if (id == null || id.length == 0) "?" else (id as java.lang.String).substring(Math.max(0, id.length - 4))
 
     /** One line in Discord's logcat, which Venus' Copy logs includes, so a report shows what happened to each push. */
     private fun log(text: String) {
