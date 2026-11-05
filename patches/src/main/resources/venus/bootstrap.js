@@ -46,7 +46,7 @@
     if (features.serverInfo) selectModules([1392, 17433]);
     if (features.serverEdit) selectModules([1417, 2090, 17433, 8910, 8911, 18678]);
     if (features.fixEmbeds) selectModules([1392, 7445]);
-    if (features.tenorGifs) selectModules([1297, 10036]);
+    if (features.tenorGifs) selectModules([1297, 10036, 10044]);
     if (features.hideBlocked) selectModules([584, 2068, 2119, 4855, 5532, 7290, 7579, 12809]);
     if (features.staffTag) selectModules([8013, 10531]);
     if (features.fullImages) selectModules([1417, 1498, 8666]);
@@ -101,7 +101,7 @@
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, accountSwitcherNotifyOpen:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, staffTagMembers:false, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, profileMedia:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsProviders:"tenor,klipy", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, staffTagMembers:false, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, profileMedia:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
         hypeSquad:false, customIdle:false, customIdleMinutes:10, pauseInvites:false, fastDeleteChannels:false, fastDeleteChannelsConfirm:true, fastDeleteChannelsMenu:true, mutualGroupDMs:false, platformSpoof:false, platformSpoofDevice:"desktop" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
@@ -119,7 +119,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, accountSwitcherNotifyOpen: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, staffTagMembers: false, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, profileMedia: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsProviders: "tenor,klipy", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, staffTagMembers: false, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, profileMedia: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
             hypeSquad: false, customIdle: false, customIdleMinutes: 10, pauseInvites: false, fastDeleteChannels: false, fastDeleteChannelsConfirm: true, fastDeleteChannelsMenu: true, mutualGroupDMs: false, platformSpoof: false, platformSpoofDevice: "desktop"
         }));
     }
@@ -199,8 +199,8 @@
     const PLACE_WHERE = ["all", "chosen"], WHERE_SETTINGS = {noDelete:"noDeleteWhere", noTyping:"noTypingWhere"};
     // Venus rules (#143): what a rules setting last parsed to, so a delete or a keystroke never parses it again.
     const RULES = {cache:new Map(), folders:null, folderList:null, folderOf:null}, RULES_MAX = 500;
-    // Where the GIF picker's GIFs come from with Bring back Tenor GIFs on: Tenor first with Discord's own mixed in, or only Tenor.
-    const TENOR_SOURCES = ["both", "tenor"];
+    // Where the GIF picker's GIFs come from with Bring back Tenor GIFs on: any of these, mixed in this order (#156).
+    const GIF_PROVIDERS = ["tenor", "giphy", "klipy"], GIF_PROVIDER_NAMES = {tenor:"Tenor", giphy:"Giphy", klipy:"Klipy"};
     // Where Use your phone's font / emojis get their look: the phone's own, or a font file you imported.
     const FONT_SOURCES = ["phone", "file"];
     // Left bar thickness multiplier (1x = 2dp default, 2x = 4dp, 3x = 6dp, 4x = 8dp) and highlight color presets (#60).
@@ -453,6 +453,9 @@
                 raw.cleanChannelsEmoji = false; raw.cleanChannelsSymbols = false; raw.cleanChannelsFonts = false;
             }
         }
+        // GIFs from used to be Tenor and Discord's GIFs, or only Tenor; now it's any of Tenor, Giphy and Klipy (#156).
+        if (raw && typeof raw === "object" && raw.tenorGifsProviders === undefined && typeof raw.tenorGifsSource === "string")
+            raw.tenorGifsProviders = raw.tenorGifsSource === "tenor" ? "tenor" : "tenor,klipy";
         return raw;
     }
     // A saved or imported value for one setting, cleaned up, or undefined when it can't be used. Shared by the settings
@@ -463,7 +466,7 @@
         // Only the number and text settings have rules; a boolean setting that ever needs one must be handled above this line.
         if (typeof value === "boolean") return value;
         if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "timezonesClock" && !TIMEZONE_CLOCKS.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
-            key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
+            key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
             (key === "systemFontSource" || key === "systemEmojiSource") && !FONT_SOURCES.includes(value) ||
             key === "messageHighlightThickness" && !HIGHLIGHT_THICKNESSES.includes(value) || key === "language" && !isLanguage(value)) return undefined;
         if (key === "messageHighlightPingColor" || key === "noDeleteColor") return isHighlightColor(value) ? normalizeHighlightColor(value) : undefined;
@@ -471,6 +474,7 @@
         if (key === "noDeleteLimit") return deleteLimit(value);
         if (key === "voiceOptionsVolumeLevel" || key === "voiceOptionsSoundVolume") return brightness(value);
         if (key === "listenAlongOffset") return listenAlongOffsetValue(value);
+        if (key === "tenorGifsProviders") return gifProvidersText(value);
         if (key === "badgesCycleMinutes") return badgeCycleMinutes(value);
         if (key === "badgesGamesAtOnce") return badgeAtOnce(value);
         if (key === "fixEmbedsSites") return fixSitesText(value);
@@ -572,10 +576,11 @@
             if (settings[key] === level && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings[key] = level; dirty.add(key); save(); notify(key); return true;
         }
-        if (key === "tenorGifsSource") {
-            if (!TENOR_SOURCES.includes(value)) return false;
-            if (settings.tenorGifsSource === value && status.storage !== "loading" && status.storage !== "waiting") return true;
-            settings.tenorGifsSource = value; dirty.add(key); save(); notify(key); return true;
+        if (key === "tenorGifsProviders") {
+            const clean = gifProvidersText(value);
+            if (clean === undefined) return false;
+            if (settings.tenorGifsProviders === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.tenorGifsProviders = clean; dirty.add(key); save(); notify(key); return true;
         }
         if (key === "fixEmbedsOptions") {
             const clean = fixOptionsClean(value);
@@ -1340,7 +1345,7 @@
         messageHighlight:["Brightness", "Left bar width"], iconPacks:["Rosiecord", "Plumpy", "Iconsax", "Material", "MD3", "Solar", "Deco", "Themes+", "Follow theme's icon pack"],
         fixEmbeds:["Remove tracking from links", "X (Twitter)", "Twitter", "Instagram", "TikTok", "Reddit", "Bluesky", "Threads", "Tumblr", "Facebook", "Mastodon", "YouTube", "Twitch", "Spotify", "pixiv", "Bilibili", "DeviantArt", "Fur Affinity", "Pinterest", "PTT",
             "FxTwitter", "vxTwitter", "fxtumblr", "Dark Tumblr posts", "embed", "Imgur", "Newgrounds",
-            "Post style", "Translate posts", "Full post", "Media", "Text", "File", "Translate", "Gallery", "Service", "Settings", "Dark posts"], tenorGifs:["Tenor", "GIF", "GIFs", "Klipy", "GIFs from", "Only Tenor"],
+            "Post style", "Translate posts", "Full post", "Media", "Text", "File", "Translate", "Gallery", "Service", "Settings", "Dark posts"], tenorGifs:["Tenor", "Giphy", "Klipy", "GIF", "GIFs", "GIFs from"],
         hideBlocked:["Blocked messages", "Ignored messages", "Replies to them", "Remove blocked users", "RemoveBlockedUsers", "Close their DM", "blocked", "ignored", "replies"],
         anonFiles:["File names", "Random name", "Privacy", "Rename", "Random file name"],
         staffTag:["In the member list", "Owner", "Admin", "Manager", "Mod", "Crown", "Staff", "Moderator", "Tags", "Staff tags", "StaffTag", "Label", "Badge"],
@@ -1837,7 +1842,7 @@
             () => ({page:FreeNitroSettings, sections:[section("Send as links", [option("emojis", "Emojis", "Emojis from other servers, and animated emojis.", "VENUS_FREENITRO"),
                 option("stickers", "Stickers", "Stickers from other servers. Animated ones may not move.", "VENUS_FREENITRO")]),
              section("Link style", [option("hyperlinks", "Short links", "In chat it looks the same either way. Short links only change what's copied or quoted.", "VENUS_FREENITRO")])]}));
-        withOptions("sending", "tenorGifs", "VENUS_TENORGIFS", "Bring back Tenor GIFs", "Tenor GIFs show in Discord's GIF picker again.", "Tenor GIFs", TenorSettings);
+        withOptions("sending", "tenorGifs", "VENUS_TENORGIFS", "Bring back Tenor GIFs", "Tenor and Giphy GIFs in Discord's GIF picker, with a switcher by the search bar.", "Tenor GIFs", TenorSettings);
         withOptions("sending", "fixEmbeds", "VENUS_FIXEMBEDS", "Fix link previews", "Links to X, Instagram, TikTok, Tumblr and more show the post.", "Link previews", FixEmbedsSettings);
         toggle("sending", "voice", "Send audio as voice messages", "Audio files are sent as voice messages. Android 10 or newer.");
         toggle("sending", "splitMessages", "Send long messages", "Type past the limit. Long messages are sent in parts.");
@@ -8700,14 +8705,26 @@
         useSettings("tenorGifs");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("tenorGifs"), Icon = venusIcon(10051, "GifIcon");
+        const on = enabled("tenorGifs"), Icon = venusIcon(10051, "GifIcon"), picks = gifProviders();
+        const own = picks.filter(id => id !== "klipy"), down = own.filter(id => tenor.down[id]);
+        const Check = inspectedExport(6454, "TableCheckboxRow"), Group = ui.TableRowGroup || RN.View;
+        const rows = [
+            ["tenor", tr("Sent as {site} links, which play for everyone.", {site:"tenor.com"}), rowIcon(8487, "ImageIcon")],
+            ["giphy", tr("Sent as {site} links, which play for everyone.", {site:"giphy.com"}), rowIcon(12328, "ImagesIcon")],
+            ["klipy", tr("Discord's own GIFs, the same as without Venus."), rowIcon(10051, "GifIcon")]];
         const groups = [
-            !on ? offCard("status", Icon, "tenorGifs") : tenor.down ? statusCard("status", "Discord's own GIFs show until it answers again.",
-                {title:tr("Tenor isn't answering"), IconComponent:venusIcon(8481, "ImageWarningIcon")}) : null,
-            radioGroup(ui, "source", "GIFs from", "tenorGifsSource", on, [
-                ["both", "Tenor and Discord's GIFs", "Tenor's come first, with Discord's mixed in, so you get the most choice.", rowIcon(12328, "ImagesIcon")],
-                ["tenor", "Only Tenor", "Search, trending and categories all come from Tenor, like before.", rowIcon(8487, "ImageIcon")]]),
-            footnote("note", "What you search for goes to Tenor, without your Discord account. GIFs you pick are sent as tenor.com links, which play for everyone.")];
+            // Only when none of Venus's picks answer: Discord's own GIFs fill in until one does.
+            !on ? offCard("status", Icon, "tenorGifs") : own.length && down.length === own.length ? VenusStatusCard({key:"status",
+                body:tr("Discord's own GIFs show until it answers again."), title:down[0] === "giphy" ? tr("Giphy isn't answering") : tr("Tenor isn't answering"),
+                IconComponent:venusIcon(8481, "ImageWarningIcon")}) : null,
+            // Any mix of the three; the last one left can't be turned off, so the picker always has GIFs.
+            el(Group, {key:"source", title:tr("GIFs from")}, rows.map(([id, subLabel, icon]) => {
+                const checked = picks.indexOf(id) >= 0, last = checked && picks.length === 1, label = GIF_PROVIDER_NAMES[id];
+                const onPress = () => { const next = gifProvidersWith(id); if (next) { haptic("SELECTION"); setSetting("tenorGifsProviders", next); } };
+                return Check ? el(Check, {key:id, label, subLabel, icon, checked, disabled:!on || last, onPress}) :
+                    ui.TableRow ? el(ui.TableRow, {key:id, label:(checked ? "\u2713 " : "") + label, subLabel, icon, disabled:!on || last, onPress}) : null;
+            })),
+            footnote("note", "Switch them right in the GIF picker too, next to the search bar. What you search for goes to the ones you pick, without your Discord account.")];
         return settingsBody(ui, groups);
     }
     // The page: what's happening, a preview, and the sites. Everything about one site (its service, post style, translation,
@@ -15152,29 +15169,55 @@
         return Scroll ? el(ui.ActionSheet || RN.View, {header, scrollable:true}, el(Scroll, scrollProps, body)) :
             el(ui.ActionSheet || RN.View, {header}, RN.ScrollView ? el(RN.ScrollView, scrollProps, body) : body);
     }
-    // Bring back Tenor GIFs (#83): Discord's GIF picker asks Discord's API for /gifs/search, /gifs/trending and the rest
+    // Bring back Tenor GIFs (#83, #156): Discord's GIF picker asks Discord's API for /gifs/search, /gifs/trending and the rest
     // (GIFPickerActionCreators 10035 through HTTP.get, 1297), and since Tenor's API closed to Discord those answers come from
-    // Klipy. Venus answers the same requests from Tenor's public v1 API, in the exact shape the picker's store (9731) reads,
-    // so Tenor GIFs show in Discord's own picker: no new tab or button. "Tenor and Discord's GIFs" puts Tenor first and
-    // mixes in Discord's own; "Only Tenor" uses Tenor for everything. If Tenor doesn't answer, Discord's own GIFs show.
-    // GIFs are sent as tenor.com links, which Discord still turns into a playing GIF for everyone.
+    // Klipy. Venus answers the same requests from Tenor's public v1 API and Giphy's v1 API, in the exact shape the picker's
+    // store (GIFPickerViewStore 10034) reads, so their GIFs show in Discord's own picker. Which of Tenor, Giphy and Klipy
+    // (Discord's own) show is picked on the page, or in a menu next to the picker's search bar (GIFPickerHeader 10044; after
+    // GifProviderSwitcher by Lunascape and Ven). Lists take one GIF from each pick in turn; the categories screen comes from
+    // the first pick that answers. If none of Venus's picks answer, Discord's own GIFs show. GIFs are sent as tenor.com and
+    // giphy.com links, which Discord still turns into a playing GIF for everyone.
     const TENOR_API = "https://g.tenor.com/v1/", TENOR_KEY = "3Z0688EVWYKH";
+    // Giphy's public web key, the one giphy.com itself uses (like GifProviderSwitcher).
+    const GIPHY_API = "https://api.giphy.com/v1/", GIPHY_KEY = "Gc7131jiJuvI7IdN0HZ1D7nh0ow5BU6g";
     // Only the sizes the picker draws: tinywebp tiles (animated, ~5x smaller than tinygif), tinymp4 when Discord asks for
     // video, and the full gif for favourites. A 50-GIF page is ~70 KB of JSON instead of ~250 KB with every format.
     const TENOR_MEDIA = "tinywebp,tinygif,gif,tinymp4";
-    const tenor = {cache:new Map(), ids:new Set(), down:false};
+    const tenor = {cache:new Map(), ids:new Set(), down:{tenor:false, giphy:false}};
     // Discord's "en-US" is Tenor's "en_US".
     function tenorLocale(locale) { return typeof locale === "string" && /^[a-z]{2,3}(?:[-_][A-Za-z]{2,4})?$/.test(locale) ? locale.replace("-", "_") : "en_US"; }
-    function tenorHealth(up) {
-        if (tenor.down === !up) return;
-        tenor.down = !up;
+    // Giphy takes two-letter languages, plus zh-CN and zh-TW.
+    function giphyLang(locale) {
+        const code = typeof locale === "string" ? locale.toLowerCase() : "";
+        if (code.indexOf("zh") === 0) return /tw|hant|hk/.test(code) ? "zh-TW" : "zh-CN";
+        return /^[a-z]{2}/.test(code) ? code.slice(0, 2) : "en";
+    }
+    // The picks as saved: known providers only, at least one, always in GIF_PROVIDERS order.
+    function gifProvidersText(value) {
+        if (typeof value !== "string") return undefined;
+        const asked = value.split(",").map(part => part.trim().toLowerCase()).filter(Boolean);
+        if (!asked.length || asked.some(part => GIF_PROVIDERS.indexOf(part) < 0)) return undefined;
+        return GIF_PROVIDERS.filter(id => asked.indexOf(id) >= 0).join(",");
+    }
+    function gifProviders() {
+        const clean = gifProvidersText(settings.tenorGifsProviders);
+        return clean ? clean.split(",") : ["tenor", "klipy"];
+    }
+    // The picks with one turned on or off, or null for the last one left, which stays on.
+    function gifProvidersWith(id) {
+        const list = gifProviders(), on = list.indexOf(id) >= 0;
+        if (on && list.length === 1) return null;
+        return GIF_PROVIDERS.filter(p => p === id ? !on : list.indexOf(p) >= 0).join(",");
+    }
+    function gifProviderNames(list) { return list.map(id => GIF_PROVIDER_NAMES[id]).join(", "); }
+    function gifHealth(provider, up) {
+        if (tenor.down[provider] === !up) return;
+        tenor.down[provider] = !up;
         later(() => notify("tenorGifs"), 0);
     }
-    // Every answer is kept for 10 minutes, so scrolling further (a bigger limit), reopening the picker or going back to a
-    // search reuses the pages it already has. contentfilter=medium matches Discord's own picker (no adult results).
-    function tenorRequest(path, params) {
-        let url = TENOR_API + path + "?key=" + TENOR_KEY + "&contentfilter=medium";
-        for (const name in params) if (params[name] != null && params[name] !== "") url += "&" + name + "=" + encodeURIComponent(params[name]);
+    // Every answer is kept for 10 minutes, so scrolling further (a bigger limit), reopening the picker, going back to a
+    // search or switching a provider back on reuses the pages it already has.
+    function gifFetch(provider, url) {
         const now = Date.now(), hit = tenor.cache.get(url);
         if (hit && hit.until > now) return hit.promise;
         if (typeof global.fetch !== "function") return Promise.reject(new Error("Venus: no fetch"));
@@ -15183,11 +15226,22 @@
         const done = () => { if (timer !== undefined && global.clearTimeout) global.clearTimeout(timer); };
         const promise = Promise.resolve().then(() => global.fetch(url, Object.assign({method:"GET", credentials:"omit", headers:{Accept:"application/json"}},
             controller ? {signal:controller.signal} : {})))
-            .then(res => { if (!res || !res.ok) throw new Error("Tenor " + (res && res.status)); return res.json(); })
-            .then(body => { done(); tenorHealth(true); return body; }, error => { done(); tenor.cache.delete(url); tenorHealth(false); throw error; });
+            .then(res => { if (!res || !res.ok) throw new Error(provider + " " + (res && res.status)); return res.json(); })
+            .then(body => { done(); gifHealth(provider, true); return body; }, error => { done(); tenor.cache.delete(url); gifHealth(provider, false); throw error; });
         tenor.cache.set(url, {promise, until:now + 600000});
         if (tenor.cache.size > 80) tenor.cache.delete(tenor.cache.keys().next().value);
         return promise;
+    }
+    // contentfilter=medium (Tenor) and rating=pg-13 (Giphy) match Discord's own picker: no adult results.
+    function tenorRequest(path, params) {
+        let url = TENOR_API + path + "?key=" + TENOR_KEY + "&contentfilter=medium";
+        for (const name in params) if (params[name] != null && params[name] !== "") url += "&" + name + "=" + encodeURIComponent(params[name]);
+        return gifFetch("tenor", url);
+    }
+    function giphyRequest(path, params) {
+        let url = GIPHY_API + path + "?api_key=" + GIPHY_KEY + "&rating=pg-13";
+        for (const name in params) if (params[name] != null && params[name] !== "") url += "&" + name + "=" + encodeURIComponent(params[name]);
+        return gifFetch("giphy", url);
     }
     // One Tenor result as the store's item: {id, url, src, gif_src, width, height}. url is what gets sent.
     function tenorItem(result, video) {
@@ -15217,18 +15271,44 @@
     }
     // Category tiles: Tenor sends each as a tinygif (~100 KB); the same GIF as a tinywebp is the same picture at ~8 KB.
     function tenorCategoryImage(src) { return typeof src === "string" ? src.replace(/^(https:\/\/media\d*\.tenor\.com\/[\w-]+?)AAAAM(\/[^/?#]+)\.gif$/, "$1AAAA1$2.webp") : src; }
-    // Tenor first, then one of each: a page reads as one mixed list, and a bigger limit only adds to the end of it.
-    function tenorMix(mine, theirs, limit) {
-        const a = Array.isArray(mine) ? mine : [], b = Array.isArray(theirs) ? theirs : [], want = Math.max(1, Number(limit) || a.length + b.length), out = [];
-        for (let i = 0; out.length < want && (i < a.length || i < b.length); i++) {
-            if (i < a.length) out.push(a[i]);
-            if (i < b.length && out.length < want) out.push(b[i]);
-        }
+    // One Giphy result as the store's item. Its id gets a prefix so it can never match a Tenor or Klipy GIF in the same list.
+    function giphyItem(result, video) {
+        const images = result && result.images;
+        if (!images || typeof result.url !== "string" || result.id == null) return null;
+        const size = images.fixed_width || images.fixed_height, full = images.original || size;
+        const src = size && (video && size.mp4 || size.webp || size.url);
+        if (typeof src !== "string" || !full || typeof full.url !== "string") return null;
+        const id = "giphy:" + result.id;
+        if (tenor.ids.size > 4000) tenor.ids.clear();
+        tenor.ids.add(id);
+        return {id, url:result.url, src, gif_src:full.url, width:Number(size.width) || 0, height:Number(size.height) || 0};
+    }
+    // Pages of 50 by offset, fetched until the picker's limit is reached: the same page URLs every time, so they cache.
+    // messaging_non_clips leaves out Giphy's clips (videos with sound), which don't play as GIFs.
+    function giphyList(path, params, limit, format) {
+        const want = Math.max(1, Math.min(200, Number(limit) || 50)), video = /mp4|webm/.test(String(format || "")), out = [], seen = new Set();
+        const step = (offset, pages) => giphyRequest(path, Object.assign({}, params, {limit:50, offset, bundle:"messaging_non_clips"})).then(body => {
+            const results = body && Array.isArray(body.data) ? body.data : [];
+            for (let i = 0; i < results.length && out.length < want; i++) {
+                const item = giphyItem(results[i], video);
+                if (item && !seen.has(item.id)) { seen.add(item.id); out.push(item); }
+            }
+            const total = Number(body && body.pagination && body.pagination.total_count) || 0;
+            return out.length < want && results.length >= 50 && offset + 50 < total && pages < 4 ? step(offset + 50, pages + 1) : out;
+        });
+        return step(0, 1);
+    }
+    // One from each pick in turn: a page reads as one mixed list, and a bigger limit only adds to the end of it.
+    function tenorMix(lists, limit) {
+        const all = lists.filter(Array.isArray), most = all.reduce((n, list) => Math.max(n, list.length), 0), out = [];
+        const want = Math.max(1, Number(limit) || all.reduce((n, list) => n + list.length, 0));
+        for (let i = 0; i < most && out.length < want; i++)
+            for (let j = 0; j < all.length && out.length < want; j++) if (i < all[j].length) out.push(all[j][i]);
         return out;
     }
-    function tenorWords(mine, theirs, limit) {
+    function tenorWords(lists, limit) {
         const out = [], seen = new Set(), want = Math.max(1, Number(limit) || 20);
-        [mine, theirs].forEach(list => { if (Array.isArray(list)) list.forEach(word => {
+        lists.forEach(list => { if (Array.isArray(list)) list.forEach(word => {
             const key = typeof word === "string" ? word.trim().toLowerCase() : "";
             if (key && !seen.has(key) && out.length < want) { seen.add(key); out.push(word); } }); });
         return out;
@@ -15254,24 +15334,57 @@
             default: return null;
         }
     }
+    // What Giphy answers for one picker request, or null to leave it to the others.
+    function giphyAnswer(url, query) {
+        const lang = giphyLang(query.locale), q = typeof query.q === "string" ? query.q.trim() : "";
+        switch (url) {
+            case "/gifs/search": return q ? {list:true, limit:query.limit, load:() => giphyList("gifs/search", {q, lang}, query.limit, query.media_format)} : null;
+            case "/gifs/trending-gifs": return {list:true, limit:query.limit, load:() => giphyList("gifs/trending", {}, query.limit, query.media_format)};
+            case "/gifs/trending-search": return {words:true, limit:20, load:() => giphyRequest("trending/searches", {}).then(body => body && Array.isArray(body.data) ? body.data : [])};
+            case "/gifs/suggest": return q ? {words:true, limit:query.limit || 10, load:() => giphyRequest("gifs/search/tags", {q, limit:Math.min(20, Number(query.limit) || 10)})
+                .then(body => body && Array.isArray(body.data) ? body.data.map(tag => tag && tag.name).filter(name => typeof name === "string") : [])} : null;
+            // The categories screen: Giphy's categories, and its top trending GIF on the Trending tile.
+            case "/gifs/trending": return {whole:true, load:() => Promise.all([giphyRequest("gifs/categories", {lang}),
+                giphyList("gifs/trending", {}, 1, query.media_format)]).then(([body, top]) => {
+                const list = body && Array.isArray(body.data) ? body.data : [], categories = [];
+                list.forEach(cat => {
+                    const images = cat && cat.gif && cat.gif.images, image = images && (images.fixed_width || images.fixed_height);
+                    const src = image && (image.webp || image.url);
+                    if (typeof cat.name === "string" && typeof src === "string") categories.push({name:cat.name, src});
+                });
+                if (!categories.length || !top.length) throw new Error("Giphy: no categories");
+                return {categories, gifs:[{src:top[0].src}]};
+            })};
+            default: return null;
+        }
+    }
     function tenorResponse(body, base) { return Object.assign({ok:true, status:200, headers:{}}, base && typeof base === "object" ? base : null, {body}); }
     // HTTP.get(options) from HTTPUtils (1297): the picker's requests are the ones whose url starts with /gifs/.
     function tenorGet(orig, self, args) {
         const options = args[0], url = options && options.url;
         if (typeof url !== "string" || url.charCodeAt(1) !== 103 || url.indexOf("/gifs/") !== 0 || !enabled("tenorGifs")) return orig.apply(self, args);
-        const answer = tenorAnswer(url, options.query && typeof options.query === "object" ? options.query : {});
-        if (!answer) return orig.apply(self, args);
-        const theirs = () => orig.apply(self, args);
-        // Only Tenor, and the categories screen in both: Discord is asked only if Tenor doesn't answer.
-        if (answer.whole || settings.tenorGifsSource === "tenor") return answer.load().then(body => tenorResponse(answer.words ? tenorWords(body, null, answer.limit) : body), () => theirs());
-        // Both: one list from the two answers. If one fails the other still shows; only both failing is an error.
+        const query = options.query && typeof options.query === "object" ? options.query : {};
+        const picks = gifProviders(), answers = [];
+        for (let i = 0; i < picks.length; i++) {
+            const answer = picks[i] === "tenor" ? tenorAnswer(url, query) : picks[i] === "giphy" ? giphyAnswer(url, query) : null;
+            if (answer) answers.push(answer);
+        }
+        // Only Klipy, or a request none of the picks answer: Discord's own, untouched.
+        if (!answers.length) return orig.apply(self, args);
+        const theirs = () => orig.apply(self, args), first = answers[0], klipy = picks.indexOf("klipy") >= 0;
+        // The categories screen comes from one place: the first pick that answers, then the next, then Discord.
+        if (first.whole) return answers.reduce((chain, answer) => chain.catch(() => answer.load()), Promise.reject(null))
+            .then(body => tenorResponse(body), () => theirs());
+        // Lists: one from each pick. Picks that fail are left out; Discord is asked anyway when nothing else answered.
         const failed = {};
-        return Promise.all([answer.load().then(body => body, () => failed),
-            Promise.resolve().then(theirs).then(res => res, error => ({failed:error}))]).then(([mine, res]) => {
-            const discord = res && res.failed === undefined && res !== failed ? res : null;
-            if (mine === failed && !discord) throw res.failed;
-            const body = discord ? discord.body : null, own = mine === failed ? [] : mine;
-            return tenorResponse(answer.words ? tenorWords(own, body, answer.limit) : tenorMix(own, body, answer.limit), discord);
+        const loads = answers.map(answer => answer.load().then(body => body, () => failed));
+        if (klipy) loads.push(Promise.resolve().then(theirs).then(res => res, error => ({venusFailed:error === undefined ? null : error})));
+        return Promise.all(loads).then(results => {
+            const res = klipy ? results.pop() : null, discord = res && res.venusFailed === undefined ? res : null;
+            const lists = results.filter(body => body !== failed);
+            if (discord) lists.push(discord.body);
+            if (!lists.length) { if (klipy) throw res.venusFailed; return theirs(); }
+            return tenorResponse(first.words ? tenorWords(lists, first.limit) : tenorMix(lists, first.limit), discord);
         });
     }
     // Picking a GIF reports it to Discord (POST /gifs/select) for Klipy's rankings. A Tenor GIF isn't Klipy's, so that's skipped.
@@ -15281,9 +15394,79 @@
         const body = options.body, id = body && body.id != null ? String(body.id) : "";
         return id && tenor.ids.has(id) ? Promise.resolve(tenorResponse({}, {status:204})) : orig.apply(self, args);
     }
-    // Discord's search box names Klipy (GifProvider 10036). It says Tenor in Only Tenor, and just GIFs while both show.
+    // Discord's search box names Klipy (GifProvider 10036). It names the picks instead.
+    function gifPlaceholder() { return tr("Search {providers}", {providers:gifProviderNames(gifProviders())}); }
     function tenorPlaceholder(orig, self, args) {
-        return enabled("tenorGifs") ? tr(settings.tenorGifsSource === "tenor" ? "Search Tenor" : "Search GIFs") : orig.apply(self, args);
+        return enabled("tenorGifs") ? gifPlaceholder() : orig.apply(self, args);
+    }
+    // The provider menu (#156): GIFPickerHeader (10044) draws the search bar as a SearchField (7016) while the picker shows
+    // search. Venus puts a pill next to it saying what's picked ("Tenor", "2 providers"); tapping it opens Discord's own
+    // ContextMenu (9662) with Tenor, Giphy and Klipy, a check on each one in use. The header memoizes its placeholder, so
+    // the field is given the current one each time the picks change.
+    const GIF_SEARCH_ROW = {flexDirection:"row", alignItems:"center", gap:8}, GIF_SEARCH_FIELD = {flex:1, minWidth:0};
+    const GIF_PILL_DARK = {pill:{height:40, maxWidth:148, borderRadius:20, paddingLeft:14, paddingRight:10, flexDirection:"row", alignItems:"center", gap:4,
+        backgroundColor:"#4e50584d"}, pressed:{backgroundColor:"#4e505899"}, check:{color:"#5865f2"}};
+    function gifReplace(node, match, make, depth) {
+        if (!node || typeof node !== "object" || depth > 8) return node;
+        if (Array.isArray(node)) {
+            let out = node;
+            for (let i = 0; i < node.length; i++) {
+                const child = gifReplace(node[i], match, make, depth + 1);
+                if (child !== node[i]) { if (out === node) out = node.slice(); out[i] = child; }
+            }
+            return out;
+        }
+        if (match(node)) return make(node);
+        const props = node.props, children = props && props.children;
+        if (!children || typeof children !== "object") return node;
+        const next = gifReplace(children, match, make, depth + 1);
+        return next === children ? node : React.cloneElement(node, {children:next});
+    }
+    function gifPickerHeader(orig, self, args) {
+        // Always called, before Discord's own hooks, so the header redraws when the picks change.
+        useSettings("tenorGifs");
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!enabled("tenorGifs") || !rendered || !React || !RN) return rendered;
+        const Field = inspectedExport(7016, "SearchField");
+        if (!Field) return rendered;
+        return gifReplace(rendered, node => node.type === Field, node => el(RN.View, {key:node.key != null ? node.key : "venusGifSearch", style:GIF_SEARCH_ROW},
+            el(RN.View, {style:GIF_SEARCH_FIELD}, React.cloneElement(node, {placeholder:gifPlaceholder()})),
+            el(GifProviderButton, {onChange:() => gifProvidersRefresh(props)})), 0);
+    }
+    function GifProviderButton(props) {
+        useSettings("tenorGifs");
+        const s = useThemed("gifProviders", c => ({pill:Object.assign({}, GIF_PILL_DARK.pill, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}),
+            pressed:{backgroundColor:c.BACKGROUND_MOD_NORMAL}, check:{color:c.TEXT_BRAND}}), GIF_PILL_DARK);
+        const Menu = inspectedExport(9662, "ContextMenu");
+        if (!Menu || !s) return null;
+        const Text = inspectedExport(5187, "Text"), Chevron = venusIcon(10859, "ChevronSmallDownIcon"), Check = venusIcon(7101, "CheckmarkSmallIcon");
+        const list = gifProviders(), label = list.length === 1 ? GIF_PROVIDER_NAMES[list[0]] : pl(list.length, "{n} provider", "{n} providers");
+        const items = GIF_PROVIDERS.map(id => ({label:GIF_PROVIDER_NAMES[id], venusGifProvider:id,
+            trailingIndicator:list.indexOf(id) >= 0 && Check ? el(Check, {size:"sm", color:s.check.color}) : undefined,
+            action:() => {
+                const next = gifProvidersWith(id);
+                if (!next) return;
+                haptic("SELECTION"); setSetting("tenorGifsProviders", next);
+                if (props.onChange) later(props.onChange, 0);
+            }}));
+        return el(Menu, {title:tr("GIFs from"), items, triggerOnTap:true}, menuProps => el(RN.Pressable, Object.assign({}, menuProps, {accessibilityRole:"button",
+            accessibilityLabel:tr("GIFs from") + ": " + gifProviderNames(list), style:state => [s.pill, state && state.pressed ? s.pressed : null]}),
+            Text ? el(Text, {variant:"text-sm/semibold", color:"text-strong", lineClamp:1}, label) :
+                el(RN.Text, {numberOfLines:1, style:{color:"#f2f3f5", fontSize:14, fontWeight:"600"}}, label),
+            Chevron ? el(Chevron, {size:"xs"}) : null));
+    }
+    // A change from the menu applies straight away. The picker only searches again when its text changes, so a typed
+    // search gets a trailing space added or taken off (every provider trims it); with nothing typed, the categories reload.
+    function gifProvidersRefresh(props) {
+        try {
+            const store = inspectedExport(10034, "default"), query = store && typeof store.getQuery === "function" ? store.getQuery() : "";
+            if (typeof query === "string" && query.trim()) {
+                if (props && typeof props.onQueryChange === "function") props.onQueryChange(/\s$/.test(query) ? query.replace(/\s+$/, "") : query + " ");
+                return;
+            }
+            const fetchTrending = inspectedExport(10035, "fetchTrending");
+            if (typeof fetchTrending === "function") fetchTrending();
+        } catch (_) {}
     }
 
     // Translate messages: every message on screen that isn't in your language is shown translated, with a note
@@ -24412,6 +24595,7 @@
             case 6145: if (features.voiceOptions && exports && exports.default) hookExport(exports.default, "disconnect", voiceLeave); return exports;
             case 11372: return features.voiceOptions ? hookExport(exports, "playSound", voiceSoundPlay) : exports;
             case 10036: return features.tenorGifs ? hookExport(exports, "getSearchPlaceholder", tenorPlaceholder) : exports;
+            case 10044: return features.tenorGifs ? hookComponent(exports, gifPickerHeader) : exports;
             case 10035: return features.favouriteAnything ? hookExport(exports, "addFavoriteGIF", favouriteAdd) : exports;
             case 10038: return features.favouriteAnything ? hookExport(exports, "useFavoriteGIFsMobile", favouriteList) : exports;
             case 14197: return features.mutualGroupDMs ? hookComponent(exports, mutualGroupsRow) : exports;
