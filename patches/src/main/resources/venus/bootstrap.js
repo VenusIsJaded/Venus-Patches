@@ -73,7 +73,7 @@
     if (features.dndBanners) selectModules([6015, 13511, 13523]);
     if (features.landscapeFull) selectModules([5075, 5076]);
     if (features.voiceDownload) selectModules([1447, 5532, 8013, 11114]);
-    if (features.profileMedia) selectModules([1392, 8660, 14015]);
+    if (features.profileMedia) selectModules([1392, 8646, 8660]);
     if (features.cloneExpressions) selectModules([9839, 10078]);
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
     if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
@@ -1364,7 +1364,7 @@
         guildLurk:["GuildLurk", "Guild lurk", "Lurk", "Lurker", "Preview", "Invite link", "Server ID"],
         timeoutDuration:["Timeout", "Timed out", "Muted", "Mute", "Communication disabled", "Moderation", "ShowTimeoutDuration"],
         cloneExpressions:["Clone", "Copy", "Steal", "Emoji", "Emojis", "Sticker", "Stickers", "Expressions", "ExpressionCloner", "Add to a server"],
-        profileMedia:["Profile picture", "Profile pictures", "Avatar", "Banner", "Banners", "Download", "Save", "View banner"],
+        profileMedia:["Profile picture", "Profile pictures", "Avatar", "Banner", "Banners", "Download", "Save"],
         voiceDownload:["Voice message", "Voice messages", "Download", "Save", "Audio", "Recording", "VoiceDownload"],
         dndBanners:["Do Not Disturb", "DND", "Banner", "Banners", "In-app notifications", "Pop-up", "Focus"],
         landscapeFull:["Landscape", "Sideways", "Rotate", "Full screen", "Sidebar", "Channel list"],
@@ -21055,7 +21055,7 @@
     // (openUserProfileAvatarMediaViewer 8659 -> openMediaModal 8660), but it asks for no ⋯ button and no Download, and its
     // source has no sourceURI, which is what the viewer's Download reads (MediaShareActions 8726). Venus turns those back
     // on, so a profile picture saves exactly like a photo in chat: ⋯, then Download, through Discord's own downloader
-    // into Downloads. Banners have no viewer at all, so a profile's ⋯ menu gets View banner, which opens the same one.
+    // into Downloads. Banners have no viewer at all, so tapping a banner opens the same one.
     const PROFILE_MEDIA_SOURCE = "user_profile_avatar";
     function profileMediaSource(source) {
         return source && typeof source === "object" && typeof source.uri === "string" && !source.sourceURI ? Object.assign({}, source, {sourceURI:source.uri}) : source;
@@ -21093,25 +21093,32 @@
         const fallback = () => { try { return open(spec("modal")); } catch (error) { dlog("W", "profileMedia", "couldn't open the banner: " + dlogText(error)); } };
         try { Promise.resolve(open(spec("action-sheet"))).catch(fallback); } catch (_) { fallback(); }
     }
-    // A person's ⋯ menu: View banner, in its own group above Block and Report, for people with a banner.
-    function profileMediaMenu(orig, self, args) {
+    // The banner itself: tapping it opens the viewer. An animated banner with GIF autoplay off already takes a tap to
+    // play (Discord's PressableOpacity); that tap opens the viewer instead, which plays it anyway. Everywhere else the
+    // banner is a plain view, so it gets a pressable around it. Edit-profile previews (pendingBanner) and banners drawn
+    // with disableInteraction are left alone.
+    function profileMediaBanner(orig, self, args) {
         const rendered = orig.apply(self, args), props = args[0];
-        if (!enabled("profileMedia") || !React || !rendered || !props) return rendered;
-        const userId = String(props.userId || props.user && props.user.id || ""), guildId = props.guildId ? String(props.guildId) : "";
-        const Menu = inspectedExport(9662, "ContextMenu");
-        if (!Menu || !/^\d{17,20}$/.test(userId)) return rendered;
-        const banner = profileBannerUri(userId, /^\d{17,20}$/.test(guildId) ? guildId : "");
-        if (!banner) return rendered;
-        const item = {label:tr("View banner"), venusBanner:true, action:() => later(() => profileBannerOpen(banner), 60)};
-        const has = list => list.some(entry => entry && (entry.venusBanner || Array.isArray(entry) && entry.some(inner => inner && inner.venusBanner)));
-        return cloneTree(rendered, (node, nodeProps) => {
-            if (node.type !== Menu || !Array.isArray(nodeProps.items) || has(nodeProps.items)) return nodeProps;
-            const items = nodeProps.items, last = items[items.length - 1];
-            const danger = Array.isArray(last) && last.some(entry => entry && entry.variant === "destructive");
-            const grouped = items.some(Array.isArray);
-            const next = !grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]]);
-            return Object.assign({}, nodeProps, {items:next});
+        if (!enabled("profileMedia") || !React || !RN || !rendered || !props || props.disableInteraction || props.pendingBanner) return rendered;
+        const profile = props.displayProfile, user = props.user;
+        let uri = null;
+        try { uri = profile && typeof profile.getBannerURL === "function" ? profile.getBannerURL({canAnimate:true, size:4096}) : null; } catch (_) {}
+        if (typeof uri !== "string" || !/^https:\/\//.test(uri)) uri = user && user.id ? profileBannerUri(String(user.id), profile && profile.guildId ? String(profile.guildId) : "") : null;
+        if (!uri) return rendered;
+        const open = () => { haptic("IMPACT_LIGHT"); profileBannerOpen(uri); };
+        let done = false;
+        const tree = cloneTree(rendered, (node, nodeProps) => {
+            if (done || typeof nodeProps.onPress !== "function" || nodeProps.accessibilityRole !== "button") return nodeProps;
+            done = true;
+            return Object.assign({}, nodeProps, {onPress:open});
         }, 0);
+        if (done) return tree;
+        // The banner's root is a View laid out by its own style (absolutely placed in some profiles), so a wrapper around it
+        // would change the layout. The View itself is swapped for a Pressable with the same style and children instead.
+        if (!RN.Pressable || !rendered.props || rendered.type !== RN.View) return rendered;
+        const style = rendered.props.style;
+        return el(RN.Pressable, Object.assign({}, rendered.props, {key:rendered.key, onPress:open, accessibilityRole:"imagebutton", accessibilityLabel:tr("Banner"),
+            style:state => state && state.pressed ? [style, {opacity:0.85}] : style}));
     }
     // Clone emojis and stickers (#125, after ExpressionCloner): tapping a custom emoji or a server sticker in chat opens
     // Discord's own sheet for it (MessageEmojiActionSheet 9839, StickerDetailActionSheet 10078); Venus adds one button at
@@ -24418,11 +24425,11 @@
                 if (features.noDelete || features.noTyping) exports = hookComponent(exports, rulesThreadMenu);
                 return features.viewRaw ? hookComponent(exports, viewRawThreadMenu) : exports;
             case 10780: return features.viewRaw ? hookComponent(exports, viewRawPostMenu) : exports;
+            case 8646: return features.profileMedia ? hookComponent(exports, profileMediaBanner) : exports;
             case 8660: return features.profileMedia ? hookExport(exports, "openMediaModal", profileMediaOpen) : exports;
             case 14015:
                 if (features.noDelete) exports = hookComponent(exports, rulesProfileMenu);
                 if (features.timezones) exports = hookComponent(exports, timezoneProfileMenu);
-                if (features.profileMedia) exports = hookComponent(exports, profileMediaMenu);
                 return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
             case 7158: return features.viewRaw ? hookComponent(exports, viewRawRolesCard) : exports;
             case 7167: return features.viewRaw ? hookExport(exports, "showSimpleActionSheet", viewRawSimpleSheet) : exports;

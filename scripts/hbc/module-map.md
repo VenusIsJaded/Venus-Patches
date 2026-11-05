@@ -219,6 +219,7 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 8582 | `../discord_common/js/shared/shared-constants/BadgeId.tsx` | BadgeId | BadgeId (Badge Completer) |
 | 8590 | `modules/badges/BadgeDirectoryStore.tsx` | default | BadgeDirectoryStore (Badge Completer) |
 | 8595 | `modules/badges/BadgeDirectoryActionCreators.tsx` | fetchBadgeDirectory | BadgeDirectoryActionCreators (Badge Completer) |
+| 8646 | `modules/user_profile/native/UserProfileBanner.tsx` | default | UserProfileBanner (Download profile pictures and banners) |
 | 8660 | `modules/media_viewer/native/components/openMediaModal.tsx` | openMediaModal | openMediaModal (Download profile pictures and banners) |
 | 8666 | `modules/media_viewer/native/MediaSourceUtil.tsx` | extractMediaFromAttachment, extractMediaFromEmbed, extractMediaFromMessageComponents, extractMediaSourcesFromMessage, extractMediaSourcesFromEmbed, extractMediaSourcesFromComponent | MediaSourceUtil (Load full-quality images) |
 | 8674 | `design/components/Icon/native/redesign/generated/PlayIcon.tsx` | PlayIcon | PlayIcon (preview Watch button) |
