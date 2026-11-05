@@ -42,12 +42,20 @@ object AccountNotifications {
      */
     @JvmStatic
     fun display(shown: Boolean, context: Context?, notification: Any?): Boolean {
-        if (shown) return true
+        if (shown) {
+            try { if (context != null && notification != null && labelsOn(context)) log("push in the background for ..." + tail(receivingId(notification)) + ": shown") } catch (_: Throwable) {}
+            return true
+        }
         try {
-            if (context == null || notification == null || !turnedOn(context)) return false
-            val receiving = receivingId(notification) ?: return false
+            if (context == null || notification == null) return false
+            if (!turnedOn(context)) { log("push while Discord is open: kept in-app (While Discord is open is off)"); return false }
+            val receiving = receivingId(notification)
             val current = context.getSharedPreferences(CACHE, Context.MODE_PRIVATE).getString(CURRENT_USER, null)
-            return current != null && current.length > 0 && current != receiving
+            val other = receiving != null && current != null && current.length > 0 && current != receiving
+            // Ids shortened: enough to tell accounts apart in a shared log, not to identify anyone.
+            log("push while Discord is open for ..." + tail(receiving) + ", signed in as ..." + tail(current) +
+                if (other) ": another account, shown" else ": the account you're on, kept in-app")
+            return other
         } catch (_: Throwable) {
             return false
         }
@@ -84,20 +92,72 @@ object AccountNotifications {
     }
 
     /**
-     * Whether the conversation is drawn as a group (#152). Android never draws a one-to-one conversation's title: a DM
-     * shows only the sender's name, so the "Mika · account" title from [title] was dropped and DMs from your other
-     * accounts looked like the account you're on. A labelled DM is drawn the way a group DM is, with the title on top and
-     * the sender on the message. Unlabelled notifications (the account you're on) keep Discord's own answer.
+     * The conversation shortcut's label (#152). On Android 11 and newer the notification shade replaces a conversation's
+     * title with its shortcut's label (SystemUI's ConversationNotificationProcessor: long label, else short label), and
+     * Discord builds that label from the plain title, so "· account" from [title] never showed. Another saved account's
+     * shortcut gets the same "Name · account" long label; the short label (launcher) stays Discord's. [owner] is the
+     * renderer's coroutine, which holds the push, the Context and Discord's account label.
      */
     @JvmStatic
-    fun group(group: Boolean, notification: Any?, context: Context?, owner: Any?): Boolean {
-        if (group) return true
+    fun shortcut(info: Any?, owner: Any?) {
         try {
-            if (context == null || notification == null || owner == null || !labelsOn(context)) return false
-            return labelFor(notification, context, owner) != null
+            if (info == null || owner == null) return
+            val notification = ownerField(owner, "\$notification") ?: return
+            val context = ownerField(owner, "\$context") as? Context ?: return
+            if (!labelsOn(context)) return
+            val label = labelFor(notification, context, owner) ?: return
+            // androidx ShortcutInfoCompat as Discord 351.11 ships it: e = short label, f = long label.
+            val long = info.javaClass.getField("f")
+            val base = (long.get(info) as? CharSequence)?.takeIf { it.length > 0 } ?: info.javaClass.getField("e").get(info) as? CharSequence ?: return
+            long.set(info, join(base, label))
         } catch (_: Throwable) {
-            return false
         }
+    }
+
+    /**
+     * The sender of a DM from another saved account (#152). A one-to-one conversation hides the sender's name only when
+     * it matches the title, so with "Mika · account" on top, "Mika" was repeated above every message. The sender gets the
+     * same name as the title, which keeps Android's normal DM look (their picture, one name) with the account added.
+     * Group DMs and servers keep each sender's own name.
+     */
+    @JvmStatic
+    fun sender(person: Any?, owner: Any?) {
+        try {
+            if (person == null || owner == null) return
+            val notification = ownerField(owner, "\$notification") ?: return
+            val context = ownerField(owner, "\$context") as? Context ?: return
+            if (!labelsOn(context) || isGroup(notification)) return
+            val label = labelFor(notification, context, owner) ?: return
+            // androidx Person as Discord 351.11 ships it: a = name.
+            val name = person.javaClass.getDeclaredField("a")
+            name.isAccessible = true
+            val base = name.get(person) as? CharSequence ?: return
+            name.set(person, join(base, label))
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun join(base: CharSequence, label: String): CharSequence {
+        val tail = " \u00b7 " + label
+        return if (base.toString().endsWith(tail)) base else StringBuilder(base.length + tail.length).append(base).append(tail).toString()
+    }
+
+    private fun ownerField(owner: Any, name: String): Any? {
+        val field = owner.javaClass.getDeclaredField(name)
+        field.isAccessible = true
+        return field.get(owner)
+    }
+
+    @Volatile private var groupCheck: java.lang.reflect.Method? = null
+
+    private fun isGroup(notification: Any): Boolean {
+        var check = groupCheck
+        if (check == null) {
+            check = Class.forName("com.discord.notifications.renderer.utils.NotificationDataUtilsKt", false, notification.javaClass.classLoader)
+                .getMethod("isGroupConversation", notification.javaClass)
+            groupCheck = check
+        }
+        return check!!.invoke(null, notification) == true
     }
 
     /** The receiving account's name for another saved account's push: Discord's own label, else its saved name. */
@@ -110,6 +170,13 @@ object AccountNotifications {
         }
         val own = field!!.get(owner) as? String
         return if (own != null && own.length > 0) own else savedName(context, notification)
+    }
+
+    private fun tail(id: String?): String = if (id == null || id.length == 0) "?" else id.substring(maxOf(0, id.length - 4))
+
+    /** One line in Discord's logcat, which Venus' Copy logs includes, so a report shows what happened to each push. */
+    private fun log(text: String) {
+        try { android.util.Log.i("VenusAccounts", text) } catch (_: Throwable) {}
     }
 
     /** The account a push was sent to, from NotificationData's receiving-user getter, or null. */

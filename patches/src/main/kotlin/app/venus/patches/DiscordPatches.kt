@@ -1154,10 +1154,9 @@ private const val RENDER_DISPLAY = "Lcom/discord/notifications/renderer/Notifica
  * receiving account's name in the subtext, which Android's conversation layout never draws. Right after it builds the
  * conversation title (getConversationTitle) and before MessagingStyle stores it, Venus passes the title through
  * [app.venus.accounts.AccountNotifications.title] with the push, the Context and the coroutine (which holds Discord's
- * account label), so another saved account's notifications read "#channel · account". Android never draws a one-to-one
- * conversation's title, so isGroupConversation's answer also goes through [app.venus.accounts.AccountNotifications.group]:
- * a labelled DM is drawn like a group DM, title on top. Like the hook above, each is one call whose result goes straight
- * back into Discord's register, with no branch.
+ * account label), so another saved account's notifications read "#channel · account". The shade shows the conversation
+ * shortcut's label in place of the title, so the shortcut gets the same label, and a DM's sender gets it too so Android
+ * keeps its usual one-name DM look. Like the hook above, each is one call with no branch.
  */
 internal fun accountLabelInTitle(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
     val code = method.implementation?.instructions?.toList() ?: throw PatchException("the notification renderer has no code")
@@ -1178,25 +1177,31 @@ internal fun accountLabelInTitle(method: app.morphe.patcher.util.proxy.mutableTy
     val owner = code.indices.firstOrNull { ref(it) == "$RENDER_DISPLAY->\$notification:$NOTIFICATION_DATA" }?.let {
         (code[it] as com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction).registerB
     } ?: throw PatchException("the notification renderer no longer reads its push")
-    // isGroupConversation(NotificationData), right after the title is stored, then boxed into MessagingStyle's flag.
-    val group = (call + 3 until active).firstOrNull { ref(it) == "Lcom/discord/notifications/renderer/utils/NotificationDataUtilsKt;->isGroupConversation(${NOTIFICATION_DATA})Z" }
-        ?: throw PatchException("the notification renderer no longer asks whether a conversation is a group")
-    if (code.getOrNull(group + 1)?.opcode != com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT ||
-        ref(group + 2) != "Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;" ||
-        (code[group] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC != data)
-        throw PatchException("the notification renderer's group check changed")
-    val flag = (code[group + 1] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA
+    // Android 11+ draws a conversation's shortcut label instead of its title, and a DM hides the sender only when it matches
+    // the title, so the shortcut Discord makes (getShortcutInfo) and each sender (getSenderForMessageNotification) are
+    // labelled too. Both helpers change the object in place and read the push and Context from the coroutine.
+    val shortcut = (call + 3 until code.size).firstOrNull { ref(it)?.startsWith("Lcom/discord/notifications/renderer/utils/NotificationDataUtilsKt;->getShortcutInfo(") == true }
+        ?: throw PatchException("the notification renderer no longer makes a conversation shortcut")
+    val senders = (call + 3 until shortcut).filter { ref(it)?.startsWith("Lcom/discord/notifications/renderer/utils/NotificationDataUtilsKt;->getSenderForMessageNotification(") == true }
+    if (senders.isEmpty()) throw PatchException("the notification renderer no longer adds the sender")
+    val sites = (senders + shortcut).map { site ->
+        if (code.getOrNull(site + 1)?.opcode != com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT_OBJECT)
+            throw PatchException("the notification renderer's sender or shortcut changed")
+        site + 1 to (code[site + 1] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA
+    }
     val writes = { from: Int, to: Int, register: Int -> code.subList(from, to).any {
         (it as? com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction)?.registerA == register && it.opcode.setsRegister() } }
-    if (writes(1, call, owner) || writes(call + 2, active, context) || writes(call, group, data) || maxOf(data, title, context, owner, flag) > 15 ||
-        setOf(data, title, context, owner).size != 4 || flag in setOf(data, context, owner))
+    if (writes(1, shortcut + 2, owner) || writes(call + 2, active, context) || maxOf(data, title, context, owner) > 15 ||
+        setOf(data, title, context, owner).size != 4 || sites.any { it.second > 15 || it.second == owner })
         throw PatchException("the notification renderer's registers changed")
     requireUnpatched(method, "venus-")
-    // The later spot first, so the title's index still points where it did.
-    method.addInstructions(group + 2, """
-        invoke-static {v$flag, v$data, v$context, v$owner}, $ACCOUNT_NOTIFICATIONS->group(ZLjava/lang/Object;Landroid/content/Context;Ljava/lang/Object;)Z
-        move-result v$flag
-    """)
+    // Latest spot first, so the earlier indexes still point where they did.
+    for ((at, value) in sites.sortedByDescending { it.first }) {
+        val helper = if (at == shortcut + 1) "shortcut" else "sender"
+        method.addInstructions(at + 1, """
+            invoke-static {v$value, v$owner}, $ACCOUNT_NOTIFICATIONS->$helper(Ljava/lang/Object;Ljava/lang/Object;)V
+        """)
+    }
     method.addInstructions(call + 2, """
         invoke-static {v$title, v$data, v$context, v$owner}, $ACCOUNT_NOTIFICATIONS->title(Ljava/lang/CharSequence;Ljava/lang/Object;Landroid/content/Context;Ljava/lang/Object;)Ljava/lang/CharSequence;
         move-result-object v$title
