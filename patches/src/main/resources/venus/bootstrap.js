@@ -722,7 +722,7 @@
         if (features.customThemes && key === "customThemesBackground") customThemesApply();
         if (features.nitroThemes && key === "nitroThemes") { if (!value) nitroThemeTurnedOff(); nitroThemeRecheck(); }
         if (features.accountSwitcher && key === "accountSwitcherShare") nitroThemeShareChanged(value);
-        if (features.accountSwitcher && (key === "accountSwitcherNotify" || key === "accountSwitcher")) later(accountSwitcherPushResync, 0);
+        if (features.accountSwitcher && (key === "accountSwitcherNotify" || key === "accountSwitcher")) { later(accountSwitcherPushResync, 0); later(() => accountSwitcherNativeUser(), 0); }
         if (features.materialYou && key === "materialYou") { if (value) myStart(); customThemesApply(); if (features.iconPacks) iconPacksApply(); }
         if (features.iconPacks && key === "iconPacks") { if (value) iconPacksRestore(); iconPacksApply(); }
         if (features.iconPacks && key === "iconPacksTheme") iconPacksApply();
@@ -839,7 +839,10 @@
                 removedSync();
                 if (enabled("removedAlerts") && settings.removedAlertsPush) userNotifCheckPermissions();
             }
-            if (features.accountSwitcher) { accountSwitcherSync(); if (enabled("accountSwitcher")) later(accountSwitcherPushResync, 0); }
+            if (features.accountSwitcher) {
+                accountSwitcherSync(); accountSwitcherNativeWatch();
+                if (enabled("accountSwitcher")) { later(accountSwitcherPushResync, 0); later(() => accountSwitcherNativeUser(), 0); }
+            }
             if (features.customThemes && enabled("customThemes")) customThemesRestore();
             if (features.materialYou && enabled("materialYou")) { myStart(); customThemesApply(); }
             if (features.iconPacks && enabled("iconPacks")) iconPacksRestore();
@@ -13744,6 +13747,26 @@
         const actions = exports && exports.default;
         if (actions && typeof actions.syncDevice === "function") hookExport(actions, "syncDevice", accountSwitcherPushSync);
         return exports;
+    }
+    // Which account Discord's Android notification code thinks you're on (NotificationCache's current user, #152). Only
+    // PushNotificationCacheManager (18629) writes it, and after switching accounts it could keep the last one. Then that
+    // account's notifications were dropped while Discord was open, and the account you're on showed system notifications
+    // labelled with its own name. Venus writes the signed-in account itself (PushNotification 11028, as Discord does)
+    // whenever it connects or changes, and when Discord comes back to the front.
+    function accountSwitcherNativeUser(user) {
+        if (!enabled("accountSwitcher")) return;
+        const me = user && typeof user.id === "string" && user.id ? user : currentUser(), push = inspectedExport(11028, "default");
+        if (!me || typeof me.id !== "string" || !me.id || !push || typeof push.setCurrentUser !== "function") return;
+        try { push.setCurrentUser(typeof me.username === "string" ? me.username : "", me.id); } catch (_) {}
+    }
+    function accountSwitcherNativeWatch() {
+        const d = inspectedExport(584, "default");
+        if (accountSwitcher.nativeWatch || !d || typeof d.subscribe !== "function") return;
+        accountSwitcher.nativeWatch = true;
+        // CONNECTION_OPEN carries the account that just signed in; the second write lands after Discord's own handlers.
+        d.subscribe("CONNECTION_OPEN", event => { const user = event && event.user; later(() => accountSwitcherNativeUser(user), 0); later(() => accountSwitcherNativeUser(), 3000); });
+        d.subscribe("CURRENT_USER_UPDATE", () => later(() => accountSwitcherNativeUser(), 0));
+        d.subscribe("APP_STATE_UPDATE", event => { if (event && event.state === "active") accountSwitcherNativeUser(); });
     }
     // Sync again right away when the switch changes, instead of at Discord's next start.
     function accountSwitcherPushResync() {

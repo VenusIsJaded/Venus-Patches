@@ -65,14 +65,7 @@ object AccountNotifications {
     fun title(title: CharSequence?, notification: Any?, context: Context?, owner: Any?): CharSequence? {
         try {
             if (context == null || notification == null || owner == null || !labelsOn(context)) return title
-            var field = labelField
-            if (field == null || field.declaringClass != owner.javaClass) {
-                field = owner.javaClass.getDeclaredField("\$accountLabel")
-                field!!.isAccessible = true
-                labelField = field
-            }
-            val own = field!!.get(owner) as? String
-            val label = (if (own != null && own.length > 0) own else savedName(context, notification)) ?: return title
+            val label = labelFor(notification, context, owner) ?: return title
             var base: CharSequence? = title
             if (base == null || base.length == 0) {
                 var getter = titleGetter
@@ -88,6 +81,35 @@ object AccountNotifications {
         } catch (_: Throwable) {
             return title
         }
+    }
+
+    /**
+     * Whether the conversation is drawn as a group (#152). Android never draws a one-to-one conversation's title: a DM
+     * shows only the sender's name, so the "Mika · account" title from [title] was dropped and DMs from your other
+     * accounts looked like the account you're on. A labelled DM is drawn the way a group DM is, with the title on top and
+     * the sender on the message. Unlabelled notifications (the account you're on) keep Discord's own answer.
+     */
+    @JvmStatic
+    fun group(group: Boolean, notification: Any?, context: Context?, owner: Any?): Boolean {
+        if (group) return true
+        try {
+            if (context == null || notification == null || owner == null || !labelsOn(context)) return false
+            return labelFor(notification, context, owner) != null
+        } catch (_: Throwable) {
+            return false
+        }
+    }
+
+    /** The receiving account's name for another saved account's push: Discord's own label, else its saved name. */
+    private fun labelFor(notification: Any, context: Context, owner: Any): String? {
+        var field = labelField
+        if (field == null || field.declaringClass != owner.javaClass) {
+            field = owner.javaClass.getDeclaredField("\$accountLabel")
+            field!!.isAccessible = true
+            labelField = field
+        }
+        val own = field!!.get(owner) as? String
+        return if (own != null && own.length > 0) own else savedName(context, notification)
     }
 
     /** The account a push was sent to, from NotificationData's receiving-user getter, or null. */
