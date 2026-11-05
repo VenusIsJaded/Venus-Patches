@@ -15491,16 +15491,21 @@
             el(RN.View, {style:GIF_SEARCH_FIELD}, React.cloneElement(node, {placeholder:gifPlaceholder()})),
             el(GifProviderButton, {onChange:() => gifProvidersRefresh(props)})), 0);
     }
+    // ContextMenuItem (15046) draws trailingIndicator as a component type, jsx(trailingIndicator, {size, color}), the same as
+    // IconComponent, so it takes a component and not an element. An element there crashes Discord with "Element type is
+    // invalid ... got: object" the moment the menu opens. The menu passes the text color, so the check matches the label.
+    const GifCheck = venusIcon(7101, "CheckmarkSmallIcon");
+    function GifCheckIndicator(props) { return el(GifCheck, Object.assign({size:"sm"}, props)); }
     function GifProviderButton(props) {
         useSettings("tenorGifs");
         const s = useThemed("gifProviders", c => ({pill:Object.assign({}, GIF_PILL_DARK.pill, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}),
             pressed:{backgroundColor:c.BACKGROUND_MOD_NORMAL}, check:{color:c.TEXT_BRAND}}), GIF_PILL_DARK);
         const Menu = inspectedExport(9662, "ContextMenu");
         if (!Menu || !s) return null;
-        const Text = inspectedExport(5187, "Text"), Chevron = venusIcon(10859, "ChevronSmallDownIcon"), Check = venusIcon(7101, "CheckmarkSmallIcon");
+        const Text = inspectedExport(5187, "Text"), Chevron = venusIcon(10859, "ChevronSmallDownIcon");
         const list = gifProviders(), label = list.length === 1 ? GIF_PROVIDER_NAMES[list[0]] : pl(list.length, "{n} provider", "{n} providers");
         const items = GIF_PROVIDERS.map(id => ({label:GIF_PROVIDER_NAMES[id], venusGifProvider:id,
-            trailingIndicator:list.indexOf(id) >= 0 && Check ? el(Check, {size:"sm", color:s.check.color}) : undefined,
+            trailingIndicator:list.indexOf(id) >= 0 ? GifCheckIndicator : undefined,
             action:() => {
                 const next = gifProvidersWith(id);
                 if (!next) return;
