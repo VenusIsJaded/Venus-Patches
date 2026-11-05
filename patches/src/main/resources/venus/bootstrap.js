@@ -74,6 +74,7 @@
     if (features.landscapeFull) selectModules([5075, 5076]);
     if (features.voiceDownload) selectModules([1447, 5532, 8013, 11114]);
     if (features.profileMedia) selectModules([1392, 8646, 8660]);
+    if (features.copyMention) targetModules[14015] = 1;
     if (features.cloneExpressions) selectModules([9839, 10078]);
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
     if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
@@ -89,7 +90,7 @@
     const deferred = new Map();
     // Every feature starts off: nothing changes in Discord until you turn it on. Options inside a feature keep
     // their own defaults, so turning a feature on does what it says straight away.
-    const settings = { debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
+    const settings = { debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, copyMention: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
         noTyping: false, noTypingWhere: "all", noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
         jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, pastelDms:false, pastelMembers:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
         quests:false, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true,
@@ -101,13 +102,13 @@
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, accountSwitcherNotifyOpen:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsProviders:"tenor,klipy", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, staffTagMembers:false, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, profileMedia:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsProviders:"tenor,klipy", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", voiceOptionsRejoin:false, cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, staffTagMembers:false, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, profileMedia:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
         hypeSquad:false, customIdle:false, customIdleMinutes:10, pauseInvites:false, fastDeleteChannels:false, fastDeleteChannelsConfirm:true, fastDeleteChannelsMenu:true, mutualGroupDMs:false, platformSpoof:false, platformSpoofDevice:"desktop" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
     function defaultSettings() {
         return DEFAULT_SETTINGS || (DEFAULT_SETTINGS = Object.freeze({
-            debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
+            debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, copyMention: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
             noTyping: false, noTypingWhere: "all", noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
             jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, pastelDms: false, pastelMembers: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
             quests: false, questsVideo: true, questsPlay: true, questsActivity: true, questsEnroll: true,
@@ -119,7 +120,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, accountSwitcherNotifyOpen: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsProviders: "tenor,klipy", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, staffTagMembers: false, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, profileMedia: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsProviders: "tenor,klipy", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", voiceOptionsRejoin: false, cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, staffTagMembers: false, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, profileMedia: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
             hypeSquad: false, customIdle: false, customIdleMinutes: 10, pauseInvites: false, fastDeleteChannels: false, fastDeleteChannelsConfirm: true, fastDeleteChannelsMenu: true, mutualGroupDMs: false, platformSpoof: false, platformSpoofDevice: "desktop"
         }));
     }
@@ -384,6 +385,7 @@
         if (features.serverEdit && serverEdits.size) extra.serverEdits = serverEditData(false);
         if (features.localEdit && localEdits.size) extra.localEdits = localEditData();
         if (features.timezones && timezoneUsers.size) extra.timezoneUsers = tzData();
+        if (features.voiceOptions && voiceRejoin.saved) extra.voiceRejoin = voiceRejoin.saved;
         if ((features.nitroThemes || features.accountSwitcher) && nitroThemeHasAny()) extra.nitroThemes = nitroThemeData();
         return JSON.stringify(Object.keys(extra).length ? Object.assign({}, settings, extra) : settings);
     }
@@ -736,6 +738,7 @@
         if (features.hideBlocked && featureFor(key) === "hideBlocked") hideBlockedChanged();
         if (features.staffTag && featureFor(key) === "staffTag") later(staffTagChanged, 0);
         if (features.freeNitro && key === "freeNitro") later(nitroLinksRedraw, 0);
+        if (features.voiceOptions && (key === "voiceOptionsRejoin" || key === "voiceOptions")) voiceRejoinRemember(enabled("voiceOptions") && settings.voiceOptionsRejoin && voiceOptions.channelId ? String(voiceOptions.channelId) : null);
         if (features.timezones && featureFor(key) === "timezones") later(tzRedraw, 0);
         if (features.bulkDelete && key === "bulkDelete" && !value) bulkDeleteCancel();
         if (features.localBookmarks && key === "localBookmarks") { if (value) bookmarksRestore(); bookmarksChanged(); }
@@ -803,6 +806,7 @@
                 if (features.serverEdit && !serverEdit.dirty) serverEditLoad(serverEditClean(loaded.serverEdits, false));
                 if (features.localEdit) localEditLoad(loaded.localEdits);
                 if (features.timezones && !tz.dirty) tzLoad(loaded.timezoneUsers);
+                if (features.voiceOptions) voiceRejoinLoad(loaded.voiceRejoin);
                 if (features.badges) {
                     const accounts = loaded.badgesAccounts, played = loaded.badgesPlayed, snowflake = id => typeof id === "string" && /^\d{17,20}$/.test(id);
                     if (Array.isArray(accounts)) accounts.slice(0, 50).forEach(id => { if (snowflake(id)) badges.accounts.add(id); });
@@ -824,6 +828,7 @@
             }
             status.storage = "ready";
             debugLogReady();
+            if (features.voiceOptions) { voiceRejoin.loaded = true; voiceRejoinTry(); }
             if (features.backgroundMedia) backgroundMediaStart();
             if (features.nitroThemes && settings.nitroThemes) nitroThemeRecheck();
             if ((features.nitroThemes || features.accountSwitcher) && nitroThemeHasAny()) later(nitroThemeReapply, 0);
@@ -1299,7 +1304,7 @@
         quickDelete:[6573, "CircleXIcon"], jumpToTop:[10796, "ArrowLargeUpIcon"], favouriteAnything:[9851, "StarIcon"],
         freeNitro:[9327, "NitroWheelIcon"], voice:[13531, "WaveformIcon"], splitMessages:[9641, "PaperIcon"], noTyping:[13747, "KeyboardIcon"],
         picker:[10327, "AttachmentIcon"], anonFiles:[6927, "EyeSlashIcon"], pastelize:[16320, "PaintPaletteIcon"], platformIndicators:[15994, "LaptopPhoneIcon"],
-        validUser:[8490, "AtIcon"], copyBios:[5141, "CopyIcon"], reviewDB:[9658, "ThumbsUpIcon"], readAll:[16684, "DoubleCheckmarkIcon"],
+        validUser:[8490, "AtIcon"], copyBios:[5141, "CopyIcon"], copyMention:[8490, "AtIcon"], reviewDB:[9658, "ThumbsUpIcon"], readAll:[16684, "DoubleCheckmarkIcon"],
         hiddenChannels:[8495, "LockIcon"], systemFont:[16730, "LettersIcon"], systemEmoji:[13827, "ChatSmileIcon"],
         youBarSettings:[7368, "SettingsIcon"], quests:[13929, "QuestsIcon"],
         badges:[9211, "TrophyIcon"], userNotif:[9045, "BellIcon"], accountSwitcher:[8489, "GroupIcon"], appIcons:[8506, "AppsIcon"],
@@ -1382,7 +1387,8 @@
         cleanChannels:["Emoji", "Symbols and dividers", "Fancy letters", "Spaces instead of dashes", "Spaces in channel names", "general chat", "Categories", "Channel names", "Decorations"],
         experiments:["Dev Tools", "Experiments", "Experiment", "Developer", "Staff"],
         noHandsfree:["Bluetooth", "Headphones", "Hands-free", "Calls", "Voice channels", "Microphone"],
-        voiceOptions:["Soundboard", "Goodbye sound", "Call volume", "Chime volume", "Mute everyone", "Speaker", "Earpiece", "Bluetooth", "Wired headset", "Headphones", "Output", "Join chime", "Leave chime", "Voice channels", "Notification", "Mute"],
+        copyMention:["Mention", "Mentions", "Copy", "User ID", "CopyUserMention"],
+        voiceOptions:["Rejoin the call", "Rejoin", "Reconnect", "VoiceRejoin", "Soundboard", "Goodbye sound", "Call volume", "Chime volume", "Mute everyone", "Speaker", "Earpiece", "Bluetooth", "Wired headset", "Headphones", "Output", "Join chime", "Leave chime", "Voice channels", "Notification", "Mute"],
         fakeDeafen:["Deafen", "Fake deafen", "Headphones", "Calls", "Voice channels", "Microphone"],
         bulkDelete:["Select Messages", "Select all", "Delete", "Clear kept deleted messages", "Include kept deleted messages", "Ask before deleting"],
         badges:["Game time", "Unique games", "Switch games every", "Games at once", "Add hours now", "Advanced", "Hours Played", "Unique Games Played", "Years Active", "Personalization"]};
@@ -1867,6 +1873,7 @@
              section("Avatars", [option("piHideMobile", "Hide the phone badge", "Avatars show a plain status dot, since the icons already show mobile.", "VENUS_PLATFORMINDICATORS")])]}));
         toggle("people", "validUser", "Fix unknown mentions", "Shows names instead of @unknown-user.");
         toggle("people", "copyBios", "Copy profile bios", "Hold a bio to select and copy it.");
+        toggle("people", "copyMention", "Copy mentions", "Copy anyone's mention from the \u22ef menu on their profile.");
         toggle("people", "profileMedia", "Download profile pictures and banners", "Open a profile picture or banner and save it from the \u22ef button, like photos in chat.");
         toggle("servers", "cloneExpressions", "Clone emojis and stickers", "Tap a custom emoji or sticker in chat to add it to one of your servers.");
         toggle("people", "timeoutDuration", "Show timeout duration", "A tag next to timed-out people says how long until they can talk again.");
@@ -8484,7 +8491,9 @@
             el(Group, {key:"exit", title:tr("When you leave")},
                 switchRow(Switch, "voiceOptionsExit", "Goodbye sound", "When you tap Disconnect, a soundboard sound plays for everyone in the channel. Needs Nitro.", rowIcon(13212, "SoundboardIcon"))),
             settings.voiceOptionsExit ? el(VoiceSoundPicker, {key:"exitSound", on}) : null,
-            settings.voiceOptionsExit && !voiceNitro() ? footnote("exitNitro", "Your account doesn't have Nitro, so no sound is sent.") : null];
+            settings.voiceOptionsExit && !voiceNitro() ? footnote("exitNitro", "Your account doesn't have Nitro, so no sound is sent.") : null,
+            el(Group, {key:"rejoin", title:tr("If Discord closes")},
+                switchRow(Switch, "voiceOptionsRejoin", "Rejoin the call", "Open Discord within 10 minutes and it joins the same voice channel or call again. Leaving on purpose never rejoins.", rowIcon(11630, "RefreshIcon")))];
         return settingsBody(ui, groups);
     }
     // Listen along: from a friend's Spotify activity on their profile, play the same song at the same spot on your own
@@ -14965,12 +14974,61 @@
         voiceOptions.dispatcher = dispatcher;
         dispatcher.subscribe("VOICE_CHANNEL_SELECT", voiceOptionsSelect);
         dispatcher.subscribe("RTC_CONNECTION_STATE", voiceOptionsState);
-        dispatcher.subscribe("LOGOUT", () => { voiceOptions.joined = false; });
+        dispatcher.subscribe("LOGOUT", () => { voiceOptions.joined = false; voiceRejoin.pending = null; voiceRejoinRemember(null); });
+        dispatcher.subscribe("CONNECTION_OPEN", () => { voiceRejoin.connected = true; voiceRejoinTry(); });
+        if (RN && RN.AppState && typeof RN.AppState.addEventListener === "function")
+            RN.AppState.addEventListener("change", state => { if (state !== "active" && voiceRejoin.saved) voiceRejoinRemember(voiceRejoin.saved.channelId); });
     }
     function voiceOptionsSelect(event) {
         const joined = !!(event && event.channelId), joining = joined && !voiceOptions.joined;
         voiceOptions.joined = joined; voiceOptions.channelId = joined ? event.channelId : null;
         if (joining && enabled("voiceOptions") && settings.voiceOptionsVolume) later(voiceVolumeApply, 0);
+        voiceRejoinRemember(joined && enabled("voiceOptions") && settings.voiceOptionsRejoin ? String(event.channelId) : null);
+    }
+    // Rejoin the call (#156, after VoiceRejoin): the voice channel or call you're in is kept with the settings (voiceRejoin,
+    // never in backups) and forgotten the moment you leave it, so leaving on purpose never rejoins. If Discord closes without
+    // leaving (a crash, Android closing it in the background, swiping it away), the next launch joins it again once Discord
+    // has connected, when that was under VOICE_REJOIN_MS ago. The time is renewed every few minutes in a call and whenever
+    // Discord goes to the background. A DM or group call is only rejoined while it's still going (CallStore 6014), so
+    // rejoining never rings anyone; a server channel only while you can still see it. Once per launch.
+    const VOICE_REJOIN_MS = 10 * 60 * 1000, VOICE_REJOIN_RENEW_MS = 4 * 60 * 1000;
+    const voiceRejoin = {saved:null, pending:null, loaded:false, connected:false, tried:false, timer:undefined};
+    function voiceRejoinRemember(channelId) {
+        if (voiceRejoin.timer !== undefined && typeof global.clearTimeout === "function") global.clearTimeout(voiceRejoin.timer);
+        voiceRejoin.timer = undefined;
+        if (!channelId && !voiceRejoin.saved) return;
+        voiceRejoin.saved = channelId ? {channelId, at:Date.now()} : null;
+        save();
+        if (channelId) voiceRejoin.timer = later(() => { voiceRejoin.timer = undefined; if (voiceRejoin.saved) voiceRejoinRemember(voiceRejoin.saved.channelId); }, VOICE_REJOIN_RENEW_MS, false);
+    }
+    function voiceRejoinLoad(value) {
+        if (voiceRejoin.tried || !value || typeof value !== "object" || typeof value.channelId !== "string" || !/^\d{17,20}$/.test(value.channelId) || !Number.isFinite(value.at)) return;
+        voiceRejoin.pending = {channelId:value.channelId, at:value.at};
+    }
+    function voiceRejoinTry() {
+        if (voiceRejoin.tried || !voiceRejoin.loaded || !voiceRejoin.connected) return;
+        voiceRejoin.tried = true;
+        // Calls and voice states arrive just after the connection opens.
+        if (voiceRejoin.pending) later(voiceRejoinGo, 3000);
+    }
+    function voiceRejoinGo() {
+        const target = voiceRejoin.pending;
+        voiceRejoin.pending = null;
+        if (!target || !enabled("voiceOptions") || !settings.voiceOptionsRejoin || Date.now() - target.at > VOICE_REJOIN_MS) return;
+        const actions = inspectedExport(6145, "default"), selected = inspectedExport(2119, "default"), store = channelStore || inspectedExport(2068, "default");
+        if (!actions || typeof actions.selectVoiceChannel !== "function" || !store) return;
+        try { if (selected && typeof selected.getVoiceChannelId === "function" && selected.getVoiceChannelId()) return; } catch (_) {}
+        let channel = null;
+        try { channel = store.getChannel(target.channelId); } catch (_) {}
+        if (!channel) return;
+        if (!channel.guild_id) {
+            const calls = inspectedExport(6014, "default");
+            let call = null;
+            try { call = calls && typeof calls.getCall === "function" ? calls.getCall(target.channelId) : null; } catch (_) {}
+            if (!call) return;
+        }
+        dlog("I", "voiceOptions", "rejoining the voice channel Discord closed in");
+        try { actions.selectVoiceChannel(target.channelId); } catch (error) { dlog("W", "voiceOptions", "couldn't rejoin: " + dlogText(error)); }
     }
     function voiceVolumeApply() {
         if (!enabled("voiceOptions") || !settings.voiceOptionsVolume) return;
@@ -21303,6 +21361,41 @@
         return el(RN.Pressable, Object.assign({}, rendered.props, {key:rendered.key, onPress:open, accessibilityRole:"imagebutton", accessibilityLabel:tr("Banner"),
             style:state => state && state.pressed ? [style, {opacity:0.85}] : style}));
     }
+    // Copy mentions (#156, after CopyUserMention): a person's ⋯ menu (UserProfileOverflowMenu 14015) gets Copy mention, right
+    // after Discord's own Copy Username and Copy User ID when they're there. It copies <@id>, which shows as their @name in any chat.
+    function copyMentionMenu(orig, self, args) {
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!enabled("copyMention") || !React || !rendered || !props) return rendered;
+        const userId = String(props.userId || props.user && props.user.id || ""), Menu = inspectedExport(9662, "ContextMenu");
+        if (!Menu || !/^\d{17,20}$/.test(userId)) return rendered;
+        const item = {label:tr("Copy mention"), venusMention:true, action:() => later(() => copyMention(userId), 60)};
+        const copyLabels = ["y5MwJy", "/AXYnE"].map(discordText).filter(Boolean);
+        const isCopy = entry => !!entry && !Array.isArray(entry) && copyLabels.indexOf(entry.label) >= 0;
+        const lastCopy = list => { let at = -1; list.forEach((entry, i) => { if (isCopy(entry)) at = i; }); return at; };
+        const has = list => list.some(entry => entry && (entry.venusMention || Array.isArray(entry) && entry.some(inner => inner && inner.venusMention)));
+        return cloneTree(rendered, (node, nodeProps) => {
+            if (node.type !== Menu || !Array.isArray(nodeProps.items) || has(nodeProps.items)) return nodeProps;
+            const items = nodeProps.items, top = lastCopy(items);
+            if (top >= 0) return Object.assign({}, nodeProps, {items:items.slice(0, top + 1).concat([item], items.slice(top + 1))});
+            for (let i = 0; i < items.length; i++) {
+                const at = Array.isArray(items[i]) ? lastCopy(items[i]) : -1;
+                if (at < 0) continue;
+                const next = items.slice();
+                next[i] = items[i].slice(0, at + 1).concat([item], items[i].slice(at + 1));
+                return Object.assign({}, nodeProps, {items:next});
+            }
+            const last = items[items.length - 1], danger = Array.isArray(last) && last.some(entry => entry && entry.variant === "destructive");
+            const grouped = items.some(Array.isArray);
+            const next = !grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]]);
+            return Object.assign({}, nodeProps, {items:next});
+        }, 0);
+    }
+    function copyMention(userId) {
+        const ui = reviewUI();
+        try { (ui.clipboard || RN.Clipboard).setString("<@" + userId + ">"); } catch (_) { return; }
+        haptic("SELECTION");
+        reviewToast(ui, "Mention copied", venusIcon(5141, "CopyIcon"));
+    }
     // Clone emojis and stickers (#125, after ExpressionCloner): tapping a custom emoji or a server sticker in chat opens
     // Discord's own sheet for it (MessageEmojiActionSheet 9839, StickerDetailActionSheet 10078); Venus adds one button at
     // its bottom, "Add to a server". It opens a sheet listing only the servers where you can add expressions
@@ -24614,6 +24707,7 @@
             case 14015:
                 if (features.noDelete) exports = hookComponent(exports, rulesProfileMenu);
                 if (features.timezones) exports = hookComponent(exports, timezoneProfileMenu);
+                if (features.copyMention) exports = hookComponent(exports, copyMentionMenu);
                 return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
             case 7158: return features.viewRaw ? hookComponent(exports, viewRawRolesCard) : exports;
             case 7167: return features.viewRaw ? hookExport(exports, "showSimpleActionSheet", viewRawSimpleSheet) : exports;

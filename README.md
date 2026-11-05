@@ -61,6 +61,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Fix unknown mentions | Shows names instead of @unknown-user |
 | | Download profile pictures and banners | Save anyone's profile picture or banner, the same way as photos in chat |
 | | Copy profile bios | Select and copy profile bios |
+| | Copy mentions | Copy anyone's mention from their profile menu (based on CopyUserMention by Cortex and castdrian) |
 | | Leave group DMs silently | Leave without the "left the group" message (based on SilentLeave by coder.gg) |
 | | Show timeout duration | Shows how long someone is timed out (based on ShowTimeoutDuration by Ven) |
 | | Time zones | Set someone's time zone to see their local time next to their messages and on their profile, worked out on your phone with no online lookup (based on Timezones by Equicord) |
@@ -95,7 +96,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Complete badges automatically | **Risky, experimental.** Earns game-time badges in the background |
 | **Advanced** | Unlock Discord experiments | Dev Tools and Experiments in Settings (based on Experiments by maisy) |
 | | Keep Bluetooth audio clear in calls | Keeps headphones in music quality during calls |
-| | Voice channel options | Join volume, audio output, join chimes and a goodbye sound |
+| | Voice channel options | Join volume, audio output, join chimes, a goodbye sound and rejoining the call if Discord closes (based on VoiceRejoin) |
 | | Fake deafen | Look deafened while still hearing the call (by maayan080) |
 
 Venus settings also have **Language** (30 languages), **Backup and restore**, and **About** with debug logs and a crash screen.

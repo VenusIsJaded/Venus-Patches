@@ -417,6 +417,7 @@ BOOTSTRAP_MODULES = [
     (5528, 'modules/soundboard/SoundboardStore.tsx', ['default'], 'SoundboardStore (Voice channel options)'),
     (5530, 'modules/soundboard/SoundboardConstants.tsx', ['DEFAULT_SOUND_GUILD_ID'], 'SoundboardConstants (Voice channel options)'),
     (6145, 'actions/SelectedChannelActionCreators.tsx', ['default'], 'SelectedChannelActionCreators (Voice channel options)'),
+    (6014, 'stores/CallStore.tsx', ['default'], 'CallStore (Voice channel options: rejoin the call)'),
     (7324, 'modules/soundboard/SoundboardActionCreators.tsx', ['maybeFetchSoundboardSounds'], 'SoundboardActionCreators (Voice channel options)'),
     (13212, 'design/components/Icon/native/redesign/generated/SoundboardIcon.tsx', ['SoundboardIcon'], 'SoundboardIcon (Voice channel options)'),
     (5216, '../discord_common/js/packages/media-engine/Constants.tsx', ['MediaEngineContextTypes'], 'MediaEngineContextTypes (Voice channel options)'),

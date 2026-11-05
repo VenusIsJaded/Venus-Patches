@@ -225,7 +225,7 @@ private val runtimeAssets = rawResourcePatch {
             "{picker:$pickerSelected,voice:$voiceSelected,copyBios:$copyBiosSelected," +
                 "favouriteAnything:$favouriteAnythingSelected,freeNitro:$freeNitroSelected," +
                 listOf("noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels", "pastelize", "platformIndicators", "reviewDB", "readAll", "quests", "badges", "systemFont",
-                    "systemEmoji", "gestures", "validUser", "youBarSettings", "splitMessages", "translate", "userNotif", "accountSwitcher", "appIcons", "nitroThemes", "customThemes", "materialYou", "iconPacks", "messageHighlight", "serverInfo", "serverEdit", "fixEmbeds", "tenorGifs", "hideBlocked", "bulkDelete", "experiments", "cleanChannels", "noHandsfree", "voiceOptions", "anonFiles", "staffTag", "removedAlerts", "fullImages", "hideAnything", "alwaysTrust", "noConfirmPin", "clickableMentions", "expandBar", "quietReplies", "silentLeave", "guildLurk", "compressUploads", "timeoutDuration", "dndBanners", "landscapeFull", "voiceDownload", "cloneExpressions", "listenAlong", "silentEdit", "silentDelete", "localEdit", "localBookmarks", "hypeSquad", "customIdle", "mutualGroupDMs", "fastDeleteChannels", "pauseInvites", "platformSpoof", "backgroundMedia", "viewRaw", "fakeDeafen", "timezones", "profileMedia")
+                    "systemEmoji", "gestures", "validUser", "youBarSettings", "splitMessages", "translate", "userNotif", "accountSwitcher", "appIcons", "nitroThemes", "customThemes", "materialYou", "iconPacks", "messageHighlight", "serverInfo", "serverEdit", "fixEmbeds", "tenorGifs", "hideBlocked", "bulkDelete", "experiments", "cleanChannels", "noHandsfree", "voiceOptions", "anonFiles", "staffTag", "removedAlerts", "fullImages", "hideAnything", "alwaysTrust", "noConfirmPin", "clickableMentions", "expandBar", "quietReplies", "silentLeave", "guildLurk", "compressUploads", "timeoutDuration", "dndBanners", "landscapeFull", "voiceDownload", "cloneExpressions", "listenAlong", "silentEdit", "silentDelete", "localEdit", "localBookmarks", "hypeSquad", "customIdle", "mutualGroupDMs", "fastDeleteChannels", "pauseInvites", "platformSpoof", "backgroundMedia", "viewRaw", "fakeDeafen", "timezones", "profileMedia", "copyMention")
                     .joinToString(",") { "$it:${it in additionalSelections}" } + "}"
         )
         asset.writeText(selected)
@@ -598,6 +598,10 @@ val showTimeoutDuration = bundledPlugin("timeoutDuration", "Show timeout duratio
 @Suppress("unused")
 val voiceDownload = bundledPlugin("voiceDownload", "Download voice messages",
     "A Download button under each voice message saves it to your phone. Based on VoiceDownload by puv.")
+
+@Suppress("unused")
+val copyMention = bundledPlugin("copyMention", "Copy mentions",
+    "Copy anyone's mention from the ⋯ menu on their profile. Based on CopyUserMention by Cortex and castdrian.")
 
 @Suppress("unused")
 val profileMedia = bundledPlugin("profileMedia", "Download profile pictures and banners",
