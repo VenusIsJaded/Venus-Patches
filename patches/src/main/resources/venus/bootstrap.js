@@ -5578,14 +5578,19 @@
     // QuestVariants.MOBILE_ACTIVITY_QUEST: an Activity Quest that Discord's phone app reports itself.
     const QUEST_MOBILE_ACTIVITY = 36;
     // Discord answers 401 when a phone reports play time, so Play and Activity heartbeats are sent as Discord
-    // Stable for Windows: host 1.0.9265, web build 652418 (the client discord.com serves a desktop app on launch; the site
+    // Stable for Windows: host 1.0.9267, web build 663810 (the client discord.com serves a desktop app on launch; the site
     // ships several builds a day and a desktop session keeps the one it loaded, so a recent one is as real as the newest),
-    // updater metadata 96160 (what desktop sends as native_build_number), Electron 42.11.15, Chrome 148.0.7778.280.
-    // Read from the 1.0.9265 package (Discord.exe, build_info.json, core.asar) and the live updater manifest.
+    // updater metadata 97793 (what desktop sends as native_build_number), Electron 44.10.0, Chrome 152.0.7977.169.
+    // Read from the 1.0.9267 package (Discord.exe, build_info.json), the live updater manifest and discord.com/app.
+    // The updater marks each host as a required update, so an older host can't launch: claiming one that Discord no
+    // longer ships, with a launch id that says it just started, describes a client that can't exist.
     // Bump all of them together when Discord does.
-    // brands is the sec-ch-ua Electron 42.11.15 sends (captured from the real binary; Chromium picks the grease brand per major).
-    const QUEST_DESKTOP = {version:"1.0.9265", build:652418, native:96160, electron:"42.11.15", chrome:"148.0.7778.280",
-        osVersion:"10.0.26100", osSdk:"26100", brands:'"Not/A)Brand";v="99", "Chromium";v="148"'};
+    // brands is the sec-ch-ua Electron 44 sends. Chromium derives the grease brand from the major version: with
+    // chars = [" ", "(", ":", "-", ".", "/", ")", ";", "=", "?", "_"], it is "Not" + chars[major % 11] + "A" +
+    // chars[(major + 1) % 11] + "Brand" at v = ["8", "99", "24"][major % 3], listed first for an even major. For 148 that
+    // is the "Not/A)Brand";v="99" captured from Electron 42; for 152 it is "Not?A_Brand";v="24".
+    const QUEST_DESKTOP = {version:"1.0.9267", build:663810, native:97793, electron:"44.10.0", chrome:"152.0.7977.169",
+        osVersion:"10.0.26100", osSdk:"26100", brands:'"Not?A_Brand";v="24", "Chromium";v="152"'};
     // Where desktop's page is served from: Chromium reports it as Origin (writes) and Referer on every API call.
     const QUEST_DESKTOP_ORIGIN = "https://discord.com", QUEST_DESKTOP_PAGE = "https://discord.com/channels/@me";
     const QUEST_DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/" +
@@ -5683,11 +5688,14 @@
         const identity = quest.desktop || (quest.desktop = {launch:questUuidText(questUuid()), signature:questLaunchSignature(),
             locale:questLocale(), session:"", sessionAt:0});
         if (!identity.session || now - identity.sessionAt >= QUEST_HEARTBEAT_SESSION_MS) { identity.session = questUuidText(questUuid()); identity.sessionAt = now; }
-        // Same keys, in the same order, as desktop's getSuperProperties.
+        // Same keys, in the same order, as desktop's getSuperProperties (web build 663810): the Windows block now carries
+        // os_version_is_release (always true off macOS) with os_sdk_version right after it, before os_arch. Without that
+        // key, and with os_sdk_version at the end, these heartbeats were shaped like a client Discord no longer runs.
         const properties = {os:"Windows", browser:"Discord Client", release_channel:"stable", client_version:QUEST_DESKTOP.version,
-            os_version:QUEST_DESKTOP.osVersion, os_arch:"x64", app_arch:"x64", system_locale:identity.locale, has_client_mods:false,
-            client_launch_id:identity.launch, browser_user_agent:QUEST_DESKTOP_UA, browser_version:QUEST_DESKTOP.electron,
-            os_sdk_version:QUEST_DESKTOP.osSdk, client_build_number:QUEST_DESKTOP.build, native_build_number:QUEST_DESKTOP.native,
+            os_version:QUEST_DESKTOP.osVersion, os_version_is_release:true, os_sdk_version:QUEST_DESKTOP.osSdk, os_arch:"x64",
+            app_arch:"x64", system_locale:identity.locale, has_client_mods:false, client_launch_id:identity.launch,
+            browser_user_agent:QUEST_DESKTOP_UA, browser_version:QUEST_DESKTOP.electron,
+            client_build_number:QUEST_DESKTOP.build, native_build_number:QUEST_DESKTOP.native,
             client_event_source:null, launch_signature:identity.signature, client_heartbeat_session_id:identity.session,
             client_app_state:"unfocused"};
         try {
@@ -6031,7 +6039,7 @@
         const value = Number(reply && reply.progress && reply.progress[type] && reply.progress[type].value);
         return {value:Number.isFinite(value) ? value : 0, completed:!!(reply && reply.completed_at)};
     }
-    // Desktop's pace (QuestProgressManager.initiateHeartbeat, Discord for Windows 1.0.9265): a beat right away, then one
+    // Desktop's pace (QuestProgressManager.initiateHeartbeat, unchanged in web build 663810): a beat right away, then one
     // a minute, stopping once Discord says the Quest is done. A finished Quest gets no terminal beat on desktop.
     // Desktop starts the next timer the moment it sends, without waiting for the answer, and works the delay out
     // from the progress it already had, so the answer to this beat only counts for the next one. The delay runs
