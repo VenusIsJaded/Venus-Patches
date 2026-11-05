@@ -1,48 +1,120 @@
 name: Bug report
-description: Report a bug or an issue.
+description: Something in Venus is broken, crashes or doesn't work as described.
 title: "bug: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        # Venus Patches bug report
+        Thanks for taking the time to report this. A focused report with a log gets fixed much faster than a long one without.
 
-        Before creating a new bug report, please keep the following in mind:
+        > [!IMPORTANT]
+        > **Please don't paste your whole list of plugins or features.** Most of the names in those lists don't exist in Venus, come from desktop or other mods, or don't apply to mobile, so they can't be checked. Name only the features the bug is about, and say *why* each one matters.
 
-        - **Do not submit a duplicate bug report**: Search for existing bug reports [here](https://github.com/VenusIsJaded/Venus-Patches/issues?q=label%3A%22Bug+report%22).
-        - Include Discord, Android and Morphe versions plus the Venus diagnostics. Do not share tokens or private audio.
+        > [!TIP]
+        > **Crashed?** Copy your Venus log: **Settings → Venus → About → Troubleshooting → Copy logs**. If Discord won't open far enough to get there, share a device log instead (steps are in the **Device log** box below).
+
+        Before you start, [search existing issues](https://github.com/VenusIsJaded/Venus-Patches/issues?q=is%3Aissue) in case it's already reported.
+
   - type: textarea
+    id: what-happened
     attributes:
-      label: Bug description
-      description: |
-        - Describe your bug in detail
-        - Add steps to reproduce the bug if possible (Step 1. ... Step 2. ...)
-        - Add images and videos if possible
+      label: What happened?
+      description: Describe the bug, and how to make it happen again if you can. Screenshots or a screen recording help a lot; drag them into this box.
+      placeholder: |
+        1. Open a DM and hold a message
+        2. Tap Translate
+        3. The menu closes, but nothing is translated
     validations:
       required: true
+
   - type: textarea
+    id: expected
     attributes:
-      label: Error logs
-      description: Exceptions can be captured by running `logcat | grep AndroidRuntime` in a shell.
-      render: shell
+      label: What did you expect to happen?
+      placeholder: The message shows in my language under the original.
+    validations:
+      required: true
+
   - type: textarea
+    id: features
     attributes:
-      label: Solution
-      description: If applicable, add a possible solution to the bug.
+      label: Which Venus features are involved?
+      description: |
+        Only the features this bug is about, written as they appear in Venus settings. If you think another feature is part of the problem, add it with a short reason.
+        **No pasted lists of every plugin or feature you use.** A report with one is likely to be closed until it's narrowed down.
+      placeholder: |
+        Translate messages: the bug only happens with "Only when you ask" chosen
+        Keep deleted messages: turning it off makes the bug go away
+    validations:
+      required: true
+
   - type: textarea
+    id: venus-log
     attributes:
-      label: Additional context
-      description: Add additional context here.
+      label: Venus log
+      description: |
+        **Required for crashes**, and helpful for everything else. Settings → Venus → About → Troubleshooting → **Copy logs**, then paste it here.
+        For more detail, turn on **Debug logging** there first, make the bug happen again, then copy. Sign-ins are left out automatically.
+      placeholder: Paste the copied Venus log here.
+      render: text
+
+  - type: textarea
+    id: device-log
+    attributes:
+      label: Device log (only if you can't get the Venus log)
+      description: |
+        If Discord crashes before you can reach Venus settings: turn on USB debugging, connect your phone to a computer, make Discord crash, then run `adb logcat -d > discord-log.txt` and attach the file here. On a rooted phone, `logcat -d` in a terminal app works too.
+        Skim it before posting: a device log can include details from other apps.
+      placeholder: Drag the log file here, or paste it inside ``` fences.
+
+  - type: input
+    id: discord-version
+    attributes:
+      label: Discord version
+      description: Settings → scroll to the bottom.
+      placeholder: "351.11 - Stable"
+    validations:
+      required: true
+
+  - type: input
+    id: venus-version
+    attributes:
+      label: Venus Patches version
+      description: Settings → Venus → About.
+      placeholder: "1.21.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it?
+      options:
+        - Morphe Manager
+        - Morphe Manager, root mount
+        - Morphe CLI
+        - Something else (say which under What happened)
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Phone and Android version
+      placeholder: "Pixel 8, Android 16"
+    validations:
+      required: true
+
   - type: checkboxes
     id: acknowledgements
     attributes:
-      label: Acknowledgements
-      description: Your bug report will be closed if you don't follow the checklist below.
+      label: Before you submit
       options:
-        - label: I have checked all open and closed bug reports and this is not a duplicate.
+        - label: I searched open and closed issues and this isn't a duplicate.
           required: true
-        - label: I have chosen an appropriate title.
+        - label: I patched the original Discord APKM from APKMirror, in the version Venus supports.
           required: true
-        - label: All requested information has been provided properly.
+        - label: I only listed the features this bug is about, each with a reason, not my whole plugin list.
           required: true
+        - label: If this is a crash, I added a Venus log, or a device log if I couldn't get one.

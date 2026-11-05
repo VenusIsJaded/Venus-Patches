@@ -8,6 +8,7 @@
       "default": true,
       "category": "Features",
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": [
@@ -174,7 +175,7 @@
     },
     {
       "name": "Bring back Tenor GIFs",
-      "description": "Tenor GIFs show in Discord's GIF picker again, mixed with Discord's own or on their own. Inspired by BringBackTenor by Livie.",
+      "description": "Tenor and Giphy GIFs in Discord's GIF picker, with a switcher by the search bar. Inspired by BringBackTenor by Livie and GifProviderSwitcher by Lunascape and Ven.",
       "default": true,
       "category": "Features",
       "dependencies": [
@@ -379,6 +380,40 @@
     {
       "name": "Compress big files",
       "description": "Photos, videos and audio over Discord's file size limit are made smaller to fit as you send them, instead of being refused.",
+      "default": true,
+      "category": "Features",
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.discord",
+          "name": "Discord",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#5865F2",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "351.11 - Stable",
+              "versionCodes": {
+                "ARM64_V8A": 351011,
+                "ARMEABI_V7A": 351011,
+                "X86_64": 351011,
+                "X86": 351011
+              },
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Copy mentions",
+      "description": "Copy anyone's mention from the ⋯ menu on their profile. Based on CopyUserMention by Cortex and castdrian.",
       "default": true,
       "category": "Features",
       "dependencies": [
@@ -801,6 +836,40 @@
     {
       "name": "Double-tap to reply",
       "description": "Double-tap a message to reply, or your own to edit it. Triple-tap your own to delete it. Based on Geastures+ by kmmiio99o.",
+      "default": true,
+      "category": "Features",
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.discord",
+          "name": "Discord",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#5865F2",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "351.11 - Stable",
+              "versionCodes": {
+                "ARM64_V8A": 351011,
+                "ARMEABI_V7A": 351011,
+                "X86_64": 351011,
+                "X86": 351011
+              },
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Download profile pictures and banners",
+      "description": "Open a profile picture or banner and save it from the ⋯ button, like photos in chat.",
       "default": true,
       "category": "Features",
       "dependencies": [
@@ -1582,6 +1651,40 @@
       "options": []
     },
     {
+      "name": "Local bookmarks",
+      "description": "Bookmark as many messages as you like. They're kept on this phone instead of your account.",
+      "default": true,
+      "category": "Features",
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.discord",
+          "name": "Discord",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#5865F2",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "351.11 - Stable",
+              "versionCodes": {
+                "ARM64_V8A": 351011,
+                "ARMEABI_V7A": 351011,
+                "X86_64": 351011,
+                "X86": 351011
+              },
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Material You colors",
       "description": "Colors Discord to match your wallpaper, in light and dark. Wallpaper colors need Android 12 or newer.",
       "default": true,
@@ -2299,6 +2402,40 @@
     {
       "name": "Tap mentions to open profiles",
       "description": "Tap an @mention in the message bar to see who it is. Based on ClickableMentions by mwittrien.",
+      "default": true,
+      "category": "Features",
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.discord",
+          "name": "Discord",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#5865F2",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "351.11 - Stable",
+              "versionCodes": {
+                "ARM64_V8A": 351011,
+                "ARMEABI_V7A": 351011,
+                "X86_64": 351011,
+                "X86": 351011
+              },
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Time zones",
+      "description": "Set someone's time zone to see their local time on their messages and profile. Based on Timezones by Equicord.",
       "default": true,
       "category": "Features",
       "dependencies": [

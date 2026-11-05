@@ -46,7 +46,11 @@ fun main(args: Array<String>) {
         fun number(key: String) = Regex("\"$key\":([0-9]+)").find(metadata)!!.groupValues[1].toInt()
         val hbc = zip.getInputStream(zip.getEntry("assets/index.android.bundle")).readBytes()
         val header = ByteBuffer.wrap(hbc).order(ByteOrder.LITTLE_ENDIAN)
-        check(header.getInt(8) == 98 && header.getInt(32) == hbc.size && header.getInt(36) == 0)
+        // The declared length ends at the SHA-1 footer; only Venus's epilogue (the runtime's lazy chunks) may follow.
+        val declared = header.getInt(32)
+        check(header.getInt(8) == 98 && declared <= hbc.size && header.getInt(36) == 0)
+        if (declared < hbc.size) check(String(hbc, declared, app.venus.patches.HbcPrelude.EPILOGUE_MARKER.length, Charsets.US_ASCII) ==
+            app.venus.patches.HbcPrelude.EPILOGUE_MARKER) { "Bytes after the bundle's footer aren't Venus's epilogue" }
         val large = (((header.getInt(132) ushr 14) and 255) shl 24) or (header.getInt(128) and 0x1ffffff)
         val offset = header.getInt(large)
         check(offset == number("codeOffset"))
@@ -66,8 +70,8 @@ fun main(args: Array<String>) {
         check(hash.digest().joinToString("") { "%02x".format(it) } ==
             app.venus.patches.HbcPrelude.GLOBAL_SHA256) { "Discord's own global code changed under the prelude" }
         val footer = MessageDigest.getInstance("SHA-1")
-        footer.update(hbc, 0, hbc.size - 20)
-        check(footer.digest().contentEquals(hbc.copyOfRange(hbc.size - 20, hbc.size)))
+        footer.update(hbc, 0, declared - 20)
+        check(footer.digest().contentEquals(hbc.copyOfRange(declared - 20, declared)))
     }
     val dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault())
     val instances = dex.dexEntryNames.flatMap { name ->
@@ -193,6 +197,21 @@ fun main(args: Array<String>) {
     }
     check(processors.size == 1) { "Expected one native conversion extension" }
     check(processors.single().methods.any { it.name == "dispatch" })
+    // Root mounts: SoLoader's DirectApkSoSource hands its folders to NativeLibraries right before it returns, so a
+    // mounted base.apk and the stock splits never load two copies of React Native.
+    val soSources = dex.dexEntryNames.flatMap { name ->
+        dex.getEntry(name)!!.dexFile.classes.filter { it.type == "Lcom/facebook/soloader/c;" }
+    }
+    check(soSources.size == 1) { "Expected one DirectApkSoSource definition, got ${soSources.size}" }
+    val soCode = soSources.single().methods.single { it.name == "<init>" }.implementation!!.instructions.toList()
+    val soStore = soCode.indexOfLast { it.opcode == Opcode.IPUT_OBJECT && (it as ReferenceInstruction).reference.toString() == "Lcom/facebook/soloader/c;->c:Ljava/util/HashSet;" }
+    val soCall = soCode.getOrNull(soStore + 1)
+    check(soStore > 0 && soCode.getOrNull(soStore + 2)?.opcode == Opcode.RETURN_VOID && soCall?.opcode == Opcode.INVOKE_STATIC && ((soCall as ReferenceInstruction).reference as MethodReference).let {
+        it.definingClass == "Lapp/venus/diag/NativeLibraries;" && it.name == "soLoaderFolders" && it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/util/HashSet;")
+    } && (soCall as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC ==
+        (soCode[soStore] as com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction).registerA) {
+        "DirectApkSoSource no longer hands the folder set it stores to NativeLibraries"
+    }
     val promises = dex.dexEntryNames.sumOf { name ->
         dex.getEntry(name)!!.dexFile.classes.count { it.type == "Lcom/facebook/react/bridge/Promise;" }
     }
@@ -227,7 +246,7 @@ fun main(args: Array<String>) {
     ZipFile(apk).use { zip -> checkPackaging(zip, some) }
     checkManifest(apk)
     // Every Venus extension the .mpp carries made it into the APK's DEX.
-    for (pkg in listOf("audio", "chat", "diag", "emoji", "extension", "font", "i18n", "media", "monet"))
+    for (pkg in listOf("accounts", "audio", "chat", "diag", "emoji", "extension", "font", "i18n", "media", "monet"))
         check(allClasses.keys.any { it.startsWith("Lapp/venus/$pkg/") }) { "No app.venus.$pkg classes in the APK" }
     if ("signed" in args.drop(1)) {
         val verification = ApkVerifier.Builder(apk).setMinCheckedPlatformVersion(26).build().verify()

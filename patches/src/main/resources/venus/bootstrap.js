@@ -12,24 +12,24 @@
     selectModules([17, 19, 120, 1164, 2132, 11084, 15602, 15733]);
     if (features.picker) targetModules[414] = 1;
     if (features.voice) selectModules([1297, 8023, 8026]);
-    if (features.anonFiles) selectModules([8026, 8056]);
+    if (features.anonFiles) selectModules([8026, 8056, 10321, 6454]);
     if (features.copyBios) targetModules[10940] = 1;
     if (features.cleanChannels) selectModules([2068, 5521, 5512, 7635]);
     if (features.favouriteAnything) selectModules([13989, 10035, 10038]);
-    if (features.freeNitro) selectModules([1392, 2068, 6243, 6286, 4864, 15066, 7323, 7445]);
-    if (features.noTyping) targetModules[12849] = 1;
+    if (features.freeNitro) selectModules([1392, 2068, 6243, 6286, 4864, 15066, 7323, 7445, 8013, 2119, 5532]);
+    if (features.noTyping) selectModules([12849, 2068, 10596, 17245, 17433, 17434]);
     if (features.fakeDeafen) selectModules([14755, 18341]);
     if (features.quickDelete) selectModules([5400, 1128]);
-    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978, 11114]);
+    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978, 11114, 10596, 14015, 17245, 17433, 17434]);
     if (features.jumpToTop) selectModules([12920, 12921, 12922, 9683, 7445, 5532]);
     if (features.hiddenChannels) selectModules([1087, 1098, 1114, 2068, 2119, 4843, 7517, 4845, 5521, 7445, 584, 1392, 17357, 8495, 6291, 6362, 14975, 7748, 14788, 17190, 8727]);
-    if (features.pastelize) selectModules([8013, 1266, 2128]);
+    if (features.pastelize) selectModules([8013, 1266, 2128, 10531]);
     if (features.platformIndicators) selectModules([5207, 5211, 1392, 2068, 10858, 10531, 13788, 17165, 9069, 15185, 14076]);
     if (features.reviewDB) selectModules([14101, 14995, 15048, 11024, 6542, 7172, 1392, 584]);
     if (features.readAll) targetModules[17439] = 1;
     if (features.quests) selectModules([584, 7656, 10002, 14713, 14748]);
     if (features.badges) selectModules([584, 1392, 6015, 8590, 10002, 14713, 14748]);
-    if (features.systemEmoji) targetModules[7098] = 1;
+    if (features.systemEmoji) selectModules([7098, 9840, 9841]);
     if (features.gestures) selectModules([8254, 9738, 13762, 12935, 1392, 11114]);
     if (features.validUser) selectModules([584, 1392]);
     if (features.youBarSettings) targetModules[17538] = 1;
@@ -46,18 +46,19 @@
     if (features.serverInfo) selectModules([1392, 17433]);
     if (features.serverEdit) selectModules([1417, 2090, 17433, 8910, 8911, 18678]);
     if (features.fixEmbeds) selectModules([1392, 7445]);
-    if (features.tenorGifs) selectModules([1297, 10036]);
+    if (features.tenorGifs) selectModules([1297, 10036, 10044]);
     if (features.hideBlocked) selectModules([584, 2068, 2119, 4855, 5532, 7290, 7579, 12809]);
-    if (features.staffTag) targetModules[8013] = 1;
+    if (features.staffTag) selectModules([8013, 10531]);
     if (features.fullImages) selectModules([1417, 1498, 8666]);
     if (features.alwaysTrust) selectModules([8537, 8766]);
     if (features.noConfirmPin) selectModules([5400, 1128]);
     if (features.listenAlong) targetModules[14082] = 1;
     if (features.clickableMentions) selectModules([1392, 2068, 2119, 12337]);
-    if (features.expandBar) selectModules([584, 1392, 2068, 2119, 12337, 12338, 12887, 12818]);
+    if (features.expandBar) selectModules([584, 1392, 2068, 2119, 10692, 12337, 12338, 12887, 12818]);
     if (features.silentLeave) selectModules([2068, 7290]);
     if (features.silentEdit || features.silentDelete) selectModules([584, 1392, 5532, 7445]);
     if (features.localEdit) selectModules([584, 1392, 5532, 8013, 9978]);
+    if (features.localBookmarks) selectModules([584, 9980, 13587]);
     if (features.customIdle) selectModules([1087]);
     if (features.pauseInvites) selectModules([17433, 2090, 4845, 1087]);
     if (features.fastDeleteChannels) selectModules([10596, 5400, 1128, 2068, 4845, 1087]);
@@ -65,17 +66,20 @@
     if (features.platformSpoof) selectModules([14713]);
     if (features.guildLurk) targetModules[13422] = 1;
     if (features.quietReplies) selectModules([1392, 5532, 9990]);
+    if (features.timezones) selectModules([1392, 2068, 2119, 5532, 8013, 14015, 14101]);
     if (features.viewRaw) selectModules([9978, 10596, 17245, 10780, 17433, 14015, 7158, 7167]);
     if (features.compressUploads) selectModules([8023, 8046, 10006]);
     if (features.timeoutDuration) selectModules([2119, 2128, 8013]);
     if (features.dndBanners) selectModules([6015, 13511, 13523]);
-    if (features.landscapeFull) targetModules[5075] = 1;
+    if (features.landscapeFull) selectModules([5075, 5076]);
     if (features.voiceDownload) selectModules([1447, 5532, 8013, 11114]);
+    if (features.profileMedia) selectModules([1392, 8646, 8660]);
+    if (features.copyMention) targetModules[14015] = 1;
     if (features.cloneExpressions) selectModules([9839, 10078]);
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
     if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
     if (features.experiments) selectModules([584, 1392, 1403]);
-    if (features.hideAnything) selectModules([14015, 15735, 15736, 9419, 10331, 16133, 16225, 12892, 12897, 12901, 12908, 12909, 13780, 14204, 15590, 17157, 15046, 8805, 9052, 10858, 12942, 14988, 14994, 14925, 14998, 11678, 11679, 14197, 10939, 7158, 14182, 14101, 17156, 17263, 13151, 12000, 10838, 17949, 16773, 17265, 17881, 17869, 11164, 9978, 13759, 12696, 10650, 13769, 8494, 9873]);
+    if (features.hideAnything) selectModules([9847, 10078, 1202, 14015, 15735, 15736, 9419, 10331, 16133, 16225, 12892, 12897, 12901, 12908, 12909, 13780, 14204, 15590, 17157, 15046, 8805, 9052, 10858, 12942, 14988, 14994, 14925, 14998, 11678, 11679, 14197, 10939, 7158, 14182, 14101, 17156, 17263, 13151, 12000, 10838, 17949, 16773, 17265, 17881, 17869, 11164, 9978, 13759, 12696, 10650, 13769, 8494, 9873]);
     if (features.voiceOptions) { targetModules[584] = 1; targetModules[11372] = 1; targetModules[6145] = 1; }
     const revision = "1.21.1";
     // The Discord build these patches are pinned to (DiscordPatches.kt compatibleWith); shown on the About page.
@@ -86,37 +90,37 @@
     const deferred = new Map();
     // Every feature starts off: nothing changes in Discord until you turn it on. Options inside a feature keep
     // their own defaults, so turning a feature on does what it says straight away.
-    const settings = { debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
-        noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
-        jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
+    const settings = { debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, copyMention: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
+        noTyping: false, noTypingWhere: "all", noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
+        jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, pastelDms:false, pastelMembers:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
         quests:false, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true,
         badges:false, badgesGameTime:true, badgesUniqueGames:true, badgesCycleMinutes:15, badgesGamesAtOnce:2, systemFont:false, systemFontSource:"phone",
         systemEmoji:false, systemEmojiSource:"phone", gestures:false, gestureOwn:"edit", gestureTripleDelete:true,
         validUser:false, youBarSettings:false, splitMessages:false,
-        translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false, translateSkip:"",
+        translate:false, translateTarget:"discord", translateLanguage:"en", translateMode:"auto", translateAsk:"both", translateNote:true, translateOriginal:false, translateSave:true, translateSkip:"",
         userNotif:false, userNotifFriends:true, userNotifStatus:true, userNotifMessages:true, userNotifTyping:true, userNotifPush:false, userNotifLogStatus:true, userNotifLogMessages:true, userNotifLogTyping:false,
-        accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
+        accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, accountSwitcherNotifyOpen:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timeoutDuration:false, dndBanners:false, voiceDownload:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsProviders:"tenor,klipy", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", voiceOptionsRejoin:false, cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, staffTagMembers:false, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, profileMedia:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
         hypeSquad:false, customIdle:false, customIdleMinutes:10, pauseInvites:false, fastDeleteChannels:false, fastDeleteChannelsConfirm:true, fastDeleteChannelsMenu:true, mutualGroupDMs:false, platformSpoof:false, platformSpoofDevice:"desktop" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
     function defaultSettings() {
         return DEFAULT_SETTINGS || (DEFAULT_SETTINGS = Object.freeze({
-            debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
-            noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
-            jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
+            debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, copyMention: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
+            noTyping: false, noTypingWhere: "all", noTypingRules: "", quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false, noDeleteWhere: "all", noDeleteRules: "",
+            jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, pastelDms: false, pastelMembers: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
             quests: false, questsVideo: true, questsPlay: true, questsActivity: true, questsEnroll: true,
             badges: false, badgesGameTime: true, badgesUniqueGames: true, badgesCycleMinutes: 15, badgesGamesAtOnce: 2, systemFont: false, systemFontSource: "phone",
             systemEmoji: false, systemEmojiSource: "phone", gestures: false, gestureOwn: "edit", gestureTripleDelete: true,
             validUser: false, youBarSettings: false, splitMessages: false,
-            translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false, translateSkip: "",
+            translate: false, translateTarget: "discord", translateLanguage: "en", translateMode: "auto", translateAsk: "both", translateNote: true, translateOriginal: false, translateSave: true, translateSkip: "",
             userNotif: false, userNotifFriends: true, userNotifStatus: true, userNotifMessages: true, userNotifTyping: true, userNotifPush: false, userNotifLogStatus: true, userNotifLogMessages: true, userNotifLogTyping: false,
-            accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
+            accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, accountSwitcherNotifyOpen: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timeoutDuration: false, dndBanners: false, voiceDownload: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsProviders: "tenor,klipy", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", voiceOptionsRejoin: false, cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, staffTagMembers: false, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, profileMedia: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
             hypeSquad: false, customIdle: false, customIdleMinutes: 10, pauseInvites: false, fastDeleteChannels: false, fastDeleteChannelsConfirm: true, fastDeleteChannelsMenu: true, mutualGroupDMs: false, platformSpoof: false, platformSpoofDevice: "desktop"
         }));
     }
@@ -151,6 +155,7 @@
     // Keep up to takes any number up to MAX_DELETED, or 0 for No limit; the saved file keeps the newest ARCHIVE_BYTES of it.
     const MAX_DELETED = 999999, ARCHIVE_BYTES = 64 * 1024 * 1024;
     // What the Read all button clears: servers, DMs, or both.
+    const TIMEZONE_CLOCKS = ["discord", "12", "24"];
     const READ_ALL_MODES = ["guilds", "dms", "both"];
     // The devices Platform spoof can show, and Discord's own time before it sets you to Idle (minutes).
     const SPOOF_DEVICES = ["desktop", "web", "console"], CUSTOM_IDLE_DEFAULT = 10;
@@ -190,8 +195,13 @@
     // How you ask in "Only when you ask" (#82): the bar at the top of a chat, Translate in a message's menu, or both.
     // One choice instead of two switches, so there's always a way to translate.
     const TRANSLATE_ASKS = ["both", "bar", "menu"];
-    // Where the GIF picker's GIFs come from with Bring back Tenor GIFs on: Tenor first with Discord's own mixed in, or only Tenor.
-    const TENOR_SOURCES = ["both", "tenor"];
+    // Where Keep deleted messages and Hide typing indicator work (#143): everywhere apart from places you turn them off,
+    // or only places you turn them on. Both start everywhere.
+    const PLACE_WHERE = ["all", "chosen"], WHERE_SETTINGS = {noDelete:"noDeleteWhere", noTyping:"noTypingWhere"};
+    // Venus rules (#143): what a rules setting last parsed to, so a delete or a keystroke never parses it again.
+    const RULES = {cache:new Map(), folders:null, folderList:null, folderOf:null}, RULES_MAX = 500;
+    // Where the GIF picker's GIFs come from with Bring back Tenor GIFs on: any of these, mixed in this order (#156).
+    const GIF_PROVIDERS = ["tenor", "giphy", "klipy"], GIF_PROVIDER_NAMES = {tenor:"Tenor", giphy:"Giphy", klipy:"Klipy"};
     // Where Use your phone's font / emojis get their look: the phone's own, or a font file you imported.
     const FONT_SOURCES = ["phone", "file"];
     // Left bar thickness multiplier (1x = 2dp default, 2x = 4dp, 3x = 6dp, 4x = 8dp) and highlight color presets (#60).
@@ -255,6 +265,9 @@
         cachedLocale = locale;
         return cachedLocaleCode = languageFor(locale);
     }
+    // The {name} placeholder pattern, built once: a regex literal inside tr() and pl() allocated a RegExp on every call with
+    // values (Hermes HBC98: 234.4 -> 214.8 us per 100 fills, 1.09x). A global replace restarts from 0 each time.
+    const TR_PLACEHOLDER = /\{(\w+)\}/g, PL_COUNT = /\{n\}/g;
     // Every Venus text goes through here: the chosen language's wording, or the English one until it has loaded
     // (or when it has no wording for it). {name} parts are filled in afterwards, so numbers are never translated.
     function tr(text, vars) {
@@ -265,7 +278,7 @@
             if (pack) { const found = pack[text]; if (typeof found === "string" && found) out = found; }
             else loadLanguage(code);
         }
-        return vars ? out.replace(/\{(\w+)\}/g, (match, name) => vars[name] != null ? String(vars[name]) : match) : out;
+        return vars ? out.replace(TR_PLACEHOLDER, (match, name) => vars[name] != null ? String(vars[name]) : match) : out;
     }
     // Which plural form a whole number takes in each Venus language (CLDR's rules). Discord's Hermes has no
     // Intl.PluralRules, so these are built in: Russian needs "21 перевод" and "22 перевода", French "0 traduction".
@@ -292,8 +305,8 @@
         let text;
         if (forms && typeof forms === "object") text = typeof forms[kind] === "string" ? forms[kind] : typeof forms.other === "string" ? forms.other : tr(kind === "one" ? one : other);
         else text = tr(kind === "one" ? one : other);
-        const out = text.replace(/\{n\}/g, String(n));
-        return vars ? out.replace(/\{(\w+)\}/g, (match, name) => vars[name] != null ? String(vars[name]) : match) : out;
+        const out = text.replace(PL_COUNT, String(n));
+        return vars ? out.replace(TR_PLACEHOLDER, (match, name) => vars[name] != null ? String(vars[name]) : match) : out;
     }
     function loadLanguage(code) {
         if (code === "en" || i18n.packs.has(code) || i18n.loading.has(code) || !files || typeof files.readAsset !== "function") return;
@@ -371,6 +384,8 @@
         if (features.materialYou && materialYou.system) extra.materialYouSystem = materialYou.system;
         if (features.serverEdit && serverEdits.size) extra.serverEdits = serverEditData(false);
         if (features.localEdit && localEdits.size) extra.localEdits = localEditData();
+        if (features.timezones && timezoneUsers.size) extra.timezoneUsers = tzData();
+        if (features.voiceOptions && voiceRejoin.saved) extra.voiceRejoin = voiceRejoin.saved;
         if ((features.nitroThemes || features.accountSwitcher) && nitroThemeHasAny()) extra.nitroThemes = nitroThemeData();
         return JSON.stringify(Object.keys(extra).length ? Object.assign({}, settings, extra) : settings);
     }
@@ -440,14 +455,20 @@
                 raw.cleanChannelsEmoji = false; raw.cleanChannelsSymbols = false; raw.cleanChannelsFonts = false;
             }
         }
+        // GIFs from used to be Tenor and Discord's GIFs, or only Tenor; now it's any of Tenor, Giphy and Klipy (#156).
+        if (raw && typeof raw === "object" && raw.tenorGifsProviders === undefined && typeof raw.tenorGifsSource === "string")
+            raw.tenorGifsProviders = raw.tenorGifsSource === "tenor" ? "tenor" : "tenor,klipy";
         return raw;
     }
     // A saved or imported value for one setting, cleaned up, or undefined when it can't be used. Shared by the settings
     // file and by restoring a backup, so a hand-edited backup can never put a setting in a state the pages can't show.
     function acceptedSetting(key, value) {
         if (!owns(settings, key) || typeof value !== typeof settings[key]) return undefined;
-        if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
-            key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
+        // Every switch (165 of the 199 settings) is a plain boolean with no rule of its own below, so it is accepted as is.
+        // Only the number and text settings have rules; a boolean setting that ever needs one must be handled above this line.
+        if (typeof value === "boolean") return value;
+        if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "timezonesClock" && !TIMEZONE_CLOCKS.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
+            key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
             (key === "systemFontSource" || key === "systemEmojiSource") && !FONT_SOURCES.includes(value) ||
             key === "messageHighlightThickness" && !HIGHLIGHT_THICKNESSES.includes(value) || key === "language" && !isLanguage(value)) return undefined;
         if (key === "messageHighlightPingColor" || key === "noDeleteColor") return isHighlightColor(value) ? normalizeHighlightColor(value) : undefined;
@@ -455,12 +476,15 @@
         if (key === "noDeleteLimit") return deleteLimit(value);
         if (key === "voiceOptionsVolumeLevel" || key === "voiceOptionsSoundVolume") return brightness(value);
         if (key === "listenAlongOffset") return listenAlongOffsetValue(value);
+        if (key === "tenorGifsProviders") return gifProvidersText(value);
         if (key === "badgesCycleMinutes") return badgeCycleMinutes(value);
         if (key === "badgesGamesAtOnce") return badgeAtOnce(value);
         if (key === "fixEmbedsSites") return fixSitesText(value);
         if (key === "fixEmbedsOptions") return fixOptionsClean(value);
         if (key === "translateSkip") return translateSkipText(value);
         if (key === "guildLurkIds") return guildLurkText(value);
+        if (key === "noDeleteRules" || key === "noTypingRules") return rulesText(value);
+        if (key === "noDeleteWhere" || key === "noTypingWhere") return PLACE_WHERE.includes(value) ? value : undefined;
         if (key === "customIdleMinutes") return customIdleValue(value);
         if (key === "platformSpoofDevice") return SPOOF_DEVICES.includes(value) ? value : undefined;
         if (key === "backgroundMediaSkip") return [5, 10, 15, 30].includes(value) ? value : undefined;
@@ -501,6 +525,11 @@
             if (clean === undefined) return false;
             if (settings.hideAnythingSpots === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings.hideAnythingSpots = clean; dirty.add(key); save(); notify(key); return true;
+        }
+        if (key === "timezonesClock") {
+            if (!TIMEZONE_CLOCKS.includes(value)) return false;
+            if (settings.timezonesClock === value && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.timezonesClock = value; dirty.add(key); save(); notify(key); later(tzRedraw, 0); return true;
         }
         if (key === "readAllMode") {
             if (!READ_ALL_MODES.includes(value)) return false;
@@ -549,10 +578,11 @@
             if (settings[key] === level && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings[key] = level; dirty.add(key); save(); notify(key); return true;
         }
-        if (key === "tenorGifsSource") {
-            if (!TENOR_SOURCES.includes(value)) return false;
-            if (settings.tenorGifsSource === value && status.storage !== "loading" && status.storage !== "waiting") return true;
-            settings.tenorGifsSource = value; dirty.add(key); save(); notify(key); return true;
+        if (key === "tenorGifsProviders") {
+            const clean = gifProvidersText(value);
+            if (clean === undefined) return false;
+            if (settings.tenorGifsProviders === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings.tenorGifsProviders = clean; dirty.add(key); save(); notify(key); return true;
         }
         if (key === "fixEmbedsOptions") {
             const clean = fixOptionsClean(value);
@@ -565,6 +595,12 @@
             if (clean === undefined) return false;
             if (settings.translateSkip === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings.translateSkip = clean; dirty.add(key); save(); notify(key); translateChanged(); return true;
+        }
+        if (key === "noDeleteRules" || key === "noTypingRules" || key === "noDeleteWhere" || key === "noTypingWhere") {
+            const clean = acceptedSetting(key, value);
+            if (clean === undefined) return false;
+            if (settings[key] === clean && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings[key] = clean; dirty.add(key); save(); notify(key); return true;
         }
         if (key === "guildLurkIds") {
             const clean = guildLurkText(value);
@@ -683,6 +719,7 @@
         notify(key);
         if (features.translate && key === "translate" && value) translateRestore();
         if (features.translate && featureFor(key) === "translate") later(translateChanged, 0);
+        if (features.translate && key === "translateSave") translateSaveChanged(value);
         if (features.userNotif && key === "userNotifPush" && value && status.storage !== "loading" && status.storage !== "waiting") later(() => userNotifRequestPermissions(false), 0);
         if (features.userNotif && featureFor(key) === "userNotif") userNotifSync();
         if (features.removedAlerts && key === "removedAlertsPush" && value && status.storage !== "loading" && status.storage !== "waiting") later(() => userNotifRequestPermissions(false), 0);
@@ -693,14 +730,18 @@
         if (features.customThemes && key === "customThemesBackground") customThemesApply();
         if (features.nitroThemes && key === "nitroThemes") { if (!value) nitroThemeTurnedOff(); nitroThemeRecheck(); }
         if (features.accountSwitcher && key === "accountSwitcherShare") nitroThemeShareChanged(value);
-        if (features.accountSwitcher && (key === "accountSwitcherNotify" || key === "accountSwitcher")) later(accountSwitcherPushResync, 0);
+        if (features.accountSwitcher && (key === "accountSwitcherNotify" || key === "accountSwitcher")) { later(accountSwitcherPushResync, 0); later(() => accountSwitcherNativeUser(), 0); }
         if (features.materialYou && key === "materialYou") { if (value) myStart(); customThemesApply(); if (features.iconPacks) iconPacksApply(); }
         if (features.iconPacks && key === "iconPacks") { if (value) iconPacksRestore(); iconPacksApply(); }
         if (features.iconPacks && key === "iconPacksTheme") iconPacksApply();
         if (features.messageHighlight && key === "messageHighlight") later(messageHighlightRedraw, 0);
         if (features.hideBlocked && featureFor(key) === "hideBlocked") hideBlockedChanged();
         if (features.staffTag && featureFor(key) === "staffTag") later(staffTagChanged, 0);
+        if (features.freeNitro && key === "freeNitro") later(nitroLinksRedraw, 0);
+        if (features.voiceOptions && (key === "voiceOptionsRejoin" || key === "voiceOptions")) voiceRejoinRemember(enabled("voiceOptions") && settings.voiceOptionsRejoin && voiceOptions.channelId ? String(voiceOptions.channelId) : null);
+        if (features.timezones && featureFor(key) === "timezones") later(tzRedraw, 0);
         if (features.bulkDelete && key === "bulkDelete" && !value) bulkDeleteCancel();
+        if (features.localBookmarks && key === "localBookmarks") { if (value) bookmarksRestore(); bookmarksChanged(); }
         if (features.bulkDelete && (key === "bulkDeleteIncludeCached" || key === "noDelete") && bulkDelete.active) { bulkDeletePruneKept(); bulkDeleteRedrawAll(); }
         if (features.experiments && key === "experiments") { if (value) experimentsEnable(); else if (experiments.unlocked && !backup.restoring) later(experimentsAskReopen, 0); }
         if (features.quests || features.badges || features.userNotif || features.removedAlerts) backgroundSync();
@@ -726,15 +767,20 @@
                 const loaded = JSON.parse(text);
                 if (!loaded || typeof loaded !== "object" || Array.isArray(loaded)) throw new Error("Invalid preferences");
                 migrateSettings(loaded);
+                // One pass over the settings: the keys whose saved value was refused are noted here for the debug log, which used to
+                // run acceptedSetting over every key a second time just to find them.
+                let rejected = null;
                 for (const key of Object.keys(settings)) {
-                    const value = dirty.has(key) ? undefined : acceptedSetting(key, loaded[key]);
+                    if (dirty.has(key)) continue;
+                    const saved = loaded[key], value = acceptedSetting(key, saved);
                     if (value !== undefined) settings[key] = value;
+                    else if (saved !== undefined) (rejected || (rejected = [])).push(key);
                 }
                 if (settings.debugLog) try {
-                    const rejected = Object.keys(settings).filter(key => loaded[key] !== undefined && !dirty.has(key) && acceptedSetting(key, loaded[key]) === undefined);
-                    const unknown = Object.keys(loaded).filter(key => !owns(settings, key));
-                    dlog("I", "settings", "read the settings file: " + dlogBytes(text.length) + ", " + Object.keys(loaded).length + " entries" +
-                        (rejected.length ? "; ignored values that aren't valid for " + rejected.join(", ") : "") +
+                    const loadedKeys = Object.keys(loaded);
+                    const unknown = loadedKeys.filter(key => !owns(settings, key));
+                    dlog("I", "settings", "read the settings file: " + dlogBytes(text.length) + ", " + loadedKeys.length + " entries" +
+                        (rejected ? "; ignored values that aren't valid for " + rejected.join(", ") : "") +
                         (unknown.length ? "; kept alongside: " + unknown.slice(0, 25).join(", ") : ""));
                 } catch (_) {}
                 if (typeof loaded.lastBackup === "number" && Number.isFinite(loaded.lastBackup) && !backup.last) backup.last = loaded.lastBackup;
@@ -759,6 +805,8 @@
                 if (features.removedAlerts) removedLoad(loaded.removedSeen);
                 if (features.serverEdit && !serverEdit.dirty) serverEditLoad(serverEditClean(loaded.serverEdits, false));
                 if (features.localEdit) localEditLoad(loaded.localEdits);
+                if (features.timezones && !tz.dirty) tzLoad(loaded.timezoneUsers);
+                if (features.voiceOptions) voiceRejoinLoad(loaded.voiceRejoin);
                 if (features.badges) {
                     const accounts = loaded.badgesAccounts, played = loaded.badgesPlayed, snowflake = id => typeof id === "string" && /^\d{17,20}$/.test(id);
                     if (Array.isArray(accounts)) accounts.slice(0, 50).forEach(id => { if (snowflake(id)) badges.accounts.add(id); });
@@ -780,6 +828,7 @@
             }
             status.storage = "ready";
             debugLogReady();
+            if (features.voiceOptions) { voiceRejoin.loaded = true; voiceRejoinTry(); }
             if (features.backgroundMedia) backgroundMediaStart();
             if (features.nitroThemes && settings.nitroThemes) nitroThemeRecheck();
             if ((features.nitroThemes || features.accountSwitcher) && nitroThemeHasAny()) later(nitroThemeReapply, 0);
@@ -801,10 +850,14 @@
                 removedSync();
                 if (enabled("removedAlerts") && settings.removedAlertsPush) userNotifCheckPermissions();
             }
-            if (features.accountSwitcher) { accountSwitcherSync(); if (enabled("accountSwitcher")) later(accountSwitcherPushResync, 0); }
+            if (features.accountSwitcher) {
+                accountSwitcherSync(); accountSwitcherNativeWatch();
+                if (enabled("accountSwitcher")) { later(accountSwitcherPushResync, 0); later(() => accountSwitcherNativeUser(), 0); }
+            }
             if (features.customThemes && enabled("customThemes")) customThemesRestore();
             if (features.materialYou && enabled("materialYou")) { myStart(); customThemesApply(); }
             if (features.iconPacks && enabled("iconPacks")) iconPacksRestore();
+            if (features.localBookmarks) bookmarksRestore();
             if (features.hideBlocked && enabled("hideBlocked")) hideBlockedChanged();
             if (features.experiments && enabled("experiments")) experimentsEnable();
             if (features.quests || features.badges || features.userNotif || features.removedAlerts) backgroundSync();
@@ -821,16 +874,21 @@
         });
     }
 
+    // Binary units, labelled the way Android and Discord show them. Promote a value that
+    // would round to "1024 KB" (log rounding just below a boundary) to "1 MB".
+    const SIZE_UNITS = ["B", "KB", "MB", "GB", "TB"];
     function formatSize(bytes) {
         if (!Number.isFinite(bytes) || bytes < 0) return "";
         if (bytes === 0) return "0 B";
-        // Binary units, labelled the way Android and Discord show them. Promote a value that
-        // would round to "1024 KB" (log rounding just below a boundary) to "1 MB".
-        const units = ["B", "KB", "MB", "GB", "TB"];
-        let unit = Math.max(0, Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1));
-        let value = Number((bytes / Math.pow(1024, unit)).toFixed(unit ? 2 : 0));
-        if (value >= 1024 && unit < units.length - 1) { unit++; value = Number((bytes / Math.pow(1024, unit)).toFixed(2)); }
-        return value + " " + units[unit];
+        // Five units, so pick one with comparisons: the old Math.log/Math.pow pair cost real time on every
+        // media-picker tile, and Hermes has no JIT to fold it away. Same output for every input (checked over
+        // 5,015 values including each boundary, 0, negatives, NaN and Infinity).
+        // Hermes HBC98: 437.5 -> 343.8 us per 385 sizes (1.27x).
+        let unit = 0, scale = 1;
+        while (unit < 4 && bytes >= scale * 1024) { scale *= 1024; unit++; }
+        let value = Number((bytes / scale).toFixed(unit ? 2 : 0));
+        if (value >= 1024 && unit < 4) { unit++; scale *= 1024; value = Number((bytes / scale).toFixed(2)); }
+        return value + " " + SIZE_UNITS[unit];
     }
     // Hermes's native eval configuration can lower loop-local const/let to var.
     // Give asynchronous callbacks an invocation scope, not a loop capture.
@@ -1080,6 +1138,8 @@
     // and players work. Alt text and clip titles are the user's own words and are left alone.
     const ANON_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", ANON_LENGTH = 10;
     const anonNames = new WeakMap();
+    // Files you chose to send with their real name (#143), from the checkbox in Discord's attachment sheet.
+    const anonKept = new WeakSet(), anonKeptIds = new Set();
     // Crypto-quality bytes when the runtime has them, Math.random otherwise (Hermes on Android has no crypto).
     function anonBytes(n) {
         const out = new Uint8Array(n), c = global.crypto;
@@ -1101,7 +1161,7 @@
         return (/^SPOILER_/i.test(text) ? "SPOILER_" : "") + stem + (/^[a-z0-9]{1,10}$/.test(ext) ? "." + ext : "");
     }
     function anonNameFor(upload) {
-        if (!upload || typeof upload !== "object") return null;
+        if (!upload || typeof upload !== "object" || anonKept.has(upload) || upload.id != null && anonKeptIds.has(String(upload.id))) return null;
         const real = typeof upload.filename === "string" ? upload.filename : null;
         if (!real) return null;
         const known = anonNames.get(upload);
@@ -1110,6 +1170,39 @@
         const name = anonFileName(real);
         anonNames.set(upload, {from:real, name});
         return name;
+    }
+    // The sheet Discord opens when you tap a file you're about to send (UploadPreviewActionSheet 10321, {upload}) gets one more
+    // checkbox under Mark as spoiler: Random file name, with the name it will be sent as. Unticked, that one file keeps its real
+    // name; nothing else changes.
+    function AnonFileRow(props) {
+        useSettings("anonFiles");
+        const upload = props.upload, CheckboxRow = inspectedExport(6454, "TableCheckboxRow");
+        const kept = () => anonKept.has(upload) || upload.id != null && anonKeptIds.has(String(upload.id));
+        const [, redraw] = React.useState(0);
+        if (!CheckboxRow || !enabled("anonFiles")) return null;
+        const on = !kept(), name = on ? anonNameFor(upload) : null;
+        const flip = () => {
+            haptic("SELECTION");
+            if (on) { anonKept.add(upload); if (upload.id != null) anonKeptIds.add(String(upload.id)); }
+            else { anonKept.delete(upload); if (upload.id != null) anonKeptIds.delete(String(upload.id)); }
+            redraw(n => n + 1);
+        };
+        return el(CheckboxRow, {label:tr("Random file name"), subLabel:on && name ? tr("Sent as {name}", {name}) : tr("Sent with its real name"),
+            icon:rowIcon(6927, "EyeSlashIcon"), checked:on, onPress:flip});
+    }
+    function anonUploadSheet(orig, self, args) {
+        const tree = orig.apply(self, args), props = args[0], upload = props && props.upload && (props.upload.item || props.upload);
+        if (!enabled("anonFiles") || !React || !tree || !upload || typeof upload !== "object" || typeof upload.filename !== "string") return tree;
+        const CheckboxRow = inspectedExport(6454, "TableCheckboxRow");
+        if (!CheckboxRow) return tree;
+        let added = false;
+        return cloneTree(tree, (node, nodeProps) => {
+            if (added || !Array.isArray(nodeProps.children)) return nodeProps;
+            const kids = nodeProps.children, last = kids.map(k => k && k.type === CheckboxRow).lastIndexOf(true);
+            if (last < 0) return nodeProps;
+            added = true;
+            return Object.assign({}, nodeProps, {children:kids.slice(0, last + 1).concat([el(AnonFileRow, {key:"venus-anon", upload})], kids.slice(last + 1))});
+        }, 0, () => added);
     }
     function anonPayload(orig, self, args) {
         const result = orig.apply(self, args);
@@ -1180,7 +1273,7 @@
     const featureFor = key => {
         const cached = featureTable[key];
         if (cached !== undefined) return cached;
-        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : key === "pastelAll" || key === "pastelContent" ? "pastelize" : key === "readAllMode" ? "readAll" : /^compressUploads[A-Z]/.test(key) ? "compressUploads" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : /^expandBar[A-Z]/.test(key) ? "expandBar" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^viewRaw[A-Z]/.test(key) ? "viewRaw" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : /^customIdle[A-Z]/.test(key) ? "customIdle" : /^fastDeleteChannels[A-Z]/.test(key) ? "fastDeleteChannels" : /^platformSpoof[A-Z]/.test(key) ? "platformSpoof" : /^silentEdit[A-Z]/.test(key) ? "silentEdit" : /^localEdit[A-Z]/.test(key) ? "localEdit" : /^listenAlong[A-Z]/.test(key) ? "listenAlong" : /^backgroundMedia[A-Z]/.test(key) ? "backgroundMedia" : /^fakeDeafen[A-Z]/.test(key) ? "fakeDeafen" : key;
+        return featureTable[key] = key === "reviewWarning" ? "reviewDB" : key === "emojis" || key === "stickers" || key === "hyperlinks" ? "freeNitro" : /^noDelete[A-Z]/.test(key) ? "noDelete" : /^pi[A-Z]/.test(key) ? "platformIndicators" : /^pastel[A-Z]/.test(key) ? "pastelize" : key === "readAllMode" ? "readAll" : /^compressUploads[A-Z]/.test(key) ? "compressUploads" : /^quests[A-Z]/.test(key) ? "quests" : /^badges[A-Z]/.test(key) ? "badges" : /^gesture[A-Z]/.test(key) ? "gestures" : /^translate[A-Z]/.test(key) ? "translate" : /^removedAlerts[A-Z]/.test(key) ? "removedAlerts" : /^userNotif[A-Z]/.test(key) ? "userNotif" : /^accountSwitcher[A-Z]/.test(key) ? "accountSwitcher" : /^hiddenChannels[A-Z]/.test(key) ? "hiddenChannels" : /^customThemes[A-Z]/.test(key) ? "customThemes" : /^materialYou[A-Z]/.test(key) ? "materialYou" : /^iconPacks[A-Z]/.test(key) ? "iconPacks" : /^messageHighlight[A-Z]/.test(key) ? "messageHighlight" : /^serverInfo[A-Z]/.test(key) ? "serverInfo" : /^fixEmbeds[A-Z]/.test(key) ? "fixEmbeds" : /^tenorGifs[A-Z]/.test(key) ? "tenorGifs" : /^hideBlocked[A-Z]/.test(key) ? "hideBlocked" : /^bulkDelete[A-Z]/.test(key) ? "bulkDelete" : /^expandBar[A-Z]/.test(key) ? "expandBar" : key === "systemFontSource" ? "systemFont" : key === "systemEmojiSource" ? "systemEmoji" : /^cleanChannels[A-Z]/.test(key) ? "cleanChannels" : /^voiceOptions[A-Z]/.test(key) ? "voiceOptions" : /^anonFiles[A-Z]/.test(key) ? "anonFiles" : /^noTyping[A-Z]/.test(key) ? "noTyping" : /^staffTag[A-Z]/.test(key) ? "staffTag" : /^fullImages[A-Z]/.test(key) ? "fullImages" : /^alwaysTrust[A-Z]/.test(key) ? "alwaysTrust" : /^quietReplies[A-Z]/.test(key) ? "quietReplies" : /^viewRaw[A-Z]/.test(key) ? "viewRaw" : /^timezones[A-Z]/.test(key) ? "timezones" : /^hideAnything[A-Z]/.test(key) ? "hideAnything" : /^guildLurk[A-Z]/.test(key) ? "guildLurk" : /^customIdle[A-Z]/.test(key) ? "customIdle" : /^fastDeleteChannels[A-Z]/.test(key) ? "fastDeleteChannels" : /^platformSpoof[A-Z]/.test(key) ? "platformSpoof" : /^silentEdit[A-Z]/.test(key) ? "silentEdit" : /^localEdit[A-Z]/.test(key) ? "localEdit" : /^listenAlong[A-Z]/.test(key) ? "listenAlong" : /^backgroundMedia[A-Z]/.test(key) ? "backgroundMedia" : /^fakeDeafen[A-Z]/.test(key) ? "fakeDeafen" : key;
     };
     // Section titles are read whenever Discord draws the list, so they follow the language too. "Venus" is a name.
     function section(label, keys) {
@@ -1211,11 +1304,11 @@
         quickDelete:[6573, "CircleXIcon"], jumpToTop:[10796, "ArrowLargeUpIcon"], favouriteAnything:[9851, "StarIcon"],
         freeNitro:[9327, "NitroWheelIcon"], voice:[13531, "WaveformIcon"], splitMessages:[9641, "PaperIcon"], noTyping:[13747, "KeyboardIcon"],
         picker:[10327, "AttachmentIcon"], anonFiles:[6927, "EyeSlashIcon"], pastelize:[16320, "PaintPaletteIcon"], platformIndicators:[15994, "LaptopPhoneIcon"],
-        validUser:[8490, "AtIcon"], copyBios:[5141, "CopyIcon"], reviewDB:[9658, "ThumbsUpIcon"], readAll:[16684, "DoubleCheckmarkIcon"],
+        validUser:[8490, "AtIcon"], copyBios:[5141, "CopyIcon"], copyMention:[8490, "AtIcon"], reviewDB:[9658, "ThumbsUpIcon"], readAll:[16684, "DoubleCheckmarkIcon"],
         hiddenChannels:[8495, "LockIcon"], systemFont:[16730, "LettersIcon"], systemEmoji:[13827, "ChatSmileIcon"],
         youBarSettings:[7368, "SettingsIcon"], quests:[13929, "QuestsIcon"],
         badges:[9211, "TrophyIcon"], userNotif:[9045, "BellIcon"], accountSwitcher:[8489, "GroupIcon"], appIcons:[8506, "AppsIcon"],
-        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"],
+        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timezones:[9393, "GlobeEarthIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], profileMedia:[8487, "ImageIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"], localBookmarks:[13592, "BookmarkIcon"],
         hypeSquad:[18747, "HomeIcon"], customIdle:[14205, "UserClockIcon"], pauseInvites:[8676, "PauseIcon"], fastDeleteChannels:[18679, "ChannelListIcon"], mutualGroupDMs:[8489, "GroupIcon"], platformSpoof:[5133, "UserPlatformIcon"]};
     const venusIcons = new Map();
     function venusIcon(id, name, fallback) {
@@ -1248,18 +1341,19 @@
     }
     // Features list search (#68): every row is found by its title, its description, its page's title, its group and the
     // names of the options on its page, in the language Venus is shown in and in English, ignoring case and accents.
-    const FEATURE_KEYWORDS = {hideAnything:["Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate"],
-        freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
+    const FEATURE_KEYWORDS = {hideAnything:["Get Nitro buttons", "Emoji and sticker menus", "Removal mode", "Message menu", "Quick reactions", "Voice message button", "Video call button", "Message requests", "Add Friends button", "New message button", "Quests banner", "Attach menu", "Polls", "Photos"], systemFont:["Import a font", "Font file"], systemEmoji:["Import an emoji font", "Emoji font"], noDelete:["Show edit history", "Keep after restarting", "Color", "Brightness", "Keep up to", "No limit", "Message log", "What to log", "Dismiss message", "Remove edit history", "Where it works", "Only places you choose", "Keep deleted messages here", "Stop keeping deleted messages here"],
+        noTyping:["Where it works", "Only places you choose", "Hide my typing here", "Stop hiding my typing here"], translate:["Show the original language", "Show the original text", "Another language", "How you ask", "Top bar", "Message menu", "Don't translate", "Keep after restarting", "Saving"],
+        freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text", "Only in DMs and groups", "In the member list"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
-        userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "Same theme on every account"],
+        userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "While Discord is open", "Same theme on every account"],
         hiddenChannels:["Show its details"], serverEdit:["Edit locally", "Name", "Icon", "Server icon", "Choose from your phone", "Use a link"], serverInfo:["Look up friends in the server", "Boosts", "Owner", "Server ID"], customThemes:["Show theme background image", "Browse Revenge themes"],
         messageHighlight:["Brightness", "Left bar width"], iconPacks:["Rosiecord", "Plumpy", "Iconsax", "Material", "MD3", "Solar", "Deco", "Themes+", "Follow theme's icon pack"],
         fixEmbeds:["Remove tracking from links", "X (Twitter)", "Twitter", "Instagram", "TikTok", "Reddit", "Bluesky", "Threads", "Tumblr", "Facebook", "Mastodon", "YouTube", "Twitch", "Spotify", "pixiv", "Bilibili", "DeviantArt", "Fur Affinity", "Pinterest", "PTT",
             "FxTwitter", "vxTwitter", "fxtumblr", "Dark Tumblr posts", "embed", "Imgur", "Newgrounds",
-            "Post style", "Translate posts", "Full post", "Media", "Text", "File", "Translate", "Gallery", "Service", "Settings", "Dark posts"], tenorGifs:["Tenor", "GIF", "GIFs", "Klipy", "GIFs from", "Only Tenor"],
+            "Post style", "Translate posts", "Full post", "Media", "Text", "File", "Translate", "Gallery", "Service", "Settings", "Dark posts"], tenorGifs:["Tenor", "Giphy", "Klipy", "GIF", "GIFs", "GIFs from"],
         hideBlocked:["Blocked messages", "Ignored messages", "Replies to them", "Remove blocked users", "RemoveBlockedUsers", "Close their DM", "blocked", "ignored", "replies"],
-        anonFiles:["File names", "Random name", "Privacy", "Rename"],
-        staffTag:["Owner", "Admin", "Manager", "Mod", "Crown", "Staff", "Moderator", "Tags", "Staff tags", "StaffTag", "Label", "Badge"],
+        anonFiles:["File names", "Random name", "Privacy", "Rename", "Random file name"],
+        staffTag:["In the member list", "Owner", "Admin", "Manager", "Mod", "Crown", "Staff", "Moderator", "Tags", "Staff tags", "StaffTag", "Label", "Badge"],
         alwaysTrust:["AlwaysTrust", "Always Trust", "Leaving Discord", "Untrusted domain", "Suspicious file", "Dangerous download", "Links", "Downloads"],
         noConfirmPin:["NoConfirmPin", "Pin", "Unpin", "Pinned messages"],
         listenAlong:["Listen along", "Spotify", "Music", "Friends", "Profile", "Sync"],
@@ -1269,6 +1363,7 @@
         silentEdit:["Silent edit", "Edited", "(edited)", "Edit message", "No edit mark"],
         silentDelete:["Silent delete", "Anti log", "Message logger", "Delete without logs"],
         localEdit:["Local edit", "Edit locally", "Fake message", "Edit other people's messages"],
+        localBookmarks:["Bookmark Message", "Reminders", "Saved messages", "Unlimited bookmarks"],
         hypeSquad:["HypeSquad", "House", "Bravery", "Brilliance", "Balance", "Badge"],
         customIdle:["Custom idle", "Idle", "AFK", "Away", "Idle timeout", "Status"],
         pauseInvites:["Pause invites", "Invites", "Lock invites", "Raid", "Security"],
@@ -1279,10 +1374,12 @@
         guildLurk:["GuildLurk", "Guild lurk", "Lurk", "Lurker", "Preview", "Invite link", "Server ID"],
         timeoutDuration:["Timeout", "Timed out", "Muted", "Mute", "Communication disabled", "Moderation", "ShowTimeoutDuration"],
         cloneExpressions:["Clone", "Copy", "Steal", "Emoji", "Emojis", "Sticker", "Stickers", "Expressions", "ExpressionCloner", "Add to a server"],
+        profileMedia:["Profile picture", "Profile pictures", "Avatar", "Banner", "Banners", "Download", "Save"],
         voiceDownload:["Voice message", "Voice messages", "Download", "Save", "Audio", "Recording", "VoiceDownload"],
         dndBanners:["Do Not Disturb", "DND", "Banner", "Banners", "In-app notifications", "Pop-up", "Focus"],
         landscapeFull:["Landscape", "Sideways", "Rotate", "Full screen", "Sidebar", "Channel list"],
         compressUploads:["Compress", "Compression", "Shrink", "Smaller", "Resize", "File size", "Too big", "Too large", "Upload limit", "Size limit", "Nitro", "Video", "Photo", "Audio", "Attachments"],
+        timezones:["Time zone", "Timezone", "Local time", "Clock", "UTC", "GMT", "Offset", "12-hour", "24-hour", "Daylight saving", "Timezones"],
         viewRaw:["Raw", "JSON", "Data", "Developer", "Inspect", "Debug", "ID", "IDs", "Message", "Channel", "Thread", "Forum", "Server", "User", "Role", "Copy", "ViewRaw"],
         quietReplies:["Ping", "Pings", "Mention", "Mentions", "Reply", "Replies", "@ ON", "@ OFF", "Notification", "Servers", "Group DMs", "When they mentioned you", "Silent replies", "No ping"],
         fullImages:["High-res profile pictures", "HighResProfileImages", "Avatars", "Profile pictures", "Banners", "Uncompressed", "Uncompressed images", "Original", "Full quality", "Lossless", "Compression", "Blurry", "Thumbnail", "Resolution", "Pictures", "Photos"],
@@ -1290,7 +1387,8 @@
         cleanChannels:["Emoji", "Symbols and dividers", "Fancy letters", "Spaces instead of dashes", "Spaces in channel names", "general chat", "Categories", "Channel names", "Decorations"],
         experiments:["Dev Tools", "Experiments", "Experiment", "Developer", "Staff"],
         noHandsfree:["Bluetooth", "Headphones", "Hands-free", "Calls", "Voice channels", "Microphone"],
-        voiceOptions:["Soundboard", "Goodbye sound", "Call volume", "Chime volume", "Mute everyone", "Speaker", "Earpiece", "Bluetooth", "Wired headset", "Headphones", "Output", "Join chime", "Leave chime", "Voice channels", "Notification", "Mute"],
+        copyMention:["Mention", "Mentions", "Copy", "User ID", "CopyUserMention"],
+        voiceOptions:["Rejoin the call", "Rejoin", "Reconnect", "VoiceRejoin", "Soundboard", "Goodbye sound", "Call volume", "Chime volume", "Mute everyone", "Speaker", "Earpiece", "Bluetooth", "Wired headset", "Headphones", "Output", "Join chime", "Leave chime", "Voice channels", "Notification", "Mute"],
         fakeDeafen:["Deafen", "Fake deafen", "Headphones", "Calls", "Voice channels", "Microphone"],
         bulkDelete:["Select Messages", "Select all", "Delete", "Clear kept deleted messages", "Include kept deleted messages", "Ask before deleting"],
         badges:["Game time", "Unique games", "Switch games every", "Games at once", "Add hours now", "Advanced", "Hours Played", "Unique Games Played", "Years Active", "Personalization"]};
@@ -1750,11 +1848,11 @@
             () => ({page:FreeNitroSettings, sections:[section("Send as links", [option("emojis", "Emojis", "Emojis from other servers, and animated emojis.", "VENUS_FREENITRO"),
                 option("stickers", "Stickers", "Stickers from other servers. Animated ones may not move.", "VENUS_FREENITRO")]),
              section("Link style", [option("hyperlinks", "Short links", "In chat it looks the same either way. Short links only change what's copied or quoted.", "VENUS_FREENITRO")])]}));
-        withOptions("sending", "tenorGifs", "VENUS_TENORGIFS", "Bring back Tenor GIFs", "Tenor GIFs show in Discord's GIF picker again.", "Tenor GIFs", TenorSettings);
+        withOptions("sending", "tenorGifs", "VENUS_TENORGIFS", "Bring back Tenor GIFs", "Tenor and Giphy GIFs in Discord's GIF picker, with a switcher by the search bar.", "Tenor GIFs", TenorSettings);
         withOptions("sending", "fixEmbeds", "VENUS_FIXEMBEDS", "Fix link previews", "Links to X, Instagram, TikTok, Tumblr and more show the post.", "Link previews", FixEmbedsSettings);
         toggle("sending", "voice", "Send audio as voice messages", "Audio files are sent as voice messages. Android 10 or newer.");
         toggle("sending", "splitMessages", "Send long messages", "Type past the limit. Long messages are sent in parts.");
-        toggle("sending", "noTyping", "Hide typing indicator", "Others won't see when you're typing.");
+        withOptions("sending", "noTyping", "VENUS_NOTYPING", "Hide typing indicator", "Others won't see when you're typing.", "Hide typing indicator", NoTypingSettings);
         toggle("sending", "picker", "Show file sizes when attaching", "Photos and videos in the picker show their size.");
         toggle("sending", "anonFiles", "Anonymous file names", "Files you send get a random name instead of the one on your phone.");
         withOptions("sending", "compressUploads", "VENUS_COMPRESSUPLOADS", "Compress big files", "Photos, videos and audio over Discord's file size limit are made smaller to fit as you send them, instead of being refused.", "Compress big files", CompressUploadsSettings);
@@ -1775,6 +1873,8 @@
              section("Avatars", [option("piHideMobile", "Hide the phone badge", "Avatars show a plain status dot, since the icons already show mobile.", "VENUS_PLATFORMINDICATORS")])]}));
         toggle("people", "validUser", "Fix unknown mentions", "Shows names instead of @unknown-user.");
         toggle("people", "copyBios", "Copy profile bios", "Hold a bio to select and copy it.");
+        toggle("people", "copyMention", "Copy mentions", "Copy anyone's mention from the \u22ef menu on their profile.");
+        toggle("people", "profileMedia", "Download profile pictures and banners", "Open a profile picture or banner and save it from the \u22ef button, like photos in chat.");
         toggle("servers", "cloneExpressions", "Clone emojis and stickers", "Tap a custom emoji or sticker in chat to add it to one of your servers.");
         toggle("people", "timeoutDuration", "Show timeout duration", "A tag next to timed-out people says how long until they can talk again.");
         withOptions("people", "hypeSquad", "VENUS_HYPESQUAD", "HypeSquad house", "Join or leave a HypeSquad house from here.", "HypeSquad", HypeSquadSettings);
@@ -1785,6 +1885,8 @@
         withOptions("messages", "silentEdit", "VENUS_SILENTEDIT", "Edit without the (edited) mark", "Only works when your message is the latest in the chat. Others see a new message, not an edit.", "Silent edit", SilentEditSettings);
         toggle("messages", "silentDelete", "Delete without a trace", "Blanks your message before deleting it, so message loggers have nothing to keep.");
         withOptions("messages", "localEdit", "VENUS_LOCALEDIT", "Edit messages locally", "Change how any message reads on this phone. Only you see it.", "Edit locally", LocalEditSettings);
+        toggle("messages", "localBookmarks", "Local bookmarks", "Bookmark as many messages as you like. They're kept on this phone instead of your account.");
+        withOptions("people", "timezones", "VENUS_TIMEZONES", "Time zones", "Set someone's time zone to see their local time on their messages and profile.", "Time zones", TimezonesSettings);
         withOptions("people", "reviewDB", "VENUS_REVIEWDB", "User and server reviews", "Read and write ReviewDB reviews on profiles and servers.", "Reviews", ReviewSettings);
         withOptions("people", "userNotif", "VENUS_USERNOTIF", "User activity notifications", "Get notified when chosen people change status, type or message.", "Activity notifications", UserNotifSettings);
         // The two logs open from their feature's page, one level below it, like Discord's own nested settings.
@@ -2512,7 +2614,7 @@
             settings[key] !== defaults[key]).length;
         return {on:keys.filter(key => settings[key]).length, total:keys.length, changed, people:features.userNotif ? userNotif.ids.size : 0,
             themes:features.customThemes ? customThemes.list.length : 0, servers:features.serverEdit ? serverEdits.size : 0,
-            iconPacks:features.iconPacks ? (iconPacks.active ? 1 : 0) + iconPacks.custom.length : 0,
+            iconPacks:features.iconPacks ? (iconPacks.active ? 1 : 0) + iconPacks.custom.length : 0, bookmarks:features.localBookmarks ? bookmarks.list.size : 0,
             language:settings.language !== "auto", hidden:hiddenFeatureKeys().length};
     }
     function backupIsDefault() {
@@ -2528,6 +2630,8 @@
         // Pictures from this phone stay on it: a backup keeps the names and the icons that are links.
         if (features.serverEdit && serverEdits.size) { const servers = serverEditData(true); if (Object.keys(servers).length) out.servers = servers; }
         if (features.localEdit && localEdits.size) out.localEdits = localEditData();
+        if (features.timezones && timezoneUsers.size) out.timezones = tzData();
+        if (features.localBookmarks && bookmarks.list.size) return bookmarkBackupText(out);
         return JSON.stringify(out, null, 1);
     }
     // A backup, or a plain venus-patches.json settings file, read back. Throws a message you can show when it isn't one.
@@ -2568,6 +2672,7 @@
             const act = typeof data.iconPacks.active === "string" ? normalizeIconPackId(data.iconPacks.active) : "";
             packs = {custom, active:act};
         }
+        const marks = wrapped && Array.isArray(data.bookmarks) ? data.bookmarks.slice(0, BOOKMARKS_MAX).map(bookmarkClean).filter(Boolean) : null;
         const created = wrapped && typeof data.created === "string" ? Date.parse(data.created) : NaN;
         const servers = wrapped && data.servers ? serverEditClean(data.servers, true) : null;
         let edited = null;
@@ -2578,7 +2683,8 @@
                 if (/^\d{17,20}:\d{17,20}$/.test(key) && typeof text === "string" && text.length <= LOCAL_EDIT_TEXT) edited.set(key, text);
             });
         }
-        return {values, people, themes, iconPacks:packs, servers, localEdits:edited, version:wrapped && typeof data.version === "string" ? data.version.slice(0, 24) : "", created:Number.isFinite(created) ? created : 0};
+        const zones = wrapped && data.timezones ? tzClean(data.timezones) : null;
+        return {values, people, themes, iconPacks:packs, servers, localEdits:edited, timezones:zones, bookmarks:marks, version:wrapped && typeof data.version === "string" ? data.version.slice(0, 24) : "", created:Number.isFinite(created) ? created : 0};
     }
     // Puts a backup in place: every setting it has, the rest back to how Venus starts. Switches go through setSetting,
     // so everything they start or stop (Quests, themes, kept messages) happens as if you'd flipped them yourself.
@@ -2613,6 +2719,11 @@
                 localEdits.clear(); parsed.localEdits.forEach((text, key) => localEdits.set(key, text));
                 save(); notify("localEdit");
                 before.concat(Array.from(localEdits.keys())).forEach(key => { const at = key.indexOf(":"); localEditRedraw(key.slice(0, at), key.slice(at + 1)); });
+            }
+            if (features.localBookmarks && parsed.bookmarks) bookmarksReplace(parsed.bookmarks);
+            if (features.timezones && parsed.timezones) {
+                timezoneUsers.clear(); parsed.timezones.forEach((zone, id) => timezoneUsers.set(id, zone));
+                tz.dirty = true; save(); notify("timezones"); later(tzRedraw, 0);
             }
             if (features.iconPacks && parsed.iconPacks) {
                 iconPacks.loaded = true; iconPacks.custom = parsed.iconPacks.custom; iconPacks.active = parsed.iconPacks.active; iconPacks.error = "";
@@ -2730,6 +2841,7 @@
             what.themes ? chip("themes", 16412, "EyeDropperIcon", pl(what.themes, "{n} theme", "{n} themes")) : null,
             what.servers ? chip("servers", 10023, "PencilIcon", pl(what.servers, "{n} server edited", "{n} servers edited")) : null,
             what.iconPacks ? chip("iconPacks", 11449, "ImageSparkleIcon", pl(what.iconPacks, "{n} icon pack", "{n} icon packs")) : null,
+            what.bookmarks ? chip("bookmarks", 13592, "BookmarkIcon", pl(what.bookmarks, "{n} bookmark", "{n} bookmarks")) : null,
             what.hidden ? chip("hidden", 6927, "EyeSlashIcon", pl(what.hidden, "{n} feature hidden", "{n} features hidden")) : null,
             what.language ? chip("language", 9415, "LanguageIcon", languageLabel(settings.language)) : null];
         const backupRow = (key, label, sub, id, name, onPress, disabled) => Row ? el(Row, {key, label:tr(label), subLabel:tr(sub), icon:rowIcon(id, name), arrow:true,
@@ -2855,7 +2967,8 @@
     // Dividers left at either end once what they divided is gone ("| SUPPORT & RESOURCE |").
     const CLEAN_EDGE = /^[\s\-_.:;,|~/\\·•・]+|[\s\-_.:;,|~/\\·•・]+$/g;
     const cleanNames = new Map();
-    let cleanVersion = "";
+    // The four options the cache was filled under: compared one by one, not as a string built on every call.
+    let cleanSeenE, cleanSeenS, cleanSeenF, cleanSeenD, cleanSeen = false;
     // opts: {emoji, symbols, fonts} (all true for the preview's "everything" pass), slug: text-style names joined by hyphens.
     function cleanName(name, slug, opts) {
         const out = [];
@@ -2890,17 +3003,17 @@
         // Nothing readable left (a name of only emoji or symbols): keep Discord's.
         return /[0-9A-Za-z\u00c0-\uffff]/.test(result) ? result : name;
     }
-    // The options as one short key, so the cache below is dropped whenever one changes.
-    function cleanOptionsKey() {
-        return (settings.cleanChannelsEmoji ? "e" : "") + (settings.cleanChannelsSymbols ? "s" : "") + (settings.cleanChannelsFonts ? "f" : "") + (settings.cleanChannelsSpaces ? "d" : "");
-    }
     // The cleaned name with every option applied, in order: decorations first, then dashes, so "🎫┃quick-help" becomes
     // "quick help". One cache for both steps: a channel label is read on every render of the channel list.
     function cleanFormat(channel, name) {
         if (!channel || typeof name !== "string" || !name || !enabled("cleanChannels") || !CLEAN_TYPES.has(channel.type)) return name;
-        const version = cleanOptionsKey();
-        if (!version) return name;
-        if (version !== cleanVersion) { cleanNames.clear(); cleanVersion = version; }
+        // Read on every channel label render: the cache is dropped whenever one of the options changes, and comparing four
+        // booleans replaces building a key string each time (Hermes HBC98: 19.0 -> 8.2 us per 60 channel rows, 2.33x).
+        const e = !!settings.cleanChannelsEmoji, s = !!settings.cleanChannelsSymbols, f = !!settings.cleanChannelsFonts, d = !!settings.cleanChannelsSpaces;
+        if (!e && !s && !f && !d) return name;
+        if (!cleanSeen || e !== cleanSeenE || s !== cleanSeenS || f !== cleanSeenF || d !== cleanSeenD) {
+            cleanNames.clear(); cleanSeenE = e; cleanSeenS = s; cleanSeenF = f; cleanSeenD = d; cleanSeen = true;
+        }
         const slug = DASHLESS_TYPES.has(channel.type), key = (slug ? "#" : "") + name;
         const cached = cleanNames.get(key);
         if (cached !== undefined) return cached;
@@ -3315,9 +3428,14 @@
     // startTyping(channelId) and stopTyping(channelId) take one argument: the one-argument call skips the arguments
     // object and apply (Hermes HBC98: 35.6 -> 16.4 us per 100 calls, 1.97x).
     function typing(orig, self, args) {
-        return enabled("noTyping") ? undefined : orig.apply(self, args);
+        return typingHidden(args[0]) ? undefined : orig.apply(self, args);
     }
-    typing.call1 = (orig, self, channelId) => enabled("noTyping") ? undefined : orig.call(self, channelId);
+    typing.call1 = (orig, self, channelId) => typingHidden(channelId) ? undefined : orig.call(self, channelId);
+    // Where your typing is hidden (#143): a place you turned it on or off for (the channel, its server or its folder), then
+    // Where it works.
+    function typingHidden(channelId) {
+        return enabled("noTyping") && placeOn("noTyping", channelId, null);
+    }
     // Fake deafen: look deafened to everyone else while you can still hear. The mic is really muted, and the voice state
     // Discord sends (LocalVoiceStateManager 14755, didCommit) says muted and deafened. It lasts only while the mic stays
     // muted, so nothing you do can leave you talking while you look deafened. It's switched from the voice controls
@@ -3643,6 +3761,13 @@
         if (Array.isArray(items) && items.length) raw.sticker_items = items.filter(Boolean).map(item =>
             ({id:item.id, name:item.name, format_type:item.format_type != null ? item.format_type : item.formatType}));
         if (Array.isArray(message.stickers) && message.stickers.length) raw.stickers = message.stickers;
+        // Components V2 messages (#145) keep all their text, images and buttons in components (flags carries
+        // IS_COMPONENTS_V2), so without them a kept one came back empty after a restart. createMessageRecord copies the
+        // saved list onto the record as it is, so it returns in the same shape the live record had.
+        // A component list that can't be saved as JSON still keeps the rest of the message.
+        if (Array.isArray(message.components) && message.components.length) {
+            try { return JSON.parse(JSON.stringify(Object.assign({}, raw, {components:message.components}))); } catch (_) {}
+        }
         return JSON.parse(JSON.stringify(raw));
     }
     // A new color or brightness for kept messages reaches chat at once: Discord redraws a row when its message
@@ -3690,6 +3815,9 @@
         const entry = bucket && bucket.get(deletedKey(channelId, messageId));
         return entry ? entry.message : orig.call(self, channelId, messageId);
     };
+    // Tested once per kept message and once per message of the window on every merge: built once, not as a literal in the loop
+    // (Hermes HBC98: 2.25 -> 1.72 ms per 3000-message window with 200 kept messages, 1.31x).
+    const ALL_DIGITS = /^\d+$/;
     function retainedMessages(orig, self, args) {
         const result = orig.apply(self,args), channelId = args[0];
         if (!deletedByChannel.size || !enabled("noDelete") || !result) return result;
@@ -3701,13 +3829,13 @@
         const first = array && array.length ? String(array[0].id) : null, last = array && array.length ? String(array[array.length - 1].id) : null;
         const older = (a, b) => a.length - b.length || (a === b ? 0 : a < b ? -1 : 1);
         // Whether this window has numeric bounds is the same for every kept message: check it once.
-        const bounded = first !== null && /^\d+$/.test(first);
+        const bounded = first !== null && ALL_DIGITS.test(first);
         // Never paste a retained message into a window that doesn't contain its position;
         // that produced out-of-place rows above unloaded history or below an older jump.
         const records = [];
         bucket.forEach(entry => {
             const id = String(entry.id);
-            if (bounded && /^\d+$/.test(id)) {
+            if (bounded && ALL_DIGITS.test(id)) {
                 if (older(id, first) < 0 && result.hasMoreBefore === true) return;
                 if (older(id, last) > 0 && result.hasMoreAfter === true) return;
             }
@@ -3724,7 +3852,7 @@
             const array = copy._array, count = array.length, items = new Array(count);
             for (let i = 0; i < count; i++) {
                 const text = String(array[i].id);
-                items[i] = {message:array[i], id:/^\d+$/.test(text) ? text : null};
+                items[i] = {message:array[i], id:ALL_DIGITS.test(text) ? text : null};
             }
             items.sort((a,b) => {
                 const left = a.id, right = b.id;
@@ -3751,6 +3879,7 @@
         if (silentRemoving.size && silentRemoving.has(key)) return false;
         const message = msgStore && msgStore.getMessage(event.channelId,event.id);
         if (!retainable(message, event)) return false;
+        if (!noDeleteAllowed(event.channelId, message.author && message.author.id)) return false;
         logMessage("d", message, event.channelId, message.content || "");
         while (deleted.size >= keepCap()) {
             const pending = dropDeleted(deleted.keys().next().value);
@@ -3823,6 +3952,7 @@
         try { current = msgStore.getMessage(update.channel_id, update.id); } catch (_) { return; }
         const before = current && current.content;
         if (typeof before !== "string" || before === update.content) return;
+        if (!noDeleteAllowed(update.channel_id, current.author && current.author.id)) return;
         logMessage("e", current, update.channel_id, update.content, before);
         if (!settings.noDeleteEdits) return;
         const key = deletedKey(update.channel_id, update.id);
@@ -3844,14 +3974,15 @@
     // own native block quote, subtext and strikethrough nodes, so it follows the theme and font like any message.
     // Plain text only, so an old version can never ping anyone or open a link.
     // Its last line is a small "Remove edit history" link that removes it on the spot (#130).
+    // Discord's native renderer ends every subtext line by itself, so the lines follow each other with no break node
+    // between them: one there left an empty line above Remove edit history (#145).
     function editHistoryNodes(entry) {
         if (entry.view) return entry.view;
         const lines = [];
-        entry.versions.forEach((version, index) => {
-            if (index) lines.push({type:"br"});
+        entry.versions.forEach(version => {
             lines.push({type:"subtext", content:[{type:"s", content:[{type:"text", content:version.content || "(empty)"}]}]});
         });
-        lines.push({type:"br"}, {type:"subtext", content:[noDeleteLink(tr("Remove edit history"), NODELETE_HISTORY, entry.channelId, entry.id, "")]});
+        lines.push({type:"subtext", content:[noDeleteLink(tr("Remove edit history"), NODELETE_HISTORY, entry.channelId, entry.id, "")]});
         entry.view = {type:"blockQuote", content:lines};
         return entry.view;
     }
@@ -4044,6 +4175,249 @@
         const count = Array.isArray(message.attachments) ? message.attachments.length : 0;
         if (count) entry.f = count;
         logAdd(logs.messages, entry);
+    }
+    // Places (#143): a server, folder, channel, DM, group or person where Keep deleted messages or Hide typing indicator is
+    // turned on or off, against Where it works. Hold any of them (or open a person's ⋯ menu): one row per feature says what
+    // tapping does, worded the same way for both ("Stop keeping deleted messages here", "Stop hiding my typing here"). Saved as "kind+id:+/-" pairs (g server,
+    // f folder, c channel, u person) in one setting per feature, so backups carry them like anything else. The most
+    // specific one wins: a person, then the channel (or the channel a thread is in, then its category), then the server,
+    // then its folder. So keeping one person in a channel you never keep keeps only them.
+    const RULE_SETTINGS = {noDelete:"noDeleteRules", noTyping:"noTypingRules"};
+    function rulesParse(text) {
+        let hit = RULES.cache.get(text);
+        if (hit) return hit;
+        hit = new Map();
+        if (text) text.split(",").forEach(part => { const m = /^([gfcu])(\d{1,20}):([+-])$/.exec(part); if (m) hit.set(m[1] + m[2], m[3] === "+"); });
+        if (RULES.cache.size > 8) RULES.cache.clear();
+        RULES.cache.set(text, hit);
+        return hit;
+    }
+    function rulesText(raw) {
+        if (typeof raw !== "string" || raw.length > 16000) return undefined;
+        const seen = new Map();
+        raw.split(",").forEach(part => { const m = /^([gfcu])(\d{1,20}):([+-])$/.exec(part.trim()); if (m) { seen.delete(m[1] + m[2]); seen.set(m[1] + m[2], m[3]); } });
+        return Array.from(seen).slice(-RULES_MAX).map(([key, value]) => key + ":" + value).join(",");
+    }
+    // The folder a server sits in, from SortedGuildStore (6219), rebuilt only when Discord hands out a new folder list.
+    function rulesFolders() {
+        const store = RULES.folders || (RULES.folders = inspectedExport(6219, "default"));
+        let list = null;
+        try { list = store && typeof store.getGuildFolders === "function" ? store.getGuildFolders() : null; } catch (_) { list = null; }
+        return Array.isArray(list) ? list : [];
+    }
+    function rulesFolderOf(guildId) {
+        const list = rulesFolders();
+        if (RULES.folderList !== list) {
+            RULES.folderList = list; RULES.folderOf = new Map();
+            list.forEach(folder => { if (folder && folder.folderId != null && Array.isArray(folder.guildIds)) folder.guildIds.forEach(id => RULES.folderOf.set(String(id), folder)); });
+        }
+        return RULES.folderOf.get(String(guildId)) || null;
+    }
+    function rulesChannel(id) {
+        try { const store = channelStore || inspectedExport(2068, "default"); return store && id != null ? store.getChannel(String(id)) : null; } catch (_) { return null; }
+    }
+    // true / false from the most specific rule that matches, or undefined when none does.
+    function placeRule(text, channelId, userId) {
+        if (!text) return undefined;
+        const rules = rulesParse(text);
+        if (!rules.size) return undefined;
+        let rule = userId != null ? rules.get("u" + userId) : undefined;
+        if (rule !== undefined || channelId == null) return rule;
+        let channel = rulesChannel(channelId), id = String(channelId);
+        for (let depth = 0; depth < 3; depth++) {
+            rule = rules.get("c" + id);
+            if (rule !== undefined) return rule;
+            if (!channel || !channel.parent_id) break;
+            id = String(channel.parent_id); channel = rulesChannel(id);
+        }
+        channel = rulesChannel(channelId);
+        const guild = channel && channel.guild_id;
+        if (!guild) return undefined;
+        rule = rules.get("g" + guild);
+        if (rule !== undefined) return rule;
+        const folder = rulesFolderOf(guild);
+        return folder ? rules.get("f" + folder.folderId) : undefined;
+    }
+    // Whether a feature works here: the closest place you turned it on or off for, else Where it works.
+    function placeOn(feature, channelId, userId) {
+        const rule = placeRule(settings[RULE_SETTINGS[feature]], channelId, userId);
+        return rule !== undefined ? rule : settings[WHERE_SETTINGS[feature]] !== "chosen";
+    }
+    // Keep deleted messages: whether a message here, from this person, is kept and logged.
+    function noDeleteAllowed(channelId, authorId) { return placeOn("noDelete", channelId, authorId); }
+    // quiet: a switch already buzzes by itself (FormSwitch), so the sheet's switches skip the extra haptic.
+    function rulesSet(feature, key, value, quiet) {
+        const setting = RULE_SETTINGS[feature], map = new Map(rulesParse(settings[setting]));
+        map.delete(key);
+        if (value !== undefined) map.set(key, value);
+        if (!quiet) haptic("SELECTION");
+        animateLayout();
+        setSetting(setting, Array.from(map).map(([k, v]) => k + ":" + (v ? "+" : "-")).join(","));
+    }
+    function ruleLabel(value) { return value ? tr("On here") : tr("Off here"); }
+    // Which features a place can have an exception for: people only matter to Keep deleted messages.
+    function rulesFeaturesFor(kind) {
+        return Object.keys(RULE_SETTINGS).filter(feature => features[feature] && enabled(feature) && (kind !== "u" || feature === "noDelete"));
+    }
+    function rulesPlaceInfo(key) {
+        const kind = key.charAt(0), id = key.slice(1), users = userStore || inspectedExport(1392, "default");
+        if (kind === "g") {
+            let guild = null;
+            try { const store = inspectedExport(2090, "default"); guild = store && store.getGuild(id); } catch (_) {}
+            return {kind:tr("Server"), name:guild && guild.name || tr("Unknown server"), icon:rowIcon(9545, "ServerIcon")};
+        }
+        if (kind === "f") {
+            const folder = rulesFolders().find(entry => entry && String(entry.folderId) === id);
+            return {kind:tr("Folder"), name:folder && folder.folderName || tr("Folder"), icon:rowIcon(8474, "FolderIcon")};
+        }
+        if (kind === "u") {
+            let user = null;
+            try { user = users && users.getUser(id); } catch (_) {}
+            return {kind:tr("Person"), name:user && (user.globalName || user.username) || id, icon:rowIcon(11671, "UserIcon")};
+        }
+        const channel = rulesChannel(id);
+        if (channel && channel.type === 1) {
+            let user = null;
+            try { user = users && channel.recipients && users.getUser(channel.recipients[0]); } catch (_) {}
+            return {kind:tr("Direct message"), name:user && (user.globalName || user.username) || id, icon:rowIcon(8471, "ChatIcon")};
+        }
+        if (channel && channel.type === 3) return {kind:tr("Group DM"), name:mutualGroupName(channel), icon:rowIcon(8489, "GroupIcon")};
+        return {kind:tr("Channel"), name:channel && channel.name ? (channel.type === 4 ? channel.name : "#" + channel.name) : id, icon:rowIcon(18679, "ChannelListIcon")};
+    }
+    // The places above one, closest first: a channel (or thread) looks at its parent channels, then its server, then the
+    // server's folder; a server looks at its folder.
+    function rulesChainOf(key) {
+        const kind = key.charAt(0), id = key.slice(1), chain = [key];
+        let guild = kind === "g" ? id : null, channel = null;
+        if (kind === "c") {
+            channel = rulesChannel(id);
+            let parent = channel;
+            for (let depth = 0; parent && parent.parent_id && depth < 2; depth++) { chain.push("c" + parent.parent_id); parent = rulesChannel(parent.parent_id); }
+            if (channel && channel.guild_id) { guild = String(channel.guild_id); chain.push("g" + guild); }
+        }
+        if (guild) { const folder = rulesFolderOf(guild); if (folder) chain.push("f" + folder.folderId); }
+        return {chain, channel, server:kind === "g" || kind === "f" || !!guild};
+    }
+    // What a place gets right now (true = kept / typing hidden): its own exception, else the closest one above it, else the
+    // feature's settings. skipOwn asks what it would get without its own exception.
+    function ruleNow(feature, key, skipOwn) {
+        const rules = rulesParse(settings[RULE_SETTINGS[feature]]), info = rulesChainOf(key);
+        for (let i = skipOwn ? 1 : 0; i < info.chain.length; i++) { const value = rules.get(info.chain[i]); if (value !== undefined) return value; }
+        return settings[WHERE_SETTINGS[feature]] !== "chosen";
+    }
+    // Tapping a menu row does the opposite of what the place gets now. When that's what it would get anyway (the server or
+    // your settings already say so), its exception is removed instead of saving one that changes nothing.
+    function rulesFlip(feature, key, quiet) {
+        const next = !ruleNow(feature, key);
+        rulesSet(feature, key, next === ruleNow(feature, key, true) ? undefined : next, quiet);
+    }
+    function ruleRowLabel(feature, key) {
+        const now = ruleNow(feature, key);
+        if (feature === "noTyping") return now ? tr("Stop hiding my typing here") : tr("Hide my typing here");
+        if (key.charAt(0) === "u") return now ? tr("Stop keeping their deleted messages") : tr("Keep their deleted messages");
+        return now ? tr("Stop keeping deleted messages here") : tr("Keep deleted messages here");
+    }
+    // Each feature's own icon, so the two rows look alike and say which feature they are.
+    function ruleRowIcon(feature) { return feature === "noTyping" ? venusIcon(13747, "KeyboardIcon") : venusIcon(5148, "TrashIcon"); }
+    // Hold menus stay short: with one feature on, its row toggles it straight away; with both, a single Venus options row
+    // opens a small sheet for that place with one switch per feature, instead of two long rows in Discord's menu.
+    const RULES_SHEET = "VenusPlaceOptions";
+    function PlaceOptionsSheet(props) {
+        useSettings();
+        const ui = reviewUI(), key = props.place, info = rulesPlaceInfo(key), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
+        const rows = Switch ? rulesFeaturesFor(key.charAt(0)).map(feature => el(Switch, {key:feature,
+            label:feature === "noTyping" ? tr("Hide typing indicator") : tr("Keep deleted messages"),
+            icon:feature === "noTyping" ? rowIcon(13747, "KeyboardIcon") : rowIcon(5148, "TrashIcon"),
+            value:ruleNow(feature, key), onValueChange:() => rulesFlip(feature, key, true)})) : [];
+        const Sheet = ui.ActionSheet || RN.View;
+        return el(Sheet, {startExpanded:true},
+            ui.Header ? el(ui.Header, {title:info.name, subtitle:info.kind, trailing:ui.Close ? el(ui.Close, {onPress:() => hideReviewSheet(ui, RULES_SHEET)}) : undefined}) : null,
+            el(RN.View, {style:{paddingHorizontal:16, paddingBottom:24}}, el(Group, {key:"options"}, rows)));
+    }
+    function rulesOpen(key) {
+        const ui = reviewUI();
+        if (!React || !RN || typeof ui.showSheet !== "function") return;
+        try { ui.showSheet({key:RULES_SHEET, content:el(PlaceOptionsSheet, {place:key}), stackingBehavior:"stack"}); } catch (_) {}
+    }
+    function rulesItems(key) {
+        const list = rulesFeaturesFor(key.charAt(0));
+        if (list.length > 1) return [{IconComponent:venusIcon(7368, "SettingsIcon"), label:tr("Venus options"), action:() => later(() => rulesOpen(key), 60)}];
+        return list.map(feature => ({IconComponent:ruleRowIcon(feature), label:ruleRowLabel(feature, key),
+            action:() => later(() => rulesFlip(feature, key), 60)}));
+    }
+    // The server icon's menu (17433) and a folder's (GuildsBarFolderMenuItems 17434): one row per feature, in the same shape.
+    function rulesServerMenu(orig, self, args) {
+        const items = orig.apply(self, args), id = args[0] == null ? "" : String(args[0]);
+        return Array.isArray(items) && /^\d{17,20}$/.test(id) ? items.concat(rulesItems("g" + id)) : items;
+    }
+    function rulesFolderMenu(orig, self, args) {
+        const items = orig.apply(self, args), raw = args[0];
+        const id = String(raw != null && typeof raw === "object" ? (raw.folderId != null ? raw.folderId : raw.id) : raw);
+        return Array.isArray(items) && /^\d{1,20}$/.test(id) ? items.concat(rulesItems("f" + id)) : items;
+    }
+    // Channel, DM, group and thread menus: rows like Discord's own, the way View raw data adds one.
+    function rulesChannelHook(sheetKey) {
+        return sheetInnerHook(function (tree, props) {
+            if (!React || !tree || !props) return tree;
+            const channel = props.channel || props.thread || props.post, id = String(props.channelId || channel && channel.id || "");
+            if (!/^\d{17,20}$/.test(id)) return tree;
+            const key = "c" + id, list = rulesFeaturesFor("c");
+            if (list.length > 1) return sheetAddRow(tree, props, "venus-rules", tr("Venus options"), venusIcon(7368, "SettingsIcon"), () => rulesOpen(key), sheetKey(id));
+            return list.reduce((out, feature) => sheetAddRow(out, props, "venus-rules-" + feature, ruleRowLabel(feature, key), ruleRowIcon(feature),
+                () => rulesFlip(feature, key), sheetKey(id)), tree);
+        });
+    }
+    const rulesChannelMenu = rulesChannelHook(id => "ChannelLongPress-" + id);
+    const rulesThreadMenu = rulesChannelHook(() => "ThreadLongPressActionSheet");
+    // A person's ⋯ menu: Keep deleted messages can keep or skip what they write.
+    function rulesProfileMenu(orig, self, args) {
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!React || !rendered || !props || !rulesFeaturesFor("u").length) return rendered;
+        const userId = String(props.userId || props.user && props.user.id || ""), Menu = inspectedExport(9662, "ContextMenu"), me = currentUser();
+        if (!Menu || !/^\d{17,20}$/.test(userId) || me && me.id === userId) return rendered;
+        const key = "u" + userId, item = {label:ruleRowLabel("noDelete", key), venusRules:true, action:() => later(() => rulesFlip("noDelete", key), 60)};
+        return cloneTree(rendered, (node, nodeProps) => {
+            if (node.type !== Menu || !Array.isArray(nodeProps.items) || nodeProps.items.some(entry => entry && entry.venusRules || Array.isArray(entry) && entry.some(e => e && e.venusRules))) return nodeProps;
+            const items = nodeProps.items, last = items[items.length - 1], grouped = items.some(Array.isArray);
+            const danger = Array.isArray(last) && last.some(entry => entry && entry.variant === "destructive");
+            return Object.assign({}, nodeProps, {items:!grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]])});
+        }, 0);
+    }
+    // Where it works and the places you changed, the same on both pages: Everywhere (apart from places you turn it off) or
+    // Only places I choose (the ones you turn it on for), then those places, each with an X.
+    function RulesList(props) {
+        useSettings(props.feature);
+        const ui = reviewUI(), feature = props.feature, on = !!props.on, Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
+        const Press = RN.Pressable || RN.TouchableOpacity || RN.View, Remove = venusIcon(6485, "XSmallIcon"), chosen = settings[WHERE_SETTINGS[feature]] === "chosen";
+        const rules = Array.from(rulesParse(settings[RULE_SETTINGS[feature]]));
+        const rows = Row ? rules.map(([key, value]) => {
+            const info = rulesPlaceInfo(key);
+            return el(Row, {key, label:info.name, subLabel:info.kind + " \u00b7 " + ruleLabel(value), icon:info.icon, disabled:!on,
+                trailing:el(Press, {onPress:() => rulesSet(feature, key, undefined), disabled:!on, hitSlop:12, accessibilityRole:"button",
+                    accessibilityLabel:tr("Remove: {name}", {name:info.name})}, el(Remove, {size:"sm"}))});
+        }) : [];
+        const icons = [rowIcon(9393, "GlobeEarthIcon"), rowIcon(9851, "StarIcon")];
+        const title = chosen ? tr("On in these places") : tr("Off in these places");
+        const hint = feature === "noDelete" ?
+            footnote("hint", "Hold a server, folder, channel or DM, or open someone's \u22ef menu, to turn it on or off there.") :
+            footnote("hint", "Hold a server, folder, channel or DM to turn it on or off there.");
+        return el(RN.View, {key:"places", style:{gap:20}},
+            feature === "noDelete" ?
+                radioGroup(ui, "where", "Where it works", "noDeleteWhere", on, [["all", "Everywhere", "Keeps deleted messages everywhere, except places you turn it off.", icons[0]],
+                    ["chosen", "Only places you choose", "Keeps them only in places you turn it on.", icons[1]]]) :
+                radioGroup(ui, "where", "Where it works", "noTypingWhere", on, [["all", "Everywhere", "Hides your typing everywhere, except places you turn it off.", icons[0]],
+                    ["chosen", "Only places you choose", "Hides it only in places you turn it on.", icons[1]]]),
+            el(RN.View, {key:"list", style:{gap:8}}, rows.length ? el(Group, {key:"rows", title}, rows) : groupTitle("title", title), hint));
+    }
+    function NoTypingSettings() {
+        useSettings("noTyping");
+        const ui = reviewUI();
+        if (!React || !RN) return null;
+        const on = enabled("noTyping"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
+        const groups = [
+            on ? null : offCard("status", venusIcon(13747, "KeyboardIcon"), "noTyping"),
+            el(RulesList, {key:"places", feature:"noTyping", on})];
+        return settingsBody(ui, groups);
     }
     // A kept message's hold menu (LongPressMessageActionSheet 9978): Dismiss for a deleted message, Remove edit history
     // for an edited one, first in the menu, besides the links in the chat (#130).
@@ -4661,6 +5035,8 @@
     }
     function pastelMessage(message, source) {
         if (!message || !message.authorId) return message;
+        // Only in DMs and groups (#143): every name in a server keeps Discord's own color.
+        if (settings.pastelDms && message.guildId) return message;
         const webhook = pastelWebhook(message,source);
         if (message.guildId && (!guildMembers || !guildMembers.getMember(message.guildId,message.authorId)) && !webhook) return message;
         let seed;
@@ -4914,9 +5290,14 @@
             const enums=readAllExports().renderSections, separator=enums && typeof enums.SEPARATOR==="number" ? enums.SEPARATOR : 6;
             const itemSize=data.itemSize, renderItem=data.renderItem;
             listDataProps=Object.assign({},data,{
-                itemSize:function (section) { const size=itemSize.apply(this,arguments); return section===separator && enabled("readAll") ? size+READ_ALL_HEIGHT : size; },
-                renderItem:function (section) {
-                    const node=renderItem.apply(this,arguments);
+                // Called for every row of the server bar with one or two arguments: those skip the arguments object and apply
+                // (Hermes HBC98: 32.2 -> 28.3 us per 100 row sweeps, 1.14x).
+                itemSize:function (section, a) {
+                    const n=arguments.length, size=n===1 ? itemSize.call(this,section) : n===2 ? itemSize.call(this,section,a) : itemSize.apply(this,arguments);
+                    return section===separator && enabled("readAll") ? size+READ_ALL_HEIGHT : size;
+                },
+                renderItem:function (section, a) {
+                    const n=arguments.length, node=n===1 ? renderItem.call(this,section) : n===2 ? renderItem.call(this,section,a) : renderItem.apply(this,arguments);
                     if (section!==separator || !enabled("readAll")) return node;
                     if (settings.debugLog && !readAllTrace.rendered) {
                         readAllTrace.rendered=true;
@@ -5212,14 +5593,19 @@
     // QuestVariants.MOBILE_ACTIVITY_QUEST: an Activity Quest that Discord's phone app reports itself.
     const QUEST_MOBILE_ACTIVITY = 36;
     // Discord answers 401 when a phone reports play time, so Play and Activity heartbeats are sent as Discord
-    // Stable for Windows: host 1.0.9265, web build 652418 (the client discord.com serves a desktop app on launch; the site
+    // Stable for Windows: host 1.0.9267, web build 663810 (the client discord.com serves a desktop app on launch; the site
     // ships several builds a day and a desktop session keeps the one it loaded, so a recent one is as real as the newest),
-    // updater metadata 96160 (what desktop sends as native_build_number), Electron 42.11.15, Chrome 148.0.7778.280.
-    // Read from the 1.0.9265 package (Discord.exe, build_info.json, core.asar) and the live updater manifest.
+    // updater metadata 97793 (what desktop sends as native_build_number), Electron 44.10.0, Chrome 152.0.7977.169.
+    // Read from the 1.0.9267 package (Discord.exe, build_info.json), the live updater manifest and discord.com/app.
+    // The updater marks each host as a required update, so an older host can't launch: claiming one that Discord no
+    // longer ships, with a launch id that says it just started, describes a client that can't exist.
     // Bump all of them together when Discord does.
-    // brands is the sec-ch-ua Electron 42.11.15 sends (captured from the real binary; Chromium picks the grease brand per major).
-    const QUEST_DESKTOP = {version:"1.0.9265", build:652418, native:96160, electron:"42.11.15", chrome:"148.0.7778.280",
-        osVersion:"10.0.26100", osSdk:"26100", brands:'"Not/A)Brand";v="99", "Chromium";v="148"'};
+    // brands is the sec-ch-ua Electron 44 sends. Chromium derives the grease brand from the major version: with
+    // chars = [" ", "(", ":", "-", ".", "/", ")", ";", "=", "?", "_"], it is "Not" + chars[major % 11] + "A" +
+    // chars[(major + 1) % 11] + "Brand" at v = ["8", "99", "24"][major % 3], listed first for an even major. For 148 that
+    // is the "Not/A)Brand";v="99" captured from Electron 42; for 152 it is "Not?A_Brand";v="24".
+    const QUEST_DESKTOP = {version:"1.0.9267", build:663810, native:97793, electron:"44.10.0", chrome:"152.0.7977.169",
+        osVersion:"10.0.26100", osSdk:"26100", brands:'"Not?A_Brand";v="24", "Chromium";v="152"'};
     // Where desktop's page is served from: Chromium reports it as Origin (writes) and Referer on every API call.
     const QUEST_DESKTOP_ORIGIN = "https://discord.com", QUEST_DESKTOP_PAGE = "https://discord.com/channels/@me";
     const QUEST_DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/" +
@@ -5317,11 +5703,14 @@
         const identity = quest.desktop || (quest.desktop = {launch:questUuidText(questUuid()), signature:questLaunchSignature(),
             locale:questLocale(), session:"", sessionAt:0});
         if (!identity.session || now - identity.sessionAt >= QUEST_HEARTBEAT_SESSION_MS) { identity.session = questUuidText(questUuid()); identity.sessionAt = now; }
-        // Same keys, in the same order, as desktop's getSuperProperties.
+        // Same keys, in the same order, as desktop's getSuperProperties (web build 663810): the Windows block now carries
+        // os_version_is_release (always true off macOS) with os_sdk_version right after it, before os_arch. Without that
+        // key, and with os_sdk_version at the end, these heartbeats were shaped like a client Discord no longer runs.
         const properties = {os:"Windows", browser:"Discord Client", release_channel:"stable", client_version:QUEST_DESKTOP.version,
-            os_version:QUEST_DESKTOP.osVersion, os_arch:"x64", app_arch:"x64", system_locale:identity.locale, has_client_mods:false,
-            client_launch_id:identity.launch, browser_user_agent:QUEST_DESKTOP_UA, browser_version:QUEST_DESKTOP.electron,
-            os_sdk_version:QUEST_DESKTOP.osSdk, client_build_number:QUEST_DESKTOP.build, native_build_number:QUEST_DESKTOP.native,
+            os_version:QUEST_DESKTOP.osVersion, os_version_is_release:true, os_sdk_version:QUEST_DESKTOP.osSdk, os_arch:"x64",
+            app_arch:"x64", system_locale:identity.locale, has_client_mods:false, client_launch_id:identity.launch,
+            browser_user_agent:QUEST_DESKTOP_UA, browser_version:QUEST_DESKTOP.electron,
+            client_build_number:QUEST_DESKTOP.build, native_build_number:QUEST_DESKTOP.native,
             client_event_source:null, launch_signature:identity.signature, client_heartbeat_session_id:identity.session,
             client_app_state:"unfocused"};
         try {
@@ -5665,7 +6054,7 @@
         const value = Number(reply && reply.progress && reply.progress[type] && reply.progress[type].value);
         return {value:Number.isFinite(value) ? value : 0, completed:!!(reply && reply.completed_at)};
     }
-    // Desktop's pace (QuestProgressManager.initiateHeartbeat, Discord for Windows 1.0.9265): a beat right away, then one
+    // Desktop's pace (QuestProgressManager.initiateHeartbeat, unchanged in web build 663810): a beat right away, then one
     // a minute, stopping once Discord says the Quest is done. A finished Quest gets no terminal beat on desktop.
     // Desktop starts the next timer the moment it sends, without waiting for the answer, and works the delay out
     // from the progress it already had, so the answer to this beat only counts for the next one. The delay runs
@@ -7374,16 +7763,24 @@
     }
     // A text box with Discord's button (Button 5479) beside it, like its own "add" fields.
     function inputWithButton(ui,key,inputProps,onChange,buttonText,onPress,disabled) {
-        const Button=inspectedExport(5479,"Button");
+        const Button=inspectedExport(5479,"Button"), Text=inspectedExport(5187,"Text");
+        // The label goes above the row, not inside Discord's field: the field keeps room under its box, so a button lined up
+        // with a labelled field's bottom sat low next to every pencil's number box and hex field (#145). With the label out,
+        // the button is always centered on the box itself, as it already was on Preview servers' unlabelled field.
+        const label=inputProps && inputProps.label;
+        if (label) inputProps=Object.assign({},inputProps,{label:undefined,accessibilityLabel:inputProps.accessibilityLabel || label});
         const input=ui.TextInput ? el(ui.TextInput,Object.assign({onChange},inputProps)) :
             el(RN.TextInput,Object.assign({onChangeText:onChange,style:{fontSize:16,padding:12}},inputProps));
         const button=Button ? el(Button,{text:tr(buttonText),size:"md",variant:"primary",disabled:!!disabled,onPress}) :
             el(RN.Pressable || RN.View,{onPress:disabled ? undefined : onPress,accessibilityRole:"button",accessibilityLabel:tr(buttonText),disabled:!!disabled,
                 style:{paddingHorizontal:16,height:40,borderRadius:20,justifyContent:"center",backgroundColor:"#5865f2",opacity:disabled ? 0.5 : 1}},
                 el(RN.Text,{style:{color:"#ffffff",fontWeight:"600"}},tr(buttonText)));
-        // With a label above the field the button lines up with the field's bottom edge; without one it's centered on the
-        // field. Bottom-aligned, it sat low next to Discord's field, which keeps room under its box (#145, Preview servers).
-        return el(RN.View,{key,style:{flexDirection:"row",alignItems:inputProps && inputProps.label ? "flex-end" : "center",gap:8}},el(RN.View,{style:{flex:1}},input),button);
+        const row=el(RN.View,{key:label ? "row" : key,style:{flexDirection:"row",alignItems:"center",gap:8}},el(RN.View,{style:{flex:1}},input),button);
+        if (!label) return row;
+        return el(RN.View,{key,style:{gap:8}},
+            Text ? el(Text,{key:"label",variant:"text-sm/medium",color:"text-muted"},label) :
+                el(RN.Text,{key:"label",style:{color:"#949ba4",fontSize:14,fontWeight:"500"}},label),
+            row);
     }
     function hexInt(hex) { const m=/^#?([0-9a-f]{6})$/i.exec(String(hex || "").trim()); return m ? parseInt(m[1],16) : null; }
     function intHex(n) { return typeof n==="number" && isFinite(n) ? "#"+(n & 0xffffff).toString(16).padStart(6,"0") : null; }
@@ -7843,7 +8240,7 @@
                 switchRow(Switch,"stickers","Stickers","Stickers from other servers. Animated ones may not move.",rowIcon(13217,"StickerIcon"))),
             el(Group,{key:"style",title:tr("Link style")},
                 switchRow(Switch,"hyperlinks","Short links","In chat it looks the same either way. Short links only change what's copied or quoted.",rowIcon(5137,"LinkIcon"))),
-            footnote("note","Everyone sees the image, but it's a link, not a real Nitro emoji or sticker.")];
+            footnote("note","With Venus, links like these show as real emojis and stickers, and tapping one opens its usual menu. Elsewhere, people see the image.")];
         return settingsBody(ui,groups);
     }
     // Fix link previews: a sent link and the preview everyone sees, for the site picked in the row of marks above it.
@@ -8094,7 +8491,9 @@
             el(Group, {key:"exit", title:tr("When you leave")},
                 switchRow(Switch, "voiceOptionsExit", "Goodbye sound", "When you tap Disconnect, a soundboard sound plays for everyone in the channel. Needs Nitro.", rowIcon(13212, "SoundboardIcon"))),
             settings.voiceOptionsExit ? el(VoiceSoundPicker, {key:"exitSound", on}) : null,
-            settings.voiceOptionsExit && !voiceNitro() ? footnote("exitNitro", "Your account doesn't have Nitro, so no sound is sent.") : null];
+            settings.voiceOptionsExit && !voiceNitro() ? footnote("exitNitro", "Your account doesn't have Nitro, so no sound is sent.") : null,
+            el(Group, {key:"rejoin", title:tr("If Discord closes")},
+                switchRow(Switch, "voiceOptionsRejoin", "Rejoin the call", "Open Discord within 10 minutes and it joins the same voice channel or call again. Leaving on purpose never rejoins.", rowIcon(11630, "RefreshIcon")))];
         return settingsBody(ui, groups);
     }
     // Listen along: from a friend's Spotify activity on their profile, play the same song at the same spot on your own
@@ -8315,14 +8714,26 @@
         useSettings("tenorGifs");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("tenorGifs"), Icon = venusIcon(10051, "GifIcon");
+        const on = enabled("tenorGifs"), Icon = venusIcon(10051, "GifIcon"), picks = gifProviders();
+        const own = picks.filter(id => id !== "klipy"), down = own.filter(id => tenor.down[id]);
+        const Check = inspectedExport(6454, "TableCheckboxRow"), Group = ui.TableRowGroup || RN.View;
+        const rows = [
+            ["tenor", tr("Sent as {site} links, which play for everyone.", {site:"tenor.com"}), rowIcon(8487, "ImageIcon")],
+            ["giphy", tr("Sent as {site} links, which play for everyone.", {site:"giphy.com"}), rowIcon(12328, "ImagesIcon")],
+            ["klipy", tr("Discord's own GIFs, the same as without Venus."), rowIcon(10051, "GifIcon")]];
         const groups = [
-            !on ? offCard("status", Icon, "tenorGifs") : tenor.down ? statusCard("status", "Discord's own GIFs show until it answers again.",
-                {title:tr("Tenor isn't answering"), IconComponent:venusIcon(8481, "ImageWarningIcon")}) : null,
-            radioGroup(ui, "source", "GIFs from", "tenorGifsSource", on, [
-                ["both", "Tenor and Discord's GIFs", "Tenor's come first, with Discord's mixed in, so you get the most choice.", rowIcon(12328, "ImagesIcon")],
-                ["tenor", "Only Tenor", "Search, trending and categories all come from Tenor, like before.", rowIcon(8487, "ImageIcon")]]),
-            footnote("note", "What you search for goes to Tenor, without your Discord account. GIFs you pick are sent as tenor.com links, which play for everyone.")];
+            // Only when none of Venus's picks answer: Discord's own GIFs fill in until one does.
+            !on ? offCard("status", Icon, "tenorGifs") : own.length && down.length === own.length ? VenusStatusCard({key:"status",
+                body:tr("Discord's own GIFs show until it answers again."), title:down[0] === "giphy" ? tr("Giphy isn't answering") : tr("Tenor isn't answering"),
+                IconComponent:venusIcon(8481, "ImageWarningIcon")}) : null,
+            // Any mix of the three; the last one left can't be turned off, so the picker always has GIFs.
+            el(Group, {key:"source", title:tr("GIFs from")}, rows.map(([id, subLabel, icon]) => {
+                const checked = picks.indexOf(id) >= 0, last = checked && picks.length === 1, label = GIF_PROVIDER_NAMES[id];
+                const onPress = () => { const next = gifProvidersWith(id); if (next) { haptic("SELECTION"); setSetting("tenorGifsProviders", next); } };
+                return Check ? el(Check, {key:id, label, subLabel, icon, checked, disabled:!on || last, onPress}) :
+                    ui.TableRow ? el(ui.TableRow, {key:id, label:(checked ? "\u2713 " : "") + label, subLabel, icon, disabled:!on || last, onPress}) : null;
+            })),
+            footnote("note", "Switch them right in the GIF picker too, next to the search bar. What you search for goes to the ones you pick, without your Discord account.")];
         return settingsBody(ui, groups);
     }
     // The page: what's happening, a preview, and the sites. Everything about one site (its service, post style, translation,
@@ -8376,6 +8787,9 @@
             el(Group,{key:"colors",title:tr("Colors")},
                 switchRow(Switch,"pastelAll","Replace role colors","Every name uses its pastel color, even with a role color.",rowIcon(10563,"CrownIcon")),
                 switchRow(Switch,"pastelContent","Color message text","What people write is colored too, in a lighter shade of their name.",rowIcon(8480,"TextIcon"))),
+            el(Group,{key:"where",title:tr("Where colors show")},
+                switchRow(Switch,"pastelDms","Only in DMs and groups","Names in servers keep Discord's own colors.",rowIcon(8471,"ChatIcon")),
+                switchRow(Switch,"pastelMembers","In the member list","Names in the member list get the same color as in chat.",rowIcon(8489,"GroupIcon"))),
             footnote("note","Each person always gets the same color, on every device.")];
         return settingsBody(ui,groups);
     }
@@ -8598,9 +9012,94 @@
             }
         });
     }
-    function messageRow(orig, self, args) { const row = features.localEdit ? localEditRow(args[0]) : args[0]; return messageRowResult(orig.call(self, row), row); }
+    function messageRow(orig, self, args) {
+        let row = features.localEdit ? localEditRow(args[0]) : args[0];
+        if (features.freeNitro) row = nitroLinkRow(row);
+        return messageRowResult(orig.call(self, row), row);
+    }
     // generate(row) is called once per chat row as you scroll: skip the arguments object (2.3x).
-    messageRow.call1 = (orig, self, row) => { if (features.localEdit) row = localEditRow(row); return messageRowResult(orig.call(self, row), row); };
+    messageRow.call1 = (orig, self, row) => { if (features.localEdit) row = localEditRow(row); if (features.freeNitro) row = nitroLinkRow(row); return messageRowResult(orig.call(self, row), row); };
+    // Nitro links (#143): an emoji or sticker sent as a link (by Venus or any plugin that does the same) is drawn as the real
+    // thing. Before Discord builds the row, each emoji link becomes <:name:id> (or <a:name:id>) and each sticker link on a line
+    // of its own becomes one of the message's stickers, and the image preview Discord made for that link is dropped. Discord
+    // then draws them itself, so tapping one opens its own emoji or sticker sheet, with the server it's from, Favorite, and
+    // Add to a server when Clone emojis and stickers is on. Only what this phone shows changes: the message keeps its links.
+    const NITRO_EMOJI_LINK = /\[((?:\\.|[^\]\\\n])*)\]\((https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/emojis\/(\d{17,20})\.(webp|gif|png|jpg)(?:\?[^\s)]*)?)\)|(?:<)?(https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/emojis\/(\d{17,20})\.(webp|gif|png|jpg)(?:\?[^\s<>)]*)?)(?:>)?/g;
+    const NITRO_STICKER_LINE = /^\s*(?:\[((?:\\.|[^\]\\\n])*)\]\((https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/stickers\/(\d{17,20})\.(png|gif|webp)(?:\?[^\s)]*)?)\)|<?(https:\/\/(?:cdn|media)\.discordapp\.(?:com|net)\/stickers\/(\d{17,20})\.(png|gif|webp)(?:\?[^\s<>)]*)?)>?)\s*$/;
+    const nitroLinkCopies = new WeakMap();
+    function nitroLinkName(text, fallback) {
+        const clean = String(text || "").replace(/\\(.)/g, "$1").replace(/^:|:$/g, "").replace(/[^\w]/g, "_").replace(/_+/g, "_").slice(0, 32);
+        return clean.length >= 2 ? clean : fallback;
+    }
+    // The message as this phone draws it, or the same message when it has no emoji or sticker links.
+    function nitroLinkMessage(message) {
+        const content = message.content;
+        if (typeof content !== "string" || content.length < 40 || content.indexOf("discordapp.") < 0 || content.indexOf("/emojis/") < 0 && content.indexOf("/stickers/") < 0) return message;
+        const urls = new Set(), stickers = [];
+        let text = content;
+        // Sticker links on their own line, at most three (Discord's own limit) and none already on the message.
+        if (text.indexOf("/stickers/") >= 0 && !(Array.isArray(message.stickerItems) && message.stickerItems.length) && !(Array.isArray(message.stickers) && message.stickers.length)) {
+            const lines = text.split("\n"), kept = [];
+            for (let i = 0; i < lines.length; i++) {
+                const m = stickers.length < 3 && NITRO_STICKER_LINE.exec(lines[i]);
+                if (!m) { kept.push(lines[i]); continue; }
+                const id = m[3] || m[6], ext = m[4] || m[7];
+                let known = null;
+                try { known = stickerStore && stickerStore.getStickerById(id); } catch (_) { known = null; }
+                const format = known && known.format_type || (ext === "gif" ? 4 : 1);
+                stickers.push({id, name:known && known.name || nitroLinkName(m[1], "sticker").replace(/_/g, " "), format_type:format});
+                urls.add(m[2] || m[5]);
+            }
+            if (stickers.length) text = kept.join("\n").replace(/\s+$/, "");
+        }
+        // Emoji links anywhere outside code, with a Markdown link's text as the name when there is one.
+        if (text.indexOf("/emojis/") >= 0) text = text.replace(/```[\s\S]*?(?:```|$)|`[^`\n]*(?:`|$)/g, code => code.replace(/:/g, "\u0000")).replace(NITRO_EMOJI_LINK, (all, label, url, id, ext, bare, bareId, bareExt) => {
+            id = id || bareId; ext = ext || bareExt; url = url || bare;
+            let known = null;
+            try { known = emojiStore && emojiStore.getCustomEmojiById(id); } catch (_) { known = null; }
+            const animated = ext === "gif" || /[?&]animated=true/.test(url) || !!(known && known.animated);
+            urls.add(url);
+            return "<" + (animated ? "a" : "") + ":" + nitroLinkName(label || known && known.name, "emoji") + ":" + id + ">";
+        }).replace(/\u0000/g, ":");
+        if (!urls.size) return message;
+        const ids = new Set();
+        urls.forEach(url => { const m = /\/(?:emojis|stickers)\/(\d{17,20})\./.exec(url); if (m) ids.add(m[1]); });
+        let next = copyWith(message, "content", text);
+        // The preview Discord unfurled for a converted link would show the same picture a second time.
+        if (Array.isArray(message.embeds) && message.embeds.length) {
+            const embeds = message.embeds.filter(embed => {
+                const url = embed && (embed.url || embed.image && embed.image.url || embed.thumbnail && embed.thumbnail.url);
+                const m = typeof url === "string" && /discordapp\.(?:com|net)\/(?:emojis|stickers)\/(\d{17,20})\./.exec(url);
+                return !(m && ids.has(m[1]));
+            });
+            if (embeds.length !== message.embeds.length) next = copyWith(next, "embeds", embeds);
+        }
+        if (stickers.length) next = copyWith(next, "stickerItems", stickers);
+        return next;
+    }
+    function nitroLinkRow(row) {
+        if (!row || row.rowType !== 1 || !row.message || !enabled("freeNitro")) return row;
+        const message = row.message;
+        let hit = nitroLinkCopies.get(message);
+        if (hit === undefined) { const shown = nitroLinkMessage(message); hit = shown === message ? null : {shown, source:null, row:null}; nitroLinkCopies.set(message, hit); }
+        if (!hit) return row;
+        if (hit.source !== row) { hit.source = row; hit.row = copyWith(row, "message", hit.shown); }
+        return hit.row;
+    }
+    // Switched on or off: the open chat is drawn again, so its links turn into emojis and stickers, or back.
+    function nitroLinksRedraw() {
+        const selected = inspectedExport(2119, "default"), store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        const channelId = selected && typeof selected.getChannelId === "function" ? selected.getChannelId() : null;
+        if (!channelId || !store || typeof store.getMessages !== "function" || typeof dispatcher !== "function") return;
+        let arr = null;
+        try { const messages = store.getMessages(channelId); arr = messages && Array.isArray(messages._array) ? messages._array : null; } catch (_) { arr = null; }
+        if (!arr) return;
+        arr.slice(-80).forEach(message => {
+            if (!message || typeof message.content !== "string" || message.content.indexOf("discordapp.") < 0) return;
+            const update = value => { try { dispatcher({type:"MESSAGE_UPDATE", message:{id:message.id, channel_id:channelId, content:value}}); } catch (_) {} };
+            update(message.content + "\u200b"); later(() => update(message.content), 80);
+        });
+    }
     function messageRowResult(result, row) {
         if (!result || !row || row.rowType !== 1 || !result.message) return result;
         const pastelOn = enabled("pastelize"), translateOn = enabled("translate"), noDeleteOn = enabled("noDelete"), highlightOn = enabled("messageHighlight"), bulkOn = features.bulkDelete && bulkDelete.active;
@@ -8613,6 +9112,7 @@
         if (features.timeoutDuration && enabled("timeoutDuration")) message = timeoutTagMessage(message, row.message);
         if (features.voiceDownload && enabled("voiceDownload")) message = voiceDownloadMessage(message, row.message);
         if (features.staffTag && enabled("staffTag")) message = staffTagMessage(message, row.message);
+        if (features.timezones && timezoneUsers.size && enabled("timezonesChat")) message = tzMessage(message, row.message);
         let next = message === result.message ? result : Object.assign({},result,{message});
         if (!translateOn && !features.translate && !(noDeleteOn && (edits.size || deleted.size)) && !highlightOn && !features.messageHighlight && !bulkOn) return next;
         const source = row.message || message;
@@ -9131,6 +9631,7 @@
             el(Group,{key:"log",title:tr("Log")},
                 logOpenRow(ui,nav,"open",tr("Message log"),logs.messages,rowIcon(5150,"ClockIcon"),on),
                 logChoicesRow(ui,"choices","noDelete",choices,on)),
+            el(RulesList,{key:"places",feature:"noDelete",on}),
             el(Group,{key:"options",title:tr("In chat")},
                 toggle("noDeleteEdits","Show edit history","What a message said before it was edited, faded and crossed out above it. Up to 10 versions each.",rowIcon(10023,"PencilIcon")),
                 toggle("noDeleteSave","Keep after restarting","Deleted and edited messages survive closing Discord. Saved only on this phone, for this account.",rowIcon(5143,"DownloadIcon"))),
@@ -10603,7 +11104,7 @@
         ["messages.newDM", "messages", 10621, "PlusLargeIcon"], ["profile.call", "profile", 9621, "PhoneCallIcon"],
         ["attach.apps", "attach", 8506, "AppsIcon"], ["attach.polls", "attach", 10325, "PollsIcon"], ["attach.photos", "attach", 8487, "ImageIcon"],
         ["you.quests", "you", 13929, "QuestsIcon"], ["you.shop", "you", 11964, "ShopIcon"], ["you.nitro", "you", 9327, "NitroWheelIcon"],
-        ["you.questBanner", "you", 6927, "EyeSlashIcon"],
+        ["you.questBanner", "you", 6927, "EyeSlashIcon"], ["sheets.nitro", "sheets", 9327, "NitroWheelIcon"],
         ["menu.mainProfile", "menu", 9543, "MoreHorizontalIcon"], ["menu.serverProfile", "menu", 9543, "MoreHorizontalIcon"],
         ["menu.nickname", "menu", 9543, "MoreHorizontalIcon"], ["menu.invite", "menu", 9543, "MoreHorizontalIcon"],
         ["menu.ring", "menu", 9543, "MoreHorizontalIcon"], ["menu.copyUsername", "menu", 9543, "MoreHorizontalIcon"],
@@ -10661,7 +11162,7 @@
     const MENU_SPOTS = {"menu.mainProfile":["GISTta"], "menu.serverProfile":["DisZzB"], "menu.nickname":["BGYkaH", "8pOYUE"], "menu.invite":["Sd8Ixw"],
         "menu.ring":["bHa9kN", "ygslb0"], "menu.copyUsername":["y5MwJy"], "menu.copyLink":["WqhZss"], "menu.copyId":["/AXYnE"], "menu.copyInfo":["QvQeLv"],
         "menu.apps":["PHjkRE"], "menu.shopLook":["xNdRDO"], "menu.removeFromGroup":["n5zMI+"], "menu.ignore":["ytCpKs", "8wXU9B"],
-        "menu.block":["l4Emac", "XyHpKH"], "menu.report":["wqHXNt", "TbHyMG", "jhJzez"]};
+        "menu.block":["l4Emac", "XyHpKH"], "menu.report":["TbHyMG", "jhJzez"]};
     const MENU_FALLBACK = {"menu.mainProfile":"View Main Profile", "menu.serverProfile":"View Per-server Profile", "menu.nickname":"Add Friend Nickname",
         "menu.invite":"Invite to Server", "menu.ring":"Ring", "menu.copyUsername":"Copy Username", "menu.copyLink":"Copy Link", "menu.copyId":"Copy User ID",
         "menu.copyInfo":"Copy User Info", "menu.apps":"Apps", "menu.shopLook":"Shop This Look", "menu.removeFromGroup":"Remove from Group",
@@ -10699,11 +11200,11 @@
         hiddenSpots().forEach(key => { if (/^row\./.test(key) && rowLabels.has(key.slice(4))) { out[key.slice(4)] = rowLabels.get(key.slice(4)); any = true; } });
         return any ? out : null;
     }
-    const HIDE_PLACES = ["chat", "attach", "message", "dm", "details", "messages", "profile", "menu", "server", "guild", "you"];
+    const HIDE_PLACES = ["chat", "attach", "message", "dm", "details", "messages", "profile", "menu", "server", "guild", "you", "sheets"];
     const HIDE_SPOT_KEYS = Object.create(null);
     HIDE_SPOTS.forEach(spot => { HIDE_SPOT_KEYS[spot[0]] = spot; });
     // Modules hooked for it (also selected in targetModules).
-    const HIDE_HOOKED = {14015:1, 15735:1, 15736:1, 10331:1, 16133:1, 16225:1, 12892:1, 12897:1, 12901:1, 12908:1, 12909:1, 13780:1, 14204:1, 15590:1, 17157:1, 9419:1,
+    const HIDE_HOOKED = {9847:1, 10078:1, 14015:1, 15735:1, 15736:1, 10331:1, 16133:1, 16225:1, 12892:1, 12897:1, 12901:1, 12908:1, 12909:1, 13780:1, 14204:1, 15590:1, 17157:1, 9419:1,
         15046:1, 8805:1, 9052:1, 10858:1, 12942:1, 14988:1, 14994:1, 14925:1, 14998:1,
         11678:1, 11679:1, 14197:1, 10939:1, 7158:1, 14182:1, 14101:1, 17156:1, 17263:1,
         13151:1, 12000:1, 10838:1, 17949:1, 16773:1, 17265:1, 17881:1, 17869:1, 11164:1, 9978:1, 13759:1};
@@ -10734,6 +11235,7 @@
             case "you.quests": return tr("Quests button");
             case "you.shop": return tr("Shop button");
             case "you.nitro": return tr("Nitro button");
+            case "sheets.nitro": return tr("Get Nitro buttons");
             case "you.questBanner": return tr("Quests banner");
             case "attach.apps": return tr("Apps");
             case "attach.polls": return tr("Polls");
@@ -10753,7 +11255,7 @@
         return key;
     }
     function hidePlaceTitle(place) {
-        return place === "message" ? tr("Message menu") : place === "menu" ? tr("Profile menu") : place === "settings" ? tr("Settings") : place === "options" ? tr("Venus options") : place === "chat" ? tr("Message bar") : place === "attach" ? tr("Attach menu") : place === "dm" ? tr("Direct messages") : place === "messages" ? tr("Messages tab") :
+        return place === "sheets" ? tr("Emoji and sticker menus") : place === "message" ? tr("Message menu") : place === "menu" ? tr("Profile menu") : place === "settings" ? tr("Settings") : place === "options" ? tr("Venus options") : place === "chat" ? tr("Message bar") : place === "attach" ? tr("Attach menu") : place === "dm" ? tr("Direct messages") : place === "messages" ? tr("Messages tab") :
             place === "profile" ? tr("Other people's profiles") : place === "server" ? tr("Channel list") : place === "guild" ? tr("Server menu") : place === "details" ? tr("Channel details") : tr("Your profile");
     }
     function hideSpotsText(raw) {
@@ -11157,11 +11659,22 @@
     const SEARCH_TAB_SPOTS = Object.assign(Object.create(null), {members:"details.members", media:"details.media", pins:"details.pins", links:"details.links", files:"details.files"});
     function profileTabItems(items) { return Array.isArray(items) && items.length > 0 && !!items[0] && items[0].id === "main" && "page" in items[0]; }
     const hideTabCache = new WeakMap();
+    // Every profile render calls these tab hooks with one argument: that call skips the arguments object and apply, and the
+    // hook still runs once per render (Hermes HBC98: 183.6 -> 111.3 us per 100 calls of the three tab and member hooks, 1.65x).
     function segmentedState(orig, self, args) {
         const options = args[0];
         if (!options || typeof options !== "object" || !profileTabItems(options.items)) return orig.apply(self, args);
         // Main stays the first tab for the profile's whole life, so this hook is always called there and nowhere else.
         useSettings("hideAnything");
+        return segmentedStateHidden(orig, self, args, options);
+    }
+    segmentedState.call1 = (orig, self, options) => {
+        if (!options || typeof options !== "object" || !profileTabItems(options.items)) return orig.call(self, options);
+        useSettings("hideAnything");
+        if (!settings.hideAnythingSpots || !enabled("hideAnything")) return orig.call(self, options);
+        return segmentedStateHidden(orig, self, [options], options);
+    };
+    function segmentedStateHidden(orig, self, args, options) {
         if (!settings.hideAnythingSpots || !enabled("hideAnything")) return orig.apply(self, args);
         const text = settings.hideAnythingSpots;
         let entry = hideTabCache.get(options.items);
@@ -11241,10 +11754,11 @@
     function serverHeaderEmpty() { return spotHidden("server.search") && spotHidden("server.invite") && spotHidden("server.events"); }
     // useRedesignGuildHeaderHeight(guild) is read on every server header render: the one-argument call skips the arguments
     // object and apply (Hermes HBC98: 60.6 -> 43.0 us per 100 calls, 1.41x).
+    const SNOWFLAKE_15 = /^\d{15,}$/;
     function guildHeaderHeightFinish(height, guild) {
         if (typeof height !== "number" || !enabled("hideAnything") || !serverHeaderEmpty()) return height;
         // Only real servers have the row (not Favorites).
-        if (!guild || typeof guild.id !== "string" || !/^\d{15,}$/.test(guild.id)) return height;
+        if (!guild || typeof guild.id !== "string" || !SNOWFLAKE_15.test(guild.id)) return height;
         const button = inspectedExport(5484, "SMALL_BUTTON_HEIGHT"), margin = inspectedExport(11895, "SEARCH_BAR_MARGIN_BOTTOM");
         return Math.max(0, height - (typeof button === "number" ? button : 32) - (typeof margin === "number" ? margin : 0));
     }
@@ -11630,6 +12144,14 @@
         useSettings("hideAnything");
         const options = args[0];
         if (!options || typeof options !== "object" || !Array.isArray(options.items) || !settings.hideAnythingSpots || !enabled("hideAnything")) return orig.apply(self, args);
+        return searchTabsHidden(orig, self, args, options);
+    }
+    searchTabsState.call1 = (orig, self, options) => {
+        useSettings("hideAnything");
+        if (!options || typeof options !== "object" || !Array.isArray(options.items) || !settings.hideAnythingSpots || !enabled("hideAnything")) return orig.call(self, options);
+        return searchTabsHidden(orig, self, [options], options);
+    };
+    function searchTabsHidden(orig, self, args, options) {
         const text = settings.hideAnythingSpots, items = keptCached(searchTabCache, options.items, text, item => !!item && searchTabGone(item.id));
         if (items === options.items) return orig.apply(self, args);
         const next = Array.from(args);
@@ -11638,9 +12160,11 @@
         return orig.apply(self, next);
     }
     // New Group above a DM's members (useMemberListAction 11164, the row it hands the member list to draw).
-    function memberListAction(orig, self, args) {
+    function memberListAction(orig, self, args) { return memberListActionResult(orig.apply(self, args), args[0]); }
+    memberListAction.call1 = (orig, self, options) => memberListActionResult(orig.call(self, options), options);
+    function memberListActionResult(out, options) {
         useSettings("hideAnything");
-        const out = orig.apply(self, args), options = args[0], channel = options && options.channel;
+        const channel = options && options.channel;
         let dm = false;
         try { dm = !!channel && typeof channel.isDM === "function" && channel.isDM(); } catch (_) {}
         const mode = !out || !dm || !enabled("hideAnything") ? null : spotHidden("details.newGroup") ? "gone" : hideEditing() ? "edit" : null;
@@ -11758,10 +12282,58 @@
         // Always the same shape, so turning removal mode on never remounts Discord.
         return el(React.Fragment, null, rendered, Safe ? el(Safe, null, el(HideEditBar)) : el(HideEditBar));
     }
+    // Get Nitro buttons (#143): the emoji sheet's Nitro button carries Discord's NitroWheel (design/void 1202) as its icon, and
+    // the sticker sheet's says Get Nitro (gl/XHJ, in any language). Join Server, Favorite and Venus's own buttons stay.
+    function sheetNitroSpot(node) {
+        const type = node.type, props = node.props;
+        if (!type || typeof type === "string" || typeof props.onPress !== "function") return null;
+        const icon = props.icon, wheel = inspectedExport(1202, "NitroWheel");
+        if (wheel && icon && typeof icon === "object" && icon.type === wheel) return "sheets.nitro";
+        if (typeof props.text === "string" && props.text && props.text === discordText("gl/XHJ")) return "sheets.nitro";
+        return null;
+    }
+    // The sticker sheet draws its button inside GuildStickerDetail, a component of its own ({sticker, channel}), so that one is
+    // swapped for a twin that draws it and then takes the button out. One twin per component, so React keeps its state.
+    const hideSheetTypes = new WeakMap();
+    function hideSheetSwap(node, depth) {
+        if (!node || typeof node !== "object" || depth > 8) return node;
+        if (Array.isArray(node)) {
+            let next = null;
+            for (let i = 0; i < node.length; i++) { const v = hideSheetSwap(node[i], depth + 1); if (v !== node[i] && !next) next = node.slice(); if (next) next[i] = v; }
+            return next || node;
+        }
+        const props = node.props, type = node.type;
+        if (!props) return node;
+        if (typeof type === "function" && !(type.prototype && type.prototype.isReactComponent) && props.sticker && "channel" in props) {
+            let twin = hideSheetTypes.get(type);
+            if (!twin) {
+                twin = function VenusStickerDetail(innerProps) {
+                    const out = type.apply(this, arguments);
+                    if (!enabled("hideAnything")) return out;
+                    const edit = hideEditing();
+                    return edit || settings.hideAnythingSpots ? hideWalk(out, 0, sheetNitroSpot, edit, null) : out;
+                };
+                if (type.displayName || type.name) twin.displayName = type.displayName || type.name;
+                hideSheetTypes.set(type, twin);
+            }
+            return React.createElement(twin, Object.assign({}, props, {key:node.key}));
+        }
+        const children = props.children;
+        if (children == null || typeof children !== "object") return node;
+        const next = hideSheetSwap(children, depth + 1);
+        return next === children ? node : React.cloneElement(node, {children:next});
+    }
+    function hideStickerSheet(orig, self, args) {
+        const tree = orig.apply(self, args);
+        return React && enabled("hideAnything") ? hideSheetSwap(tree, 0) : tree;
+    }
     function hideAnythingHooks(id, exports) {
         if (!exports) return exports;
         switch (id) {
             case 12892: return hookComponent(exports, hideTree(chatAttachSpot));
+            // The Get Nitro buttons in the emoji sheet (CustomEmojiContent 9847) and the sticker sheet (StickerDetailActionSheet 10078).
+            case 9847: return hookComponent(exports, hideTree(sheetNitroSpot));
+            case 10078: return hookComponent(exports, hideStickerSheet);
             case 12897: return hookComponent(exports, hideWhole("chat.apps"));
             case 12901: return hookComponent(exports, hideWhole("chat.gift"));
             case 12909: return hookComponent(exports, hideWhole("chat.voice"));
@@ -11902,6 +12474,48 @@
         if (emojiSourceInUse === "file") return Object.assign({}, props, {forceTextEmoji:true,
             textEmojiStyle:[props.textEmojiStyle, {fontFamily:"VenusEmoji"}]});
         return Object.assign({}, props, {forceTextEmoji:true});
+    }
+    // The sheet you get by tapping an emoji in chat (#145) draws its big emoji with an Emoji of its own
+    // (StandardEmojiContent 9840), not the shared one above: an image from getURL, or the surrogate as text only when
+    // there's no URL. So it kept Discord's picture. That inner element ({surrogate}) is swapped for the text branch,
+    // with Discord's own styles (useSharedMessageEmojiStyles 9841), which the phone's or the imported font draws.
+    const sheetEmoji = {useStyles:undefined};
+    function SystemSheetEmoji(props) {
+        if (sheetEmoji.useStyles === undefined) sheetEmoji.useStyles = inspectedExport(9841, "useSharedMessageEmojiStyles") || null;
+        // Always called when found (it's a hook), so the hook count never changes between renders.
+        const styles = typeof sheetEmoji.useStyles === "function" ? sheetEmoji.useStyles() || {} : {};
+        const font = emojiSourceInUse === "file" ? {fontFamily:"VenusEmoji"} : null;
+        return el(RN.View, {style:styles.emojiWrapper},
+            el(RN.Text, {style:font ? [styles.emojiSurrogate, font] : styles.emojiSurrogate, accessible:false}, props.surrogate));
+    }
+    function systemEmojiSheet(orig, self, args) {
+        const tree = orig.apply(self, args);
+        return !emojiInUse || !features.systemEmoji || !React || !RN || !tree ? tree : swapSheetEmoji(tree);
+    }
+    // Replaces the first function element with a surrogate prop (the sheet's own Emoji), never the sheet itself.
+    function swapSheetEmoji(tree) {
+        let swapped = false;
+        const walk = (node, depth) => {
+            if (!node || typeof node !== "object" || depth > 24 || swapped) return node;
+            if (Array.isArray(node)) {
+                let out = node;
+                for (let i = 0; i < node.length; i++) {
+                    const next = walk(node[i], depth + 1);
+                    if (next !== node[i]) { if (out === node) out = node.slice(); out[i] = next; }
+                }
+                return out;
+            }
+            const props = node.props;
+            if (!props) return node;
+            if (node !== tree && typeof node.type === "function" && node.type !== SystemSheetEmoji && typeof props.surrogate === "string" && props.surrogate) {
+                swapped = true;
+                return React.createElement(SystemSheetEmoji, {key:node.key, surrogate:props.surrogate});
+            }
+            const kids = props.children;
+            const next = kids && typeof kids === "object" ? walk(kids, depth + 1) : kids;
+            return next === kids ? node : React.cloneElement(node, Object.assign({}, props, {children:next}));
+        };
+        return walk(tree, 0);
     }
     function cloneWith(object, key, value) {
         // ES module markers, React tags, symbols and lazy getters are not necessarily enumerable.
@@ -13171,6 +13785,26 @@
         if (actions && typeof actions.syncDevice === "function") hookExport(actions, "syncDevice", accountSwitcherPushSync);
         return exports;
     }
+    // Which account Discord's Android notification code thinks you're on (NotificationCache's current user, #152). Only
+    // PushNotificationCacheManager (18629) writes it, and after switching accounts it could keep the last one. Then that
+    // account's notifications were dropped while Discord was open, and the account you're on showed system notifications
+    // labelled with its own name. Venus writes the signed-in account itself (PushNotification 11028, as Discord does)
+    // whenever it connects or changes, and when Discord comes back to the front.
+    function accountSwitcherNativeUser(user) {
+        if (!enabled("accountSwitcher")) return;
+        const me = user && typeof user.id === "string" && user.id ? user : currentUser(), push = inspectedExport(11028, "default");
+        if (!me || typeof me.id !== "string" || !me.id || !push || typeof push.setCurrentUser !== "function") return;
+        try { push.setCurrentUser(typeof me.username === "string" ? me.username : "", me.id); } catch (_) {}
+    }
+    function accountSwitcherNativeWatch() {
+        const d = inspectedExport(584, "default");
+        if (accountSwitcher.nativeWatch || !d || typeof d.subscribe !== "function") return;
+        accountSwitcher.nativeWatch = true;
+        // CONNECTION_OPEN carries the account that just signed in; the second write lands after Discord's own handlers.
+        d.subscribe("CONNECTION_OPEN", event => { const user = event && event.user; later(() => accountSwitcherNativeUser(user), 0); later(() => accountSwitcherNativeUser(), 3000); });
+        d.subscribe("CURRENT_USER_UPDATE", () => later(() => accountSwitcherNativeUser(), 0));
+        d.subscribe("APP_STATE_UPDATE", event => { if (event && event.state === "active") accountSwitcherNativeUser(); });
+    }
     // Sync again right away when the switch changes, instead of at Discord's next start.
     function accountSwitcherPushResync() {
         const manager = inspectedExport(15471, "default");
@@ -13640,10 +14274,12 @@
                 Row ? el(Row, {key:"manage", label:tr("Manage accounts"), subLabel:tr("Open Discord's account manager to reorder or remove accounts."), icon:rowIcon(7368, "SettingsIcon"),
                     arrow:true, disabled:!on, onPress:() => openManageAccounts()}) : null,
                 null),
+            el(Group, {key:"notify", title:tr("Notifications")},
+                switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notifications for all your saved accounts, not just the one you're using. Each one shows which account it's for.", rowIcon(9045, "BellIcon")),
+                settings.accountSwitcherNotify ? switchRow(Switch, "accountSwitcherNotifyOpen", "While Discord is open", "Also show your other accounts' notifications while you're using Discord. The account you're on keeps its in-app banners.", rowIcon(6919, "MobilePhoneIcon")) : null),
             el(Group, {key:"shortcuts", title:tr("Shortcuts")},
                 switchRow(Switch, "accountSwitcherYouBar", "Button on the profile bar", "Shows a Switch accounts button next to the notifications bell on the bottom bar.", rowIcon(10598, "UserCircleIcon"))),
             el(Group, {key:"shared", title:tr("Every account")},
-                switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notifications for all your saved accounts, not just the one you're using. Each one shows which account it's for.", rowIcon(9045, "BellIcon")),
                 switchRow(Switch, "accountSwitcherShare", "Same theme on every account", "Your theme and Nitro theme follow you when you switch. Venus settings are always shared.", rowIcon(16320, "PaintPaletteIcon"))),
             footnote("note", "Tap your avatar on the You tab, or hold the You tab, to switch from anywhere. Hold an account above to remove it.")];
         return settingsBody(ui, groups);
@@ -14338,12 +14974,61 @@
         voiceOptions.dispatcher = dispatcher;
         dispatcher.subscribe("VOICE_CHANNEL_SELECT", voiceOptionsSelect);
         dispatcher.subscribe("RTC_CONNECTION_STATE", voiceOptionsState);
-        dispatcher.subscribe("LOGOUT", () => { voiceOptions.joined = false; });
+        dispatcher.subscribe("LOGOUT", () => { voiceOptions.joined = false; voiceRejoin.pending = null; voiceRejoinRemember(null); });
+        dispatcher.subscribe("CONNECTION_OPEN", () => { voiceRejoin.connected = true; voiceRejoinTry(); });
+        if (RN && RN.AppState && typeof RN.AppState.addEventListener === "function")
+            RN.AppState.addEventListener("change", state => { if (state !== "active" && voiceRejoin.saved) voiceRejoinRemember(voiceRejoin.saved.channelId); });
     }
     function voiceOptionsSelect(event) {
         const joined = !!(event && event.channelId), joining = joined && !voiceOptions.joined;
         voiceOptions.joined = joined; voiceOptions.channelId = joined ? event.channelId : null;
         if (joining && enabled("voiceOptions") && settings.voiceOptionsVolume) later(voiceVolumeApply, 0);
+        voiceRejoinRemember(joined && enabled("voiceOptions") && settings.voiceOptionsRejoin ? String(event.channelId) : null);
+    }
+    // Rejoin the call (#156, after VoiceRejoin): the voice channel or call you're in is kept with the settings (voiceRejoin,
+    // never in backups) and forgotten the moment you leave it, so leaving on purpose never rejoins. If Discord closes without
+    // leaving (a crash, Android closing it in the background, swiping it away), the next launch joins it again once Discord
+    // has connected, when that was under VOICE_REJOIN_MS ago. The time is renewed every few minutes in a call and whenever
+    // Discord goes to the background. A DM or group call is only rejoined while it's still going (CallStore 6014), so
+    // rejoining never rings anyone; a server channel only while you can still see it. Once per launch.
+    const VOICE_REJOIN_MS = 10 * 60 * 1000, VOICE_REJOIN_RENEW_MS = 4 * 60 * 1000;
+    const voiceRejoin = {saved:null, pending:null, loaded:false, connected:false, tried:false, timer:undefined};
+    function voiceRejoinRemember(channelId) {
+        if (voiceRejoin.timer !== undefined && typeof global.clearTimeout === "function") global.clearTimeout(voiceRejoin.timer);
+        voiceRejoin.timer = undefined;
+        if (!channelId && !voiceRejoin.saved) return;
+        voiceRejoin.saved = channelId ? {channelId, at:Date.now()} : null;
+        save();
+        if (channelId) voiceRejoin.timer = later(() => { voiceRejoin.timer = undefined; if (voiceRejoin.saved) voiceRejoinRemember(voiceRejoin.saved.channelId); }, VOICE_REJOIN_RENEW_MS, false);
+    }
+    function voiceRejoinLoad(value) {
+        if (voiceRejoin.tried || !value || typeof value !== "object" || typeof value.channelId !== "string" || !/^\d{17,20}$/.test(value.channelId) || !Number.isFinite(value.at)) return;
+        voiceRejoin.pending = {channelId:value.channelId, at:value.at};
+    }
+    function voiceRejoinTry() {
+        if (voiceRejoin.tried || !voiceRejoin.loaded || !voiceRejoin.connected) return;
+        voiceRejoin.tried = true;
+        // Calls and voice states arrive just after the connection opens.
+        if (voiceRejoin.pending) later(voiceRejoinGo, 3000);
+    }
+    function voiceRejoinGo() {
+        const target = voiceRejoin.pending;
+        voiceRejoin.pending = null;
+        if (!target || !enabled("voiceOptions") || !settings.voiceOptionsRejoin || Date.now() - target.at > VOICE_REJOIN_MS) return;
+        const actions = inspectedExport(6145, "default"), selected = inspectedExport(2119, "default"), store = channelStore || inspectedExport(2068, "default");
+        if (!actions || typeof actions.selectVoiceChannel !== "function" || !store) return;
+        try { if (selected && typeof selected.getVoiceChannelId === "function" && selected.getVoiceChannelId()) return; } catch (_) {}
+        let channel = null;
+        try { channel = store.getChannel(target.channelId); } catch (_) {}
+        if (!channel) return;
+        if (!channel.guild_id) {
+            const calls = inspectedExport(6014, "default");
+            let call = null;
+            try { call = calls && typeof calls.getCall === "function" ? calls.getCall(target.channelId) : null; } catch (_) {}
+            if (!call) return;
+        }
+        dlog("I", "voiceOptions", "rejoining the voice channel Discord closed in");
+        try { actions.selectVoiceChannel(target.channelId); } catch (error) { dlog("W", "voiceOptions", "couldn't rejoin: " + dlogText(error)); }
     }
     function voiceVolumeApply() {
         if (!enabled("voiceOptions") || !settings.voiceOptionsVolume) return;
@@ -14542,29 +15227,55 @@
         return Scroll ? el(ui.ActionSheet || RN.View, {header, scrollable:true}, el(Scroll, scrollProps, body)) :
             el(ui.ActionSheet || RN.View, {header}, RN.ScrollView ? el(RN.ScrollView, scrollProps, body) : body);
     }
-    // Bring back Tenor GIFs (#83): Discord's GIF picker asks Discord's API for /gifs/search, /gifs/trending and the rest
+    // Bring back Tenor GIFs (#83, #156): Discord's GIF picker asks Discord's API for /gifs/search, /gifs/trending and the rest
     // (GIFPickerActionCreators 10035 through HTTP.get, 1297), and since Tenor's API closed to Discord those answers come from
-    // Klipy. Venus answers the same requests from Tenor's public v1 API, in the exact shape the picker's store (9731) reads,
-    // so Tenor GIFs show in Discord's own picker: no new tab or button. "Tenor and Discord's GIFs" puts Tenor first and
-    // mixes in Discord's own; "Only Tenor" uses Tenor for everything. If Tenor doesn't answer, Discord's own GIFs show.
-    // GIFs are sent as tenor.com links, which Discord still turns into a playing GIF for everyone.
+    // Klipy. Venus answers the same requests from Tenor's public v1 API and Giphy's v1 API, in the exact shape the picker's
+    // store (GIFPickerViewStore 10034) reads, so their GIFs show in Discord's own picker. Which of Tenor, Giphy and Klipy
+    // (Discord's own) show is picked on the page, or in a menu next to the picker's search bar (GIFPickerHeader 10044; after
+    // GifProviderSwitcher by Lunascape and Ven). Lists take one GIF from each pick in turn; the categories screen comes from
+    // the first pick that answers. If none of Venus's picks answer, Discord's own GIFs show. GIFs are sent as tenor.com and
+    // giphy.com links, which Discord still turns into a playing GIF for everyone.
     const TENOR_API = "https://g.tenor.com/v1/", TENOR_KEY = "3Z0688EVWYKH";
+    // Giphy's public web key, the one giphy.com itself uses (like GifProviderSwitcher).
+    const GIPHY_API = "https://api.giphy.com/v1/", GIPHY_KEY = "Gc7131jiJuvI7IdN0HZ1D7nh0ow5BU6g";
     // Only the sizes the picker draws: tinywebp tiles (animated, ~5x smaller than tinygif), tinymp4 when Discord asks for
     // video, and the full gif for favourites. A 50-GIF page is ~70 KB of JSON instead of ~250 KB with every format.
     const TENOR_MEDIA = "tinywebp,tinygif,gif,tinymp4";
-    const tenor = {cache:new Map(), ids:new Set(), down:false};
+    const tenor = {cache:new Map(), ids:new Set(), down:{tenor:false, giphy:false}};
     // Discord's "en-US" is Tenor's "en_US".
     function tenorLocale(locale) { return typeof locale === "string" && /^[a-z]{2,3}(?:[-_][A-Za-z]{2,4})?$/.test(locale) ? locale.replace("-", "_") : "en_US"; }
-    function tenorHealth(up) {
-        if (tenor.down === !up) return;
-        tenor.down = !up;
+    // Giphy takes two-letter languages, plus zh-CN and zh-TW.
+    function giphyLang(locale) {
+        const code = typeof locale === "string" ? locale.toLowerCase() : "";
+        if (code.indexOf("zh") === 0) return /tw|hant|hk/.test(code) ? "zh-TW" : "zh-CN";
+        return /^[a-z]{2}/.test(code) ? code.slice(0, 2) : "en";
+    }
+    // The picks as saved: known providers only, at least one, always in GIF_PROVIDERS order.
+    function gifProvidersText(value) {
+        if (typeof value !== "string") return undefined;
+        const asked = value.split(",").map(part => part.trim().toLowerCase()).filter(Boolean);
+        if (!asked.length || asked.some(part => GIF_PROVIDERS.indexOf(part) < 0)) return undefined;
+        return GIF_PROVIDERS.filter(id => asked.indexOf(id) >= 0).join(",");
+    }
+    function gifProviders() {
+        const clean = gifProvidersText(settings.tenorGifsProviders);
+        return clean ? clean.split(",") : ["tenor", "klipy"];
+    }
+    // The picks with one turned on or off, or null for the last one left, which stays on.
+    function gifProvidersWith(id) {
+        const list = gifProviders(), on = list.indexOf(id) >= 0;
+        if (on && list.length === 1) return null;
+        return GIF_PROVIDERS.filter(p => p === id ? !on : list.indexOf(p) >= 0).join(",");
+    }
+    function gifProviderNames(list) { return list.map(id => GIF_PROVIDER_NAMES[id]).join(", "); }
+    function gifHealth(provider, up) {
+        if (tenor.down[provider] === !up) return;
+        tenor.down[provider] = !up;
         later(() => notify("tenorGifs"), 0);
     }
-    // Every answer is kept for 10 minutes, so scrolling further (a bigger limit), reopening the picker or going back to a
-    // search reuses the pages it already has. contentfilter=medium matches Discord's own picker (no adult results).
-    function tenorRequest(path, params) {
-        let url = TENOR_API + path + "?key=" + TENOR_KEY + "&contentfilter=medium";
-        for (const name in params) if (params[name] != null && params[name] !== "") url += "&" + name + "=" + encodeURIComponent(params[name]);
+    // Every answer is kept for 10 minutes, so scrolling further (a bigger limit), reopening the picker, going back to a
+    // search or switching a provider back on reuses the pages it already has.
+    function gifFetch(provider, url) {
         const now = Date.now(), hit = tenor.cache.get(url);
         if (hit && hit.until > now) return hit.promise;
         if (typeof global.fetch !== "function") return Promise.reject(new Error("Venus: no fetch"));
@@ -14573,11 +15284,22 @@
         const done = () => { if (timer !== undefined && global.clearTimeout) global.clearTimeout(timer); };
         const promise = Promise.resolve().then(() => global.fetch(url, Object.assign({method:"GET", credentials:"omit", headers:{Accept:"application/json"}},
             controller ? {signal:controller.signal} : {})))
-            .then(res => { if (!res || !res.ok) throw new Error("Tenor " + (res && res.status)); return res.json(); })
-            .then(body => { done(); tenorHealth(true); return body; }, error => { done(); tenor.cache.delete(url); tenorHealth(false); throw error; });
+            .then(res => { if (!res || !res.ok) throw new Error(provider + " " + (res && res.status)); return res.json(); })
+            .then(body => { done(); gifHealth(provider, true); return body; }, error => { done(); tenor.cache.delete(url); gifHealth(provider, false); throw error; });
         tenor.cache.set(url, {promise, until:now + 600000});
         if (tenor.cache.size > 80) tenor.cache.delete(tenor.cache.keys().next().value);
         return promise;
+    }
+    // contentfilter=medium (Tenor) and rating=pg-13 (Giphy) match Discord's own picker: no adult results.
+    function tenorRequest(path, params) {
+        let url = TENOR_API + path + "?key=" + TENOR_KEY + "&contentfilter=medium";
+        for (const name in params) if (params[name] != null && params[name] !== "") url += "&" + name + "=" + encodeURIComponent(params[name]);
+        return gifFetch("tenor", url);
+    }
+    function giphyRequest(path, params) {
+        let url = GIPHY_API + path + "?api_key=" + GIPHY_KEY + "&rating=pg-13";
+        for (const name in params) if (params[name] != null && params[name] !== "") url += "&" + name + "=" + encodeURIComponent(params[name]);
+        return gifFetch("giphy", url);
     }
     // One Tenor result as the store's item: {id, url, src, gif_src, width, height}. url is what gets sent.
     function tenorItem(result, video) {
@@ -14607,18 +15329,44 @@
     }
     // Category tiles: Tenor sends each as a tinygif (~100 KB); the same GIF as a tinywebp is the same picture at ~8 KB.
     function tenorCategoryImage(src) { return typeof src === "string" ? src.replace(/^(https:\/\/media\d*\.tenor\.com\/[\w-]+?)AAAAM(\/[^/?#]+)\.gif$/, "$1AAAA1$2.webp") : src; }
-    // Tenor first, then one of each: a page reads as one mixed list, and a bigger limit only adds to the end of it.
-    function tenorMix(mine, theirs, limit) {
-        const a = Array.isArray(mine) ? mine : [], b = Array.isArray(theirs) ? theirs : [], want = Math.max(1, Number(limit) || a.length + b.length), out = [];
-        for (let i = 0; out.length < want && (i < a.length || i < b.length); i++) {
-            if (i < a.length) out.push(a[i]);
-            if (i < b.length && out.length < want) out.push(b[i]);
-        }
+    // One Giphy result as the store's item. Its id gets a prefix so it can never match a Tenor or Klipy GIF in the same list.
+    function giphyItem(result, video) {
+        const images = result && result.images;
+        if (!images || typeof result.url !== "string" || result.id == null) return null;
+        const size = images.fixed_width || images.fixed_height, full = images.original || size;
+        const src = size && (video && size.mp4 || size.webp || size.url);
+        if (typeof src !== "string" || !full || typeof full.url !== "string") return null;
+        const id = "giphy:" + result.id;
+        if (tenor.ids.size > 4000) tenor.ids.clear();
+        tenor.ids.add(id);
+        return {id, url:result.url, src, gif_src:full.url, width:Number(size.width) || 0, height:Number(size.height) || 0};
+    }
+    // Pages of 50 by offset, fetched until the picker's limit is reached: the same page URLs every time, so they cache.
+    // messaging_non_clips leaves out Giphy's clips (videos with sound), which don't play as GIFs.
+    function giphyList(path, params, limit, format) {
+        const want = Math.max(1, Math.min(200, Number(limit) || 50)), video = /mp4|webm/.test(String(format || "")), out = [], seen = new Set();
+        const step = (offset, pages) => giphyRequest(path, Object.assign({}, params, {limit:50, offset, bundle:"messaging_non_clips"})).then(body => {
+            const results = body && Array.isArray(body.data) ? body.data : [];
+            for (let i = 0; i < results.length && out.length < want; i++) {
+                const item = giphyItem(results[i], video);
+                if (item && !seen.has(item.id)) { seen.add(item.id); out.push(item); }
+            }
+            const total = Number(body && body.pagination && body.pagination.total_count) || 0;
+            return out.length < want && results.length >= 50 && offset + 50 < total && pages < 4 ? step(offset + 50, pages + 1) : out;
+        });
+        return step(0, 1);
+    }
+    // One from each pick in turn: a page reads as one mixed list, and a bigger limit only adds to the end of it.
+    function tenorMix(lists, limit) {
+        const all = lists.filter(Array.isArray), most = all.reduce((n, list) => Math.max(n, list.length), 0), out = [];
+        const want = Math.max(1, Number(limit) || all.reduce((n, list) => n + list.length, 0));
+        for (let i = 0; i < most && out.length < want; i++)
+            for (let j = 0; j < all.length && out.length < want; j++) if (i < all[j].length) out.push(all[j][i]);
         return out;
     }
-    function tenorWords(mine, theirs, limit) {
+    function tenorWords(lists, limit) {
         const out = [], seen = new Set(), want = Math.max(1, Number(limit) || 20);
-        [mine, theirs].forEach(list => { if (Array.isArray(list)) list.forEach(word => {
+        lists.forEach(list => { if (Array.isArray(list)) list.forEach(word => {
             const key = typeof word === "string" ? word.trim().toLowerCase() : "";
             if (key && !seen.has(key) && out.length < want) { seen.add(key); out.push(word); } }); });
         return out;
@@ -14644,24 +15392,57 @@
             default: return null;
         }
     }
+    // What Giphy answers for one picker request, or null to leave it to the others.
+    function giphyAnswer(url, query) {
+        const lang = giphyLang(query.locale), q = typeof query.q === "string" ? query.q.trim() : "";
+        switch (url) {
+            case "/gifs/search": return q ? {list:true, limit:query.limit, load:() => giphyList("gifs/search", {q, lang}, query.limit, query.media_format)} : null;
+            case "/gifs/trending-gifs": return {list:true, limit:query.limit, load:() => giphyList("gifs/trending", {}, query.limit, query.media_format)};
+            case "/gifs/trending-search": return {words:true, limit:20, load:() => giphyRequest("trending/searches", {}).then(body => body && Array.isArray(body.data) ? body.data : [])};
+            case "/gifs/suggest": return q ? {words:true, limit:query.limit || 10, load:() => giphyRequest("gifs/search/tags", {q, limit:Math.min(20, Number(query.limit) || 10)})
+                .then(body => body && Array.isArray(body.data) ? body.data.map(tag => tag && tag.name).filter(name => typeof name === "string") : [])} : null;
+            // The categories screen: Giphy's categories, and its top trending GIF on the Trending tile.
+            case "/gifs/trending": return {whole:true, load:() => Promise.all([giphyRequest("gifs/categories", {lang}),
+                giphyList("gifs/trending", {}, 1, query.media_format)]).then(([body, top]) => {
+                const list = body && Array.isArray(body.data) ? body.data : [], categories = [];
+                list.forEach(cat => {
+                    const images = cat && cat.gif && cat.gif.images, image = images && (images.fixed_width || images.fixed_height);
+                    const src = image && (image.webp || image.url);
+                    if (typeof cat.name === "string" && typeof src === "string") categories.push({name:cat.name, src});
+                });
+                if (!categories.length || !top.length) throw new Error("Giphy: no categories");
+                return {categories, gifs:[{src:top[0].src}]};
+            })};
+            default: return null;
+        }
+    }
     function tenorResponse(body, base) { return Object.assign({ok:true, status:200, headers:{}}, base && typeof base === "object" ? base : null, {body}); }
     // HTTP.get(options) from HTTPUtils (1297): the picker's requests are the ones whose url starts with /gifs/.
     function tenorGet(orig, self, args) {
         const options = args[0], url = options && options.url;
         if (typeof url !== "string" || url.charCodeAt(1) !== 103 || url.indexOf("/gifs/") !== 0 || !enabled("tenorGifs")) return orig.apply(self, args);
-        const answer = tenorAnswer(url, options.query && typeof options.query === "object" ? options.query : {});
-        if (!answer) return orig.apply(self, args);
-        const theirs = () => orig.apply(self, args);
-        // Only Tenor, and the categories screen in both: Discord is asked only if Tenor doesn't answer.
-        if (answer.whole || settings.tenorGifsSource === "tenor") return answer.load().then(body => tenorResponse(answer.words ? tenorWords(body, null, answer.limit) : body), () => theirs());
-        // Both: one list from the two answers. If one fails the other still shows; only both failing is an error.
+        const query = options.query && typeof options.query === "object" ? options.query : {};
+        const picks = gifProviders(), answers = [];
+        for (let i = 0; i < picks.length; i++) {
+            const answer = picks[i] === "tenor" ? tenorAnswer(url, query) : picks[i] === "giphy" ? giphyAnswer(url, query) : null;
+            if (answer) answers.push(answer);
+        }
+        // Only Klipy, or a request none of the picks answer: Discord's own, untouched.
+        if (!answers.length) return orig.apply(self, args);
+        const theirs = () => orig.apply(self, args), first = answers[0], klipy = picks.indexOf("klipy") >= 0;
+        // The categories screen comes from one place: the first pick that answers, then the next, then Discord.
+        if (first.whole) return answers.reduce((chain, answer) => chain.catch(() => answer.load()), Promise.reject(null))
+            .then(body => tenorResponse(body), () => theirs());
+        // Lists: one from each pick. Picks that fail are left out; Discord is asked anyway when nothing else answered.
         const failed = {};
-        return Promise.all([answer.load().then(body => body, () => failed),
-            Promise.resolve().then(theirs).then(res => res, error => ({failed:error}))]).then(([mine, res]) => {
-            const discord = res && res.failed === undefined && res !== failed ? res : null;
-            if (mine === failed && !discord) throw res.failed;
-            const body = discord ? discord.body : null, own = mine === failed ? [] : mine;
-            return tenorResponse(answer.words ? tenorWords(own, body, answer.limit) : tenorMix(own, body, answer.limit), discord);
+        const loads = answers.map(answer => answer.load().then(body => body, () => failed));
+        if (klipy) loads.push(Promise.resolve().then(theirs).then(res => res, error => ({venusFailed:error === undefined ? null : error})));
+        return Promise.all(loads).then(results => {
+            const res = klipy ? results.pop() : null, discord = res && res.venusFailed === undefined ? res : null;
+            const lists = results.filter(body => body !== failed);
+            if (discord) lists.push(discord.body);
+            if (!lists.length) { if (klipy) throw res.venusFailed; return theirs(); }
+            return tenorResponse(first.words ? tenorWords(lists, first.limit) : tenorMix(lists, first.limit), discord);
         });
     }
     // Picking a GIF reports it to Discord (POST /gifs/select) for Klipy's rankings. A Tenor GIF isn't Klipy's, so that's skipped.
@@ -14671,9 +15452,84 @@
         const body = options.body, id = body && body.id != null ? String(body.id) : "";
         return id && tenor.ids.has(id) ? Promise.resolve(tenorResponse({}, {status:204})) : orig.apply(self, args);
     }
-    // Discord's search box names Klipy (GifProvider 10036). It says Tenor in Only Tenor, and just GIFs while both show.
+    // Discord's search box names Klipy (GifProvider 10036). It names the picks instead.
+    function gifPlaceholder() { return tr("Search {providers}", {providers:gifProviderNames(gifProviders())}); }
     function tenorPlaceholder(orig, self, args) {
-        return enabled("tenorGifs") ? tr(settings.tenorGifsSource === "tenor" ? "Search Tenor" : "Search GIFs") : orig.apply(self, args);
+        return enabled("tenorGifs") ? gifPlaceholder() : orig.apply(self, args);
+    }
+    // The provider menu (#156): GIFPickerHeader (10044) draws the search bar as a SearchField (7016) while the picker shows
+    // search. Venus puts a pill next to it saying what's picked ("Tenor", "2 providers"); tapping it opens Discord's own
+    // ContextMenu (9662) with Tenor, Giphy and Klipy, a check on each one in use. The header memoizes its placeholder, so
+    // the field is given the current one each time the picks change.
+    const GIF_SEARCH_ROW = {flexDirection:"row", alignItems:"center", gap:8}, GIF_SEARCH_FIELD = {flex:1, minWidth:0};
+    const GIF_PILL_DARK = {pill:{height:40, maxWidth:148, borderRadius:20, paddingLeft:14, paddingRight:10, flexDirection:"row", alignItems:"center", gap:4,
+        backgroundColor:"#4e50584d"}, pressed:{backgroundColor:"#4e505899"}, check:{color:"#5865f2"}};
+    function gifReplace(node, match, make, depth) {
+        if (!node || typeof node !== "object" || depth > 8) return node;
+        if (Array.isArray(node)) {
+            let out = node;
+            for (let i = 0; i < node.length; i++) {
+                const child = gifReplace(node[i], match, make, depth + 1);
+                if (child !== node[i]) { if (out === node) out = node.slice(); out[i] = child; }
+            }
+            return out;
+        }
+        if (match(node)) return make(node);
+        const props = node.props, children = props && props.children;
+        if (!children || typeof children !== "object") return node;
+        const next = gifReplace(children, match, make, depth + 1);
+        return next === children ? node : React.cloneElement(node, {children:next});
+    }
+    function gifPickerHeader(orig, self, args) {
+        // Always called, before Discord's own hooks, so the header redraws when the picks change.
+        useSettings("tenorGifs");
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!enabled("tenorGifs") || !rendered || !React || !RN) return rendered;
+        const Field = inspectedExport(7016, "SearchField");
+        if (!Field) return rendered;
+        return gifReplace(rendered, node => node.type === Field, node => el(RN.View, {key:node.key != null ? node.key : "venusGifSearch", style:GIF_SEARCH_ROW},
+            el(RN.View, {style:GIF_SEARCH_FIELD}, React.cloneElement(node, {placeholder:gifPlaceholder()})),
+            el(GifProviderButton, {onChange:() => gifProvidersRefresh(props)})), 0);
+    }
+    // ContextMenuItem (15046) draws trailingIndicator as a component type, jsx(trailingIndicator, {size, color}), the same as
+    // IconComponent, so it takes a component and not an element. An element there crashes Discord with "Element type is
+    // invalid ... got: object" the moment the menu opens. The menu passes the text color, so the check matches the label.
+    const GifCheck = venusIcon(7101, "CheckmarkSmallIcon");
+    function GifCheckIndicator(props) { return el(GifCheck, Object.assign({size:"sm"}, props)); }
+    function GifProviderButton(props) {
+        useSettings("tenorGifs");
+        const s = useThemed("gifProviders", c => ({pill:Object.assign({}, GIF_PILL_DARK.pill, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}),
+            pressed:{backgroundColor:c.BACKGROUND_MOD_NORMAL}, check:{color:c.TEXT_BRAND}}), GIF_PILL_DARK);
+        const Menu = inspectedExport(9662, "ContextMenu");
+        if (!Menu || !s) return null;
+        const Text = inspectedExport(5187, "Text"), Chevron = venusIcon(10859, "ChevronSmallDownIcon");
+        const list = gifProviders(), label = list.length === 1 ? GIF_PROVIDER_NAMES[list[0]] : pl(list.length, "{n} provider", "{n} providers");
+        const items = GIF_PROVIDERS.map(id => ({label:GIF_PROVIDER_NAMES[id], venusGifProvider:id,
+            trailingIndicator:list.indexOf(id) >= 0 ? GifCheckIndicator : undefined,
+            action:() => {
+                const next = gifProvidersWith(id);
+                if (!next) return;
+                haptic("SELECTION"); setSetting("tenorGifsProviders", next);
+                if (props.onChange) later(props.onChange, 0);
+            }}));
+        return el(Menu, {title:tr("GIFs from"), items, triggerOnTap:true}, menuProps => el(RN.Pressable, Object.assign({}, menuProps, {accessibilityRole:"button",
+            accessibilityLabel:tr("GIFs from") + ": " + gifProviderNames(list), style:state => [s.pill, state && state.pressed ? s.pressed : null]}),
+            Text ? el(Text, {variant:"text-sm/semibold", color:"text-strong", lineClamp:1}, label) :
+                el(RN.Text, {numberOfLines:1, style:{color:"#f2f3f5", fontSize:14, fontWeight:"600"}}, label),
+            Chevron ? el(Chevron, {size:"xs"}) : null));
+    }
+    // A change from the menu applies straight away. The picker only searches again when its text changes, so a typed
+    // search gets a trailing space added or taken off (every provider trims it); with nothing typed, the categories reload.
+    function gifProvidersRefresh(props) {
+        try {
+            const store = inspectedExport(10034, "default"), query = store && typeof store.getQuery === "function" ? store.getQuery() : "";
+            if (typeof query === "string" && query.trim()) {
+                if (props && typeof props.onQueryChange === "function") props.onQueryChange(/\s$/.test(query) ? query.replace(/\s+$/, "") : query + " ");
+                return;
+            }
+            const fetchTrending = inspectedExport(10035, "fetchTrending");
+            if (typeof fetchTrending === "function") fetchTrending();
+        } catch (_) {}
     }
 
     // Translate messages: every message on screen that isn't in your language is shown translated, with a note
@@ -14910,6 +15766,8 @@
     // Saved translations: only finished ones, newest last, read once when Discord opens. A damaged file is ignored.
     function translateRestore() {
         if (translate.restored || translate.restoring || !files || !features.translate) return;
+        // Keep after restarting off (#143): a restart starts from nothing, so there's nothing to read back.
+        if (!settings.translateSave) { translate.restored = true; return; }
         let constants;
         try { constants = typeof files.getConstants === "function" ? files.getConstants() : files; } catch (_) { constants = null; }
         const directory = constants && constants.DocumentsDirPath;
@@ -14941,9 +15799,10 @@
         }).catch(() => {}).then(() => { translate.restoring = false; translate.restored = true; if (enabled("translate")) translateSchedule(0); });
     }
     function translatePersist() {
-        if (!files || translate.saveTimer !== undefined) return;
+        if (!files || !settings.translateSave || translate.saveTimer !== undefined) return;
         translate.saveTimer = later(() => {
             translate.saveTimer = undefined;
+            if (!settings.translateSave) return;
             if (translate.saving) { translatePersist(); return; }
             const entries = [];
             translate.cache.forEach(entry => { if (entry.state === "done" && typeof entry.translated === "string") entries.push([entry.target, entry.text, entry.translated, entry.language || ""]); });
@@ -15755,10 +16614,13 @@
                     subLabel:tr("Always shown with the original text."), value:true, disabled:true, onValueChange:() => {}}) :
                     switchRow(Switch, "translateNote", "Show the original language", "A small \"Translated from Spanish\" line under each translation.", rowIcon(9393, "GlobeEarthIcon")),
                 switchRow(Switch, "translateOriginal", "Show the original text", "The untranslated message, in a quote under the translation.", rowIcon(14150, "QuoteIcon"))),
-            // Only once something is saved: a greyed-out "Nothing saved yet" row has nothing to offer.
-            saved ? el(Group, {key:"clear", title:tr("Manage")}, actionRow(ui, "clear", "Clear saved translations",
-                tr("{count} kept on this phone, so chats you reopen show them at once.", {count:count(saved, "translation")}),
-                () => confirmAction("Clear saved translations?", "Messages on screen will be translated again.", "Clear", translateForget), false, true)) : null,
+            // Keep after restarting (#143), with Clear right under it while there's something saved. Off, a restart puts every
+            // message back as it was written, with nothing to clear by hand.
+            el(Group, {key:"clear", title:tr("Saving")},
+                switchRow(Switch, "translateSave", "Keep after restarting", "Translations are saved on this phone, so chats you reopen show them at once. Off, a restart shows every message as it was written.", rowIcon(5143, "DownloadIcon")),
+                settings.translateSave && saved ? actionRow(ui, "clear", "Clear saved translations",
+                    tr("{count} kept on this phone, so chats you reopen show them at once.", {count:count(saved, "translation")}),
+                    () => confirmAction("Clear saved translations?", "Messages on screen will be translated again.", "Clear", translateForget), !on, true) : null),
             footnote("note", settings.translateMode === "manual" ? "Only messages you choose, or chats you translate from the bar, are sent to Google Translate, once each, without your Discord account." :
                 "Only messages on screen are sent to Google Translate, once each, without your Discord account. Hold a message to show its original, or translate your own.")];
         return settingsBody(ui, groups);
@@ -15810,6 +16672,15 @@
             offered.map(entry => CheckboxRow ? el(CheckboxRow, {key:entry.code, label:entry.label, subLabel:entry.sub, checked:pickedSet.has(entry.code), disabled:!on, onPress:() => toggle(entry.code)}) :
                 el(Row, {key:entry.code, label:(pickedSet.has(entry.code) ? "\u2713 " : "") + entry.label, subLabel:entry.sub, disabled:!on, onPress:() => toggle(entry.code)}));
         return el(RN.View, {key:"skip", style:{gap:12}}, head, el(RN.View, {key:"searchBox", style:{paddingHorizontal:16}}, search), el(Group, {key:"list"}, list));
+    }
+    // Keep after restarting (#143). Off: the file on the phone is emptied straight away, and what's on screen stays translated
+    // only until Discord restarts. On: what's translated now is saved again.
+    function translateSaveChanged(value) {
+        if (!files || backup.restoring) return;
+        if (value) { translatePersist(); return; }
+        if (translate.saveTimer !== undefined && typeof global.clearTimeout === "function") global.clearTimeout(translate.saveTimer);
+        translate.saveTimer = undefined;
+        Promise.resolve().then(() => files.writeFile("documents", TRANSLATE_FILE, "{\"version\":1,\"entries\":[]}", "utf8")).catch(() => {});
     }
     // Clear saved translations: forgets every translation, on the phone too, and translates what's on screen again.
     function translateForget() {
@@ -18888,7 +19759,7 @@
     // then the manage permissions, then the moderation ones. The highest one a person has is the one that shows.
     const STAFF_TAG_KINDS = ["owner", "admin", "manager", "mod"];
     const STAFF_TAG_COLORS = {owner:"#d9951a", admin:"#e5393d", manager:"#5865f2", mod:"#1e9a52"};
-    const staffTag = {guilds:null, members:null, roles:null, cache:new Map(), masks:null};
+    const staffTag = {guilds:null, members:null, roles:null, cache:new Map(), size:0, masks:null};
     function staffTagLabel(kind) {
         return kind === "owner" ? tr("Owner") : kind === "admin" ? tr("Admin") : kind === "manager" ? tr("Manager") : tr("Mod");
     }
@@ -18900,7 +19771,11 @@
         try { return typeof value === "bigint" ? value : BigInt(value); } catch (_) { return null; }
     }
     function staffTagKind(guildId, authorId) {
-        const key = guildId + ":" + authorId, now = Date.now(), hit = staffTag.cache.get(key);
+        // Looked up for every chat row: one Map per server holds its people, so no "server:person" string is built per row
+        // (Hermes HBC98: 36.1 -> 18.8 us per 100 rows, 1.92x).
+        const now = Date.now();
+        let byAuthor = staffTag.cache.get(guildId);
+        const hit = byAuthor !== undefined ? byAuthor.get(authorId) : undefined;
         // A role or permission can change at any time, so what was found is only kept for half a minute.
         if (hit && now - hit.at < 30000) return hit.kind;
         let kind = null;
@@ -18925,8 +19800,10 @@
                 else if ((bits & masks.mod) !== masks.none) kind = "mod";
             }
         } catch (_) { kind = null; }
-        if (staffTag.cache.size > 2000) staffTag.cache.clear();
-        staffTag.cache.set(key, {kind, at:now});
+        if (staffTag.size > 2000) { staffTag.cache.clear(); staffTag.size = 0; byAuthor = undefined; }
+        if (byAuthor === undefined) staffTag.cache.set(guildId, byAuthor = new Map());
+        if (!byAuthor.has(authorId)) staffTag.size++;
+        byAuthor.set(authorId, {kind, at:now});
         return kind;
     }
     // Called for every chat row, so a message with nothing to tag comes back untouched, not copied.
@@ -18945,9 +19822,48 @@
         copy.tagBackgroundColor = tint;
         return copy;
     }
+    // The member list (#143): UserRow (10531) draws every person in a server's or group's member list. Pastel name colors
+    // gives the name its pastel color, by the same rules as chat (no role color, or every name with Replace role colors),
+    // and Show owner and mod tags puts the same tag as in chat after the name. Each has its own switch, off to start.
+    function memberListProps(props) {
+        if (!props || !props.user || !props.user.id || !enabled("pastelize") || !settings.pastelMembers) return props;
+        const guildId = props.guildId;
+        if (guildId && settings.pastelDms) return props;
+        if (guildId && (!guildMembers || !guildMembers.getMember(guildId, props.user.id))) return props;
+        if (props.usernameColor && !settings.pastelAll) return props;
+        const color = pastelColor(props.user.id, 0.75, 0.6);
+        if (!color) return props;
+        const next = Object.assign({}, props, {usernameColor:color.hex});
+        if (settings.pastelAll) next.roleColors = undefined;
+        return next;
+    }
+    function memberListTag(tree, props) {
+        if (!tree || !React || !RN || !props || !props.guildId || !props.user || !props.user.id || props.user.bot || !enabled("staffTag") || !settings.staffTagMembers) return tree;
+        const kind = staffTagKind(String(props.guildId), String(props.user.id));
+        if (!kind || !settings["staffTag" + kind.charAt(0).toUpperCase() + kind.slice(1)]) return tree;
+        const color = STAFF_TAG_COLORS[kind], label = staffTagText(kind);
+        const chip = el(RN.View, {key:"venus-staff-tag", accessible:true, accessibilityLabel:label,
+            style:{paddingHorizontal:5, paddingVertical:1, borderRadius:4, backgroundColor:color + "33", flexShrink:0}},
+            el(RN.Text, {style:{color, fontSize:11, fontWeight:"700"}, numberOfLines:1}, label));
+        let added = false;
+        return cloneTree(tree, (node, p) => {
+            if (added || p.label == null || typeof p.label === "string" || typeof p.label === "number") return p;
+            added = true;
+            return Object.assign({}, p, {label:el(RN.View, {key:"venus-staff-label", style:{flexDirection:"row", alignItems:"center", gap:6, flexShrink:1}}, p.label, chip)});
+        }, 0, () => added);
+    }
+    function memberListRow(orig, self, args) {
+        const props = memberListProps(args[0]);
+        if (props === args[0]) return memberListTag(orig.apply(self, args), props);
+        const next = Array.from(args); next[0] = props;
+        return memberListTag(orig.apply(self, next), props);
+    }
+    // Every row of the list renders through here as (props) or (props, ref): no arguments object on those calls.
+    memberListRow.call1 = (orig, self, props) => { const shown = memberListProps(props); return memberListTag(orig.call(self, shown), shown); };
+    memberListRow.call2 = (orig, self, props, ref) => { const shown = memberListProps(props); return memberListTag(orig.call(self, shown, ref), shown); };
     // Switched on or off, or an option changed: redraw the chat that's open, the way Message highlights does.
     function staffTagChanged() {
-        staffTag.cache.clear();
+        staffTag.cache.clear(); staffTag.size = 0;
         const selected = inspectedExport(2119, "default"), store = msgStore || (msgStore = inspectedExport(5532, "default"));
         const channelId = selected && typeof selected.getChannelId === "function" ? selected.getChannelId() : null;
         if (!channelId || !store || typeof store.getMessages !== "function") return;
@@ -18997,6 +19913,8 @@
                 switchRow(Switch, "staffTagAdmin", "Admins", "Anyone with the Administrator permission.", rowIcon(10733, "ShieldIcon")),
                 switchRow(Switch, "staffTagManager", "Managers", "Anyone who can manage the server, its roles or its channels.", rowIcon(16625, "WrenchIcon")),
                 switchRow(Switch, "staffTagMod", "Moderators", "Anyone who can kick, ban, time out or delete messages.", rowIcon(8895, "ShieldUserIcon"))),
+            el(Group, {key:"where", title:tr("Where tags show")},
+                switchRow(Switch, "staffTagMembers", "In the member list", "The tag shows after names in the server's member list too.", rowIcon(8489, "GroupIcon"))),
             footnote("note", "Tags come from the roles you can see, and each person only gets their highest one. Bots keep their own tags.")
         ];
         return settingsBody(ui, groups);
@@ -19819,6 +20737,332 @@
             footnote("note", "Files under the limit are never touched. Nitro and boosted servers raise the limit, so they need less or no compression.")];
         return settingsBody(ui, groups);
     }
+    // Time zones (#141, after Timezones by Equicord): set the time zone of anyone you talk to, and their local time shows
+    // next to the time on their messages, and on their profile as a Local time card. There is no online lookup and no server:
+    // zones are IANA names from Discord's own list (15315, the list its Intl polyfill uses), and every time is worked out on
+    // the phone by Hermes's Intl, which runs on Android's ICU zone data, so daylight saving is right for any date. A message
+    // shows their time when it was sent, so chat rows never have to be redrawn as the clock moves; only the card ticks.
+    const TZ_MAX = 500, TZ_ZONE = /^[A-Za-z][A-Za-z0-9_+-]*(\/[A-Za-z0-9_+-]+){0,2}$/;
+    const TZ_FALLBACK = ["UTC", "Pacific/Honolulu", "America/Anchorage", "America/Los_Angeles", "America/Denver", "America/Chicago", "America/New_York",
+        "America/Sao_Paulo", "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Kyiv", "Europe/Moscow", "Asia/Dubai", "Asia/Kolkata",
+        "Asia/Bangkok", "Asia/Shanghai", "Asia/Tokyo", "Australia/Sydney", "Pacific/Auckland"];
+    const timezoneUsers = new Map();
+    const tz = {dirty:false, parts:new Map(), clocks:new Map(), dates:new Map(), hour12:new Map(), list:null, cycle:null};
+    function tzZone(value) { return typeof value === "string" && value.length <= 64 && TZ_ZONE.test(value); }
+    function tzClean(raw) {
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+        const out = new Map();
+        Object.keys(raw).slice(0, TZ_MAX).forEach(id => { if (/^\d{17,20}$/.test(id) && tzZone(raw[id])) out.set(id, raw[id]); });
+        return out;
+    }
+    function tzLoad(raw) { const clean = tzClean(raw); if (clean) clean.forEach((zone, id) => { if (!timezoneUsers.has(id)) timezoneUsers.set(id, zone); }); }
+    function tzData() { const out = {}; timezoneUsers.forEach((zone, id) => { out[id] = zone; }); return out; }
+    // One formatter per zone (and kind), made once: Hermes's Intl builds an ICU formatter in Java for each one, which costs far
+    // more than formatting with it. A zone Android doesn't know throws, and is remembered as null.
+    function tzFormatter(cache, key, make) {
+        if (cache.has(key)) return cache.get(key);
+        let format = null;
+        try { format = make(); } catch (_) { format = null; }
+        if (cache.size > 200) cache.clear();
+        cache.set(key, format);
+        return format;
+    }
+    // Minutes ahead of UTC in that zone at that moment, daylight saving included, or null for a zone Android doesn't know.
+    function tzOffset(zone, ms) {
+        const format = tzFormatter(tz.parts, zone, () => new Intl.DateTimeFormat("en-US", {timeZone:zone, hour12:false,
+            year:"numeric", month:"numeric", day:"numeric", hour:"numeric", minute:"numeric"}));
+        if (!format) return null;
+        let y, mo, d, h, mi;
+        try {
+            if (typeof format.formatToParts === "function") {
+                const parts = format.formatToParts(ms);
+                for (let i = 0; i < parts.length; i++) {
+                    const part = parts[i], value = parseInt(part.value, 10);
+                    if (part.type === "year") y = value; else if (part.type === "month") mo = value; else if (part.type === "day") d = value;
+                    else if (part.type === "hour") h = value; else if (part.type === "minute") mi = value;
+                }
+            } else {
+                const m = /(\d+)\/(\d+)\/(\d+),?\s+(\d+):(\d+)/.exec(format.format(ms));
+                if (m) { mo = +m[1]; d = +m[2]; y = +m[3]; h = +m[4]; mi = +m[5]; }
+            }
+        } catch (_) { return null; }
+        if (![y, mo, d, h, mi].every(Number.isFinite)) return null;
+        return Math.round((Date.UTC(y, mo - 1, d, h % 24, mi) - Math.floor(ms / 60000) * 60000) / 60000);
+    }
+    function tzMyOffset(ms) { return -new Date(ms).getTimezoneOffset(); }
+    function tzOffsetLabel(minutes) {
+        if (!minutes) return "GMT";
+        const abs = Math.abs(minutes), h = Math.floor(abs / 60), m = abs % 60;
+        return "GMT" + (minutes > 0 ? "+" : "\u2212") + h + (m ? ":" + (m < 10 ? "0" : "") + m : "");
+    }
+    // Discord's language, so their time reads like Discord's own time next to it.
+    function tzLocale() { let locale = null; try { locale = localeStore && localeStore.locale; } catch (_) {} return typeof locale === "string" && locale ? locale : "en-US"; }
+    // 12 or 24-hour: the page's choice, or Discord's own (TimestampHourCycle in UserSettings 2044: 1 is 12-hour, 2 is 24-hour,
+    // 0 follows Discord's language).
+    function tzHour12() {
+        const choice = settings.timezonesClock;
+        if (choice === "12") return true;
+        if (choice === "24") return false;
+        let cycle = 0;
+        try {
+            const setting = tz.cycle || (tz.cycle = inspectedExport(2044, "TimestampHourCycle"));
+            cycle = setting && typeof setting.getSetting === "function" ? setting.getSetting() : 0;
+        } catch (_) {}
+        if (cycle === 1) return true;
+        if (cycle === 2) return false;
+        const locale = tzLocale();
+        if (!tz.hour12.has(locale)) {
+            let twelve = true;
+            try { const o = new Intl.DateTimeFormat(locale, {hour:"numeric"}).resolvedOptions(); twelve = typeof o.hour12 === "boolean" ? o.hour12 : !/^h2[34]$/.test(String(o.hourCycle)); } catch (_) {}
+            tz.hour12.set(locale, twelve);
+        }
+        return tz.hour12.get(locale);
+    }
+    function tzClockText(zone, ms, hour12) {
+        const locale = tzLocale(), format = tzFormatter(tz.clocks, zone + "\u0000" + locale + (hour12 ? "\u0000h12" : "\u0000h23"),
+            () => new Intl.DateTimeFormat(locale, {timeZone:zone, hour:"numeric", minute:"2-digit", hour12}));
+        try { if (format) { const text = format.format(ms); if (text && /\d/.test(text)) return text; } } catch (_) {}
+        const offset = tzOffset(zone, ms);
+        if (offset === null) return "";
+        const d = new Date(ms + offset * 60000), h = d.getUTCHours(), m = d.getUTCMinutes(), mm = (m < 10 ? "0" : "") + m;
+        return hour12 ? (h % 12 || 12) + ":" + mm + (h < 12 ? " AM" : " PM") : (h < 10 ? "0" : "") + h + ":" + mm;
+    }
+    // The day and time there: on the profile card when their day isn't yours, and when you tap a message's time.
+    function tzDateText(zone, ms, hour12) {
+        const locale = tzLocale(), format = tzFormatter(tz.dates, zone + "\u0000" + locale + (hour12 ? "\u0000h12" : "\u0000h23"),
+            () => new Intl.DateTimeFormat(locale, {timeZone:zone, weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", hour12}));
+        try { if (format) { const text = format.format(ms); if (text && /\d/.test(text)) return text; } } catch (_) {}
+        return tzClockText(zone, ms, hour12);
+    }
+    function tzCity(zone) { const parts = String(zone).split("/"); return parts[parts.length - 1].replace(/_/g, " "); }
+    function tzRegion(zone) { return String(zone).split("/").slice(0, -1).join(" \u00b7 ").replace(/_/g, " "); }
+    function tzAhead(minutes) {
+        if (!minutes) return tr("Same time as you");
+        const abs = Math.abs(minutes), h = Math.floor(abs / 60), m = abs % 60;
+        const time = h && m ? tr("{h}h {m}m", {h, m}) : h ? tr("{n}h", {n:h}) : tr("{n}m", {n:m});
+        return minutes > 0 ? tr("{time} ahead of you", {time}) : tr("{time} behind you", {time});
+    }
+    function tzMine() { try { const zone = new Intl.DateTimeFormat().resolvedOptions().timeZone; return tzZone(zone) ? zone : ""; } catch (_) { return ""; } }
+    function tzList() {
+        if (tz.list) return tz.list;
+        const list = inspectedExport(15315, "timezones");
+        if (Array.isArray(list) && list.length) return tz.list = list.filter(tzZone);
+        return TZ_FALLBACK;
+    }
+    function tzMs(value) {
+        if (value == null) return NaN;
+        if (typeof value === "number") return value;
+        if (typeof value === "string") return Date.parse(value);
+        try { return Number(value.valueOf()); } catch (_) { return NaN; }
+    }
+    function tzName(userId) {
+        let user = null;
+        try { user = userStore && userStore.getUser(userId); } catch (_) {}
+        return user ? String(user.globalName || user.username || userId) : String(userId);
+    }
+    // Whose time a message shows: its author's, or in a one-on-one DM (with that option on) the other person's on your own.
+    function tzForMessage(message) {
+        const author = message.authorId == null ? "" : String(message.authorId), zone = timezoneUsers.get(author);
+        if (zone || !settings.timezonesDmOwn) return zone || "";
+        const me = currentUser();
+        if (!me || String(me.id) !== author || !channelStore) return "";
+        let channel = null;
+        try { channel = channelStore.getChannel(String(message.channelId)); } catch (_) {}
+        if (!channel || channel.type !== 1) return "";
+        const list = channel.recipients, other = list && list[0];
+        return other ? timezoneUsers.get(String(other.id || other)) || "" : "";
+    }
+    // The native row's timestamp is text Discord already formatted (calendarFormat in createMessageContent 8150), so their time
+    // goes after it in brackets, "Today at 14:18 (18:18)", and their full date and time joins the line you get by tapping the
+    // time (timestampTooltip). Nothing is added when their clock reads the same as yours at that moment.
+    function tzMessage(message, source) {
+        if (!message || typeof message.timestamp !== "string" || !message.timestamp) return message;
+        const zone = tzForMessage(message);
+        if (!zone) return message;
+        const ms = tzMs(source && source.timestamp);
+        if (!Number.isFinite(ms)) return message;
+        const offset = tzOffset(zone, ms);
+        if (offset === null || offset === tzMyOffset(ms)) return message;
+        const hour12 = tzHour12(), time = tzClockText(zone, ms, hour12);
+        if (!time) return message;
+        const copy = Object.assign({}, message);
+        copy.timestamp = message.timestamp + " (" + (settings.timezonesOffset ? time + " " + tzOffsetLabel(offset) : time) + ")";
+        const line = tr("Their time: {time}", {time:tzDateText(zone, ms, hour12) + " \u00b7 " + tzCity(zone)});
+        copy.timestampTooltip = typeof message.timestampTooltip === "string" && message.timestampTooltip ? message.timestampTooltip + "\n" + line : line;
+        copy.timestampAccessibilityLabel = (message.timestampAccessibilityLabel || message.timestamp) + ", " + line;
+        return copy;
+    }
+    // The open chat, drawn again after a time zone or an option changes.
+    function tzRedraw() {
+        const selected = inspectedExport(2119, "default"), store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        let channelId = null;
+        try { channelId = selected && typeof selected.getChannelId === "function" ? selected.getChannelId() : null; } catch (_) {}
+        if (!channelId || !store || typeof store.getMessages !== "function") return;
+        const ids = [];
+        try {
+            const messages = store.getMessages(channelId), list = messages && Array.isArray(messages._array) ? messages._array : null;
+            if (list) for (let i = 0; i < list.length; i++) { if (list[i] && list[i].id) ids.push(String(list[i].id)); }
+        } catch (_) {}
+        bulkDeleteRedrawIds(String(channelId), ids);
+    }
+    function tzSet(userId, zone) {
+        userId = String(userId);
+        if (!/^\d{17,20}$/.test(userId)) return false;
+        if (zone) {
+            if (!tzZone(zone) || tzOffset(zone, Date.now()) === null) return false;
+            timezoneUsers.delete(userId); timezoneUsers.set(userId, zone);
+            if (timezoneUsers.size > TZ_MAX) timezoneUsers.delete(timezoneUsers.keys().next().value);
+        } else timezoneUsers.delete(userId);
+        tz.dirty = true; save(); notify("timezones"); later(tzRedraw, 0);
+        return true;
+    }
+    // A person's ⋯ menu: Set time zone (Change time zone once they have one), in its own group above Block and Report.
+    function timezoneProfileMenu(orig, self, args) {
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!enabled("timezones") || !React || !rendered || !props) return rendered;
+        const userId = String(props.userId || props.user && props.user.id || ""), me = currentUser(), Menu = inspectedExport(9662, "ContextMenu");
+        if (!Menu || !/^\d{17,20}$/.test(userId) || me && String(me.id) === userId) return rendered;
+        const item = {label:timezoneUsers.has(userId) ? tr("Change time zone") : tr("Set time zone"), venusTimezone:true, action:() => later(() => openTimezonePicker(userId), 60)};
+        const has = list => list.some(entry => entry && (entry.venusTimezone || Array.isArray(entry) && entry.some(inner => inner && inner.venusTimezone)));
+        return cloneTree(rendered, (node, nodeProps) => {
+            if (node.type !== Menu || !Array.isArray(nodeProps.items) || has(nodeProps.items)) return nodeProps;
+            const items = nodeProps.items, last = items[items.length - 1];
+            const danger = Array.isArray(last) && last.some(entry => entry && entry.variant === "destructive");
+            const grouped = items.some(Array.isArray);
+            const next = !grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]]);
+            return Object.assign({}, nodeProps, {items:next});
+        }, 0);
+    }
+    // Profiles: a Local time card after the note (UserProfileNote 14101 is the last card, as for Reviews), only for people
+    // with a time zone. It ticks over on each new minute.
+    function timezoneNote(orig, self, args) {
+        const tree = orig.apply(self, args), userId = args[0] && args[0].userId;
+        if (!React || !RN || typeof userId !== "string" || !timezoneUsers.has(userId)) return tree;
+        return el(React.Fragment, null, tree, el(TimezoneCard, {key:"venus-timezone:" + userId, userId}));
+    }
+    const TIMEZONE_DARK = {badge:{width:40, height:40, borderRadius:20, alignItems:"center", justifyContent:"center", backgroundColor:"#5865f229"},
+        brand:{color:"#94a8ff"}, muted:{color:"#949ba4"}};
+    function useTimezoneStyles() {
+        return useThemed("timezones", c => ({badge:TIMEZONE_DARK.badge, brand:{color:c.TEXT_BRAND || TIMEZONE_DARK.brand.color}, muted:{color:c.TEXT_MUTED}}), TIMEZONE_DARK);
+    }
+    function TimezoneCard(props) {
+        useSettings("timezones");
+        const [, tick] = React.useState(0), zone = timezoneUsers.get(props.userId) || "", live = enabled("timezonesProfile") && !!zone;
+        React.useEffect(() => {
+            if (!live) return undefined;
+            let timer, gone = false;
+            const next = () => { timer = later(() => { if (gone) return; tick(n => n + 1); next(); }, 60050 - Date.now() % 60000, false); };
+            next();
+            return () => { gone = true; if (timer !== undefined && typeof global.clearTimeout === "function") global.clearTimeout(timer); };
+        }, [live]);
+        const ui = reviewUI(), styles = useReviewStyles(ui), s = useTimezoneStyles();
+        if (!live || !ui.Card) return null;
+        const now = Date.now(), offset = tzOffset(zone, now);
+        if (offset === null) return null;
+        const hour12 = tzHour12(), mine = tzMyOffset(now), day = o => Math.floor((now + o * 60000) / 86400000);
+        const time = day(offset) === day(mine) ? tzClockText(zone, now, hour12) : tzDateText(zone, now, hour12);
+        const sub = [tzCity(zone), tzOffsetLabel(offset), tzAhead(offset - mine)].join(" \u00b7 ");
+        const Press = inspectedExport(6462, "PressableOpacity") || RN.Pressable || RN.View, Globe = venusIcon(9393, "GlobeEarthIcon"), Pencil = venusIcon(10023, "PencilIcon");
+        return el(RN.View, {style:[styles.card]},
+            el(ui.Card, {title:tr("Local time")},
+                el(Press, {onPress:() => { haptic("SELECTION"); openTimezonePicker(props.userId); }, accessibilityRole:"button",
+                    accessibilityLabel:tr("Local time") + ", " + time + ", " + sub, accessibilityHint:tr("Change time zone"),
+                    style:{flexDirection:"row", alignItems:"center", gap:12, paddingHorizontal:8, paddingVertical:6}},
+                    el(RN.View, {style:s.badge}, el(Globe, {size:"md", color:s.brand.color})),
+                    el(RN.View, {style:{flex:1, gap:2}},
+                        serverText(time, "heading-lg/bold", "text-strong", {color:"#f2f3f5", fontSize:20, fontWeight:"700"}, {numberOfLines:1}),
+                        serverText(sub, "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:13}, {numberOfLines:2})),
+                    el(Pencil, {size:"sm", color:s.muted.color}))));
+    }
+    // Picking a zone: the one they have and yours first, then every zone, with a search box. Rows show the time there now.
+    const TIMEZONE_ROWS = 40;
+    function TimezonePickSheet(props) {
+        useSettings("timezones");
+        const ui = reviewUI(), [query, setQuery] = React.useState(""), userId = props.userId;
+        const close = () => hideReviewSheet(ui, props.sheetKey), current = timezoneUsers.get(userId) || "", mine = tzMine();
+        const header = ui.Header ? el(ui.Header, {title:current ? tr("Change time zone") : tr("Set time zone"), trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : undefined;
+        const words = searchFold(query).split(/\s+/).filter(Boolean), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
+        const all = tzList(), seen = new Set(), list = [];
+        // A zone this phone's Android doesn't know yet (a city renamed after its last time zone update) is left out.
+        const add = zone => { if (zone && !seen.has(zone) && list.length < TIMEZONE_ROWS) { seen.add(zone); if (tzOffset(zone, Date.now()) !== null) list.push(zone); } };
+        if (words.length) all.forEach(zone => { const hay = searchFold(zone.replace(/[_/]/g, " ")); if (words.every(w => hay.indexOf(w) >= 0)) add(zone); });
+        else { add(current); add(mine); all.forEach(add); }
+        const now = Date.now(), hour12 = tzHour12();
+        const rows = Row ? list.map(zone => {
+            const offset = tzOffset(zone, now), region = tzRegion(zone);
+            return el(Row, {key:zone, label:tzCity(zone), icon:zone === current ? rowIcon(6473, "CheckmarkLargeIcon") : rowIcon(9393, "GlobeEarthIcon"),
+                subLabel:[region, offset === null ? "" : tzClockText(zone, now, hour12), offset === null ? "" : tzOffsetLabel(offset)].filter(Boolean).join(" \u00b7 "),
+                onPress:() => { haptic("SELECTION"); if (zone !== current) tzSet(userId, zone); close(); }});
+        }) : [];
+        const content = el(RN.View, {style:{paddingHorizontal:12, paddingBottom:24, gap:16}},
+            serverText(tzName(userId), "text-md/semibold", "text-strong", {color:"#f2f3f5", fontSize:16, fontWeight:"600", paddingHorizontal:4}, {key:"who", numberOfLines:1}),
+            ui.TextInput ? el(ui.TextInput, {key:"search", value:query, onChange:text => setQuery(String(text || "")), placeholder:tr("Search time zones"), autoCorrect:false}) : null,
+            rows.length ? el(Group, {key:"list"}, rows) :
+                el(RN.View, {key:"none", style:{padding:24, alignItems:"center"}}, serverText(tr("No time zones found"), "text-md/medium", "text-muted", {color:"#949ba4", fontSize:16})),
+            current && Row ? el(Group, {key:"remove"}, el(Row, {label:tr("Remove time zone"), icon:rowIcon(5148, "TrashIcon"), variant:"danger",
+                onPress:() => { haptic("IMPACT_LIGHT"); tzSet(userId, null); close(); }})) : null);
+        return serverEditScroll(ui, header, content);
+    }
+    function openTimezonePicker(userId) {
+        if (!enabled("timezones") || !React || !RN || !/^\d{17,20}$/.test(String(userId))) return;
+        const ui = reviewUI();
+        if (!ui.ActionSheet || typeof ui.showSheet !== "function") return;
+        const key = "VenusTimezone:" + userId;
+        try { ui.showSheet({key, content:el(TimezonePickSheet, {userId:String(userId), sheetKey:key}), stackingBehavior:"stack"}); } catch (_) {}
+    }
+    // The page's preview: a DM with Sam, whose time zone is Tokyo (New York if yours is Tokyo), drawn the way chat will draw it.
+    function TimezonesPreview(props) {
+        useSettings("timezones");
+        const s = useChatPreviewStyles(), k = usePreviewChrome(), on = !!props.on, hour12 = tzHour12();
+        const zone = tzMine() === "Asia/Tokyo" ? "America/New_York" : "Asia/Tokyo";
+        const at = minute => { const d = new Date(); d.setHours(16, minute, 0, 0); return d.getTime(); };
+        const theirs = ms => {
+            const offset = tzOffset(zone, ms), text = offset === null ? "" : tzClockText(zone, ms, hour12);
+            return text ? " (" + (settings.timezonesOffset ? text + " " + tzOffsetLabel(offset) : text) + ")" : "";
+        };
+        const chat = on && settings.timezonesChat, own = chat && settings.timezonesDmOwn;
+        const row = (key, who, color, time, ms, show, text) => previewMessage(s, key, who, color, time + (show ? theirs(ms) : ""), el(RN.Text, {style:s.text}, text));
+        return el(RN.View, {key:"preview"},
+            previewScreen(s, "preview", "Time zones preview", [el(RN.View, {key:"chat"},
+                row("sam", "Sam", "#eb459e", tr("Today at 4:01 PM"), at(1), chat, tr("Are we still playing tonight?")),
+                row("you", tr("You"), "#5865f2", tr("Today at 4:02 PM"), at(2), own, tr("Yes, see you there!")))],
+                {header:previewHeader(k, {title:"Sam", leading:el(venusIcon(8490, "AtIcon"), {size:"sm", color:k.iconMuted.color})}),
+                 footer:previewInput(k, s, {placeholder:tr("Message {channel}", {channel:"@Sam"})})}));
+    }
+    function TimezonesSettings() {
+        useSettings("timezones");
+        const ui = reviewUI();
+        if (!React || !RN) return null;
+        const on = enabled("timezones"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Row = ui.TableRow;
+        const now = Date.now(), hour12 = tzHour12();
+        const people = Array.from(timezoneUsers.keys()).map(id => {
+            let user = null;
+            try { user = userStore && userStore.getUser(id); } catch (_) {}
+            return {id, zone:timezoneUsers.get(id), user, name:tzName(id)};
+        }).sort((a, b) => a.name.localeCompare(b.name));
+        const avatar = user => {
+            let uri = "";
+            try { uri = user && typeof user.getAvatarURL === "function" ? String(user.getAvatarURL(undefined, 64) || "") : ""; } catch (_) {}
+            return uri && RN.Image ? el(RN.Image, {source:{uri}, style:{width:24, height:24, borderRadius:12}}) : rowIcon(11671, "UserIcon");
+        };
+        const rows = Row ? people.map(p => el(Row, {key:p.id, label:p.name, icon:avatar(p.user), arrow:true, disabled:!on,
+            subLabel:[tzCity(p.zone), tzOffset(p.zone, now) === null ? "" : tzClockText(p.zone, now, hour12)].filter(Boolean).join(" \u00b7 "),
+            onPress:() => openTimezonePicker(p.id)})) : [];
+        const groups = [
+            !on ? offCard("status", venusIcon(9393, "GlobeEarthIcon"), "timezones") : null,
+            el(TimezonesPreview, {key:"preview", on}),
+            el(Group, {key:"where", title:tr("Where it shows")},
+                switchRow(Switch, "timezonesChat", "In chat", "Their time next to the time on each of their messages.", rowIcon(8471, "ChatIcon")),
+                settings.timezonesChat ? switchRow(Switch, "timezonesDmOwn", "Your messages in DMs", "In a DM with someone who has a time zone, your messages show their time too.", rowIcon(8490, "AtIcon")) : null,
+                switchRow(Switch, "timezonesProfile", "On profiles", "A Local time card with their time right now.", rowIcon(11671, "UserIcon"))),
+            radioGroup(ui, "clock", "Clock", "timezonesClock", on, [["discord", "Same as Discord", "Follows Discord's 12 or 24-hour setting.", rowIcon(5150, "ClockIcon")],
+                ["12", "12-hour", undefined, rowIcon(5150, "ClockIcon")], ["24", "24-hour", undefined, rowIcon(5150, "ClockIcon")]]),
+            el(Group, {key:"offset"}, switchRow(Switch, "timezonesOffset", "Show the UTC offset", "Adds the offset after their time, like GMT+1.", rowIcon(9393, "GlobeEarthIcon"))),
+            rows.length ? el(Group, {key:"people", title:tr("People")}, rows) :
+                el(RN.View, {key:"people", style:{paddingHorizontal:16}}, serverText(tr("No one has a time zone yet."), "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:14})),
+            footnote("note", "Set someone's time zone from the \u22ef menu on their profile. Times are worked out on this phone, daylight saving included, and nothing is sent anywhere.")];
+        return settingsBody(ui, groups);
+    }
     // Show timeout duration (#125, after ShowTimeoutDuration): Discord marks a timed-out person with a small clock that
     // says nothing about how long. Their member record (GuildMemberStore 2128) keeps communicationDisabledUntil, so their
     // messages get the same native tag Discord draws for BOT and Venus draws for staff: "Timed out · 2h 14m", with the
@@ -19955,6 +21199,30 @@
         try { if (React) useSettings("landscapeFull"); } catch (_) {}
         return landscapeChatLayout.call0(orig, self);
     };
+    // Swiping a message to reply or edit blanked the chat (#145): only useChatLayout reported the phone layout, while
+    // everything that reads the window size class directly (useIsWindowLarge 6904: the keyboard placeholder, channel
+    // details, sheets and modals) still saw a LARGE tablet window. Opening the keyboard mixed the two layouts and the chat
+    // panel slid away. On a sideways phone the size class itself (useWindowSizeClassifier 5076) now says NORMAL, so every
+    // reader agrees with the full-screen chat. Its enum is numeric (SMALL 0 < NORMAL 1 < LARGE 2 < XLARGE 3).
+    const landscapeClassifier = {normal:1};
+    function landscapeSizeClass(value) {
+        return typeof value === "number" && value > landscapeClassifier.normal && landscapePhone() ? landscapeClassifier.normal : value;
+    }
+    function landscapeClassifierRead(orig, self, args) { return landscapeSizeClass(orig.apply(self, args)); }
+    landscapeClassifierRead.call0 = (orig, self) => landscapeSizeClass(orig.call(self));
+    function landscapeClassifierHook(orig, self, args) {
+        try { if (React) useSettings("landscapeFull"); } catch (_) {}
+        return landscapeSizeClass(orig.apply(self, args));
+    }
+    landscapeClassifierHook.call0 = (orig, self) => {
+        try { if (React) useSettings("landscapeFull"); } catch (_) {}
+        return landscapeSizeClass(orig.call(self));
+    };
+    function landscapeHookClassifier(exports) {
+        const sizes = exports && exports.WindowSizeClassifier;
+        if (sizes && typeof sizes.NORMAL === "number") landscapeClassifier.normal = sizes.NORMAL;
+        return hookExport(hookExport(exports, "default", landscapeClassifierHook), "getWindowSizeClassifier", landscapeClassifierRead);
+    }
     // Download voice messages (#125, after VoiceDownload): a voice message gets a Download button of its own, right under its
     // waveform: the native call-to-action button Discord's message view already draws (Message.ctaButton, the one under
     // age-verification DMs), so it looks and feels like the rest of the chat and needs no hold menu. Its tap reaches
@@ -20028,6 +21296,110 @@
         };
         Promise.resolve().then(() => media.downloadMediaAssetWithContentType(file.url, 0, file.content_type || file.contentType || "audio/ogg"))
             .then(() => done(true), () => done(false));
+    }
+    // Download profile pictures and banners (#161): tapping a profile picture already opens Discord's full-screen viewer
+    // (openUserProfileAvatarMediaViewer 8659 -> openMediaModal 8660), but it asks for no ⋯ button and no Download, and its
+    // source has no sourceURI, which is what the viewer's Download reads (MediaShareActions 8726). Venus turns those back
+    // on, so a profile picture saves exactly like a photo in chat: ⋯, then Download, through Discord's own downloader
+    // into Downloads. Banners have no viewer at all, so tapping a banner opens the same one.
+    const PROFILE_MEDIA_SOURCE = "user_profile_avatar";
+    function profileMediaSource(source) {
+        return source && typeof source === "object" && typeof source.uri === "string" && !source.sourceURI ? Object.assign({}, source, {sourceURI:source.uri}) : source;
+    }
+    function profileMediaOpen(orig, self, args) {
+        const params = args[0];
+        if (!enabled("profileMedia") || !params || params.analyticsSource !== PROFILE_MEDIA_SOURCE || !Array.isArray(params.initialSources)) return orig.apply(self, args);
+        const next = Array.from(args);
+        next[0] = Object.assign({}, params, {disableDownload:false, disableMediaOverlayButton:false, initialSources:params.initialSources.map(profileMediaSource)});
+        return orig.apply(self, next);
+    }
+    // The banner a profile shows: the server profile's own banner first, then the person's.
+    function profileBannerUri(userId, guildId) {
+        const store = inspectedExport(7586, "default");
+        const url = (path, hash) => "https://cdn.discordapp.com/" + path + hash + (hash.indexOf("a_") === 0 ? ".gif" : ".png") + "?size=4096";
+        try {
+            const member = guildId && store && typeof store.getGuildMemberProfile === "function" ? store.getGuildMemberProfile(userId, guildId) : null;
+            if (member && typeof member.banner === "string" && member.banner) return url("guilds/" + guildId + "/users/" + userId + "/banners/", member.banner);
+        } catch (_) {}
+        let hash = null;
+        try { const profile = store && typeof store.getUserProfile === "function" ? store.getUserProfile(userId) : null; hash = profile && profile.banner; } catch (_) {}
+        if (!hash) try { const user = userStore && userStore.getUser(userId); hash = user && user.banner; } catch (_) {}
+        return typeof hash === "string" && /^(a_)?[0-9a-f]{8,64}$/.test(hash) ? url("banners/" + userId + "/", hash) : null;
+    }
+    function profileBannerOpen(uri) {
+        const open = inspectedExport(8660, "openMediaModal");
+        if (typeof open !== "function") return;
+        let width = 400;
+        try { const win = RN && RN.Dimensions && RN.Dimensions.get("window"); if (win && win.width > 0) width = win.width; } catch (_) {}
+        // A banner is 5:2. The layout is where the viewer grows from: the banner at the top of the profile.
+        const spec = openAs => ({initialSources:[{uri, sourceURI:uri, mediaIndex:0, width:1500, height:600, accessoryType:"embed"}],
+            originViewOrOriginLayout:{x:0, y:0, width, height:Math.round(width / 2.5), resizeMode:"cover"}, analyticsSource:PROFILE_MEDIA_SOURCE,
+            openAs, shareable:false, disableDownload:false, disableMediaOverlayButton:false, disableMediaOverlayFooter:true});
+        // Over the profile sheet, like the profile picture; a profile opened as a full screen has no sheet, so it opens as a modal.
+        const fallback = () => { try { return open(spec("modal")); } catch (error) { dlog("W", "profileMedia", "couldn't open the banner: " + dlogText(error)); } };
+        try { Promise.resolve(open(spec("action-sheet"))).catch(fallback); } catch (_) { fallback(); }
+    }
+    // The banner itself: tapping it opens the viewer. An animated banner with GIF autoplay off already takes a tap to
+    // play (Discord's PressableOpacity); that tap opens the viewer instead, which plays it anyway. Everywhere else the
+    // banner is a plain view, so it gets a pressable around it. Edit-profile previews (pendingBanner) and banners drawn
+    // with disableInteraction are left alone.
+    function profileMediaBanner(orig, self, args) {
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!enabled("profileMedia") || !React || !RN || !rendered || !props || props.disableInteraction || props.pendingBanner) return rendered;
+        const profile = props.displayProfile, user = props.user;
+        let uri = null;
+        try { uri = profile && typeof profile.getBannerURL === "function" ? profile.getBannerURL({canAnimate:true, size:4096}) : null; } catch (_) {}
+        if (typeof uri !== "string" || !/^https:\/\//.test(uri)) uri = user && user.id ? profileBannerUri(String(user.id), profile && profile.guildId ? String(profile.guildId) : "") : null;
+        if (!uri) return rendered;
+        const open = () => { haptic("IMPACT_LIGHT"); profileBannerOpen(uri); };
+        let done = false;
+        const tree = cloneTree(rendered, (node, nodeProps) => {
+            if (done || typeof nodeProps.onPress !== "function" || nodeProps.accessibilityRole !== "button") return nodeProps;
+            done = true;
+            return Object.assign({}, nodeProps, {onPress:open});
+        }, 0);
+        if (done) return tree;
+        // The banner's root is a View laid out by its own style (absolutely placed in some profiles), so a wrapper around it
+        // would change the layout. The View itself is swapped for a Pressable with the same style and children instead.
+        if (!RN.Pressable || !rendered.props || rendered.type !== RN.View) return rendered;
+        const style = rendered.props.style;
+        return el(RN.Pressable, Object.assign({}, rendered.props, {key:rendered.key, onPress:open, accessibilityRole:"imagebutton", accessibilityLabel:tr("Banner"),
+            style:state => state && state.pressed ? [style, {opacity:0.85}] : style}));
+    }
+    // Copy mentions (#156, after CopyUserMention): a person's ⋯ menu (UserProfileOverflowMenu 14015) gets Copy mention, right
+    // after Discord's own Copy Username and Copy User ID when they're there. It copies <@id>, which shows as their @name in any chat.
+    function copyMentionMenu(orig, self, args) {
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!enabled("copyMention") || !React || !rendered || !props) return rendered;
+        const userId = String(props.userId || props.user && props.user.id || ""), Menu = inspectedExport(9662, "ContextMenu");
+        if (!Menu || !/^\d{17,20}$/.test(userId)) return rendered;
+        const item = {label:tr("Copy mention"), venusMention:true, action:() => later(() => copyMention(userId), 60)};
+        const copyLabels = ["y5MwJy", "/AXYnE"].map(discordText).filter(Boolean);
+        const isCopy = entry => !!entry && !Array.isArray(entry) && copyLabels.indexOf(entry.label) >= 0;
+        const lastCopy = list => { let at = -1; list.forEach((entry, i) => { if (isCopy(entry)) at = i; }); return at; };
+        const has = list => list.some(entry => entry && (entry.venusMention || Array.isArray(entry) && entry.some(inner => inner && inner.venusMention)));
+        return cloneTree(rendered, (node, nodeProps) => {
+            if (node.type !== Menu || !Array.isArray(nodeProps.items) || has(nodeProps.items)) return nodeProps;
+            const items = nodeProps.items, top = lastCopy(items);
+            if (top >= 0) return Object.assign({}, nodeProps, {items:items.slice(0, top + 1).concat([item], items.slice(top + 1))});
+            for (let i = 0; i < items.length; i++) {
+                const at = Array.isArray(items[i]) ? lastCopy(items[i]) : -1;
+                if (at < 0) continue;
+                const next = items.slice();
+                next[i] = items[i].slice(0, at + 1).concat([item], items[i].slice(at + 1));
+                return Object.assign({}, nodeProps, {items:next});
+            }
+            const last = items[items.length - 1], danger = Array.isArray(last) && last.some(entry => entry && entry.variant === "destructive");
+            const grouped = items.some(Array.isArray);
+            const next = !grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]]);
+            return Object.assign({}, nodeProps, {items:next});
+        }, 0);
+    }
+    function copyMention(userId) {
+        const ui = reviewUI();
+        try { (ui.clipboard || RN.Clipboard).setString("<@" + userId + ">"); } catch (_) { return; }
+        haptic("SELECTION");
+        reviewToast(ui, "Mention copied", venusIcon(5141, "CopyIcon"));
     }
     // Clone emojis and stickers (#125, after ExpressionCloner): tapping a custom emoji or a server sticker in chat opens
     // Discord's own sheet for it (MessageEmojiActionSheet 9839, StickerDetailActionSheet 10078); Venus adds one button at
@@ -20650,6 +22022,297 @@
             footnote("note", "Only you see these changes, and only on this phone. Nothing is sent to Discord.")];
         return settingsBody(ui, groups);
     }
+    // Local bookmarks (#155): Bookmark Message saves on this phone instead of your account, so Discord's limit (2, or 200
+    // with Nitro) never applies. Discord's own long-press row, toasts and For Later list stay: SavedMessagesStore (9980)
+    // answers with the local bookmarks merged into what your account has, and SavedMessagesActions (13587) keeps new
+    // bookmarks here instead of sending them. Reminders still go to Discord. Each account has its own, in their own file
+    // (never the settings file), and Backup and restore carries them.
+    const BOOKMARKS_FILE = "venus-bookmarks.json", BOOKMARKS_MAX = 5000, BOOKMARKS_FILL = 25;
+    // Only what a real edit or a link preview changes: Translate and Edit locally send MESSAGE_UPDATEs with other text.
+    const BOOKMARK_UPDATE_KEYS = ["content", "embeds", "attachments", "edited_timestamp", "flags", "sticker_items", "poll"];
+    const bookmarks = {list:new Map(), ids:new Set(), index:null, version:0, changedAt:0, loaded:false, loading:false, replaced:false,
+        dirty:false, saving:false, timer:null, filling:false, store:null, comparator:undefined, attached:false,
+        serverSaved:() => null};
+    const bookmarkSnowflake = id => typeof id === "string" && /^\d{17,20}$/.test(id);
+    const bookmarkKey = entry => entry.u + ":" + entry.c + "-" + entry.m;
+    function bookmarksOn() { return enabled("localBookmarks"); }
+    function bookmarkUser() {
+        let me = null;
+        try { me = currentUser(); } catch (_) {}
+        if (!me) { const store = inspectedExport(1392, "default"); try { me = store && store.getCurrentUser(); } catch (_) {} }
+        return me && me.id ? String(me.id) : "";
+    }
+    // The signed-in account's bookmarks, newest first, rebuilt only after a change or an account switch.
+    function bookmarkIndex() {
+        // Read on first use too, in case the settings file couldn't be read at startup.
+        if (!bookmarks.loaded && !bookmarks.loading && files) bookmarksRestore();
+        const user = bookmarkUser(), idx = bookmarks.index;
+        if (idx && idx.user === user && idx.version === bookmarks.version) return idx;
+        const byKey = new Map(), byId = new Map(), sorted = [];
+        if (user) bookmarks.list.forEach(entry => {
+            if (entry.u !== user) return;
+            byKey.set(entry.c + "-" + entry.m, entry); byId.set(entry.m, entry); sorted.push(entry);
+        });
+        sorted.sort((a, b) => b.t - a.t);
+        return bookmarks.index = {user, version:bookmarks.version, byKey, byId, sorted};
+    }
+    function bookmarksChanged() {
+        bookmarks.version++; bookmarks.index = null;
+        bookmarks.changedAt = Math.max(Date.now(), bookmarks.changedAt + 1);
+        const store = bookmarks.store;
+        if (store && typeof store.emitChange === "function") try { store.emitChange(); } catch (_) {}
+        notify("localBookmarks");
+    }
+    function bookmarksIdsRebuild() { bookmarks.ids = new Set(Array.from(bookmarks.list.values(), entry => entry.m)); }
+    // One entry from the file or a backup, checked: a hand-edited file can't put anything odd into Discord's list.
+    function bookmarkClean(item) {
+        if (!item || typeof item !== "object" || Array.isArray(item) || !bookmarkSnowflake(item.u) || !bookmarkSnowflake(item.c) || !bookmarkSnowflake(item.m)) return null;
+        const raw = item.raw && typeof item.raw === "object" && !Array.isArray(item.raw) && item.raw.id === item.m ? item.raw : null;
+        return {u:item.u, c:item.c, m:item.m, g:bookmarkSnowflake(item.g) ? item.g : "", a:bookmarkSnowflake(item.a) ? item.a : "",
+            t:Number.isFinite(item.t) && item.t > 0 ? Math.min(item.t, Date.now()) : Date.now(), raw};
+    }
+    function bookmarksData(level) {
+        const out = [];
+        bookmarks.list.forEach(entry => {
+            const item = {u:entry.u, c:entry.c, m:entry.m, t:entry.t};
+            if (entry.g) item.g = entry.g;
+            if (entry.a) item.a = entry.a;
+            if (entry.raw && level !== 2) item.raw = level === 1 ? Object.assign({}, entry.raw, {embeds:[]}) : entry.raw;
+            out.push(item);
+        });
+        return out;
+    }
+    // Bookmarks go into the backup on one compact line under the readable settings, and the backup stays under the size
+    // Restore accepts: link previews go first, then the saved copies (Venus fetches those messages again when For Later
+    // opens), never the bookmarks themselves. 5000 bookmarks without copies take about 600 KB.
+    function bookmarkBackupText(out) {
+        const head = JSON.stringify(out, null, 1), start = head.slice(0, head.lastIndexOf("}")).replace(/\s+$/, "") + ",\n \"bookmarks\": ";
+        let text = head;
+        for (let level = 0; level < 3; level++) {
+            text = start + JSON.stringify(bookmarksData(level)) + "\n}";
+            if (text.length <= BACKUP_MAX_BYTES) break;
+        }
+        return text;
+    }
+    // What Discord's For Later list reads, in the same shape as a saved message from your account.
+    function bookmarkSaved(entry) {
+        if (entry.saved && entry.saved.raw === entry.raw) return entry.saved.value;
+        let message = null;
+        if (entry.raw) {
+            const create = inspectedExport(5534, "createMessageRecord");
+            try { message = typeof create === "function" ? create(entry.raw) : null; } catch (_) { message = null; }
+        }
+        const value = {saveData:{channelId:entry.c, messageId:entry.m, savedAt:new Date(entry.t), guildId:entry.g || undefined,
+            authorId:entry.a || undefined, notes:undefined, dueAt:undefined}, message};
+        entry.saved = {raw:entry.raw, value};
+        return value;
+    }
+    function bookmarkSort(list) {
+        if (bookmarks.comparator === undefined) bookmarks.comparator = inspectedExport(9980, "getComparator") || null;
+        const key = bookmarks.comparator;
+        const rank = item => {
+            try { return typeof key === "function" ? key(item.saveData) : 1e13 - item.saveData.savedAt.getTime(); } catch (_) { return 0; }
+        };
+        return list.map(item => [rank(item), item]).sort((a, b) => a[0] - b[0]).map(pair => pair[1]);
+    }
+    function bookmarkMerge(list) {
+        if (!bookmarksOn()) return list;
+        const idx = bookmarkIndex();
+        if (!idx.sorted.length) return list;
+        const base = Array.isArray(list) ? list.filter(item => !(item && item.saveData && idx.byKey.has(item.saveData.channelId + "-" + item.saveData.messageId))) : [];
+        return bookmarkSort(base.concat(idx.sorted.map(bookmarkSaved)));
+    }
+    // Local bookmarks your account doesn't also have, for Discord's counts.
+    function bookmarkExtra() {
+        if (!bookmarksOn()) return 0;
+        let n = 0;
+        bookmarkIndex().sorted.forEach(entry => { if (!bookmarks.serverSaved(entry.c, entry.m)) n++; });
+        return n;
+    }
+    // Discord asks isMessageBookmarked(channelId, messageId) (LongPressMessageActionSheet 9978).
+    function bookmarkIsMarked(orig, self, args) {
+        if (bookmarksOn()) {
+            const idx = bookmarkIndex();
+            if (args.length > 1 ? idx.byKey.has(args[0] + "-" + args[1]) : args[0] != null && idx.byId.has(String(args[0]))) return true;
+        }
+        return orig.apply(self, args);
+    }
+    function bookmarkGetSaved(orig, self, args) {
+        if (bookmarksOn()) { const entry = bookmarkIndex().byKey.get(args[0] + "-" + args[1]); if (entry) return bookmarkSaved(entry); }
+        return orig.apply(self, args);
+    }
+    function bookmarkList(orig, self, args) { return bookmarkMerge(orig.apply(self, args)); }
+    function bookmarkCount(orig, self, args) { const n = orig.apply(self, args); return typeof n === "number" ? n + bookmarkExtra() : n; }
+    // Discord's list redraws when this changes, so a local change (or switching the feature) reaches an open For Later.
+    function bookmarkLastChanged(orig, self, args) { const t = orig.apply(self, args); return Math.max(typeof t === "number" ? t : 0, bookmarks.changedAt); }
+    function bookmarksStoreHook(store) {
+        if (bookmarks.store || !store) return;
+        bookmarks.store = store;
+        const saved = store.getSavedMessage;
+        if (typeof saved === "function") bookmarks.serverSaved = (channelId, messageId) => { try { return saved.call(store, channelId, messageId); } catch (_) { return null; } };
+        hookExport(store, "isMessageBookmarked", bookmarkIsMarked);
+        hookExport(store, "getSavedMessage", bookmarkGetSaved);
+        hookExport(store, "getMessageBookmarks", bookmarkList);
+        hookExport(store, "getSavedMessages", bookmarkList);
+        hookExport(store, "getBookmarkCount", bookmarkCount);
+        hookExport(store, "getSavedMessageCount", bookmarkCount);
+        hookExport(store, "getLastChanged", bookmarkLastChanged);
+    }
+    function bookmarkMessage(channelId, messageId) {
+        const store = msgStore || inspectedExport(5532, "default");
+        try { return store && typeof store.getMessage === "function" ? store.getMessage(channelId, messageId) : null; } catch (_) { return null; }
+    }
+    // A copy of the message, so a bookmark still shows after the chat has scrolled out of Discord's cache or a restart.
+    function bookmarkRaw(message, channelId, messageId) {
+        try { const raw = rawDeleted(message, {id:messageId, channelId}); return raw && raw.id === messageId ? raw : null; } catch (_) { return null; }
+    }
+    function bookmarkAdd(user, channelId, messageId) {
+        const key = user + ":" + channelId + "-" + messageId, old = bookmarks.list.get(key);
+        if (!old && bookmarks.list.size >= BOOKMARKS_MAX) return Promise.reject(new Error("Too many bookmarks"));
+        const message = bookmarkMessage(channelId, messageId), raw = message ? bookmarkRaw(message, channelId, messageId) : old ? old.raw : null;
+        const channels = channelStore || inspectedExport(2068, "default");
+        let guild = "";
+        try { const channel = channels && channels.getChannel(channelId); guild = channel && channel.guild_id ? String(channel.guild_id) : ""; } catch (_) {}
+        const author = message && message.author && message.author.id ? String(message.author.id) : old ? old.a : "";
+        const entry = {u:user, c:channelId, m:messageId, g:bookmarkSnowflake(guild) ? guild : "", a:bookmarkSnowflake(author) ? author : "", t:old ? old.t : Date.now(), raw};
+        bookmarks.list.set(key, entry); bookmarks.ids.add(messageId);
+        bookmarksSave(); bookmarksChanged();
+        if (!raw) later(bookmarksFill, 0);
+        return Promise.resolve(bookmarkSaved(entry));
+    }
+    function bookmarkRemove(channelId, messageId) {
+        const user = bookmarkUser(), key = user + ":" + channelId + "-" + messageId;
+        if (!user || !bookmarks.list.delete(key)) return false;
+        bookmarksIdsRebuild(); bookmarksSave(); bookmarksChanged();
+        return true;
+    }
+    // SavedMessagesActions (13587): a new bookmark stays here; a reminder still goes to Discord, and like Discord turning a
+    // bookmark into a reminder, it then replaces the local bookmark.
+    function bookmarkUpsert(orig, self, args) {
+        const request = args[0], channelId = request && request.channelId, messageId = request && request.messageId;
+        if (!bookmarksOn() || !channelId || !messageId) return orig.apply(self, args);
+        if (request.dueAt != null) {
+            const sent = orig.apply(self, args);
+            Promise.resolve(sent).then(() => bookmarkRemove(String(channelId), String(messageId)), () => {});
+            return sent;
+        }
+        const user = bookmarkUser();
+        return user ? bookmarkAdd(user, String(channelId), String(messageId)) : orig.apply(self, args);
+    }
+    function bookmarkDelete(orig, self, args) {
+        const request = args[0], channelId = request && request.channelId && String(request.channelId), messageId = request && request.messageId && String(request.messageId);
+        if (!bookmarksOn() || !channelId || !messageId || !bookmarkRemove(channelId, messageId)) return orig.apply(self, args);
+        // When your account has it too, it goes there as well, or the next sync would bring it back.
+        return bookmarks.serverSaved(channelId, messageId) ? orig.apply(self, args) : Promise.resolve();
+    }
+    function bookmarkFetch(orig, self, args) {
+        if (bookmarksOn()) later(bookmarksFill, 0);
+        return orig.apply(self, args);
+    }
+    // Bookmarks without a saved copy (restored from a small backup, or bookmarked outside a loaded chat) get the
+    // message again, a few at a time while For Later is open: from Discord's cache, or one request each.
+    function bookmarksFill() {
+        if (bookmarks.filling || !bookmarksOn()) return;
+        const missing = bookmarkIndex().sorted.filter(entry => !entry.raw && !entry.tried).slice(0, BOOKMARKS_FILL);
+        if (!missing.length) return;
+        bookmarks.filling = true;
+        let found = 0;
+        missing.reduce((chain, entry) => chain.then(() => {
+            entry.tried = true;
+            const cached = bookmarkMessage(entry.c, entry.m), raw = cached ? bookmarkRaw(cached, entry.c, entry.m) : null;
+            if (raw) { entry.raw = raw; found++; return null; }
+            return httpCall("get", {url:"/channels/" + entry.c + "/messages", query:{around:entry.m, limit:1}}).then(response => {
+                const list = response && response.body, hit = Array.isArray(list) ? list.find(item => item && item.id === entry.m) : null;
+                if (!hit) return;
+                const copy = Object.assign({}, hit);
+                delete copy.referenced_message;
+                try { entry.raw = JSON.parse(JSON.stringify(copy)); found++; } catch (_) {}
+            }, () => {});
+        }), Promise.resolve()).then(() => {
+            bookmarks.filling = false;
+            if (found) { bookmarksSave(); bookmarksChanged(); }
+        });
+    }
+    function bookmarkUpdate(update) {
+        const id = String(update.id), real = !!update.edited_timestamp || update.content === undefined && Array.isArray(update.embeds);
+        if (!real) return;
+        let touched = false;
+        bookmarks.list.forEach(entry => {
+            if (entry.m !== id || !entry.raw) return;
+            const next = Object.assign({}, entry.raw);
+            BOOKMARK_UPDATE_KEYS.forEach(key => { if (update[key] !== undefined) next[key] = update[key]; });
+            try { entry.raw = JSON.parse(JSON.stringify(next)); touched = true; } catch (_) {}
+        });
+        if (touched) { bookmarksSave(); bookmarksChanged(); }
+    }
+    // Flux interceptor (Dispatcher 584): edits reach saved copies, and an account switch redraws For Later.
+    // Always returns false, so every action goes on to Discord unchanged.
+    function bookmarksIntercept(action) {
+        if (!action || !bookmarks.list.size) return false;
+        const type = action.type;
+        if (type === "MESSAGE_UPDATE") {
+            const update = action.message;
+            if (update && update.id != null && bookmarks.ids.has(String(update.id))) later(() => bookmarkUpdate(update), 0);
+        } else if (type === "POST_CONNECTION_OPEN" || type === "LOGOUT") { bookmarks.index = null; bookmarks.changedAt = Math.max(Date.now(), bookmarks.changedAt + 1); }
+        return false;
+    }
+    function bookmarksInit(dispatcher) {
+        if (bookmarks.attached || !dispatcher || typeof dispatcher.addInterceptor !== "function") return;
+        bookmarks.attached = true;
+        try { dispatcher.addInterceptor(bookmarksIntercept); } catch (_) { bookmarks.attached = false; }
+    }
+    // Read once at startup whenever the feature is patched, even switched off, so a backup always carries them.
+    function bookmarksRestore() {
+        if (bookmarks.loaded || bookmarks.loading || !files) return;
+        let constants;
+        try { constants = typeof files.getConstants === "function" ? files.getConstants() : files; } catch (_) { constants = {}; }
+        const dir = constants && constants.DocumentsDirPath;
+        if (typeof dir !== "string") { bookmarks.loaded = true; return; }
+        const path = dir.replace(/\/$/, "") + "/" + BOOKMARKS_FILE;
+        let text = null;
+        bookmarks.loading = true;
+        Promise.resolve().then(() => files.fileExists(path)).then(exists => exists ? files.readFile(path, "utf8") : null).then(read => {
+            text = read;
+            const parsed = read ? JSON.parse(read) : null;
+            if (!bookmarks.replaced && parsed && Array.isArray(parsed.bookmarks)) parsed.bookmarks.slice(0, BOOKMARKS_MAX).forEach(item => {
+                const entry = bookmarkClean(item);
+                if (entry && !bookmarks.list.has(bookmarkKey(entry))) bookmarks.list.set(bookmarkKey(entry), entry);
+            });
+        }).catch(error => {
+            dlog("W", "bookmarks", "couldn't read saved bookmarks: " + dlogText(error));
+            // Kept aside before anything is written over it, so a damaged file can still be recovered by hand.
+            if (text) Promise.resolve().then(() => files.writeFile("documents", "venus-bookmarks.broken.json", text, "utf8")).catch(() => {});
+        }).then(() => {
+            bookmarks.loading = false; bookmarks.loaded = true;
+            bookmarksIdsRebuild(); bookmarksChanged();
+            if (bookmarks.dirty) bookmarksSave();
+        });
+    }
+    // Written a moment after a change, one write at a time; changes made before the file was read wait for it.
+    function bookmarksSave() {
+        if (!files) return;
+        if (!bookmarks.loaded || bookmarks.saving) { bookmarks.dirty = true; return; }
+        bookmarks.dirty = false;
+        if (bookmarks.timer) return;
+        bookmarks.timer = later(bookmarksWrite, 400) || null;
+    }
+    function bookmarksWrite() {
+        bookmarks.timer = null;
+        if (bookmarks.saving) { bookmarks.dirty = true; return; }
+        let text;
+        try { text = JSON.stringify({version:1, bookmarks:bookmarksData(0)}); } catch (_) { return; }
+        bookmarks.saving = true;
+        Promise.resolve().then(() => files.writeFile("documents", BOOKMARKS_FILE, text, "utf8"))
+            .catch(error => dlog("W", "bookmarks", "couldn't save bookmarks: " + dlogText(error)))
+            .then(() => { bookmarks.saving = false; if (bookmarks.dirty) bookmarksSave(); });
+    }
+    function bookmarksReplace(list) {
+        bookmarks.list.clear();
+        list.forEach(entry => bookmarks.list.set(bookmarkKey(entry), entry));
+        bookmarks.replaced = true; bookmarks.loaded = !bookmarks.loading;
+        bookmarksIdsRebuild(); bookmarksSave(); bookmarksChanged();
+        later(bookmarksFill, 0);
+    }
     // HypeSquad, Custom idle, Pause invites, Fast delete channels, Mutual group DMs and Platform spoof (issue #129 and the
     // requests that came with it). HypeSquad and Pause invites are plain API calls; Custom idle swaps Discord's idle time
     // for a live value; Fast delete skips the channel delete alert and adds a row to the channel menu; Mutual group DMs adds
@@ -21264,6 +22927,7 @@
     // The preview: a phone's media notification you can play with (play/pause and both skip buttons work, at the length picked
     // below), and the picture-in-picture window floating over a home screen. Each half fades back when its switch is off.
     const MEDIA_PREVIEW_MS = 47000;
+    const MEDIA_PREVIEW_TIME = {fontSize:11, lineHeight:14, minWidth:44, flexShrink:0, includeFontPadding:false, fontVariant:["tabular-nums"]};
     function BackgroundMediaPreview(props) {
         useSettings("backgroundMedia");
         const s = useChatPreviewStyles(), k = usePreviewChrome(), Press = RN.Pressable || RN.View;
@@ -21303,9 +22967,11 @@
                 el(RN.View, {style:{gap:4}},
                     el(RN.View, {style:{height:4, borderRadius:2, backgroundColor:"#80848e55", overflow:"hidden"}},
                         el(RN.View, {style:[k.brand, {height:4, width}]})),
-                    el(RN.View, {style:{flexDirection:"row", justifyContent:"space-between"}},
-                        el(RN.Text, {style:[s.muted, {fontSize:11}]}, clockText(state.at)),
-                        el(RN.Text, {style:[s.muted, {fontSize:11}]}, clockText(MEDIA_PREVIEW_MS)))),
+                    // One line each, room for the widest time and digits of equal width (#145): on some phones (Samsung's
+                    // font) a short Text was measured too narrow, so its last digits wrapped into a clipped second row.
+                    el(RN.View, {style:{flexDirection:"row", justifyContent:"space-between", gap:8}},
+                        el(RN.Text, {numberOfLines:1, style:[s.muted, MEDIA_PREVIEW_TIME]}, clockText(state.at)),
+                        el(RN.Text, {numberOfLines:1, style:[s.muted, MEDIA_PREVIEW_TIME, {textAlign:"right"}]}, clockText(MEDIA_PREVIEW_MS)))),
                 el(RN.View, {style:{flexDirection:"row", alignItems:"center", justifyContent:"center", gap:28}},
                     skipButton("back", false, true, k.icon.color, audio), playButton("play", true, audio), skipButton("forward", true, true, k.icon.color, audio))));
         const APP_COLORS = ["#57f287", "#fee75c", "#5865f2", "#eb459e", "#ed4245", "#00a8fc", "#f0b232", "#9b84ee"];
@@ -21429,19 +23095,90 @@
     // at the top-right of the text area flips the shared value, then re-runs the animation once from JS so the bar moves
     // right away instead of at the next keystroke. Nothing else about the bar is touched: sending, drafts and the native
     // text field work as before, and if a worklet isn't where Venus expects, the bar is simply left alone.
-    const expandBar = {expanded:false, multiline:false, pill:false, content:0, shared:null, worklets:null, live:null, subscribed:false};
-    // Room kept free above the open bar (the status bar and the channel header), plus a little air under the header.
-    const EXPAND_BAR_RESERVE = 128;
-    // Threads and forum posts draw a second bar under the channel name (the post's title, Follow and the parent channel),
-    // which covered the top of the open bar and its collapse button (#145), so they keep that much more room free.
-    const EXPAND_BAR_THREAD_EXTRA = 64;
+    const expandBar = {expanded:false, multiline:false, pill:false, content:0, shared:null, worklets:null, live:null, subscribed:false,
+        reserve:0, context:0, box:null, chatNodes:new Map(), stickyNodes:new Map(), fitted:new Map(), fitTimer:undefined};
+    // A first guess at the room kept free above the open bar (the status bar and the channel header), used until the bar has
+    // been measured in this chat. Threads and forum posts draw a second bar under the channel name, so they guess higher.
+    const EXPAND_BAR_RESERVE = 128, EXPAND_BAR_THREAD_EXTRA = 64;
+    // Air left between the open bar and whatever sits above it (the channel header, or the post's bar in a forum post).
+    const EXPAND_BAR_GAP = 8, EXPAND_BAR_MIN_RESERVE = 24;
     function expandBarReserve() {
         const id = selectedChannelId();
+        const fitted = id ? expandBar.fitted.get(String(id)) : 0;
+        if (fitted > 0) return fitted;
         let channel = null;
         try { channel = id && channelStore && typeof channelStore.getChannel === "function" ? channelStore.getChannel(String(id)) : null; } catch (_) {}
         const type = channel && channel.type;
         return EXPAND_BAR_RESERVE + (type === 10 || type === 11 || type === 12 ? EXPAND_BAR_THREAD_EXTRA : 0);
     }
+    // The guess above was a fixed number, which left the open bar a little too tall in a plain channel (its top ran under the
+    // header) and short of the post's bar in a forum post (#145). So once the bar has opened, it is measured: the top of the
+    // chat (a marker in ChatViewWrapper) and the bottom of Discord's sticky header under it (the forum post's Follow bar,
+    // thread and safety banners) say where the bar should start, and the bar's own box says where it did. The box's top
+    // moves one for one with the reserve (the bar grows up from the keyboard), so one correction lands it, whatever the
+    // padding, the reply bar or the phone's insets add. The result is remembered per chat, so it opens right the next time.
+    function expandBarMeasure(node) {
+        return new Promise(resolve => {
+            if (!node || typeof node.measureInWindow !== "function") { resolve(null); return; }
+            try { node.measureInWindow((x, y, width, height) => resolve(typeof y === "number" && isFinite(y) ? {y, height:Number(height) || 0} : null)); }
+            catch (_) { resolve(null); }
+        });
+    }
+    function expandBarUseReserve(reserve) {
+        expandBar.reserve = reserve;
+        if (expandBar.shared) try { expandBar.shared.set(reserve); } catch (_) {}
+        expandBarApply();
+    }
+    function expandBarSettle() { const w = expandBar.worklets; return (w && w.duration > 0 ? w.duration : 200) + 80; }
+    function expandBarFit(tries) {
+        expandBar.fitTimer = undefined;
+        if (!expandBar.expanded || !expandBar.box || !expandBar.worklets || !(expandBar.reserve > 0)) return;
+        const id = String(selectedChannelId() || "");
+        Promise.all([expandBarMeasure(expandBar.box), expandBarMeasure(expandBar.chatNodes.get(id)), expandBarMeasure(expandBar.stickyNodes.get(id))]).then(found => {
+            const box = found[0], chat = found[1], sticky = found[2], reserve = expandBar.reserve;
+            if (!expandBar.expanded || !box || !(box.height > 0) || String(selectedChannelId() || "") !== id) return;
+            let top = chat ? chat.y : null;
+            if (sticky && sticky.height > 0) top = Math.max(top == null ? 0 : top, sticky.y + sticky.height);
+            if (top == null) return;
+            const next = Math.max(EXPAND_BAR_MIN_RESERVE, Math.round(reserve + top + EXPAND_BAR_GAP - box.y));
+            if (settings.debugLog) dlog("I", "hooks", "expand message bar: starts at " + Math.round(box.y) + ", room ends at " + Math.round(top) + ", reserve " + reserve + " -> " + next);
+            if (Math.abs(next - reserve) < 2) { if (id) expandBar.fitted.set(id, reserve); return; }
+            if (id) { if (expandBar.fitted.size > 100) expandBar.fitted.clear(); expandBar.fitted.set(id, next); }
+            expandBarUseReserve(next);
+            if (tries > 1) expandBar.fitTimer = later(() => expandBarFit(tries - 1), expandBarSettle(), false);
+        }).catch(() => {});
+    }
+    // After the bar opens, and whenever its box or the header above it changes size (a reply bar, the keyboard, a banner).
+    function expandBarRefitSoon() {
+        if (!expandBar.expanded) return;
+        if (expandBar.fitTimer !== undefined && typeof global.clearTimeout === "function") global.clearTimeout(expandBar.fitTimer);
+        expandBar.fitTimer = later(() => expandBarFit(3), expandBarSettle(), false);
+    }
+    // Where the chat starts, and Discord's sticky header: one marker each, keyed by channel. Neither takes a touch.
+    const EXPAND_BAR_SPOT = {position:"absolute", top:0, left:0, width:0, height:0};
+    function ExpandBarSpot(props) {
+        const id = String(props.channelId), map = props.sticky ? expandBar.stickyNodes : expandBar.chatNodes;
+        const mine = React.useRef(null);
+        const ref = React.useCallback(node => {
+            if (node) { mine.current = node; map.set(id, node); }
+            else { if (map.get(id) === mine.current) map.delete(id); mine.current = null; }
+        }, [id, map]);
+        if (props.sticky) return el(RN.View, {ref, pointerEvents:"box-none", collapsable:false, onLayout:expandBarRefitSoon}, props.children);
+        return el(RN.View, {ref, pointerEvents:"none", collapsable:false, style:EXPAND_BAR_SPOT});
+    }
+    // ChatViewWrapper {channelId, stickyHeader, children}. Only a header Discord already passes is wrapped (see translateBarProps).
+    function expandBarChatProps(props) {
+        const spot = el(ExpandBarSpot, {key:"venus-expand-top", channelId:props.channelId});
+        const children = Array.isArray(props.children) ? props.children.concat([spot]) : [props.children, spot];
+        return Object.assign({}, props, props.stickyHeader ? {children, stickyHeader:el(ExpandBarSpot, {channelId:props.channelId, sticky:true}, props.stickyHeader)} : {children});
+    }
+    function expandBarChatView(orig, self, args) {
+        const props = args[0];
+        if (!props || !props.channelId || !React || !RN || !enabled("expandBar")) return orig.apply(self, args);
+        return orig.apply(self, [expandBarChatProps(props)].concat(Array.prototype.slice.call(args, 1)));
+    }
+    expandBarChatView.call1 = (orig, self, props) => !props || !props.channelId || !React || !RN || !enabled("expandBar") ? orig.call(self, props) : orig.call(self, expandBarChatProps(props));
+    expandBarChatView.call2 = (orig, self, props, ref) => !props || !props.channelId || !React || !RN || !enabled("expandBar") ? orig.call(self, props, ref) : orig.call(self, expandBarChatProps(props), ref);
     const expandBarHandlers = new WeakMap();
     const EXPAND_BAR_DARK = {button:{position:"absolute", top:4, right:6, width:32, height:32, borderRadius:16, alignItems:"center", justifyContent:"center"},
         pressed:{backgroundColor:"#4e50584d"}, icon:{color:"#b5bac1"}};
@@ -21525,8 +23262,9 @@
         }
     }
     // The hook that owns a message bar's height: remember its shared values, so a tap can move the bar at once.
-    function expandBarHeightHook(orig, self, args) {
-        const out = orig.apply(self, args), input = args && args[0];
+    // It runs on every render of the message bar with one argument: that call skips the arguments object and apply
+    // (Hermes HBC98: 52.7 -> 35.6 us per 100 calls, 1.48x).
+    function expandBarRemember(out, input) {
         const pick = key => out && out[key] != null ? out[key] : input && input[key];
         const live = {textFieldHeight:pick("textFieldHeight"), textFieldMinHeight:pick("textFieldMinHeight")};
         // The hook keeps its content size to itself (a shared value that never leaves it), so the size comes from the text
@@ -21534,6 +23272,8 @@
         if (live.textFieldHeight && typeof live.textFieldHeight.set === "function") expandBar.live = live;
         return out;
     }
+    function expandBarHeightHook(orig, self, args) { return expandBarRemember(orig.apply(self, args), args && args[0]); }
+    expandBarHeightHook.call1 = (orig, self, input) => expandBarRemember(orig.call(self, input), input);
     function expandBarApply() {
         const live = expandBar.live, w = expandBar.worklets;
         if (!live || !live.textFieldHeight) { if (settings.debugLog) dlog("W", "hooks", "expand message bar: the bar's height isn't known yet"); return; }
@@ -21541,7 +23281,7 @@
         const content = expandBar.content > 0 ? expandBar.content : min;
         try {
             let top = 0, timing = null, options = {duration:200};
-            if (w) { top = w.cap(expandBar.expanded ? expandBarReserve() : 0); timing = w.withTiming; options = {duration:w.duration, easing:w.easing}; }
+            if (w) { top = w.cap(expandBar.expanded ? expandBar.reserve || expandBarReserve() : 0); timing = w.withTiming; options = {duration:w.duration, easing:w.easing}; }
             if (!(top > 0)) {
                 // The height worklets aren't in place: use the window's height instead.
                 const win = RN && RN.Dimensions ? RN.Dimensions.get("window").height : 800;
@@ -21557,8 +23297,10 @@
         next = !!next;
         if (expandBar.expanded === next) return;
         expandBar.expanded = next;
-        if (expandBar.shared) try { expandBar.shared.set(next ? expandBarReserve() : 0); } catch (_) {}
+        expandBar.reserve = next ? expandBarReserve() : 0;
+        if (expandBar.shared) try { expandBar.shared.set(expandBar.reserve); } catch (_) {}
         expandBarApply();
+        if (next) expandBarRefitSoon();
         notify("expandBar");
     }
     // The button shows once the text has grown past one line (like the bar does), and while it is expanded.
@@ -21608,7 +23350,7 @@
         if (handler === orig && !open) return props;
         return Object.assign({}, props, open ? {maxHeight:4000, onChangeContentSize:handler} : {onChangeContentSize:handler});
     }
-    function ExpandBarButton() {
+    function ExpandBarButton(props) {
         useSettings("expandBar");
         useLanguage();
         const s = useExpandBarStyles();
@@ -21616,9 +23358,11 @@
         if (!enabled("expandBar") || !(open || expandBar.multiline) || !RN) return null;
         const Press = RN.Pressable;
         if (!Press) return null;
+        // On the bar's corner it sits under the Replying to / Editing bar, never on top of its close button (#145).
+        const below = props && props.corner && expandBar.context > 0 ? expandBar.context : 0;
         return el(Press, {onPress:() => { haptic("IMPACT_LIGHT"); expandBarSet(!expandBar.expanded); }, accessibilityRole:"button",
-            accessibilityLabel:tr(open ? "Collapse message bar" : "Expand message bar"), hitSlop:{top:8, bottom:8, left:8, right:8},
-            style:state => [s.button, state && state.pressed ? s.pressed : null]}, expandBarGlyph(open, s.icon.color, 20));
+            accessibilityLabel:tr(open ? "Collapse message bar" : "Expand message bar"), hitSlop:{top:below ? 2 : 8, bottom:8, left:8, right:8},
+            style:state => [s.button, below ? {top:s.button.top + below} : null, state && state.pressed ? s.pressed : null]}, expandBarGlyph(open, s.icon.color, 20));
     }
     // The message bar's native text view, with the button beside it and the height cap lifted while expanded.
     function expandBarWrap(component) {
@@ -21653,11 +23397,45 @@
             if (added || !("onStartShouldSetResponder" in props) || !("onResponderRelease" in props) || !("accessibilityElementsHidden" in props) || props.collapsable !== false) return props;
             added = true;
             const kids = Array.isArray(props.children) ? props.children : props.children == null ? [] : [props.children];
-            return Object.assign({}, props, {children:kids.concat([el(ExpandBarButton, {key:"venus-expand-button"})])});
+            // The Replying to / Editing bar (ChatInputContextBar {channel, chatInputRef, pendingEdit, pendingReply}) is the box's
+            // first row: it's measured, so the button goes under it instead of over its close button (#145).
+            let context = false;
+            const children = kids.map(kid => {
+                if (context || !kid || typeof kid !== "object" || !kid.props || !("pendingReply" in kid.props) || !("pendingEdit" in kid.props)) return kid;
+                context = true;
+                return el(RN.View, {key:"venus-expand-context", collapsable:false, onLayout:expandBarContextLayout}, kid);
+            });
+            if (!context && expandBar.context) { expandBar.context = 0; later(() => notify("expandBar"), 0); }
+            const orig = props.onLayout;
+            let onLayout = expandBarBoxLayouts.get(orig || expandBarBoxLayouts);
+            if (!onLayout) {
+                onLayout = function (event) {
+                    expandBarBoxLayout(event);
+                    return typeof orig === "function" ? orig.apply(this, arguments) : undefined;
+                };
+                expandBarBoxLayouts.set(orig || expandBarBoxLayouts, onLayout);
+            }
+            return Object.assign({}, props, {onLayout, children:children.concat([el(ExpandBarButton, {key:"venus-expand-button", corner:true})])});
         }, 0, () => added);
         expandBar.pill = added;
         if (!added && settings.debugLog) dlog("W", "hooks", "expand message bar: the bar's box wasn't found, so the button goes beside the text");
         return next;
+    }
+    const expandBarBoxLayouts = new WeakMap();
+    // The box is the view the open bar is measured by; its size changes when the bar opens, a reply bar shows or the
+    // keyboard moves, and the bar is fitted again then.
+    function expandBarBoxLayout(event) {
+        const target = event && (event.currentTarget || event.target);
+        if (target && typeof target.measureInWindow === "function") expandBar.box = target;
+        expandBarRefitSoon();
+    }
+    function expandBarContextLayout(event) {
+        const layout = event && event.nativeEvent && event.nativeEvent.layout;
+        const height = layout ? Math.max(0, Math.round(layout.height)) : 0;
+        if (height === expandBar.context) return;
+        expandBar.context = height;
+        notify("expandBar");
+        expandBarRefitSoon();
     }
     function expandBarInit(flux) {
         if (expandBar.subscribed || !flux || typeof flux.subscribe !== "function") return;
@@ -21667,7 +23445,7 @@
                 if (!expandBar.expanded) return;
                 if (settings.expandBarChats) { expandBarSet(false); return; }
                 // Still open in the next chat: its header may be taller or shorter (a thread), so the room above follows.
-                later(() => { if (!expandBar.expanded) return; if (expandBar.shared) try { expandBar.shared.set(expandBarReserve()); } catch (_) {} expandBarApply(); }, 0);
+                later(() => { if (!expandBar.expanded) return; expandBarUseReserve(expandBarReserve()); expandBarRefitSoon(); }, 0);
             });
             // Only a message you send from this phone (Discord adds it to the chat before the server confirms it).
             flux.subscribe("MESSAGE_CREATE", event => { if (expandBar.expanded && settings.expandBarSending && event && event.optimistic === true) expandBarSet(false); });
@@ -22779,6 +24557,8 @@
                 // in the sticky header slot above the messages, where Discord shows its own New messages bar.
                 if (features.translate) exports = hookComponent(exports, translateBarHeader);
                 if (features.bulkDelete) exports = hookComponent(exports, bulkDeleteChatFooter);
+                // Expand the message bar: where the chat and its sticky header are, so the open bar stops right under them (#145).
+                if (features.expandBar) exports = hookComponent(exports, expandBarChatView);
                 return features.customThemes ? hookComponent(exports, chatViewWrapperThemeBackground) : exports;
             case 13074: return features.accountSwitcher ? hookMultiAccountStore(exports) : exports;
             case 13073: return features.accountSwitcher ? hookPushNotificationActions(exports) : exports;
@@ -22811,6 +24591,7 @@
             case 13511: return features.dndBanners ? hookExport(exports, "shouldNotify", dndShouldNotify) : exports;
             case 13523: return features.dndBanners ? hookExport(exports, "playInAppMessageSound", dndBannerSound) : exports;
             case 5075: return features.landscapeFull ? hookExport(hookExport(exports, "default", landscapeChatLayoutHook), "getChatLayout", landscapeChatLayout) : exports;
+            case 5076: return features.landscapeFull ? landscapeHookClassifier(exports) : exports;
             case 8590: if (features.badges && exports && exports.default) badgesAttachStore(exports.default); return exports;
             case 9978:
                 if (features.translate) exports = hookComponent(exports, translateSheet);
@@ -22824,7 +24605,7 @@
             case 1266: if (features.pastelize) pastelHash = typeof exports === "function" ? exports : exports.default; return exports;
             case 2128: if (features.pastelize) guildMembers = exports.default; if (features.timeoutDuration && exports && exports.default) timeoutTag.members = exports.default; return exports;
             case 8013:
-                if ((features.pastelize || features.noDelete || features.translate || features.messageHighlight || features.bulkDelete || features.staffTag || features.timeoutDuration || features.voiceDownload || features.localEdit) && exports.default && exports.default.prototype)
+                if ((features.pastelize || features.noDelete || features.translate || features.messageHighlight || features.bulkDelete || features.staffTag || features.timeoutDuration || features.voiceDownload || features.localEdit || features.timezones || features.freeNitro) && exports.default && exports.default.prototype)
                     hookExport(exports.default.prototype, "generate", messageRow);
                 return exports;
             case 5207: if (features.platformIndicators || features.userNotif) { presenceStore = exports.default; if (features.userNotif) userNotifSeedStatuses(); } return exports;
@@ -22837,7 +24618,9 @@
             case 13788: return features.platformIndicators ? hookComponent(exports, platformHeader) : exports;
             case 17165: return features.platformIndicators ? hookComponent(exports, platformDmRow) : exports;
             // User list rows (UserRow, default export) and voice panel rows (FormComponents' named MemberRowItem).
-            case 10531: return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList")) : exports;
+            case 10531:
+                if (features.pastelize || features.staffTag) exports = hookComponent(exports, memberListRow);
+                return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList")) : exports;
             case 9069: return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList"), "MemberRowItem") : exports;
             // Profile "in voice" users (UserProfileActivityVoiceChannelUsers): private UserRow rows.
             case 14076:
@@ -22872,7 +24655,9 @@
                 if (features.serverEdit) exports = hookExport(exports, "default", serverEditMenu);
                 if (features.pauseInvites) exports = hookExport(exports, "default", pauseInvitesMenu);
                 if (features.serverInfo) exports = hookExport(exports, "default", serverInfoMenu);
+                if (features.noDelete || features.noTyping) exports = hookExport(exports, "default", rulesServerMenu);
                 return features.viewRaw ? hookExport(exports, "default", viewRawServerMenu) : exports;
+            case 17434: return features.noDelete || features.noTyping ? hookExport(exports, "getGuildFolderMenuItems", rulesFolderMenu) : exports;
             case 11024: if (features.reviewDB) oauthModal = exports.default; return exports;
             case 6542: if (features.reviewDB) nativeRowGroup = exports.TableRowGroup; return exports;
             case 7172: if (features.reviewDB) nativeSwitchRow = exports.TableSwitchRow; return exports;
@@ -22882,10 +24667,13 @@
                 // (GuildRolesAndChannelsRow reads it by name); hook both.
                 exports = hookComponent(exports, hiddenInfo);
                 return hookExport(exports, "ChannelInfo", hiddenInfo);
-            case 14101: return features.reviewDB ? hookComponent(exports, reviewNote) : exports;
+            case 14101:
+                if (features.timezones) exports = hookComponent(exports, timezoneNote);
+                return features.reviewDB ? hookComponent(exports, reviewNote) : exports;
             case 15048: return features.reviewDB ? hookExport(exports, "ContextMenuPopout", reviewMenu) : exports;
             case 14995: return features.reviewDB ? hookComponent(exports, reviewGuild) : exports;
             case 7098: return features.systemEmoji && exports && exports.default ? replaceValue(exports, "default", propsComponent(exports.default, systemEmojiProps)) : exports;
+            case 9840: return features.systemEmoji ? hookComponent(exports, systemEmojiSheet) : exports;
             case 15602: exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG); return exports;
             case 11084: return hookExport(exports, "createList", settingsSections);
             case 15733: SettingsList = exports.SettingsList; return exports;
@@ -22905,6 +24693,7 @@
             case 6145: if (features.voiceOptions && exports && exports.default) hookExport(exports.default, "disconnect", voiceLeave); return exports;
             case 11372: return features.voiceOptions ? hookExport(exports, "playSound", voiceSoundPlay) : exports;
             case 10036: return features.tenorGifs ? hookExport(exports, "getSearchPlaceholder", tenorPlaceholder) : exports;
+            case 10044: return features.tenorGifs ? hookComponent(exports, gifPickerHeader) : exports;
             case 10035: return features.favouriteAnything ? hookExport(exports, "addFavoriteGIF", favouriteAdd) : exports;
             case 10038: return features.favouriteAnything ? hookExport(exports, "useFavoriteGIFsMobile", favouriteList) : exports;
             case 14197: return features.mutualGroupDMs ? hookComponent(exports, mutualGroupsRow) : exports;
@@ -22912,10 +24701,19 @@
             case 12849: return features.noTyping ? replaceValue(exports, "default", hookExport(hookExport(exports.default, "startTyping", typing), "stopTyping", typing)) : exports;
             case 10596:
                 if (features.fastDeleteChannels) exports = hookComponent(exports, fastDeleteSheet);
+                if (features.noDelete || features.noTyping) exports = hookComponent(exports, rulesChannelMenu);
                 return features.viewRaw ? hookComponent(exports, viewRawChannelMenu) : exports;
-            case 17245: return features.viewRaw ? hookComponent(exports, viewRawThreadMenu) : exports;
+            case 17245:
+                if (features.noDelete || features.noTyping) exports = hookComponent(exports, rulesThreadMenu);
+                return features.viewRaw ? hookComponent(exports, viewRawThreadMenu) : exports;
             case 10780: return features.viewRaw ? hookComponent(exports, viewRawPostMenu) : exports;
-            case 14015: return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
+            case 8646: return features.profileMedia ? hookComponent(exports, profileMediaBanner) : exports;
+            case 8660: return features.profileMedia ? hookExport(exports, "openMediaModal", profileMediaOpen) : exports;
+            case 14015:
+                if (features.noDelete) exports = hookComponent(exports, rulesProfileMenu);
+                if (features.timezones) exports = hookComponent(exports, timezoneProfileMenu);
+                if (features.copyMention) exports = hookComponent(exports, copyMentionMenu);
+                return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
             case 7158: return features.viewRaw ? hookComponent(exports, viewRawRolesCard) : exports;
             case 7167: return features.viewRaw ? hookExport(exports, "showSimpleActionSheet", viewRawSimpleSheet) : exports;
             case 1128: if (features.quickDelete || features.noConfirmPin || features.fastDeleteChannels) locale = exports; return exports;
@@ -22926,7 +24724,7 @@
             case 14755: return features.fakeDeafen && exports && exports.default ? fakeDeafAttach(exports) : exports;
             case 18341: return features.fakeDeafen ? hookComponent(exports, fakeDeafSwitch, "DeafenSwitch") : exports;
             case 1392:
-                if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments || features.quietReplies || features.silentEdit || features.silentDelete || features.localEdit))
+                if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments || features.quietReplies || features.silentEdit || features.silentDelete || features.localEdit || features.timezones || features.profileMedia))
                     userStore = exports.default;
                 if (features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels) restoreDeleted();
                 return exports;
@@ -22937,6 +24735,8 @@
                     restoreDeleted();
                 }
                 return exports;
+            case 9980: if (features.localBookmarks && exports && exports.default) bookmarksStoreHook(exports.default); return exports;
+            case 13587: return features.localBookmarks ? hookExport(hookExport(hookExport(exports, "upsertSavedMessage", bookmarkUpsert), "deleteSavedMessage", bookmarkDelete), "fetchBookmarks", bookmarkFetch) : exports;
             case 7656: if (features.quests) questAttach(exports.default); return exports;
             case 1498: return features.fullImages ? hookExport(exports, "getMobileOptimizedSrc", fullImagesSrc) : exports;
             case 8666: return features.fullImages ? hookFullImagesViewer(exports) : exports;
@@ -22970,6 +24770,7 @@
                 if (features.expandBar && exports && exports.default) expandBarInit(exports.default);
                 if (features.experiments && exports && exports.default) experimentsInit(exports.default);
                 if (features.voiceOptions && exports && exports.default) voiceOptionsInit(exports.default);
+                if (features.localBookmarks && exports && exports.default) bookmarksInit(exports.default);
                 if ((features.messageHighlight || features.bulkDelete || features.localEdit) && exports && exports.default && !dispatcher)
                     dispatcher = exports.default.dispatch.bind(exports.default);
                 if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 584) {
@@ -23099,6 +24900,7 @@
             }
             case 8056: return features.anonFiles ? hookExport(exports, "getUploadPayload", anonPayload) : exports;
             case 8026: return features.anonFiles ? hookExport(exports, "getAttachmentPayload", anonPayload) : exports;
+            case 10321: return features.anonFiles ? hookComponent(exports, anonUploadSheet) : exports;
             case 7323:
                 if (!features.freeNitro) return exports;
                 stickerRules = exports;

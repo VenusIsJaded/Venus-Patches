@@ -104,12 +104,22 @@ object Diagnostics {
             if (app != null) return
             app = c
             startedAt = System.currentTimeMillis()
-            screenOn = crashScreenSetting(c)
             val previous = Thread.getDefaultUncaughtExceptionHandler()
             if (previous !is Catcher) Thread.setDefaultUncaughtExceptionHandler(Catcher(previous))
             if (c is Application) c.registerActivityLifecycleCallbacks(Lifecycle())
+            // Off the launch path: reading the settings file (up to 4 MB) on the main thread held up Discord's first frame.
+            // Until it answers the crash screen counts as on, which only means a crash in the first milliseconds still
+            // leaves a pending report; showPending checks the switch again before it shows anything.
             // Android 11+ remembers why the last process ended: native crashes and ANRs never reach a Java handler.
-            if (Build.VERSION.SDK_INT >= 30) Thread(object : Runnable { override fun run() { checkExitReasons(c) } }, "venus-exit-reasons").start()
+            val background = Thread(object : Runnable {
+                override fun run() {
+                    try { screenOn = crashScreenSetting(c) } catch (_: Throwable) { }
+                    if (Build.VERSION.SDK_INT >= 30) checkExitReasons(c)
+                }
+            }, "venus-diag-init")
+            background.priority = Thread.MIN_PRIORITY
+            background.isDaemon = true
+            background.start()
         } catch (_: Throwable) { }
     }
 

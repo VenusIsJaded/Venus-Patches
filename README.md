@@ -1,6 +1,6 @@
 # Venus Patches
 
-Extra features and privacy options for Discord on Android, patched in with **[Morphe](https://morphe.software)**. No tracking, and everything works offline except ReviewDB, Translate messages, Fix link previews and Bring back Tenor GIFs.
+Extra features and privacy options for Discord on Android, patched in with **[Morphe](https://morphe.software)**. No tracking, and everything works offline except ReviewDB, Translate messages, Fix link previews and Bring back Tenor GIFs (Tenor and Giphy).
 
 [**Add to Morphe**](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [What's new](CHANGELOG.md) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
@@ -10,7 +10,7 @@ Extra features and privacy options for Discord on Android, patched in with **[Mo
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager/releases).
 2. Tap **[Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches)**, or add `https://github.com/VenusIsJaded/Venus-Patches` as a source.
-3. Pick the **original** Discord 351.11 APKM, not an already patched one.
+3. Pick the **original** Discord 351.11 APKM from [APKMirror](https://www.apkmirror.com/apk/discord-inc/discord-chat-for-games/), not an already patched one. APKPure and Uptodown files only carry the parts for one kind of phone and crash as soon as Discord opens, so Venus refuses to patch them when the parts your phone needs are missing.
 4. Keep the default selection (everything except **Custom branding**), then patch and install.
 5. Open **Discord Settings → Venus → Features** and turn on what you want. Everything starts off.
 
@@ -22,11 +22,11 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 
 | Group | Feature | What it does |
 | --- | --- | --- |
-| **Messages** | Keep deleted messages | Deleted messages and edit history stay in chat, with a searchable message log |
+| **Messages** | Keep deleted messages | Deleted messages and edit history stay in chat, with a searchable message log. Works everywhere or only where you choose, and any server, folder, channel or person can be turned on or off |
 | | Bulk delete messages | Select and delete many messages at once, even across chats |
 | | Hide blocked or ignored messages | Removes blocked and ignored message rows (based on RemoveBlockedUsers) |
 | | Message highlights | Custom colors and bar width for replies and mentions |
-| | Translate messages | Translate a whole chat or a single message, automatically or on request |
+| | Translate messages | Translate a whole chat or a single message, automatically or on request, saved on your phone or only until a restart |
 | | Double-tap to reply | Double-tap to reply or edit your own message; optional triple-tap to delete |
 | | Load full-quality images | Loads original images instead of compressed copies (based on Uncompressed Discord Images by Knewest and HighResProfileImages by Kawtious) |
 | | Skip delete confirmation | No "Are you sure?" when deleting messages |
@@ -37,14 +37,14 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Always trust links and files | No link or download warnings (based on AlwaysTrust by zt and Trwy) |
 | | Jump to first message | Go straight to the start of a chat |
 | | Favourite any image or video | Save any image or video to your GIF favourites |
-| **Sending** | Send Nitro stickers and emojis as links | Sends Nitro emojis and stickers as image links |
-| | Bring back Tenor GIFs | Tenor GIFs in Discord's GIF picker |
+| **Sending** | Send Nitro stickers and emojis as links | Sends Nitro emojis and stickers as image links, and shows links like these as real emojis and stickers with their usual menu |
+| | Bring back Tenor GIFs | Tenor and Giphy GIFs in Discord's GIF picker, with a Tenor / Giphy / Klipy switcher next to the search bar |
 | | Fix link previews | Working embeds for X, Instagram, TikTok, Reddit and more, with tracking removed |
 | | Send audio as voice messages | Audio files are sent as voice messages |
 | | Send long messages | Messages over the limit are sent in parts |
-| | Hide typing indicator | Others won't see you typing |
+| | Hide typing indicator | Others won't see you typing. Works everywhere or only where you choose, and any server, folder or channel can be turned on or off |
 | | Show file sizes when attaching | File sizes in the media picker |
-| | Anonymous file names | Sent files get random names (based on Anonymous File Names by k1ng_op) |
+| | Anonymous file names | Sent files get random names, or keep their real one per file (based on Anonymous File Names by k1ng_op) |
 | | Tap mentions to open profiles | Tap a typed @mention to open that profile (based on ClickableMentions by mwittrien) |
 | | Expand the message bar | A button that makes the message bar taller |
 | | Compress big files | Shrinks photos, videos and audio to fit the upload limit |
@@ -53,17 +53,21 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Edit without "(edited)" | Edits your latest message without the tag by resending it |
 | | Delete without a trace | Blanks a message before deleting it, so loggers keep nothing |
 | | Edit messages on this phone | Change how any message reads, only on your phone |
-| **People** | Pastel name colors | Soft colors for names without a role color |
+| | Local bookmarks | Bookmark as many messages as you like, kept on this phone instead of your account. They show in Discord's own Bookmarks |
+| **People** | Pastel name colors | Soft colors for names without a role color, in chat and the member list, or only in DMs and groups |
 | | Show device indicators | Device icons next to names |
-| | Show owner and mod tags | Owner, Admin and Mod tags in chat (based on StaffTag by mwittrien) |
+| | Show owner and mod tags | Owner, Admin and Mod tags in chat and the member list (based on StaffTag by mwittrien) |
 | | Alert when you're removed | Know when you're unfriended, kicked or banned (based on RemovedConnectionAlerts by iyu46) |
 | | Fix unknown mentions | Shows names instead of @unknown-user |
+| | Download profile pictures and banners | Save anyone's profile picture or banner, the same way as photos in chat |
 | | Copy profile bios | Select and copy profile bios |
+| | Copy mentions | Copy anyone's mention from their profile menu (based on CopyUserMention by Cortex and castdrian) |
 | | Leave group DMs silently | Leave without the "left the group" message (based on SilentLeave by coder.gg) |
 | | Show timeout duration | Shows how long someone is timed out (based on ShowTimeoutDuration by Ven) |
+| | Time zones | Set someone's time zone to see their local time next to their messages and on their profile, worked out on your phone with no online lookup (based on Timezones by Equicord) |
 | | User and server reviews | Reviews from ReviewDB |
 | | User activity notifications | Notices and a log when chosen people change status, type or message |
-| | Account switcher | Switch between up to 50 accounts, with notifications from all of them |
+| | Account switcher | Switch between up to 50 accounts, with notifications from all of them, even while Discord is open |
 | | Listen along | Listen along to a friend's Spotify (needs Premium; by maayan080) |
 | | HypeSquad house | Join or leave a HypeSquad house |
 | | Custom idle time | Choose when you go Idle, or never |
@@ -80,7 +84,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Fast delete channels | Delete channels without confirmation. **No undo** |
 | **Appearance** | Use your phone's font | Your phone's font everywhere |
 | | Use your phone's emojis | Your phone's emojis, or an imported emoji font |
-| | Remove anything | Hide almost any button or menu row in Discord |
+| | Remove anything | Hide almost any button or menu row in Discord, including Get Nitro in emoji and sticker menus |
 | | Venus button on profile bar | A shortcut to Venus settings |
 | | Unlock app icons | Any app icon without Nitro |
 | | Unlock Nitro themes | Gradient themes without Nitro, only on your phone |
@@ -92,7 +96,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Complete badges automatically | **Risky, experimental.** Earns game-time badges in the background |
 | **Advanced** | Unlock Discord experiments | Dev Tools and Experiments in Settings (based on Experiments by maisy) |
 | | Keep Bluetooth audio clear in calls | Keeps headphones in music quality during calls |
-| | Voice channel options | Join volume, audio output, join chimes and a goodbye sound |
+| | Voice channel options | Join volume, audio output, join chimes, a goodbye sound and rejoining the call if Discord closes (based on VoiceRejoin) |
 | | Fake deafen | Look deafened while still hearing the call (by maayan080) |
 
 Venus settings also have **Language** (30 languages), **Backup and restore**, and **About** with debug logs and a crash screen.

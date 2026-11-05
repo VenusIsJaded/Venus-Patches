@@ -91,11 +91,17 @@ object MediaCompressor {
                     } catch (_: RejectedExecutionException) {
                         jobs.remove(id, cancelled)
                         promise.reject("VENUS_BUSY", "Compression queue is full; try again shortly")
+                    } catch (error: Throwable) {
+                        // ThreadPoolExecutor.addWorker calls Thread.start(); when ART can't create the thread it throws
+                        // OutOfMemoryError (pthread_create failed), not RejectedExecutionException. Left alone it
+                        // escaped the Exception catch below, killed the bridge thread and left the job id stuck.
+                        jobs.remove(id, cancelled)
+                        promise.reject("VENUS_COMPRESS", error.message ?: "Compression failed to start")
                     }
                 }
                 else -> throw IllegalArgumentException("Unknown compression action")
             }
-        } catch (error: Exception) {
+        } catch (error: Throwable) {
             promise.reject("VENUS_COMPRESS", error.message ?: "Invalid compression request")
         }
         return true

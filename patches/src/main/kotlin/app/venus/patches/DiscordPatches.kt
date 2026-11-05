@@ -50,7 +50,156 @@ private val additionalSelections = mutableSetOf<String>()
 /** Turns on a runtime feature from a patch kept in another file. */
 internal fun selectRuntimeFeature(key: String) { additionalSelections += key }
 internal val discordBundleGuard = rawResourcePatch {
-    execute { HbcPrivacy.verifyOriginal(get("assets/index.android.bundle")) }
+    execute {
+        HbcPrivacy.verifyOriginal(get("assets/index.android.bundle"))
+        checkNativeLibraries(this)
+    }
+}
+
+/** Every Discord build ships this in lib/<abi>/; an ABI without it can't start React Native. */
+private const val NATIVE_PROBE = "/libreactnative.so"
+
+/**
+ * Stops patching a Discord that can't start on this phone, instead of installing one that crashes instantly.
+ *
+ * APKPure's XAPK and Uptodown's bundle carry the same base.apk as APKMirror's APKM, but only the splits for the phone
+ * they were fetched for, often just `config.armeabi_v7a`. Discord's native code (libreactnative, libkv_storage,
+ * liblibdiscore-rn-jsi-module…) lives only in those ABI splits, never in base.apk. So the merged APK Morphe patches
+ * either has no `lib/` at all (Morphe Manager's "Optimize for device architecture" drops the 32-bit split on a 64-bit
+ * phone) or none for the phone's own ABI. Android then installs it with no native libraries (`primaryCpuAbi=null`), and
+ * Discord dies before drawing anything with `UnsatisfiedLinkError: dlopen failed: library "libkv_storage.so" not found`.
+ * That's what the S23 Ultra in #158 and the Tab A7 in #147 logged. APKMirror's APKM has all four ABIs, so it never
+ * hit this.
+ *
+ * Reads only the archive's entry names (no extraction). Where the phone's ABIs can't be read ([deviceAbis]; always on
+ * a computer), only an APK with no Discord native code at all is refused. A patcher too old to list entries skips the
+ * check.
+ */
+private fun checkNativeLibraries(context: app.morphe.patcher.patch.ResourcePatchContext) {
+    val entries = try {
+        context.listApkEntries("lib/")
+    } catch (_: LinkageError) {
+        return
+    }
+    val shipped = nativeAbis(entries)
+    val problem = nativeLibraryProblem(shipped, deviceAbis()) ?: return
+    throw PatchException(problem)
+}
+
+/** The ABIs whose `lib/<abi>/` folder has Discord's React Native library, in archive order. */
+internal fun nativeAbis(entries: Collection<String>): List<String> {
+    val abis = LinkedHashSet<String>()
+    for (name in entries) {
+        if (!name.startsWith("lib/") || !name.endsWith(NATIVE_PROBE)) continue
+        val abi = name.substring(4, name.length - NATIVE_PROBE.length)
+        if (abi.isNotEmpty() && '/' !in abi) abis += abi
+    }
+    return abis.toList()
+}
+
+/**
+ * Why a Discord APK with native code for [shipped] ABIs can't run on a phone that supports [device] ABIs (null when
+ * unknown, as on a computer), or null when it can.
+ */
+internal fun nativeLibraryProblem(shipped: List<String>, device: List<String>?): String? {
+    val apkm = "Use the full Discord 351.11 - Stable APKM from APKMirror, which has all 4 architectures. APKPure and " +
+        "Uptodown files only carry the parts for one kind of phone."
+    if (shipped.isEmpty()) return "This Discord file has none of Discord's native libraries, so it would crash as " +
+        "soon as it opens. $apkm If you must use one, turn off \"Optimize for device architecture\" in Morphe's " +
+        "settings and patch again."
+    if (device == null || device.isEmpty() || shipped.any { it in device }) return null
+    return "This Discord file only has native libraries for ${shipped.joinToString()}, but this phone only runs " +
+        "${device.joinToString()}, so Discord can't run from it. $apkm"
+}
+
+private val log = java.util.logging.Logger.getLogger("Venus")
+
+/**
+ * The ABIs this phone runs, most preferred first (what `Build.SUPPORTED_ABIS` holds), or null off a phone, as with
+ * Morphe CLI on a computer.
+ *
+ * Morphe Manager patches in a HotSpot JVM it embeds, not in Android's runtime, so `android.os.Build` doesn't exist
+ * there: reading only that saw every phone as a computer, and a 32-bit-only file passed on a 64-bit-only phone. The
+ * list Build reads, `ro.product.cpu.abilist`, comes from the partitions' build.prop files, which any app can read, so
+ * those are read next, then `getprop`. Anything unreadable gives null, which only refuses a file with no native code.
+ */
+internal fun deviceAbis(): List<String>? {
+    buildSupportedAbis()?.let { log.info("Venus: phone ABIs from Build: ${it.joinToString()}"); return it }
+    if (System.getenv("ANDROID_ROOT") == null && !java.io.File("/system/build.prop").isFile) return null
+    abisFromBuildProps(BUILD_PROPS.mapNotNull(::readOrNull))?.let {
+        log.info("Venus: phone ABIs from build.prop: ${it.joinToString()}"); return it
+    }
+    getpropAbis()?.let { log.info("Venus: phone ABIs from getprop: ${it.joinToString()}"); return it }
+    linkerAbis()?.let { log.info("Venus: phone ABIs from its linkers: ${it.joinToString()}"); return it }
+    log.warning("Venus: couldn't read this phone's ABIs; only checking that Discord's native libraries are there")
+    return null
+}
+
+/** Read reflectively: patches build without Android, and Morphe Manager's JVM doesn't have it. */
+private fun buildSupportedAbis(): List<String>? = try {
+    (Class.forName("android.os.Build").getField("SUPPORTED_ABIS").get(null) as? Array<*>)
+        ?.mapNotNull { (it as? String)?.trim()?.takeIf(String::isNotEmpty) }?.takeIf { it.isNotEmpty() }
+} catch (_: Throwable) {
+    null
+}
+
+/** In the order init loads them, so a later file wins like it does on the phone. */
+private val BUILD_PROPS = listOf(
+    "/system/build.prop", "/system/system/build.prop", "/system_ext/etc/build.prop", "/vendor/build.prop",
+    "/vendor/default.prop", "/odm/etc/build.prop", "/vendor/odm/etc/build.prop", "/product/etc/build.prop"
+)
+
+private fun readOrNull(path: String): String? = try {
+    java.io.File(path).takeIf { it.isFile && it.length() < 4L * 1024 * 1024 }?.readText()
+} catch (_: Throwable) {
+    null
+}
+
+/**
+ * `ro.product.cpu.abilist` as init builds it from [texts] (build.prop contents): the property itself when a file sets
+ * it, otherwise the first partition in Android's default `ro.product.property_source_order` that sets
+ * `ro.<partition>.product.cpu.abilist64`/`abilist32` (64-bit first) or `ro.<partition>.product.cpu.abilist`.
+ */
+internal fun abisFromBuildProps(texts: List<String>): List<String>? {
+    val props = HashMap<String, String>()
+    for (text in texts) for (raw in text.lineSequence()) {
+        val line = raw.trim()
+        if (line.isEmpty() || line.startsWith("#")) continue
+        val eq = line.indexOf('=')
+        if (eq > 0) props[line.substring(0, eq).trim()] = line.substring(eq + 1).trim()
+    }
+    fun list(key: String) = props[key]?.split(',')?.map(String::trim)?.filter(String::isNotEmpty)
+    list("ro.product.cpu.abilist")?.takeIf { it.isNotEmpty() }?.let { return it }
+    for (source in listOf("product", "odm", "vendor", "system_ext", "system")) {
+        val bits64 = list("ro.$source.product.cpu.abilist64")
+        val bits32 = list("ro.$source.product.cpu.abilist32")
+        if (bits64 != null || bits32 != null) (bits64.orEmpty() + bits32.orEmpty()).takeIf { it.isNotEmpty() }?.let { return it }
+        list("ro.$source.product.cpu.abilist")?.takeIf { it.isNotEmpty() }?.let { return it }
+    }
+    return null
+}
+
+/**
+ * Last resort on ARM: a phone runs 32-bit code only if it has the 32-bit linker, which 64-bit-only phones (Galaxy S25,
+ * Pixel 7 and later) don't ship. Null when the JVM isn't 64-bit ARM, where this can't tell.
+ */
+private fun linkerAbis(): List<String>? {
+    if (System.getProperty("os.arch") != "aarch64" || !java.io.File("/system/bin/linker64").exists()) return null
+    return if (java.io.File("/system/bin/linker").exists()) listOf("arm64-v8a", "armeabi-v7a", "armeabi") else listOf("arm64-v8a")
+}
+
+/** Next to last: the property itself. The embedded JVM may be unable to start processes, so any failure is null. */
+private fun getpropAbis(): List<String>? = try {
+    val process = ProcessBuilder("/system/bin/getprop", "ro.product.cpu.abilist").redirectErrorStream(true).start()
+    try {
+        if (!process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) null
+        else process.inputStream.bufferedReader().readText().split(',').map(String::trim).filter(String::isNotEmpty)
+            .takeIf { it.isNotEmpty() }
+    } finally {
+        process.destroy()
+    }
+} catch (_: Throwable) {
+    null
 }
 
 private val runtimeAssets = rawResourcePatch {
@@ -76,7 +225,7 @@ private val runtimeAssets = rawResourcePatch {
             "{picker:$pickerSelected,voice:$voiceSelected,copyBios:$copyBiosSelected," +
                 "favouriteAnything:$favouriteAnythingSelected,freeNitro:$freeNitroSelected," +
                 listOf("noTyping", "quickDelete", "noDelete", "jumpToTop", "hiddenChannels", "pastelize", "platformIndicators", "reviewDB", "readAll", "quests", "badges", "systemFont",
-                    "systemEmoji", "gestures", "validUser", "youBarSettings", "splitMessages", "translate", "userNotif", "accountSwitcher", "appIcons", "nitroThemes", "customThemes", "materialYou", "iconPacks", "messageHighlight", "serverInfo", "serverEdit", "fixEmbeds", "tenorGifs", "hideBlocked", "bulkDelete", "experiments", "cleanChannels", "noHandsfree", "voiceOptions", "anonFiles", "staffTag", "removedAlerts", "fullImages", "hideAnything", "alwaysTrust", "noConfirmPin", "clickableMentions", "expandBar", "quietReplies", "silentLeave", "guildLurk", "compressUploads", "timeoutDuration", "dndBanners", "landscapeFull", "voiceDownload", "cloneExpressions", "listenAlong", "silentEdit", "silentDelete", "localEdit", "hypeSquad", "customIdle", "mutualGroupDMs", "fastDeleteChannels", "pauseInvites", "platformSpoof", "backgroundMedia", "viewRaw", "fakeDeafen")
+                    "systemEmoji", "gestures", "validUser", "youBarSettings", "splitMessages", "translate", "userNotif", "accountSwitcher", "appIcons", "nitroThemes", "customThemes", "materialYou", "iconPacks", "messageHighlight", "serverInfo", "serverEdit", "fixEmbeds", "tenorGifs", "hideBlocked", "bulkDelete", "experiments", "cleanChannels", "noHandsfree", "voiceOptions", "anonFiles", "staffTag", "removedAlerts", "fullImages", "hideAnything", "alwaysTrust", "noConfirmPin", "clickableMentions", "expandBar", "quietReplies", "silentLeave", "guildLurk", "compressUploads", "timeoutDuration", "dndBanners", "landscapeFull", "voiceDownload", "cloneExpressions", "listenAlong", "silentEdit", "silentDelete", "localEdit", "localBookmarks", "hypeSquad", "customIdle", "mutualGroupDMs", "fastDeleteChannels", "pauseInvites", "platformSpoof", "backgroundMedia", "viewRaw", "fakeDeafen", "timezones", "profileMedia", "copyMention")
                     .joinToString(",") { "$it:${it in additionalSelections}" } + "}"
         )
         asset.writeText(selected)
@@ -262,6 +411,45 @@ internal fun readDiagnostics(method: app.morphe.patcher.util.proxy.mutableTypes.
     method.addInstructions(1, "invoke-static {p0}, $DIAGNOSTICS->init(Landroid/content/Context;)V")
 }
 
+internal const val NATIVE_LIBRARIES = "Lapp/venus/diag/NativeLibraries;"
+/** React Native's DirectApkSoSource (minified to `c` in 351.11): maps native libraries straight from the APKs. */
+internal const val DIRECT_APK_SO_SOURCE = "Lcom/facebook/soloader/c;"
+
+/**
+ * Root mount installs: one copy of Discord's native libraries, not two. A mount lays the patched APK, which carries
+ * every library itself, over base.apk while the stock splits stay installed. Android's loader then takes
+ * libreactnative, libfbjni and libc++_shared from base.apk and SoLoader takes them from split_config.<abi>.apk, and two
+ * React Native copies crashed Discord on launch ("'AppState' could not be found"). [NativeLibraries.soLoaderFolders]
+ * trims SoLoader's folders to base.apk's when base.apk ships React Native and split folders exist; a normal or Shizuku
+ * install has one folder and nothing changes.
+ *
+ * The call goes right after the constructor stores its folder set (`iput-object vX, p0, c`) and passes only that
+ * register: the store just proved to the verifier that it holds a HashSet. Never pass p1 (the Context) from there: the
+ * constructor reuses it for the split paths, and a String[] handed over as a Context made ART reject the whole class
+ * (VerifyError on launch). Not before the store either: the null check and the split loop both jump straight to it,
+ * so code placed in front of it was skipped on exactly the mount path.
+ */
+internal fun oneNativeLibraryCopy(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val implementation = method.implementation ?: throw PatchException("DirectApkSoSource has no constructor code")
+    val code = implementation.instructions.toList()
+    val field = "$DIRECT_APK_SO_SOURCE->c:Ljava/util/HashSet;"
+    val store = code.indexOfLast {
+        it.opcode == com.android.tools.smali.dexlib2.Opcode.IPUT_OBJECT &&
+            (it as com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction).reference.toString() == field
+    }
+    if (method.parameterTypes.map { it.toString() } != listOf("Landroid/content/Context;") || store < 0 ||
+        code.none { (it as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString() ==
+            "Landroid/content/pm/ApplicationInfo;->splitSourceDirs:[Ljava/lang/String;" })
+        throw PatchException("SoLoader's DirectApkSoSource ABI changed")
+    val set = (code[store] as com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction).registerA
+    if (set > 15) throw PatchException("DirectApkSoSource keeps its folder set in v$set, out of invoke-static's reach")
+    // The store must be the last thing before the constructor returns, so the call after it runs on every path.
+    if (code.getOrNull(store + 1)?.opcode != com.android.tools.smali.dexlib2.Opcode.RETURN_VOID || store + 2 != code.size)
+        throw PatchException("DirectApkSoSource no longer returns right after storing its folder set")
+    requireUnpatched(method, "venus-")
+    method.addInstructions(store + 1, "invoke-static {v$set}, $NATIVE_LIBRARIES->soLoaderFolders(Ljava/util/HashSet;)V")
+}
+
 /** Hidden helper of Venus settings: the crash screen and the bridge to troubleshooting logs. */
 internal val diagnostics = bytecodePatch {
     dependsOn(discordBundleGuard)
@@ -278,6 +466,12 @@ internal val diagnostics = bytecodePatch {
             name = "onCreate",
             returnType = "V",
             parameters = listOf()
+        ).method)
+        oneNativeLibraryCopy(Fingerprint(
+            definingClass = DIRECT_APK_SO_SOURCE,
+            name = "<init>",
+            returnType = "V",
+            parameters = listOf("Landroid/content/Context;")
         ).method)
     }
 }
@@ -354,6 +548,10 @@ val localEdit = bundledPlugin("localEdit", "Edit messages on this phone",
     "Hold any message and change how it reads to you. Only you see the change.")
 
 @Suppress("unused")
+val localBookmarks = bundledPlugin("localBookmarks", "Local bookmarks",
+    "Bookmark as many messages as you like. They're kept on this phone instead of your account.")
+
+@Suppress("unused")
 val hypeSquad = bundledPlugin("hypeSquad", "HypeSquad house",
     "Join or leave a HypeSquad house (Bravery, Brilliance or Balance) from Venus settings. Discord limits how often you can change house.")
 
@@ -386,6 +584,10 @@ val quietReplies = bundledPlugin("quietReplies", "Reply without pinging",
     "Replies start with the ping off, so nobody gets pinged unless you turn it on.")
 
 @Suppress("unused")
+val timezones = bundledPlugin("timezones", "Time zones",
+    "Set someone's time zone to see their local time on their messages and profile. Based on Timezones by Equicord.")
+
+@Suppress("unused")
 val viewRaw = bundledPlugin("viewRaw", "View raw data",
     "Hold a message, channel, server, person or role to read its raw data as JSON and copy it. Email and phone number are left out.")
 
@@ -396,6 +598,14 @@ val showTimeoutDuration = bundledPlugin("timeoutDuration", "Show timeout duratio
 @Suppress("unused")
 val voiceDownload = bundledPlugin("voiceDownload", "Download voice messages",
     "A Download button under each voice message saves it to your phone. Based on VoiceDownload by puv.")
+
+@Suppress("unused")
+val copyMention = bundledPlugin("copyMention", "Copy mentions",
+    "Copy anyone's mention from the ⋯ menu on their profile. Based on CopyUserMention by Cortex and castdrian.")
+
+@Suppress("unused")
+val profileMedia = bundledPlugin("profileMedia", "Download profile pictures and banners",
+    "Open a profile picture or banner and save it from the ⋯ button, like photos in chat.")
 
 @Suppress("unused")
 val cloneExpressions = bundledPlugin("cloneExpressions", "Clone emojis and stickers",
@@ -880,7 +1090,7 @@ val youBarSettings = bundledPlugin("youBarSettings", "Venus button on profile ba
 
 @Suppress("unused")
 val bringBackTenorGifs = bundledPlugin("tenorGifs", "Bring back Tenor GIFs",
-    "Tenor GIFs show in Discord's GIF picker again, mixed with Discord's own or on their own. Inspired by BringBackTenor by Livie.")
+    "Tenor and Giphy GIFs in Discord's GIF picker, with a switcher by the search bar. Inspired by BringBackTenor by Livie and GifProviderSwitcher by Lunascape and Ven.")
 
 @Suppress("unused")
 val fixLinkPreviews = bundledPlugin("fixEmbeds", "Fix link previews",
@@ -898,9 +1108,140 @@ val translateMessages = bundledPlugin("translate", "Translate messages",
 val userActivityNotifications = bundledPlugin("userNotif", "User activity notifications",
     "Shows a notice when chosen friends or users change status, start typing or send a message. Based on UserNotif by cywrx and coder.gg.")
 
+internal const val ACCOUNT_NOTIFICATIONS = "Lapp/venus/accounts/AccountNotifications;"
+private const val NOTIFICATION_CLIENT = "Lcom/discord/notifications/client/NotificationClient;"
+private const val NOTIFICATION_DATA = "Lcom/discord/notifications/api/NotificationData;"
+
+/**
+ * Notifications from every account while Discord is open (#152). showNotification asks shouldDisplayNotification() (false
+ * while Discord is in front) and drops the push unless it's a call ring, since the signed-in account shows its own in-app
+ * banners. Saved accounts you aren't on have no connection, so their pushes vanished. Right before that branch Venus asks
+ * [app.venus.accounts.AccountNotifications.display] with Discord's answer and the push: true for another saved account,
+ * and the push is shown as in the background, with Discord's own account label. The signed-in account is unchanged.
+ */
+internal fun otherAccountsWhileOpen(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val code = method.implementation?.instructions?.toList() ?: throw PatchException("showNotification has no code")
+    fun ref(i: Int) = (code.getOrNull(i) as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString()
+    val read = code.indices.firstOrNull { ref(it) == "$NOTIFICATION_CLIENT->shouldDisplayNotification:Lkotlin/jvm/functions/Function0;" }
+        ?: throw PatchException("showNotification no longer asks shouldDisplayNotification")
+    val branch = read + 6
+    val expected = listOf(com.android.tools.smali.dexlib2.Opcode.IGET_OBJECT, com.android.tools.smali.dexlib2.Opcode.INVOKE_INTERFACE,
+        com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT_OBJECT, com.android.tools.smali.dexlib2.Opcode.CHECK_CAST,
+        com.android.tools.smali.dexlib2.Opcode.INVOKE_VIRTUAL, com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT,
+        com.android.tools.smali.dexlib2.Opcode.IF_NEZ, com.android.tools.smali.dexlib2.Opcode.INVOKE_VIRTUAL)
+    if (code.subList(read, minOf(code.size, read + 8)).map { it.opcode } != expected ||
+        ref(read + 4) != "Ljava/lang/Boolean;->booleanValue()Z" || ref(read + 7) != "$NOTIFICATION_DATA->getType()Ljava/lang/String;")
+        throw PatchException("showNotification's in-front check changed")
+    val flag = (code[branch] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA
+    val data = (code[read + 7] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC
+    // The Context: the register handed to the renderer's initIconUrlUtils(Context) further on, never reassigned in between.
+    val init = code.indices.firstOrNull { ref(it)?.endsWith("->initIconUrlUtils(Landroid/content/Context;)V") == true }
+        ?: throw PatchException("showNotification no longer prepares the renderer")
+    val context = (code[init] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerD
+    if (code.subList(read, init).any { (it as? com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction)?.registerA == context &&
+            it.opcode.setsRegister() } || maxOf(flag, data, context) > 15)
+        throw PatchException("showNotification's registers changed")
+    requireUnpatched(method, "venus-")
+    // No labels or branches here: a label inside code added mid-method resolved against the method's start, so the branch
+    // jumped back to the top of showNotification. The helper takes Discord's answer and returns the final one into the same
+    // register, right before Discord's own if-nez reads it.
+    method.addInstructions(branch, """
+        invoke-static {v$flag, v$context, v$data}, $ACCOUNT_NOTIFICATIONS->display(ZLandroid/content/Context;Ljava/lang/Object;)Z
+        move-result v$flag
+    """)
+}
+
+private const val RENDER_DISPLAY = "Lcom/discord/notifications/renderer/NotificationRenderer\$display\$1;"
+
+/**
+ * Which account a notification is for (#152). Discord's renderer (NotificationRenderer.display's coroutine) puts the
+ * receiving account's name in the subtext, which Android's conversation layout never draws. Right after it builds the
+ * conversation title (getConversationTitle) and before MessagingStyle stores it, Venus passes the title through
+ * [app.venus.accounts.AccountNotifications.title] with the push, the Context and the coroutine (which holds Discord's
+ * account label), so another saved account's notifications read "#channel · account". The shade shows the conversation
+ * shortcut's label in place of the title, so the shortcut gets the same label, and a DM's sender gets it too so Android
+ * keeps its usual one-name DM look. Like the hook above, each is one call with no branch.
+ */
+internal fun accountLabelInTitle(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
+    val code = method.implementation?.instructions?.toList() ?: throw PatchException("the notification renderer has no code")
+    fun ref(i: Int) = (code.getOrNull(i) as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference?.toString()
+    val call = code.indices.firstOrNull { ref(it) == "Lcom/discord/notifications/renderer/utils/NotificationDataUtilsKt;->getConversationTitle(${NOTIFICATION_DATA})Ljava/lang/CharSequence;" }
+        ?: throw PatchException("the notification renderer no longer builds a conversation title")
+    if (code.getOrNull(call + 1)?.opcode != com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT_OBJECT ||
+        code.getOrNull(call + 2)?.opcode != com.android.tools.smali.dexlib2.Opcode.IPUT_OBJECT ||
+        ref(call + 2) != "Landroidx/core/app/NotificationCompat\$MessagingStyle;->h:Ljava/lang/CharSequence;")
+        throw PatchException("the notification renderer's conversation title changed")
+    val data = (code[call] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC
+    val title = (code[call + 1] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA
+    // The Context: the register the next getActiveNotification(Context, String) reads, right after the title is stored.
+    val active = (call + 3 until code.size).firstOrNull { ref(it)?.endsWith("->getActiveNotification(Landroid/content/Context;Ljava/lang/String;)Landroid/app/Notification;") == true }
+        ?: throw PatchException("the notification renderer no longer looks up the shown notification")
+    val context = (code[active] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction).registerC
+    // The coroutine: the object Discord reads its own \$notification field from.
+    val owner = code.indices.firstOrNull { ref(it) == "$RENDER_DISPLAY->\$notification:$NOTIFICATION_DATA" }?.let {
+        (code[it] as com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction).registerB
+    } ?: throw PatchException("the notification renderer no longer reads its push")
+    // Android 11+ draws a conversation's shortcut label instead of its title, and a DM hides the sender only when it matches
+    // the title, so the shortcut Discord makes (getShortcutInfo) and each sender (getSenderForMessageNotification) are
+    // labelled too. Both helpers change the object in place and read the push and Context from the coroutine.
+    val shortcut = (call + 3 until code.size).firstOrNull { ref(it)?.startsWith("Lcom/discord/notifications/renderer/utils/NotificationDataUtilsKt;->getShortcutInfo(") == true }
+        ?: throw PatchException("the notification renderer no longer makes a conversation shortcut")
+    val senders = (call + 3 until shortcut).filter { ref(it)?.startsWith("Lcom/discord/notifications/renderer/utils/NotificationDataUtilsKt;->getSenderForMessageNotification(") == true }
+    if (senders.isEmpty()) throw PatchException("the notification renderer no longer adds the sender")
+    val sites = (senders + shortcut).map { site ->
+        if (code.getOrNull(site + 1)?.opcode != com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT_OBJECT)
+            throw PatchException("the notification renderer's sender or shortcut changed")
+        site + 1 to (code[site + 1] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA
+    }
+    val writes = { from: Int, to: Int, register: Int -> code.subList(from, to).any {
+        (it as? com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction)?.registerA == register && it.opcode.setsRegister() } }
+    if (writes(1, shortcut + 2, owner) || writes(call + 2, active, context) || maxOf(data, title, context, owner) > 15 ||
+        setOf(data, title, context, owner).size != 4 || sites.any { it.second > 15 || it.second == owner })
+        throw PatchException("the notification renderer's registers changed")
+    requireUnpatched(method, "venus-")
+    // Latest spot first, so the earlier indexes still point where they did.
+    for ((at, value) in sites.sortedByDescending { it.first }) {
+        val helper = if (at == shortcut + 1) "shortcut" else "sender"
+        method.addInstructions(at + 1, """
+            invoke-static {v$value, v$owner}, $ACCOUNT_NOTIFICATIONS->$helper(Ljava/lang/Object;Ljava/lang/Object;)V
+        """)
+    }
+    method.addInstructions(call + 2, """
+        invoke-static {v$title, v$data, v$context, v$owner}, $ACCOUNT_NOTIFICATIONS->title(Ljava/lang/CharSequence;Ljava/lang/Object;Landroid/content/Context;Ljava/lang/Object;)Ljava/lang/CharSequence;
+        move-result-object v$title
+    """)
+}
+
+/** Hidden helper of Account switcher: shows your other accounts' notifications while Discord is open, labelled with the account. */
+private val otherAccountNotifications = bytecodePatch {
+    dependsOn(discordBundleGuard)
+    extendWith("extensions/accounts.mpe")
+    execute {
+        otherAccountsWhileOpen(Fingerprint(
+            definingClass = NOTIFICATION_CLIENT,
+            name = "showNotification",
+            returnType = "V",
+            parameters = listOf("Landroid/content/Context;", NOTIFICATION_DATA, "Ljava/util/Map;", "Z", "Z")
+        ).method)
+        accountLabelInTitle(Fingerprint(
+            definingClass = RENDER_DISPLAY,
+            name = "invokeSuspend",
+            returnType = "Ljava/lang/Object;",
+            parameters = listOf("Ljava/lang/Object;")
+        ).method)
+    }
+}
+
 @Suppress("unused")
-val accountSwitcher = bundledPlugin("accountSwitcher", "Account switcher",
-    "Switch between multiple Discord accounts from the You tab, your profile bar or Settings.")
+val accountSwitcher = bytecodePatch(
+    name = "Account switcher",
+    description = "Switch between multiple Discord accounts from the You tab, your profile bar or Settings."
+) {
+    compatibleWith(discord)
+    section(PLUGINS)
+    dependsOn(venusSettings, otherAccountNotifications)
+    execute { additionalSelections += "accountSwitcher" }
+}
 
 @Suppress("unused")
 val unlockAppIcons = bundledPlugin("appIcons", "Unlock app icons",

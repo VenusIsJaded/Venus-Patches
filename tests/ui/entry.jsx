@@ -65,9 +65,12 @@ const LOGS = {
   ],
 };
 const logText = path => { const m = q.get("log") === "1" && /venus-log-(messages|activity)-\d+\.json$/.exec(path); return m ? JSON.stringify({ version: 1, entries: LOGS[m[1]] }) : null; };
+// Local bookmarks: bookmarks=N gives the signed-in account N saved bookmarks (venus-bookmarks.json), shown on Backup and restore.
+const bookmarksText = +q.get("bookmarks") > 0 ? JSON.stringify({ version: 1, bookmarks: Array.from({ length: +q.get("bookmarks") }, (_, i) =>
+  ({ u: "123456789012345678", c: "110000000000000011", m: String(1300000000000000000n + BigInt(i)), t: Date.now() - i * 3600000 })) }) : null;
 const files = { getConstants: () => ({ DocumentsDirPath: "/docs", CacheDirPath: "/cache" }), getSize() {},
-  fileExists: path => Promise.resolve(/venus-patches\.json$/.test(path) ? !!settingsText : /venus-themes\.json$/.test(path) ? !!themesText : !!logText(path)),
-  readFile: path => /venus-patches\.json$/.test(path) ? Promise.resolve(settingsText) : /venus-themes\.json$/.test(path) && themesText ? themesText : logText(path) ? Promise.resolve(logText(path)) : Promise.reject(new Error("none")),
+  fileExists: path => Promise.resolve(/venus-patches\.json$/.test(path) ? !!settingsText : /venus-bookmarks\.json$/.test(path) ? !!bookmarksText : /venus-themes\.json$/.test(path) ? !!themesText : !!logText(path)),
+  readFile: path => /venus-patches\.json$/.test(path) ? Promise.resolve(settingsText) : /venus-bookmarks\.json$/.test(path) && bookmarksText ? Promise.resolve(bookmarksText) : /venus-themes\.json$/.test(path) && themesText ? themesText : logText(path) ? Promise.resolve(logText(path)) : Promise.reject(new Error("none")),
   writeFile: () => Promise.resolve(), getVideoDimensions: () => Promise.resolve(),
   readAsset: name => fetch("i18n/" + name.split(":").pop() + ".json").then(r => r.text()) };
 
@@ -86,6 +89,7 @@ const modules = {
   1505: { useStackNavigation: () => ({ navigate: go }) }, 15736: { onRouteSettingOnPress: ({ screen }) => go(screen.route) },
   5400: { default: { show: o => console.log("DIALOG " + o.title + " | " + o.body) } },
   4904: { default: { open: (key, o) => console.log("TOAST " + (o && o.text)) } },
+  13581: { showForLaterModal: type => console.log("FOR LATER " + type) },
   7165: { Clipboard: { setString() {}, getString: () => Promise.resolve("") } },
   // Voice channel options: the sounds Discord's soundboard store has loaded, one list per server (the servers come from scenes.jsx).
   5528: { default: store({ getSounds: () => SOUNDS }) }, 5530: { DEFAULT_SOUND_GUILD_ID: "0" }, 7324: { maybeFetchSoundboardSounds() {} },
