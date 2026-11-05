@@ -73,6 +73,7 @@
     if (features.dndBanners) selectModules([6015, 13511, 13523]);
     if (features.landscapeFull) selectModules([5075, 5076]);
     if (features.voiceDownload) selectModules([1447, 5532, 8013, 11114]);
+    if (features.profileMedia) selectModules([1392, 8660, 14015]);
     if (features.cloneExpressions) selectModules([9839, 10078]);
     if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
     if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
@@ -100,7 +101,7 @@
         accountSwitcher:false, accountSwitcherYouBar:true, accountSwitcherShare:false, accountSwitcherNotify:true, accountSwitcherNotifyOpen:true, appIcons:false, nitroThemes:false, customThemes:false, customThemesBackground:true, materialYou:false, materialYouColor:"wallpaper", materialYouTint:"balanced",
         iconPacks:false, iconPacksTheme:true,
         messageHighlight:false, messageHighlightThickness:2, messageHighlightBrightness:50, messageHighlightPingColor:"default", serverInfo:false, serverInfoFriends:true, serverEdit:false,
-        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, staffTagMembers:false, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
+        fixEmbeds:false, fixEmbedsSites:"", fixEmbedsOptions:"", tenorGifs:false, tenorGifsSource:"both", hideBlocked:false, hideBlockedBlocked:true, hideBlockedIgnored:true, hideBlockedReplies:false, hideBlockedCloseDms:false, bulkDelete:false, bulkDeleteConfirm:true, bulkDeleteIncludeCached:true, experiments:false, noHandsfree:false, voiceOptions:false, voiceOptionsVolume:false, voiceOptionsVolumeLevel:50, voiceOptionsOutput:"default", voiceOptionsJoinSound:true, voiceOptionsLeaveSound:true, voiceOptionsSoundVolume:100, voiceOptionsExit:false, voiceOptionsExitSound:"", cleanChannels:false, cleanChannelsEmoji:true, cleanChannelsSymbols:true, cleanChannelsFonts:true, cleanChannelsSpaces:false, anonFiles:false, staffTag:false, staffTagOwner:true, staffTagAdmin:true, staffTagManager:true, staffTagMod:true, staffTagCrown:true, staffTagMembers:false, removedAlerts:false, removedAlertsFriends:true, removedAlertsServers:true, removedAlertsClosed:true, removedAlertsPush:false, fullImages:false, fullImagesChat:true, fullImagesViewer:true, fullImagesGifs:false, fullImagesAvatars:true, alwaysTrust:false, alwaysTrustLinks:true, alwaysTrustFiles:true, noConfirmPin:false, clickableMentions:false, expandBar:false, expandBarSending:true, expandBarChats:true, silentLeave:false, silentEdit:false, silentEditNotice:true, silentDelete:false, localEdit:false, localEditMark:true, localBookmarks:false, guildLurk:false, guildLurkIds:"", quietReplies:false, viewRaw:false, viewRawMessages:true, viewRawChannels:true, viewRawServers:true, viewRawPeople:true, viewRawRoles:true, viewRawHideContact:true, viewRawWrap:true, timezones:false, timezonesChat:true, timezonesDmOwn:true, timezonesProfile:true, timezonesClock:"discord", timezonesOffset:false, timeoutDuration:false, dndBanners:false, voiceDownload:false, profileMedia:false, cloneExpressions:false, listenAlong:false, listenAlongOffset:0, backgroundMedia:false, backgroundMediaAudio:true, backgroundMediaVideo:true, backgroundMediaSkip:10, landscapeFull:false, quietRepliesGuilds:true, quietRepliesGroups:true, quietRepliesMentioned:false, compressUploads:false, compressUploadsPhotos:true, compressUploadsVideos:true, compressUploadsAudio:true, hideAnything:false, hideAnythingSpots:"", fakeDeafen:false, fakeDeafenMuteMic:true, language:"auto", hiddenFeatures:"",
         hypeSquad:false, customIdle:false, customIdleMinutes:10, pauseInvites:false, fastDeleteChannels:false, fastDeleteChannelsConfirm:true, fastDeleteChannelsMenu:true, mutualGroupDMs:false, platformSpoof:false, platformSpoofDevice:"desktop" };
     // The settings every feature starts from, for Reset to defaults on the Backup page.
     let DEFAULT_SETTINGS = null;
@@ -118,7 +119,7 @@
             accountSwitcher: false, accountSwitcherYouBar: true, accountSwitcherShare: false, accountSwitcherNotify: true, accountSwitcherNotifyOpen: true, appIcons: false, nitroThemes: false, customThemes: false, customThemesBackground: true, materialYou: false, materialYouColor: "wallpaper", materialYouTint: "balanced",
             iconPacks: false, iconPacksTheme: true,
             messageHighlight: false, messageHighlightThickness: 2, messageHighlightBrightness: 50, messageHighlightPingColor: "default", serverInfo: false, serverInfoFriends: true, serverEdit: false,
-            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, staffTagMembers: false, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
+            fixEmbeds: false, fixEmbedsSites: "", fixEmbedsOptions: "", tenorGifs: false, tenorGifsSource: "both", hideBlocked: false, hideBlockedBlocked: true, hideBlockedIgnored: true, hideBlockedReplies: false, hideBlockedCloseDms: false, bulkDelete: false, bulkDeleteConfirm: true, bulkDeleteIncludeCached: true, experiments: false, noHandsfree: false, voiceOptions: false, voiceOptionsVolume: false, voiceOptionsVolumeLevel: 50, voiceOptionsOutput: "default", voiceOptionsJoinSound: true, voiceOptionsLeaveSound: true, voiceOptionsSoundVolume: 100, voiceOptionsExit: false, voiceOptionsExitSound: "", cleanChannels: false, cleanChannelsEmoji: true, cleanChannelsSymbols: true, cleanChannelsFonts: true, cleanChannelsSpaces: false, anonFiles: false, staffTag: false, staffTagOwner: true, staffTagAdmin: true, staffTagManager: true, staffTagMod: true, staffTagCrown: true, staffTagMembers: false, removedAlerts: false, removedAlertsFriends: true, removedAlertsServers: true, removedAlertsClosed: true, removedAlertsPush: false, fullImages: false, fullImagesChat: true, fullImagesViewer: true, fullImagesGifs: false, fullImagesAvatars: true, alwaysTrust: false, alwaysTrustLinks: true, alwaysTrustFiles: true, noConfirmPin: false, clickableMentions: false, expandBar: false, expandBarSending: true, expandBarChats: true, silentLeave: false, silentEdit: false, silentEditNotice: true, silentDelete: false, localEdit: false, localEditMark: true, localBookmarks: false, guildLurk: false, guildLurkIds: "", quietReplies: false, viewRaw: false, viewRawMessages: true, viewRawChannels: true, viewRawServers: true, viewRawPeople: true, viewRawRoles: true, viewRawHideContact: true, viewRawWrap: true, timezones: false, timezonesChat: true, timezonesDmOwn: true, timezonesProfile: true, timezonesClock: "discord", timezonesOffset: false, timeoutDuration: false, dndBanners: false, voiceDownload: false, profileMedia: false, cloneExpressions: false, listenAlong: false, listenAlongOffset: 0, backgroundMedia: false, backgroundMediaAudio: true, backgroundMediaVideo: true, backgroundMediaSkip: 10, landscapeFull: false, quietRepliesGuilds: true, quietRepliesGroups: true, quietRepliesMentioned: false, compressUploads: false, compressUploadsPhotos: true, compressUploadsVideos: true, compressUploadsAudio: true, hideAnything: false, hideAnythingSpots: "", fakeDeafen: false, fakeDeafenMuteMic: true, language: "auto", hiddenFeatures: "",
             hypeSquad: false, customIdle: false, customIdleMinutes: 10, pauseInvites: false, fastDeleteChannels: false, fastDeleteChannelsConfirm: true, fastDeleteChannelsMenu: true, mutualGroupDMs: false, platformSpoof: false, platformSpoofDevice: "desktop"
         }));
     }
@@ -1297,7 +1298,7 @@
         hiddenChannels:[8495, "LockIcon"], systemFont:[16730, "LettersIcon"], systemEmoji:[13827, "ChatSmileIcon"],
         youBarSettings:[7368, "SettingsIcon"], quests:[13929, "QuestsIcon"],
         badges:[9211, "TrophyIcon"], userNotif:[9045, "BellIcon"], accountSwitcher:[8489, "GroupIcon"], appIcons:[8506, "AppsIcon"],
-        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timezones:[9393, "GlobeEarthIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"], localBookmarks:[13592, "BookmarkIcon"],
+        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timezones:[9393, "GlobeEarthIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], profileMedia:[8487, "ImageIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"], localBookmarks:[13592, "BookmarkIcon"],
         hypeSquad:[18747, "HomeIcon"], customIdle:[14205, "UserClockIcon"], pauseInvites:[8676, "PauseIcon"], fastDeleteChannels:[18679, "ChannelListIcon"], mutualGroupDMs:[8489, "GroupIcon"], platformSpoof:[5133, "UserPlatformIcon"]};
     const venusIcons = new Map();
     function venusIcon(id, name, fallback) {
@@ -1363,6 +1364,7 @@
         guildLurk:["GuildLurk", "Guild lurk", "Lurk", "Lurker", "Preview", "Invite link", "Server ID"],
         timeoutDuration:["Timeout", "Timed out", "Muted", "Mute", "Communication disabled", "Moderation", "ShowTimeoutDuration"],
         cloneExpressions:["Clone", "Copy", "Steal", "Emoji", "Emojis", "Sticker", "Stickers", "Expressions", "ExpressionCloner", "Add to a server"],
+        profileMedia:["Profile picture", "Profile pictures", "Avatar", "Banner", "Banners", "Download", "Save", "View banner"],
         voiceDownload:["Voice message", "Voice messages", "Download", "Save", "Audio", "Recording", "VoiceDownload"],
         dndBanners:["Do Not Disturb", "DND", "Banner", "Banners", "In-app notifications", "Pop-up", "Focus"],
         landscapeFull:["Landscape", "Sideways", "Rotate", "Full screen", "Sidebar", "Channel list"],
@@ -1860,6 +1862,7 @@
              section("Avatars", [option("piHideMobile", "Hide the phone badge", "Avatars show a plain status dot, since the icons already show mobile.", "VENUS_PLATFORMINDICATORS")])]}));
         toggle("people", "validUser", "Fix unknown mentions", "Shows names instead of @unknown-user.");
         toggle("people", "copyBios", "Copy profile bios", "Hold a bio to select and copy it.");
+        toggle("people", "profileMedia", "Download profile pictures and banners", "Open a profile picture or banner and save it from the \u22ef button, like photos in chat.");
         toggle("servers", "cloneExpressions", "Clone emojis and stickers", "Tap a custom emoji or sticker in chat to add it to one of your servers.");
         toggle("people", "timeoutDuration", "Show timeout duration", "A tag next to timed-out people says how long until they can talk again.");
         withOptions("people", "hypeSquad", "VENUS_HYPESQUAD", "HypeSquad house", "Join or leave a HypeSquad house from here.", "HypeSquad", HypeSquadSettings);
@@ -21048,6 +21051,68 @@
         Promise.resolve().then(() => media.downloadMediaAssetWithContentType(file.url, 0, file.content_type || file.contentType || "audio/ogg"))
             .then(() => done(true), () => done(false));
     }
+    // Download profile pictures and banners (#161): tapping a profile picture already opens Discord's full-screen viewer
+    // (openUserProfileAvatarMediaViewer 8659 -> openMediaModal 8660), but it asks for no ⋯ button and no Download, and its
+    // source has no sourceURI, which is what the viewer's Download reads (MediaShareActions 8726). Venus turns those back
+    // on, so a profile picture saves exactly like a photo in chat: ⋯, then Download, through Discord's own downloader
+    // into Downloads. Banners have no viewer at all, so a profile's ⋯ menu gets View banner, which opens the same one.
+    const PROFILE_MEDIA_SOURCE = "user_profile_avatar";
+    function profileMediaSource(source) {
+        return source && typeof source === "object" && typeof source.uri === "string" && !source.sourceURI ? Object.assign({}, source, {sourceURI:source.uri}) : source;
+    }
+    function profileMediaOpen(orig, self, args) {
+        const params = args[0];
+        if (!enabled("profileMedia") || !params || params.analyticsSource !== PROFILE_MEDIA_SOURCE || !Array.isArray(params.initialSources)) return orig.apply(self, args);
+        const next = Array.from(args);
+        next[0] = Object.assign({}, params, {disableDownload:false, disableMediaOverlayButton:false, initialSources:params.initialSources.map(profileMediaSource)});
+        return orig.apply(self, next);
+    }
+    // The banner a profile shows: the server profile's own banner first, then the person's.
+    function profileBannerUri(userId, guildId) {
+        const store = inspectedExport(7586, "default");
+        const url = (path, hash) => "https://cdn.discordapp.com/" + path + hash + (hash.indexOf("a_") === 0 ? ".gif" : ".png") + "?size=4096";
+        try {
+            const member = guildId && store && typeof store.getGuildMemberProfile === "function" ? store.getGuildMemberProfile(userId, guildId) : null;
+            if (member && typeof member.banner === "string" && member.banner) return url("guilds/" + guildId + "/users/" + userId + "/banners/", member.banner);
+        } catch (_) {}
+        let hash = null;
+        try { const profile = store && typeof store.getUserProfile === "function" ? store.getUserProfile(userId) : null; hash = profile && profile.banner; } catch (_) {}
+        if (!hash) try { const user = userStore && userStore.getUser(userId); hash = user && user.banner; } catch (_) {}
+        return typeof hash === "string" && /^(a_)?[0-9a-f]{8,64}$/.test(hash) ? url("banners/" + userId + "/", hash) : null;
+    }
+    function profileBannerOpen(uri) {
+        const open = inspectedExport(8660, "openMediaModal");
+        if (typeof open !== "function") return;
+        let width = 400;
+        try { const win = RN && RN.Dimensions && RN.Dimensions.get("window"); if (win && win.width > 0) width = win.width; } catch (_) {}
+        // A banner is 5:2. The layout is where the viewer grows from: the banner at the top of the profile.
+        const spec = openAs => ({initialSources:[{uri, sourceURI:uri, mediaIndex:0, width:1500, height:600, accessoryType:"embed"}],
+            originViewOrOriginLayout:{x:0, y:0, width, height:Math.round(width / 2.5), resizeMode:"cover"}, analyticsSource:PROFILE_MEDIA_SOURCE,
+            openAs, shareable:false, disableDownload:false, disableMediaOverlayButton:false, disableMediaOverlayFooter:true});
+        // Over the profile sheet, like the profile picture; a profile opened as a full screen has no sheet, so it opens as a modal.
+        const fallback = () => { try { return open(spec("modal")); } catch (error) { dlog("W", "profileMedia", "couldn't open the banner: " + dlogText(error)); } };
+        try { Promise.resolve(open(spec("action-sheet"))).catch(fallback); } catch (_) { fallback(); }
+    }
+    // A person's ⋯ menu: View banner, in its own group above Block and Report, for people with a banner.
+    function profileMediaMenu(orig, self, args) {
+        const rendered = orig.apply(self, args), props = args[0];
+        if (!enabled("profileMedia") || !React || !rendered || !props) return rendered;
+        const userId = String(props.userId || props.user && props.user.id || ""), guildId = props.guildId ? String(props.guildId) : "";
+        const Menu = inspectedExport(9662, "ContextMenu");
+        if (!Menu || !/^\d{17,20}$/.test(userId)) return rendered;
+        const banner = profileBannerUri(userId, /^\d{17,20}$/.test(guildId) ? guildId : "");
+        if (!banner) return rendered;
+        const item = {label:tr("View banner"), venusBanner:true, action:() => later(() => profileBannerOpen(banner), 60)};
+        const has = list => list.some(entry => entry && (entry.venusBanner || Array.isArray(entry) && entry.some(inner => inner && inner.venusBanner)));
+        return cloneTree(rendered, (node, nodeProps) => {
+            if (node.type !== Menu || !Array.isArray(nodeProps.items) || has(nodeProps.items)) return nodeProps;
+            const items = nodeProps.items, last = items[items.length - 1];
+            const danger = Array.isArray(last) && last.some(entry => entry && entry.variant === "destructive");
+            const grouped = items.some(Array.isArray);
+            const next = !grouped ? items.concat([item]) : danger ? items.slice(0, -1).concat([[item], last]) : items.concat([[item]]);
+            return Object.assign({}, nodeProps, {items:next});
+        }, 0);
+    }
     // Clone emojis and stickers (#125, after ExpressionCloner): tapping a custom emoji or a server sticker in chat opens
     // Discord's own sheet for it (MessageEmojiActionSheet 9839, StickerDetailActionSheet 10078); Venus adds one button at
     // its bottom, "Add to a server". It opens a sheet listing only the servers where you can add expressions
@@ -24353,9 +24418,11 @@
                 if (features.noDelete || features.noTyping) exports = hookComponent(exports, rulesThreadMenu);
                 return features.viewRaw ? hookComponent(exports, viewRawThreadMenu) : exports;
             case 10780: return features.viewRaw ? hookComponent(exports, viewRawPostMenu) : exports;
+            case 8660: return features.profileMedia ? hookExport(exports, "openMediaModal", profileMediaOpen) : exports;
             case 14015:
                 if (features.noDelete) exports = hookComponent(exports, rulesProfileMenu);
                 if (features.timezones) exports = hookComponent(exports, timezoneProfileMenu);
+                if (features.profileMedia) exports = hookComponent(exports, profileMediaMenu);
                 return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
             case 7158: return features.viewRaw ? hookComponent(exports, viewRawRolesCard) : exports;
             case 7167: return features.viewRaw ? hookExport(exports, "showSimpleActionSheet", viewRawSimpleSheet) : exports;
@@ -24367,7 +24434,7 @@
             case 14755: return features.fakeDeafen && exports && exports.default ? fakeDeafAttach(exports) : exports;
             case 18341: return features.fakeDeafen ? hookComponent(exports, fakeDeafSwitch, "DeafenSwitch") : exports;
             case 1392:
-                if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments || features.quietReplies || features.silentEdit || features.silentDelete || features.localEdit || features.timezones))
+                if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments || features.quietReplies || features.silentEdit || features.silentDelete || features.localEdit || features.timezones || features.profileMedia))
                     userStore = exports.default;
                 if (features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels) restoreDeleted();
                 return exports;

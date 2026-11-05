@@ -59,6 +59,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Show owner and mod tags | Owner, Admin and Mod tags in chat and the member list (based on StaffTag by mwittrien) |
 | | Alert when you're removed | Know when you're unfriended, kicked or banned (based on RemovedConnectionAlerts by iyu46) |
 | | Fix unknown mentions | Shows names instead of @unknown-user |
+| | Download profile pictures and banners | Save anyone's profile picture or banner, the same way as photos in chat |
 | | Copy profile bios | Select and copy profile bios |
 | | Leave group DMs silently | Leave without the "left the group" message (based on SilentLeave by coder.gg) |
 | | Show timeout duration | Shows how long someone is timed out (based on ShowTimeoutDuration by Ven) |

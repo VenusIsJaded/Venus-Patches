@@ -311,6 +311,8 @@ BOOTSTRAP_MODULES = [
     (12093, 'design/components/Icon/native/redesign/generated/UndoIcon.tsx', ['UndoIcon'], 'UndoIcon (Remove anything: bring everything back)'),
     (9662, 'design/components/ContextMenu/native/ContextMenu.native.tsx', ['ContextMenu'], 'ContextMenu (Remove anything: attach button wrapper)'),
     (12895, 'modules/media_keyboard/native/MediaKeyboardButtonIcon.tsx', ['MediaKeyboardButtonIcon'], 'MediaKeyboardButtonIcon (Remove anything: attach button)'),
+    (7586, 'modules/user_profile/UserProfileStore.tsx', ['default'], 'UserProfileStore (Download profile pictures and banners)'),
+    (8660, 'modules/media_viewer/native/components/openMediaModal.tsx', ['openMediaModal'], 'openMediaModal (Download profile pictures and banners)'),
     (14015, 'modules/user_profile/native/UserProfileOverflowMenu.tsx', ['default'], 'UserProfileOverflowMenu (Remove anything: profile menu items)'),
     (15600, 'modules/settings/native/renderer/SettingHookHarness.tsx', ['default', 'getCachedSettingTitle', 'getCachedSettingSearchTerms'], 'SettingHookHarness (Remove anything: setting titles)'),
     (15601, 'modules/settings/native/renderer/stores/SettingBlocklistStore.tsx', ['default'], 'SettingBlocklistStore (Remove anything: redraws Settings)'),
