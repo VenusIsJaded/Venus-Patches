@@ -383,6 +383,8 @@ BOOTSTRAP_MODULES = [
     (16140, 'modules/main_tabs_v2/native/you_bar/YouBarConstants.tsx', ['CONNECTION_BANNER_HEIGHT', 'YOU_BAR_SPRING_CONFIG', 'YOU_BAR_PADDING'], 'YouBarConstants'),
     (16225, 'modules/quests/native/QuestDock/QuestDock.tsx', ['PENDING', 'SUCCEEDED', 'FAILED'], 'QuestDock'),
     (10036, 'modules/gif_picker/GifProvider.tsx', ['GIF_PROVIDER', 'GIF_PROVIDER_EMBED_NAME', 'getSearchPlaceholder'], 'GifProvider (Bring back Tenor GIFs)'),
+    (10044, 'modules/gif_picker/native/GIFPickerHeader.tsx', ['default'], 'GIFPickerHeader (Bring back Tenor GIFs: provider menu)'),
+    (10034, 'stores/views/GIFPickerViewStore.tsx', ['default'], 'GIFPickerViewStore (Bring back Tenor GIFs: current search)'),
     (10051, 'design/components/Icon/native/redesign/generated/GifIcon.tsx', ['GifIcon'], 'GifIcon (Bring back Tenor GIFs)'),
     (12328, 'design/components/Icon/native/redesign/generated/ImagesIcon.tsx', ['ImagesIcon'], 'ImagesIcon (Bring back Tenor GIFs)'),
     (8481, 'design/components/Icon/native/redesign/generated/ImageWarningIcon.tsx', ['ImageWarningIcon'], 'ImageWarningIcon (Bring back Tenor GIFs)'),

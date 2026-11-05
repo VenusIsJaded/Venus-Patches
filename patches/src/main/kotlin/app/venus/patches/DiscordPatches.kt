@@ -1090,7 +1090,7 @@ val youBarSettings = bundledPlugin("youBarSettings", "Venus button on profile ba
 
 @Suppress("unused")
 val bringBackTenorGifs = bundledPlugin("tenorGifs", "Bring back Tenor GIFs",
-    "Tenor GIFs show in Discord's GIF picker again, mixed with Discord's own or on their own. Inspired by BringBackTenor by Livie.")
+    "Tenor and Giphy GIFs in Discord's GIF picker, with a switcher by the search bar. Inspired by BringBackTenor by Livie and GifProviderSwitcher by Lunascape and Ven.")
 
 @Suppress("unused")
 val fixLinkPreviews = bundledPlugin("fixEmbeds", "Fix link previews",

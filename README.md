@@ -1,6 +1,6 @@
 # Venus Patches
 
-Extra features and privacy options for Discord on Android, patched in with **[Morphe](https://morphe.software)**. No tracking, and everything works offline except ReviewDB, Translate messages, Fix link previews and Bring back Tenor GIFs.
+Extra features and privacy options for Discord on Android, patched in with **[Morphe](https://morphe.software)**. No tracking, and everything works offline except ReviewDB, Translate messages, Fix link previews and Bring back Tenor GIFs (Tenor and Giphy).
 
 [**Add to Morphe**](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [What's new](CHANGELOG.md) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
@@ -38,7 +38,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Jump to first message | Go straight to the start of a chat |
 | | Favourite any image or video | Save any image or video to your GIF favourites |
 | **Sending** | Send Nitro stickers and emojis as links | Sends Nitro emojis and stickers as image links, and shows links like these as real emojis and stickers with their usual menu |
-| | Bring back Tenor GIFs | Tenor GIFs in Discord's GIF picker |
+| | Bring back Tenor GIFs | Tenor and Giphy GIFs in Discord's GIF picker, with a Tenor / Giphy / Klipy switcher next to the search bar |
 | | Fix link previews | Working embeds for X, Instagram, TikTok, Reddit and more, with tracking removed |
 | | Send audio as voice messages | Audio files are sent as voice messages |
 | | Send long messages | Messages over the limit are sent in parts |

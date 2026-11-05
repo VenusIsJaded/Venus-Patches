@@ -284,9 +284,11 @@ The supported Discord version and bundle hash live in `DiscordPatches.kt` and `H
 | 10002 | `modules/foreground_service/mobile/ForegroundServiceManager.android.tsx` | default | ForegroundServiceManager |
 | 10006 | `lib/uploader/native/getPreCompressionFileSize.tsx` | getPreCompressionFileSize | getPreCompressionFileSize (Compress big files: size gate) |
 | 10023 | `design/components/Icon/native/redesign/generated/PencilIcon.tsx` | PencilIcon | PencilIcon |
+| 10034 | `stores/views/GIFPickerViewStore.tsx` | default | GIFPickerViewStore (Bring back Tenor GIFs: current search) |
 | 10035 | `actions/GIFPickerActionCreators.tsx` | trackSearchStart, trackSearchResultViewed, search | GIFPickerActionCreators |
 | 10036 | `modules/gif_picker/GifProvider.tsx` | GIF_PROVIDER, GIF_PROVIDER_EMBED_NAME, getSearchPlaceholder | GifProvider (Bring back Tenor GIFs) |
 | 10038 | `modules/gif_picker/native/GIFPickerUtils.tsx` | GIF_HEADER_HEIGHT, useFavoriteGIFsMobile, GIF_PICKER_ITEM_ESIMTATED_HEIGHT | useFavoriteGIFsMobile |
+| 10044 | `modules/gif_picker/native/GIFPickerHeader.tsx` | default | GIFPickerHeader (Bring back Tenor GIFs: provider menu) |
 | 10051 | `design/components/Icon/native/redesign/generated/GifIcon.tsx` | GifIcon | GifIcon (Bring back Tenor GIFs) |
 | 10058 | `modules/stickers/StickersActionCreators.tsx` | createGuildSticker | StickersActionCreators (Clone emojis and stickers) |
 | 10078 | `modules/stickers/native/StickerDetailActionSheet.tsx` | default | StickerDetailActionSheet (Clone emojis and stickers) |
