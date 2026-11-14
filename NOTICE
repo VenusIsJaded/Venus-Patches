@@ -50,6 +50,10 @@ sunnie (sunnniee/vendetta-plugins). Double-tap to reply is based on Geastures+ b
 Translate messages uses Google Translate's public web endpoint (translate.googleapis.com) at the user's
 request. No Google code is included; translations are Google's.
 
+Show hidden channels' locked-channel details, row styles and lock icons follow ShowHiddenChannels by
+BigDuck, AverageReactEnjoyer, D3SOX, Ven, Nuckyz, Nickyux, Rini and Oggetto (Vencord and Equicord, GPL-3.0). Its
+code is written for this project against Discord's own channel, role, member and voice stores.
+
 Server info is based on the idea of fshin's ServerInfo Revenge plugin (fshinz/Revenge-Plugins). Its code
 is written for this project against Discord 350.8's own stores and server menu.
 

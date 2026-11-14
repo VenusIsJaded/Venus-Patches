@@ -88,7 +88,7 @@
     // their own defaults, so turning a feature on does what it says straight away.
     const settings = { debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
         noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
-        jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize:false, pastelAll:false, pastelContent:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
+        jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, hiddenChannelsAccess: true, hiddenChannelsStyle: "classic", hiddenChannelsIcon: "discord", pastelize:false, pastelAll:false, pastelContent:false, platformIndicators:false, piDmHeader:true, piUserList:true, piProfile:true, piHideMobile:true, reviewDB:false, reviewWarning:true, readAll:false, readAllMode:"guilds",
         quests:false, questsVideo:true, questsPlay:true, questsActivity:true, questsEnroll:true,
         badges:false, badgesGameTime:true, badgesUniqueGames:true, badgesCycleMinutes:15, badgesGamesAtOnce:2, systemFont:false, systemFontSource:"phone",
         systemEmoji:false, systemEmojiSource:"phone", gestures:false, gestureOwn:"edit", gestureTripleDelete:true,
@@ -106,7 +106,7 @@
         return DEFAULT_SETTINGS || (DEFAULT_SETTINGS = Object.freeze({
             debugLog: true, crashScreen: true, picker: false, voice: false, copyBios: false, favouriteAnything: false, freeNitro: false, emojis: true, stickers: true, hyperlinks: true,
             noTyping: false, quickDelete: false, noDelete: false, noDeleteSave: false, noDeleteLimit: 0, noDeleteEdits: true, noDeleteColor: "default", noDeleteBrightness: 50, noDeleteLogDeleted: true, noDeleteLogEdits: true, noDeleteLogOwn: false, noDeleteLogBots: false,
-            jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, pastelize: false, pastelAll: false, pastelContent: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
+            jumpToTop: false, hiddenChannels: false, hiddenChannelsMenu: true, hiddenChannelsAccess: true, hiddenChannelsStyle: "classic", hiddenChannelsIcon: "discord", pastelize: false, pastelAll: false, pastelContent: false, platformIndicators: false, piDmHeader: true, piUserList: true, piProfile: true, piHideMobile: true, reviewDB: false, reviewWarning: true, readAll: false, readAllMode: "guilds",
             quests: false, questsVideo: true, questsPlay: true, questsActivity: true, questsEnroll: true,
             badges: false, badgesGameTime: true, badgesUniqueGames: true, badgesCycleMinutes: 15, badgesGamesAtOnce: 2, systemFont: false, systemFontSource: "phone",
             systemEmoji: false, systemEmojiSource: "phone", gestures: false, gestureOwn: "edit", gestureTripleDelete: true,
@@ -192,6 +192,9 @@
     const TRANSLATE_ASKS = ["both", "bar", "menu"];
     // Where the GIF picker's GIFs come from with Bring back Tenor GIFs on: Tenor first with Discord's own mixed in, or only Tenor.
     const TENOR_SOURCES = ["both", "tenor"];
+    // How Show hidden channels draws a locked row (after Equicord's ShowHiddenChannels channelStyle and showMode): like
+    // the others or faded, and Discord's own lock alone or with a lock or a crossed-out eye after the name.
+    const HIDDEN_STYLES = ["classic", "muted"], HIDDEN_ICONS = ["discord", "lock", "eye"];
     // Where Use your phone's font / emojis get their look: the phone's own, or a font file you imported.
     const FONT_SOURCES = ["phone", "file"];
     // Left bar thickness multiplier (1x = 2dp default, 2x = 4dp, 3x = 6dp, 4x = 8dp) and highlight color presets (#60).
@@ -447,7 +450,7 @@
     function acceptedSetting(key, value) {
         if (!owns(settings, key) || typeof value !== typeof settings[key]) return undefined;
         if (key === "readAllMode" && !READ_ALL_MODES.includes(value) || key === "gestureOwn" && !GESTURE_OWN_MODES.includes(value) ||
-            key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
+            key === "translateTarget" && !TRANSLATE_TARGETS.includes(value) || key === "translateLanguage" && !TRANSLATE_LANGUAGES.includes(value) || key === "translateMode" && !TRANSLATE_MODES.includes(value) || key === "translateAsk" && !TRANSLATE_ASKS.includes(value) || key === "tenorGifsSource" && !TENOR_SOURCES.includes(value) || key === "hiddenChannelsStyle" && !HIDDEN_STYLES.includes(value) || key === "hiddenChannelsIcon" && !HIDDEN_ICONS.includes(value) || key === "voiceOptionsOutput" && !VOICE_OUTPUTS.includes(value) || key === "voiceOptionsExitSound" && !(value === "" || typeof value === "string" && VOICE_SOUND_ID.test(value)) ||
             (key === "systemFontSource" || key === "systemEmojiSource") && !FONT_SOURCES.includes(value) ||
             key === "messageHighlightThickness" && !HIGHLIGHT_THICKNESSES.includes(value) || key === "language" && !isLanguage(value)) return undefined;
         if (key === "messageHighlightPingColor" || key === "noDeleteColor") return isHighlightColor(value) ? normalizeHighlightColor(value) : undefined;
@@ -548,6 +551,11 @@
             const level = brightness(value);
             if (settings[key] === level && status.storage !== "loading" && status.storage !== "waiting") return true;
             settings[key] = level; dirty.add(key); save(); notify(key); return true;
+        }
+        if (key === "hiddenChannelsStyle" || key === "hiddenChannelsIcon") {
+            if (!(key === "hiddenChannelsStyle" ? HIDDEN_STYLES : HIDDEN_ICONS).includes(value)) return false;
+            if (settings[key] === value && status.storage !== "loading" && status.storage !== "waiting") return true;
+            settings[key] = value; dirty.add(key); save(); notify(key); return true;
         }
         if (key === "tenorGifsSource") {
             if (!TENOR_SOURCES.includes(value)) return false;
@@ -1252,7 +1260,7 @@
         freeNitro:["Emojis", "Stickers", "Short links"], pastelize:["Replace role colors", "Color message text"],
         platformIndicators:["In DMs", "In lists", "On profiles", "Hide the phone badge"], reviewDB:["Show the be-respectful note"],
         userNotif:["Change status", "Start typing", "Send a message", "Phone notifications", "Activity log", "What to log"], accountSwitcher:["Button on the profile bar", "Add account", "Create a new account", "Export accounts", "Import accounts", "Notifications from every account", "Same theme on every account"],
-        hiddenChannels:["Show its details"], serverEdit:["Edit locally", "Name", "Icon", "Server icon", "Choose from your phone", "Use a link"], serverInfo:["Look up friends in the server", "Boosts", "Owner", "Server ID"], customThemes:["Show theme background image", "Browse Revenge themes"],
+        hiddenChannels:["Show its details", "Open who can see it", "How locked channels look", "Faded", "Lock icon", "Who can see it"], serverEdit:["Edit locally", "Name", "Icon", "Server icon", "Choose from your phone", "Use a link"], serverInfo:["Look up friends in the server", "Boosts", "Owner", "Server ID"], customThemes:["Show theme background image", "Browse Revenge themes"],
         messageHighlight:["Brightness", "Left bar width"], iconPacks:["Rosiecord", "Plumpy", "Iconsax", "Material", "MD3", "Solar", "Deco", "Themes+", "Follow theme's icon pack"],
         fixEmbeds:["Remove tracking from links", "X (Twitter)", "Twitter", "Instagram", "TikTok", "Reddit", "Bluesky", "Threads", "Tumblr", "Facebook", "Mastodon", "YouTube", "Twitch", "Spotify", "pixiv", "Bilibili", "DeviantArt", "Fur Affinity", "Pinterest", "PTT",
             "FxTwitter", "vxTwitter", "fxtumblr", "Dark Tumblr posts", "embed", "Imgur", "Newgrounds",
@@ -4510,15 +4518,181 @@
             [tr("Last pin"), pin ? hiddenStamp(pin, tr("No pins yet")) : {relative:tr("No pins yet"), absolute:null}]
         ];
     }
+    // Everything else Discord already sent about a locked channel, after Equicord's HiddenChannelLockScreen: its topic and
+    // settings (slowmode, voice and forum options), who's in its call and who can see it. All of it comes from records Discord
+    // already holds (ChannelStore, VoiceStateStore 5212, GuildRoleStore 2122, GuildMemberStore 2128): nothing is fetched.
+    function hiddenSeconds(total) {
+        const n = Math.round(Number(total) || 0);
+        if (n <= 0) return null;
+        if (n % 86400 === 0) return tr("{n} d", {n:n / 86400});
+        if (n % 3600 === 0) return tr("{n} h", {n:n / 3600});
+        if (n % 60 === 0) return tr("{n} min", {n:n / 60});
+        return tr("{n} s", {n});
+    }
+    function hiddenField(channel, camel, snake) { return channel[camel] != null ? channel[camel] : channel[snake]; }
+    function hiddenEmoji(value) {
+        if (!value) return null;
+        const id = value.emojiId || value.emoji_id, name = value.emojiName || value.emoji_name;
+        return name ? (id ? ":" + name + ":" : name) : null;
+    }
+    function hiddenFacts(channel) {
+        const rows = [], add = (label, value) => { if (value != null && value !== "") rows.push([label, String(value)]); };
+        const type = channel.type, voice = type === 2 || type === 13, forum = type === 15 || type === 16;
+        const topic = channel.topic;
+        if (typeof topic === "string" && topic.trim()) add(tr(forum ? "Post guidelines" : "Topic"), topic.trim().slice(0, 1000));
+        let nsfw = !!channel.nsfw;
+        try { if (typeof channel.isNSFW === "function") nsfw = !!channel.isNSFW(); } catch (_) {}
+        if (nsfw) add(tr("Age-restricted"), tr("Yes"));
+        add(tr("Slowmode"), hiddenSeconds(hiddenField(channel, "rateLimitPerUser", "rate_limit_per_user")));
+        add(tr("Slowmode in threads"), hiddenSeconds(hiddenField(channel, "defaultThreadRateLimitPerUser", "default_thread_rate_limit_per_user")));
+        if (voice) {
+            const bitrate = Number(channel.bitrate);
+            if (bitrate > 0) add(tr("Bitrate"), tr("{n} kbps", {n:Math.round(bitrate / 1000)}));
+            const region = hiddenField(channel, "rtcRegion", "rtc_region");
+            add(tr("Voice region"), typeof region === "string" && region ? region : tr("Automatic"));
+            add(tr("Video quality"), Number(hiddenField(channel, "videoQualityMode", "video_quality_mode")) === 2 ? "720p" : tr("Auto"));
+        }
+        const archive = Number(hiddenField(channel, "defaultAutoArchiveDuration", "default_auto_archive_duration"));
+        if (archive > 0) add(tr("Hide inactive threads after"), hiddenSeconds(archive * 60));
+        if (forum) {
+            const layout = Number(hiddenField(channel, "defaultForumLayout", "default_forum_layout"));
+            if (layout === 1 || layout === 2) add(tr("Default layout"), tr(layout === 1 ? "List" : "Gallery"));
+            const order = hiddenField(channel, "defaultSortOrder", "default_sort_order");
+            if (order === 0 || order === 1) add(tr("Sort posts by"), tr(order === 0 ? "Recent activity" : "Date posted"));
+            add(tr("Default reaction"), hiddenEmoji(hiddenField(channel, "defaultReactionEmoji", "default_reaction_emoji")));
+            // ChannelFlags.REQUIRE_TAG.
+            if ((Number(channel.flags) & 16) === 16) add(tr("Posts need a tag"), tr("Yes"));
+            const tags = hiddenField(channel, "availableTags", "available_tags");
+            if (Array.isArray(tags) && tags.length)
+                add(tr("Tags"), tags.slice(0, 20).map(tag => { const emoji = hiddenEmoji(tag); return (emoji ? emoji + " " : "") + (tag && tag.name || ""); }).join(", "));
+        }
+        return rows;
+    }
+    function hiddenBits(value) {
+        if (value == null) return null;
+        try { return typeof value === "bigint" ? value : BigInt(value); } catch (_) { return null; }
+    }
+    function hiddenPerson(guildId, userId) {
+        try {
+            const members = inspectedExport(2128, "default"), users = userStore || inspectedExport(1392, "default");
+            const member = members && typeof members.getMember === "function" ? members.getMember(guildId, userId) : null;
+            const user = users && typeof users.getUser === "function" ? users.getUser(userId) : null;
+            return member && member.nick || user && (user.globalName || user.global_name || user.username) || tr("Unknown user");
+        } catch (_) { return tr("Unknown user"); }
+    }
+    // Who can see the channel, like Discord's own "roles required" list that Equicord shows: the roles and people its
+    // permission overwrites let in. When @everyone can see it (some other overwrite keeps only you out), that's all it says.
+    function hiddenAccess(channel) {
+        const guildId = channel.guild_id, VIEW = BigInt(1024), ADMIN = BigInt(8), NONE = BigInt(0);
+        const roles = inspectedExport(2122, "default");
+        const role = id => { try { return roles && typeof roles.getRole === "function" ? roles.getRole(guildId, id) : null; } catch (_) { return null; } };
+        const raw = hiddenField(channel, "permissionOverwrites", "permission_overwrites");
+        const overwrites = !raw ? [] : (Array.isArray(raw) ? raw : Object.keys(raw).map(key => raw[key])).filter(entry => entry && entry.id);
+        const allows = entry => { const bits = hiddenBits(entry.allow); return bits != null && (bits & VIEW) === VIEW; };
+        const denies = entry => { const bits = hiddenBits(entry.deny); return bits != null && (bits & VIEW) === VIEW; };
+        const own = overwrites.find(entry => entry.id === guildId), everyone = role(guildId), base = everyone && hiddenBits(everyone.permissions);
+        if (own && allows(own) || base != null && (base & (VIEW | ADMIN)) !== NONE && !(own && denies(own))) return {everyone:true, roles:[], people:[]};
+        const shown = [], people = [];
+        for (let i = 0; i < overwrites.length && shown.length + people.length < 60; i++) {
+            const entry = overwrites[i];
+            if (entry.id === guildId || !allows(entry)) continue;
+            if (entry.type === 0 || entry.type === "role" || entry.type === "0") {
+                const record = role(entry.id);
+                // A deleted role's overwrite can outlive it: nobody gets in through it.
+                if (record) shown.push({id:entry.id, name:record.name, color:record.colorString || null, position:Number(record.position) || 0});
+            } else people.push({id:entry.id});
+        }
+        shown.sort((a, b) => b.position - a.position);
+        return {everyone:false, roles:shown, people, guildId};
+    }
+    function hiddenKnownPerson(guildId, userId) {
+        try {
+            const members = inspectedExport(2128, "default");
+            return !!(members && typeof members.getMember === "function" && members.getMember(guildId, userId)) || knownUser(userId);
+        } catch (_) { return true; }
+    }
+    // Tapping someone in "Who can see it" opens their profile, like on desktop. Discord's alert stays above anything opened
+    // under it, so it's closed first when Discord lets it be (AlertActionCreators 5400 close).
+    function hiddenOpenProfile(userId, guildId) {
+        const alerts = inspectedExport(5400, "default");
+        let closed = false;
+        try { if (alerts && typeof alerts.close === "function") { alerts.close(); closed = true; } } catch (_) {}
+        // close() skips the dialog's onCancel, so release its one-prompt-per-channel guard here.
+        if (closed) hiddenPrompts.clear();
+        if (closed) later(() => serverOpenProfile(userId, guildId), 250, false); else serverOpenProfile(userId, guildId);
+    }
+    function hiddenVoice(channel) {
+        if (channel.type !== 2 && channel.type !== 13) return [];
+        let states = null;
+        try {
+            const store = inspectedExport(5212, "default");
+            states = store && typeof store.getVoiceStatesForChannel === "function" ? store.getVoiceStatesForChannel(channel.id) : null;
+        } catch (_) { states = null; }
+        if (!states) return [];
+        const ids = Array.isArray(states) ? states.map(state => state && state.userId) : Object.keys(states);
+        return ids.filter(Boolean).slice(0, 50).map(id => hiddenPerson(channel.guild_id, id));
+    }
+    function hiddenAccessText(access) {
+        if (!access) return null;
+        if (access.everyone) return tr("Everyone");
+        const names = access.roles.map(role => role.name).concat(access.people.map(person => hiddenPerson(access.guildId, person.id)));
+        return names.length ? names.join(", ") : tr("Only admins and the owner");
+    }
+    const HIDDEN_DOT = {width:10, height:10, borderRadius:5};
     function HiddenDetails(props) {
         // Rendered inside Discord's own AlertModal (HBC98 module 5305) as extraContent:
         // native Text tokens follow the active theme; no hardcoded colors or backdrop.
-        const Text = props.Text;
-        return el(RN.View, {style:{gap:14}}, props.rows.map(([label, stamp]) =>
-            el(RN.View, {key:label, style:{gap:2}},
-                el(Text, {variant:"text-xs/semibold", color:"text-muted"}, label.toUpperCase()),
-                el(Text, {variant:"text-md/medium", color:"text-default", selectable:true}, stamp.relative),
-                stamp.absolute ? el(Text, {variant:"text-sm/medium", color:"text-muted", selectable:true}, stamp.absolute) : null)));
+        const Text = props.Text, access = props.access;
+        const [open, setOpen] = React.useState(settings.hiddenChannelsAccess !== false), [, redraw] = React.useState(0);
+        // People only allowed in by name are often not loaded yet. All of them are asked for at once, the way Discord's own
+        // member list does (GuildActionCreators 6377 requestMembersById: one gateway request for up to 100, nicknames
+        // included), and the list redraws as they arrive. Anyone still unknown after that (they left the server) goes to
+        // Fix unknown mentions' profile queue, when it's on.
+        React.useEffect(() => {
+            const people = access && !access.everyone ? access.people.map(person => person.id) : [];
+            const missing = () => people.filter(id => !hiddenKnownPerson(access.guildId, id));
+            if (!people.length || !missing().length) return undefined;
+            let live = true, pending;
+            const changed = () => { if (pending === undefined && live) pending = later(() => { pending = undefined; if (live) redraw(n => n + 1); }, 120, false); };
+            const stores = [userStore, inspectedExport(2128, "default")].filter(store => store && typeof store.addChangeListener === "function");
+            stores.forEach(store => { try { store.addChangeListener(changed); } catch (_) {} });
+            const actions = inspectedExport(6377, "default"), ask = missing();
+            try { if (actions && typeof actions.requestMembersById === "function") for (let i = 0; i < ask.length; i += 100) actions.requestMembersById(access.guildId, ask.slice(i, i + 100)); } catch (_) {}
+            const fallback = later(() => { if (live) validRequest(missing().filter(id => !knownUser(id))); }, 1500, false);
+            return () => {
+                live = false;
+                try { if (fallback !== undefined) global.clearTimeout(fallback); } catch (_) {}
+                stores.forEach(store => { try { store.removeChangeListener(changed); } catch (_) {} });
+            };
+        }, []);
+        const label = text => el(Text, {key:"label", variant:"text-xs/semibold", color:"text-muted"}, text.toUpperCase());
+        const value = (text, key) => el(Text, {key, variant:"text-md/medium", color:"text-default", selectable:true}, text);
+        const block = (key, children) => el(RN.View, {key, style:{gap:2}}, children);
+        const items = props.rows.map(([name, stamp]) => block(name, [label(name), value(stamp.relative, "relative"),
+            stamp.absolute ? el(Text, {key:"absolute", variant:"text-sm/medium", color:"text-muted", selectable:true}, stamp.absolute) : null]));
+        props.facts.forEach(([name, text]) => items.push(block("fact:" + name, [label(name), value(text, "value")])));
+        if (props.voice.length) items.push(block("voice", [label(tr("In voice now")), value(props.voice.join(", "), "value")]));
+        if (access) {
+            const Press = RN.Pressable || RN.TouchableOpacity || RN.View, Chevron = venusIcon(10859, "ChevronSmallDownIcon");
+            const line = (key, dot, text, onPress) => el(onPress ? Press : RN.View, {key, onPress, accessibilityRole:onPress ? "button" : undefined,
+                style:{flexDirection:"row", alignItems:"center", gap:8}}, el(RN.View, {style:dot}), value(text, "name"));
+            const list = access.everyone ? [value(tr("Everyone"), "everyone")] :
+                !access.roles.length && !access.people.length ? [value(tr("Only admins and the owner"), "admins")] :
+                access.roles.map(role => line("role:" + role.id, [HIDDEN_DOT, {backgroundColor:role.color || "#80848e"}], role.name))
+                    .concat(access.people.map(person => line("user:" + person.id, [HIDDEN_DOT, {borderWidth:1.5, borderColor:"#80848e"}], hiddenPerson(access.guildId, person.id),
+                        () => hiddenOpenProfile(person.id, access.guildId))));
+            items.push(el(RN.View, {key:"access", style:{gap:6}},
+                el(Press, {onPress:() => { animateLayout(); setOpen(was => !was); }, accessibilityRole:"button", accessibilityState:{expanded:open},
+                    style:{flexDirection:"row", alignItems:"center", justifyContent:"space-between"}, hitSlop:{top:6, bottom:6, left:6, right:6}},
+                    label(tr("Who can see it")),
+                    el(RN.View, {style:{transform:[{rotate:open ? "180deg" : "0deg"}]}}, el(Chevron, {size:"xs"}))),
+                open ? el(RN.View, {style:{gap:6}}, list) : null));
+        }
+        const body = el(RN.View, {style:{gap:14}}, items);
+        // A forum with tags, a long topic and many roles can be taller than the screen: then the details scroll.
+        let height = 640;
+        try { height = RN.Dimensions.get("window").height || height; } catch (_) {}
+        return RN.ScrollView ? el(RN.ScrollView, {style:{maxHeight:Math.round(height * 0.45)}, nestedScrollEnabled:true}, body) : body;
     }
     // One prompt per channel at a time: a navigation guard and a fetch guard can
     // fire for the same tap, which used to stack duplicate dialogs. Native
@@ -4534,6 +4708,10 @@
         const settle = () => { if (hiddenPrompts.get(channel.id) === prompt) hiddenPrompts.delete(channel.id); };
         const confirm = () => { settle(); if (typeof onViewAnyway === "function") onViewAnyway(); };
         const rows = hiddenDetails(channel);
+        let facts = [], voice = [], access = null;
+        try { facts = hiddenFacts(channel); } catch (_) { facts = []; }
+        try { voice = hiddenVoice(channel); } catch (_) { voice = []; }
+        try { access = hiddenAccess(channel); } catch (_) { access = null; }
         const title = tr(channel.type === 2 || channel.type === 13 ? "Locked voice channel" : "Locked channel");
         const body = tr("You can't open this channel, but Discord already sent these details.");
         // Discord's native alert (the "Delete Message" dialog): blurred backdrop,
@@ -4544,13 +4722,17 @@
         const Text = inspectedExport(5187, "Text");
         if (React && alerts && typeof alerts.show === "function" && Text) {
             try {
-                alerts.show({title, body, children:el(HiddenDetails, {rows, Text}),
+                alerts.show({title, body, children:el(HiddenDetails, {rows, facts, voice, access, Text}),
                     confirmText:tr("View Anyway"), cancelText:tr("Cancel"), onConfirm:confirm, onCancel:settle});
                 return;
             } catch (_) { /* fall through to the platform alert */ }
         }
         if (!RN.Alert) {settle();return;}
-        const message = rows.map(([label, stamp]) => label + ": " + stamp.relative + (stamp.absolute ? " (" + stamp.absolute + ")" : "")).join("\n");
+        const lines = rows.map(([label, stamp]) => label + ": " + stamp.relative + (stamp.absolute ? " (" + stamp.absolute + ")" : ""))
+            .concat(facts.map(([label, text]) => label + ": " + text));
+        if (voice.length) lines.push(tr("In voice now") + ": " + voice.join(", "));
+        if (access) lines.push(tr("Who can see it") + ": " + hiddenAccessText(access));
+        const message = lines.join("\n");
         try {
             RN.Alert.alert(title, message, [
                 {text:tr("Cancel"), style:"cancel", onPress:settle},
@@ -7407,6 +7589,8 @@
     // Settings page: Discord's own radio list (TableRadioGroup 6540 / TableRadioRow 6539).
     // Hidden channels: one choice, whether tapping a locked channel shows its details or does nothing.
     // The locked channel in the preview: it gives a small shake when tapping does nothing (each time props.shake goes up).
+    const HIDDEN_PREVIEW_ROW = {flexDirection:"row", alignItems:"center", gap:8, paddingHorizontal:8, paddingVertical:7, marginHorizontal:8, borderRadius:8};
+    const HIDDEN_PREVIEW_ROW_FADED = Object.assign({}, HIDDEN_PREVIEW_ROW, {opacity:0.5});
     function HiddenPreviewRow(props) {
         const A = motion(), ref = React.useRef(null);
         if (!ref.current && A) ref.current = new A.Value(0);
@@ -7418,7 +7602,7 @@
             run.start();
             return () => run.stop();
         }, [props.shake]);
-        const row = {flexDirection:"row", alignItems:"center", gap:8, paddingHorizontal:8, paddingVertical:7, marginHorizontal:8, borderRadius:8};
+        const row = props.faded ? HIDDEN_PREVIEW_ROW_FADED : HIDDEN_PREVIEW_ROW;
         const style = ref.current ? [row, {transform:[{translateX:ref.current.interpolate({inputRange:[-1, 1], outputRange:[-6, 6]})}]}] : row;
         return el(RN.View, {accessibilityLabel:props.label + ", " + tr("locked")},
             el(ref.current ? A.View : RN.View, {style}, props.children), props.ripple || null);
@@ -7430,6 +7614,7 @@
     function HiddenChannelsPreview(props) {
         useSettings("hiddenChannels");
         const s = useChatPreviewStyles(), k = usePreviewChrome(), on = props.on, menu = settings.hiddenChannelsMenu;
+        const mark = settings.hiddenChannelsIcon, faded = settings.hiddenChannelsStyle === "muted";
         const Hash = venusIcon(16648, "HashmarkIcon"), TextLock = venusIcon(8478, "TextLockIcon"), Down = venusIcon(10859, "ChevronSmallDownIcon");
         const blank = {shake:0, pulse:null, card:false, scroll:0};
         const [state, setState] = React.useState(blank), watching = on;
@@ -7443,11 +7628,12 @@
                 menu ? tr("You see when it was made and last used. View Anyway would open it") : tr("Nothing happens: you turned its details off")],
             [3000, () => { animateLayout(); update({card:false}); }], [600, () => {}]], [menu]);
         const channel = (name, locked, selected) => el(locked ? HiddenPreviewRow : RN.View, locked ?
-            {key:name, label:name, shake:state.shake, ripple:tapRipple(state.pulse, "locked", {right:40, top:2})} :
+            {key:name, label:name, shake:state.shake, faded, ripple:tapRipple(state.pulse, "locked", {right:40, top:2})} :
             {key:name, style:[{flexDirection:"row", alignItems:"center", gap:8, paddingHorizontal:8, paddingVertical:7, marginHorizontal:8, borderRadius:8},
                 selected ? k.selected : null]},
             el(locked ? TextLock : Hash, {size:"sm", color:selected ? s.name.color : locked ? k.iconMuted.color : k.channel.color}),
-            el(RN.Text, {style:[s.text, {flex:1, color:selected ? s.name.color : k.channel.color, fontWeight:selected ? "600" : "500"}], numberOfLines:1}, name));
+            el(RN.Text, {style:[s.text, {flexShrink:1, color:selected ? s.name.color : k.channel.color, fontWeight:selected ? "600" : "500"}], numberOfLines:1}, name),
+            locked && mark !== "discord" ? el(mark === "eye" ? venusIcon(6927, "EyeSlashIcon") : venusIcon(8495, "LockIcon"), {key:"mark", size:"xs", color:k.iconMuted.color}) : null);
         // Discord's alert, drawn inside the preview while it plays: a title, the details and its two buttons.
         const button = (text, brand) => el(RN.View, {key:text, style:[brand ? k.brand : k.secondary, {borderRadius:20, paddingVertical:10, alignItems:"center"}]},
             el(RN.Text, {style:[brand ? k.brandText : k.secondaryText, {fontWeight:"600"}]}, text));
@@ -7480,8 +7666,16 @@
         const groups=[
             on ? null : offCard("status",lock,"hiddenChannels"),
             el(HiddenChannelsPreview,{key:"preview",on}),
+            radioGroup(ui,"style","How locked channels look","hiddenChannelsStyle",on,[
+                ["classic","Like the others","Same color as the channels you can open.",rowIcon(16648,"HashmarkIcon")],
+                ["muted","Faded","Dimmed, so you can tell them apart at a glance.",rowIcon(6927,"EyeSlashIcon")]]),
+            radioGroup(ui,"icon","Lock icon","hiddenChannelsIcon",on,[
+                ["discord","Discord's lock","The channel icon with Discord's small lock, nothing more.",rowIcon(8478,"TextLockIcon")],
+                ["lock","Lock after the name","A small lock after the channel name too.",rowIcon(8495,"LockIcon")],
+                ["eye","Eye after the name","A crossed-out eye after the channel name.",rowIcon(6927,"EyeSlashIcon")]]),
             el(Group,{key:"tap",title:tr("When you tap a locked channel")},
-                switchRow(Switch,"hiddenChannelsMenu","Show its details","Shows when it was created, its last message and last pin, with View Anyway.",rowIcon(5145,"CircleInformationIcon"))),
+                switchRow(Switch,"hiddenChannelsMenu","Show its details","Its topic, settings, who can see it and when it was last used, with View Anyway.",rowIcon(5145,"CircleInformationIcon")),
+                settings.hiddenChannelsMenu ? switchRow(Switch,"hiddenChannelsAccess","Open who can see it","The roles and people allowed in show right away. Off, tap to open the list.",rowIcon(8489,"GroupIcon")) : null),
             footnote("note","Only a tap opens it: scrolling past a locked channel, opening a server or opening Discord never does.")];
         return settingsBody(ui,groups);
     }
@@ -8909,7 +9103,17 @@
         if (!tree || !React || !RN || !hiddenMetadata(channel)) return tree;
         // Discord already draws its own locked-channel icon (TextLockIcon, the # with a small lock) for these rows,
         // so a second lock beside the name only doubled it. Screen readers still hear that the channel is locked.
-        return el(RN.View,{style:{flexDirection:"row",alignItems:"center"},accessible:true,accessibilityLabel:hiddenName(channel)+", "+tr("locked")},tree);
+        // Equicord's channelStyle and showMode: Faded dims the whole row, and a lock or crossed-out eye can follow the name.
+        const mark = settings.hiddenChannelsIcon, faded = settings.hiddenChannelsStyle === "muted";
+        const children = mark === "lock" || mark === "eye" ? [el(RN.View,{key:"row",style:HIDDEN_ROW_NAME},tree), el(HiddenRowMark,{key:"mark",eye:mark === "eye"})] : tree;
+        return el(RN.View,{style:faded ? HIDDEN_ROW_FADED : HIDDEN_ROW,accessible:true,accessibilityLabel:hiddenName(channel)+", "+tr("locked")},children);
+    }
+    const HIDDEN_ROW = {flexDirection:"row",alignItems:"center"}, HIDDEN_ROW_FADED = {flexDirection:"row",alignItems:"center",opacity:0.5};
+    const HIDDEN_ROW_NAME = {flexShrink:1}, HIDDEN_MARK_DARK = {mark:{marginLeft:4}, icon:{color:"#80848e"}};
+    function HiddenRowMark(props) {
+        const s = useThemed("hiddenMark", c => ({mark:HIDDEN_MARK_DARK.mark, icon:{color:c.CHANNEL_ICON || c.INTERACTIVE_ICON_DEFAULT || c.TEXT_MUTED}}), HIDDEN_MARK_DARK);
+        const Icon = props.eye ? venusIcon(6927, "EyeSlashIcon") : venusIcon(8495, "LockIcon");
+        return el(RN.View, {style:s.mark, importantForAccessibility:"no"}, el(Icon, {size:"xs", color:s.icon.color}));
     }
     function hiddenInfo(orig,self,args) {
         if (React) useSettings("hiddenChannels");
@@ -12092,6 +12296,22 @@
         });
         // Never dispatch in the middle of Discord's own dispatch.
         if (!valid.running) { valid.running = true; later(validNext, 250); }
+    }
+    // Other places that show people by id (Show hidden channels' "Who can see it") hand their unknown ids to the same
+    // queue: one profile at a time, rate limits respected, each id tried once. Only while Fix unknown mentions is on.
+    function validRequest(ids) {
+        if (!features.validUser || !enabled("validUser") || !userStore || !ids || !ids.length) return false;
+        let added = false, pending = false;
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            if (typeof id !== "string" || !/^\d{17,20}$/.test(id) || knownUser(id)) continue;
+            // Already on its way (another dialog or a chat mention asked first): still worth waiting for.
+            if (valid.queued.has(id)) { pending = true; continue; }
+            if (valid.tried.has(id)) continue;
+            valid.queued.add(id); valid.queue.push(id); added = true;
+        }
+        if (added && !valid.running) { valid.running = true; later(validNext, 0); }
+        return added || pending;
     }
     function deletedUser(id) {
         return {id, username:"Deleted User", global_name:null, discriminator:"0000", avatar:null, avatar_decoration_data:null, bot:false, system:false, public_flags:0};

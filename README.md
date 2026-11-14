@@ -70,7 +70,7 @@ You can also import `patches-<version>.mpp` from [Releases](https://github.com/V
 | | Mutual group DMs | Group DMs you share with someone, on their profile |
 | | Platform spoof | Show as desktop, web or console. **Against Discord's rules, may risk your account** |
 | **Servers** | Read all button | Mark everything as read in one tap |
-| | Show hidden channels | Shows channels you can't open, with a lock |
+| | Show hidden channels | Shows channels you can't open, with a lock; tap one for its topic, settings, who can see it and who's in its call (based on ShowHiddenChannels from Vencord and Equicord) |
 | | Server info | Live server details from its icon |
 | | Edit servers locally | Your own server names and icons, only on your phone (based on EditServers by mwittrien) |
 | | Clone emojis and stickers | Add any emoji or sticker to your own server (based on ExpressionCloner by Ven) |
