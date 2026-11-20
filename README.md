@@ -4,13 +4,13 @@ Extra features and privacy options for Discord on Android, patched in with **[Mo
 
 [**Add to Morphe**](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [What's new](CHANGELOG.md) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-**Works with:** Discord **351.11 - Stable** (the original APKM).
+**Works with:** Discord **354.12 - Stable** (the original APKM).
 
 ## Install
 
 1. Install [Morphe Manager](https://github.com/MorpheApp/morphe-manager/releases).
 2. Tap **[Add to Morphe](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches)**, or add `https://github.com/VenusIsJaded/Venus-Patches` as a source.
-3. Pick the **original** Discord 351.11 APKM, not an already patched one.
+3. Pick the **original** Discord 354.12 APKM, not an already patched one.
 4. Keep the default selection (everything except **Custom branding**), then patch and install.
 5. Open **Discord Settings → Venus → Features** and turn on what you want. Everything starts off.
 
