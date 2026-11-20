@@ -14,10 +14,10 @@ import org.w3c.dom.Element
 internal const val BACKGROUND_MEDIA = "Lapp/venus/media/BackgroundMedia;"
 internal const val MEDIA_SERVICE = "app.venus.media.MediaService"
 private const val MAIN_ACTIVITY = "Lcom/discord/main/MainActivity;"
-private const val REACT_ACTIVITY = "Lcom/discord/react_activities/ReactActivity;"
-private const val AUDIO_PLAYER_MANAGER = "Lcom/discord/chat/presentation/message/view/voicemessages/AudioPlayerManager;"
+private const val REACT_ACTIVITY = "Ltf/e;"
+private const val AUDIO_PLAYER_MANAGER = "Lda/d;"
 private const val MEDIA_VIEW = "Lcom/discord/chat/presentation/message/view/MediaView;"
-private const val MEDIA_VIEW_LIFECYCLE = "Lcom/discord/chat/presentation/message/view/MediaView\$lifecycleListener\$1;"
+private const val MEDIA_VIEW_LIFECYCLE = "Ljm/c;"
 private const val MEDIA_PLAYBACK_PERMISSION = "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
 
 /**
@@ -109,11 +109,14 @@ internal fun keepAudioPlaying(method: MutableMethod) {
  */
 internal fun keepVideoPlaying(method: MutableMethod) {
     if (method.parameterTypes.isNotEmpty() || method.returnType != "V") throw PatchException("MediaView onHostPause ABI changed")
-    requireLocals(method, 1)
+    requireLocals(method, 2)
     requireUnpatched(method, "venus-")
     method.addInstructions(0, """
         move-object/from16 v0, p0
-        iget-object v0, v0, $MEDIA_VIEW_LIFECYCLE->this${'$'}0:$MEDIA_VIEW
+        iget-object v0, v0, $MEDIA_VIEW_LIFECYCLE->e:Ljava/lang/Object;
+        instance-of v1, v0, $MEDIA_VIEW
+        if-eqz v1, :venus_pause_video
+        check-cast v0, Landroid/view/View;
         invoke-static {v0}, $BACKGROUND_MEDIA->keepVideo(Landroid/view/View;)Z
         move-result v0
         if-eqz v0, :venus_pause_video
@@ -226,7 +229,7 @@ val keepMediaPlaying = bytecodePatch(
     extendWith("extensions/media.mpe")
     execute {
         selectRuntimeFeature("backgroundMedia")
-        keepAudioPlaying(Fingerprint(definingClass = AUDIO_PLAYER_MANAGER, name = "pauseCurrentPlayer", returnType = "V",
+        keepAudioPlaying(Fingerprint(definingClass = AUDIO_PLAYER_MANAGER, name = "d", returnType = "V",
             parameters = listOf("Z")).method)
         keepVideoPlaying(Fingerprint(definingClass = MEDIA_VIEW_LIFECYCLE, name = "onHostPause", returnType = "V",
             parameters = listOf()).method)
