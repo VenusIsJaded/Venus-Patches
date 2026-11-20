@@ -9,77 +9,77 @@
     // IDs past the end read as undefined, so a module added in a later bundle is simply left alone.
     const targetModules = new Uint8Array(32768);
     function selectModules(ids) { for (let i = 0; i < ids.length; i++) targetModules[ids[i]] = 1; }
-    selectModules([17, 19, 120, 1164, 2132, 11084, 15602, 15733]);
+    selectModules([17, 19, 120, 1149, 2186, 11717, 16783, 16937]);
     if (features.picker) targetModules[414] = 1;
-    if (features.voice) selectModules([1297, 8023, 8026]);
-    if (features.anonFiles) selectModules([8026, 8056]);
-    if (features.copyBios) targetModules[10940] = 1;
-    if (features.cleanChannels) selectModules([2068, 5521, 5512, 7635]);
-    if (features.favouriteAnything) selectModules([13989, 10035, 10038]);
-    if (features.freeNitro) selectModules([1392, 2068, 6243, 6286, 4864, 15066, 7323, 7445]);
-    if (features.noTyping) targetModules[12849] = 1;
-    if (features.fakeDeafen) selectModules([14755, 18341]);
-    if (features.quickDelete) selectModules([5400, 1128]);
-    if (features.noDelete) selectModules([584, 5532, 5534, 1392, 2068, 7445, 8013, 9978, 11114]);
-    if (features.jumpToTop) selectModules([12920, 12921, 12922, 9683, 7445, 5532]);
-    if (features.hiddenChannels) selectModules([1087, 1098, 1114, 2068, 2119, 4843, 7517, 4845, 5521, 7445, 584, 1392, 17357, 8495, 6291, 6362, 14975, 7748, 14788, 17190, 8727]);
-    if (features.pastelize) selectModules([8013, 1266, 2128]);
-    if (features.platformIndicators) selectModules([5207, 5211, 1392, 2068, 10858, 10531, 13788, 17165, 9069, 15185, 14076]);
-    if (features.reviewDB) selectModules([14101, 14995, 15048, 11024, 6542, 7172, 1392, 584]);
-    if (features.readAll) targetModules[17439] = 1;
-    if (features.quests) selectModules([584, 7656, 10002, 14713, 14748]);
-    if (features.badges) selectModules([584, 1392, 6015, 8590, 10002, 14713, 14748]);
-    if (features.systemEmoji) targetModules[7098] = 1;
-    if (features.gestures) selectModules([8254, 9738, 13762, 12935, 1392, 11114]);
-    if (features.validUser) selectModules([584, 1392]);
-    if (features.youBarSettings) targetModules[17538] = 1;
-    if (features.splitMessages) selectModules([1087, 1392, 2068, 7445, 9561, 9995, 13811]);
-    if (features.translate) selectModules([584, 1392, 5532, 8013, 9978, 10692]);
-    if (features.userNotif) selectModules([584, 1392, 2068, 2090, 2119, 2128, 4855, 5207, 7254, 10002, 14713, 14748]);
-    if (features.accountSwitcher) selectModules([584, 1392, 2049, 6194, 6900, 13073, 13074, 13075, 13076, 13078, 17076, 17520, 17538]);
-    if (features.appIcons) selectModules([1392, 4864, 9767, 15066, 16589, 16590, 18079, 18444]);
-    if (features.nitroThemes) selectModules([584, 1392, 2049, 4864, 5032, 15066, 16326]);
-    if (features.customThemes) selectModules([589, 590, 591, 1207, 4926, 4934, 11577, 10692]);
-    if (features.materialYou) selectModules([589, 590, 591, 1207, 4926, 4934, 11577]);
-    if (features.iconPacks) selectModules([81, 84, 328, 1207, 4912, 4926, 4934, 11577]);
-    if (features.messageHighlight) selectModules([584, 1392, 5532, 8013]);
-    if (features.serverInfo) selectModules([1392, 17433]);
-    if (features.serverEdit) selectModules([1417, 2090, 17433, 8910, 8911, 18678]);
-    if (features.fixEmbeds) selectModules([1392, 7445]);
-    if (features.tenorGifs) selectModules([1297, 10036]);
-    if (features.hideBlocked) selectModules([584, 2068, 2119, 4855, 5532, 7290, 7579, 12809]);
-    if (features.staffTag) targetModules[8013] = 1;
-    if (features.fullImages) selectModules([1417, 1498, 8666]);
-    if (features.alwaysTrust) selectModules([8537, 8766]);
-    if (features.noConfirmPin) selectModules([5400, 1128]);
-    if (features.listenAlong) targetModules[14082] = 1;
-    if (features.clickableMentions) selectModules([1392, 2068, 2119, 12337]);
-    if (features.expandBar) selectModules([584, 1392, 2068, 2119, 12337, 12338, 12887, 12818]);
-    if (features.silentLeave) selectModules([2068, 7290]);
-    if (features.silentEdit || features.silentDelete) selectModules([584, 1392, 5532, 7445]);
-    if (features.localEdit) selectModules([584, 1392, 5532, 8013, 9978]);
-    if (features.customIdle) selectModules([1087]);
-    if (features.pauseInvites) selectModules([17433, 2090, 4845, 1087]);
-    if (features.fastDeleteChannels) selectModules([10596, 5400, 1128, 2068, 4845, 1087]);
-    if (features.mutualGroupDMs) selectModules([14197, 2068, 1392, 1114]);
-    if (features.platformSpoof) selectModules([14713]);
-    if (features.guildLurk) targetModules[13422] = 1;
-    if (features.quietReplies) selectModules([1392, 5532, 9990]);
-    if (features.viewRaw) selectModules([9978, 10596, 17245, 10780, 17433, 14015, 7158, 7167]);
-    if (features.compressUploads) selectModules([8023, 8046, 10006]);
-    if (features.timeoutDuration) selectModules([2119, 2128, 8013]);
-    if (features.dndBanners) selectModules([6015, 13511, 13523]);
-    if (features.landscapeFull) targetModules[5075] = 1;
-    if (features.voiceDownload) selectModules([1447, 5532, 8013, 11114]);
-    if (features.cloneExpressions) selectModules([9839, 10078]);
-    if (features.removedAlerts) selectModules([584, 1392, 6377, 7293, 8910, 10002, 14713, 14748]);
-    if (features.bulkDelete) selectModules([584, 1087, 1392, 2068, 2119, 4845, 5532, 7445, 8013, 9978, 10692, 11114]);
-    if (features.experiments) selectModules([584, 1392, 1403]);
-    if (features.hideAnything) selectModules([14015, 15735, 15736, 9419, 10331, 16133, 16225, 12892, 12897, 12901, 12908, 12909, 13780, 14204, 15590, 17157, 15046, 8805, 9052, 10858, 12942, 14988, 14994, 14925, 14998, 11678, 11679, 14197, 10939, 7158, 14182, 14101, 17156, 17263, 13151, 12000, 10838, 17949, 16773, 17265, 17881, 17869, 11164, 9978, 13759, 12696, 10650, 13769, 8494, 9873]);
-    if (features.voiceOptions) { targetModules[584] = 1; targetModules[11372] = 1; targetModules[6145] = 1; }
-    const revision = "1.21.1";
+    if (features.voice) selectModules([1282, 8311, 8314]);
+    if (features.anonFiles) selectModules([8314, 8343]);
+    if (features.copyBios) targetModules[11670] = 1;
+    if (features.cleanChannels) selectModules([5019, 5808, 6208, 7933]);
+    if (features.favouriteAnything) selectModules([15040, 10395, 10398]);
+    if (features.freeNitro) selectModules([1385, 5019, 6884, 6925, 2171, 16217, 7621, 7745]);
+    if (features.noTyping) targetModules[14019] = 1;
+    if (features.fakeDeafen) selectModules([15885, 19778]);
+    if (features.quickDelete) selectModules([6123, 1113]);
+    if (features.noDelete) selectModules([572, 6226, 6228, 1385, 5019, 7745, 8481, 10340, 11763]);
+    if (features.jumpToTop) selectModules([14090, 14091, 1118, 10050, 7745, 6226]);
+    if (features.hiddenChannels) selectModules([1072, 1083, 1099, 5019, 5073, 5100, 7816, 5102, 5808, 7745, 572, 1385, 18657, 8771, 6930, 6974, 16126, 8041, 15939, 18492, 9013]);
+    if (features.pastelize) selectModules([8481, 1251, 5082]);
+    if (features.platformIndicators) selectModules([5922, 5927, 1385, 5019, 11586, 10889, 14840, 18465, 9345, 16331, 15146]);
+    if (features.reviewDB) selectModules([15171, 16146, 16201, 11063, 7159, 7462, 1385, 572]);
+    if (features.readAll) targetModules[18737] = 1;
+    if (features.quests) selectModules([572, 7955, 10362, 15843, 15878]);
+    if (features.badges) selectModules([572, 1385, 6657, 8867, 10362, 15843, 15878]);
+    if (features.systemEmoji) targetModules[7396] = 1;
+    if (features.gestures) selectModules([8530, 10105, 14808, 14104, 1385, 11763]);
+    if (features.validUser) selectModules([572, 1385]);
+    if (features.youBarSettings) targetModules[18855] = 1;
+    if (features.splitMessages) selectModules([1072, 1385, 5019, 7745, 9898, 10357, 14862]);
+    if (features.translate) selectModules([572, 1385, 6226, 8481, 10340, 11407]);
+    if (features.userNotif) selectModules([572, 1385, 5019, 5041, 5073, 5082, 5112, 5922, 7548, 10362, 15843, 15878]);
+    if (features.accountSwitcher) selectModules([572, 1385, 5000, 6834, 7212, 14242, 14243, 14244, 14245, 14247, 18370, 18836, 18855]);
+    if (features.appIcons) selectModules([1385, 2171, 10134, 16217, 17884, 17885, 19428, 19841]);
+    if (features.nitroThemes) selectModules([572, 1385, 5000, 2171, 5194, 16217, 17614]);
+    if (features.customThemes) selectModules([577, 578, 579, 1192, 5187, 5188, 12253, 11407]);
+    if (features.materialYou) selectModules([577, 578, 579, 1192, 5187, 5188, 12253]);
+    if (features.iconPacks) selectModules([81, 84, 328, 1192, 5873, 5187, 5188, 12253]);
+    if (features.messageHighlight) selectModules([572, 1385, 6226, 8481]);
+    if (features.serverInfo) selectModules([1385, 18731]);
+    if (features.serverEdit) selectModules([1411, 5041, 18731, 9187, 9188, 20098]);
+    if (features.fixEmbeds) selectModules([1385, 7745]);
+    if (features.tenorGifs) selectModules([1282, 10396]);
+    if (features.hideBlocked) selectModules([572, 5019, 5073, 5112, 6226, 7582, 7875, 13979]);
+    if (features.staffTag) targetModules[8481] = 1;
+    if (features.fullImages) selectModules([1411, 1492, 8946]);
+    if (features.alwaysTrust) selectModules([8815, 9054]);
+    if (features.noConfirmPin) selectModules([6123, 1113]);
+    if (features.listenAlong) targetModules[15152] = 1;
+    if (features.clickableMentions) selectModules([1385, 5019, 5073, 13057]);
+    if (features.expandBar) selectModules([572, 1385, 5019, 5073, 13057, 13058, 14057, 13987]);
+    if (features.silentLeave) selectModules([5019, 7582]);
+    if (features.silentEdit || features.silentDelete) selectModules([572, 1385, 6226, 7745]);
+    if (features.localEdit) selectModules([572, 1385, 6226, 8481, 10340]);
+    if (features.customIdle) selectModules([1072]);
+    if (features.pauseInvites) selectModules([18731, 5041, 5102, 1072]);
+    if (features.fastDeleteChannels) selectModules([10954, 6123, 1113, 5019, 5102, 1072]);
+    if (features.mutualGroupDMs) selectModules([15309, 5019, 1385, 1099]);
+    if (features.platformSpoof) selectModules([15843]);
+    if (features.guildLurk) targetModules[14592] = 1;
+    if (features.quietReplies) selectModules([1385, 6226, 10352]);
+    if (features.viewRaw) selectModules([10340, 10954, 18545, 11298, 18731, 15076, 7448, 7456]);
+    if (features.compressUploads) selectModules([8311, 8333, 10366]);
+    if (features.timeoutDuration) selectModules([5073, 5082, 8481]);
+    if (features.dndBanners) selectModules([6657, 11177, 11190]);
+    if (features.landscapeFull) targetModules[5349] = 1;
+    if (features.voiceDownload) selectModules([1441, 6226, 8481, 11763]);
+    if (features.cloneExpressions) selectModules([10204, 10438]);
+    if (features.removedAlerts) selectModules([572, 1385, 6990, 7585, 9187, 10362, 15843, 15878]);
+    if (features.bulkDelete) selectModules([572, 1072, 1385, 5019, 5073, 5102, 6226, 7745, 8481, 10340, 11407, 11763]);
+    if (features.experiments) selectModules([572, 1385, 1401]);
+    if (features.hideAnything) selectModules([15076, 16939, 16940, 9745, 10690, 17422, 17511, 14062, 14066, 14070, 14078, 14079, 14832, 15316, 16759, 18457, 16199, 9092, 9328, 11586, 14111, 16139, 16145, 16075, 16149, 12374, 12375, 15309, 11669, 7448, 15290, 15171, 18456, 18561, 14312, 12741, 11569, 19290, 18065, 18563, 19204, 19192, 11812, 10340, 14805, 13656, 11150, 14815, 8770, 10237]);
+    if (features.voiceOptions) { targetModules[572] = 1; targetModules[11192] = 1; targetModules[6793] = 1; }
+    const revision = "1.22.0";
     // The Discord build these patches are pinned to (DiscordPatches.kt compatibleWith); shown on the About page.
-    const DISCORD_VERSION = "351.11";
+    const DISCORD_VERSION = "354.12";
     // Module 120 owns setUpDefaltReactNativeEnvironment in this exact asset.
     // Defer every feature hook until that initializer returns successfully.
     let environmentReady = false;
@@ -1207,16 +1207,16 @@
     }
     // Discord's own icon for each feature row, from its design system. Resolved when a row first draws, never
     // while Discord builds its settings, and the Account icon stands in if one ever goes missing.
-    const FEATURE_ICONS = {noDelete:[5148, "TrashIcon"], fakeDeafen:[9074, "HeadphonesSlashIcon"], translate:[9415, "LanguageIcon"], gestures:[9252, "ReactionIcon"],
-        quickDelete:[6573, "CircleXIcon"], jumpToTop:[10796, "ArrowLargeUpIcon"], favouriteAnything:[9851, "StarIcon"],
-        freeNitro:[9327, "NitroWheelIcon"], voice:[13531, "WaveformIcon"], splitMessages:[9641, "PaperIcon"], noTyping:[13747, "KeyboardIcon"],
-        picker:[10327, "AttachmentIcon"], anonFiles:[6927, "EyeSlashIcon"], pastelize:[16320, "PaintPaletteIcon"], platformIndicators:[15994, "LaptopPhoneIcon"],
-        validUser:[8490, "AtIcon"], copyBios:[5141, "CopyIcon"], reviewDB:[9658, "ThumbsUpIcon"], readAll:[16684, "DoubleCheckmarkIcon"],
-        hiddenChannels:[8495, "LockIcon"], systemFont:[16730, "LettersIcon"], systemEmoji:[13827, "ChatSmileIcon"],
-        youBarSettings:[7368, "SettingsIcon"], quests:[13929, "QuestsIcon"],
-        badges:[9211, "TrophyIcon"], userNotif:[9045, "BellIcon"], accountSwitcher:[8489, "GroupIcon"], appIcons:[8506, "AppsIcon"],
-        compressUploads:[11636, "FileUpIcon"], customThemes:[16412, "EyeDropperIcon"], iconPacks:[11449, "ImageSparkleIcon"], messageHighlight:[17627, "PaintbrushThinIcon"], serverInfo:[5145, "CircleInformationIcon"], serverEdit:[10023, "PencilIcon"], fixEmbeds:[13836, "EmbedIcon"], tenorGifs:[10051, "GifIcon"], nitroThemes:[11733, "SparklesIcon"], materialYou:[16320, "PaintPaletteIcon"], hideBlocked:[11619, "ChatShieldIcon"], bulkDelete:[7144, "CircleCheckIcon"], experiments:[16650, "BeakerIcon"], cleanChannels:[12158, "MagicWandIcon"], noHandsfree:[13214, "HeadphonesIcon"], voiceOptions:[8501, "VoiceNormalIcon"], staffTag:[10563, "CrownIcon"], removedAlerts:[5135, "UserMinusIcon"], hideAnything:[10561, "XLargeIcon"], fullImages:[12328, "ImagesIcon"], alwaysTrust:[10733, "ShieldIcon"], noConfirmPin:[10641, "PinIcon"], clickableMentions:[8490, "AtIcon"], expandBar:[16089, "FullscreenEnterIcon"], quietReplies:[10654, "BellSlashIcon"], viewRaw:[12003, "FileIcon"], timeoutDuration:[5150, "ClockIcon"], dndBanners:[13603, "BellZIcon"], voiceDownload:[5143, "DownloadIcon"], cloneExpressions:[11657, "ImagePlusIcon"], listenAlong:[13214, "HeadphonesIcon"], backgroundMedia:[8674, "PlayIcon"], landscapeFull:[16089, "FullscreenEnterIcon"], silentLeave:[11384, "DoorExitIcon"], guildLurk:[6929, "EyeIcon"], silentEdit:[13745, "PencilSparkleIcon"], silentDelete:[5148, "TrashIcon"], localEdit:[10023, "PencilIcon"],
-        hypeSquad:[18747, "HomeIcon"], customIdle:[14205, "UserClockIcon"], pauseInvites:[8676, "PauseIcon"], fastDeleteChannels:[18679, "ChannelListIcon"], mutualGroupDMs:[8489, "GroupIcon"], platformSpoof:[5133, "UserPlatformIcon"]};
+    const FEATURE_ICONS = {noDelete:[5894, "TrashIcon"], fakeDeafen:[9351, "HeadphonesSlashIcon"], translate:[9741, "LanguageIcon"], gestures:[9566, "ReactionIcon"],
+        quickDelete:[7191, "CircleXIcon"], jumpToTop:[11523, "ArrowLargeUpIcon"], favouriteAnything:[10216, "StarIcon"],
+        freeNitro:[9645, "NitroWheelIcon"], voice:[11224, "WaveformIcon"], splitMessages:[10006, "PaperIcon"], noTyping:[14794, "KeyboardIcon"],
+        picker:[10686, "AttachmentIcon"], anonFiles:[7195, "EyeSlashIcon"], pastelize:[17608, "PaintPaletteIcon"], platformIndicators:[17213, "LaptopPhoneIcon"],
+        validUser:[8766, "AtIcon"], copyBios:[5887, "CopyIcon"], reviewDB:[10023, "ThumbsUpIcon"], readAll:[17976, "DoubleCheckmarkIcon"],
+        hiddenChannels:[8771, "LockIcon"], systemFont:[18022, "LettersIcon"], systemEmoji:[14878, "ChatSmileIcon"],
+        youBarSettings:[7666, "SettingsIcon"], quests:[14983, "QuestsIcon"],
+        badges:[9492, "TrophyIcon"], userNotif:[9321, "BellIcon"], accountSwitcher:[8765, "GroupIcon"], appIcons:[8782, "AppsIcon"],
+        compressUploads:[12429, "FileUpIcon"], customThemes:[17699, "EyeDropperIcon"], iconPacks:[12127, "ImageSparkleIcon"], messageHighlight:[18940, "PaintbrushThinIcon"], serverInfo:[5891, "CircleInformationIcon"], serverEdit:[10383, "PencilIcon"], fixEmbeds:[14887, "EmbedIcon"], tenorGifs:[10411, "GifIcon"], nitroThemes:[12467, "SparklesIcon"], materialYou:[17608, "PaintPaletteIcon"], hideBlocked:[13242, "ChatShieldIcon"], bulkDelete:[7434, "CircleCheckIcon"], experiments:[12440, "BeakerIcon"], cleanChannels:[11137, "MagicWandIcon"], noHandsfree:[14375, "HeadphonesIcon"], voiceOptions:[8777, "VoiceNormalIcon"], staffTag:[10921, "CrownIcon"], removedAlerts:[5881, "UserMinusIcon"], hideAnything:[10919, "XLargeIcon"], fullImages:[13049, "ImagesIcon"], alwaysTrust:[11453, "ShieldIcon"], noConfirmPin:[11141, "PinIcon"], clickableMentions:[8766, "AtIcon"], expandBar:[17307, "FullscreenEnterIcon"], quietReplies:[11154, "BellSlashIcon"], viewRaw:[11226, "FileIcon"], timeoutDuration:[5896, "ClockIcon"], dndBanners:[11336, "BellZIcon"], voiceDownload:[5889, "DownloadIcon"], cloneExpressions:[12314, "ImagePlusIcon"], listenAlong:[14375, "HeadphonesIcon"], backgroundMedia:[8955, "PlayIcon"], landscapeFull:[17307, "FullscreenEnterIcon"], silentLeave:[12078, "DoorExitIcon"], guildLurk:[7197, "EyeIcon"], silentEdit:[14792, "PencilSparkleIcon"], silentDelete:[5894, "TrashIcon"], localEdit:[10383, "PencilIcon"],
+        hypeSquad:[20165, "HomeIcon"], customIdle:[15317, "UserClockIcon"], pauseInvites:[8957, "PauseIcon"], fastDeleteChannels:[20099, "ChannelListIcon"], mutualGroupDMs:[8765, "GroupIcon"], platformSpoof:[5879, "UserPlatformIcon"]};
     const venusIcons = new Map();
     function venusIcon(id, name, fallback) {
         const slot = id + ":" + name;
@@ -1242,7 +1242,7 @@
     function settingsPage(sections) {
         const node = { type: "list", sections };
         return function VenusSettingsPage() {
-            const List = SettingsList || (SettingsList = inspectedExport(15733, "SettingsList"));
+            const List = SettingsList || (SettingsList = inspectedExport(16937, "SettingsList"));
             return React && List ? el(List, { node }) : null;
         };
     }
@@ -1333,7 +1333,7 @@
     function FeatureSearchBar() {
         useFeatureSearch(); useSettings();
         if (!React || !RN) return null;
-        const ui = reviewUI(), SearchField = inspectedExport(7016, "SearchField"), Text = inspectedExport(5187, "Text");
+        const ui = reviewUI(), SearchField = inspectedExport(7315, "SearchBar"), Text = inspectedExport(5783, "Text");
         const s = useThemed("featureSearch", c => ({badge:Object.assign({}, SEARCH_EMPTY_DARK.badge, {backgroundColor:c.BACKGROUND_MOD_SUBTLE})}), SEARCH_EMPTY_DARK);
         const query = featureSearch.query, label = tr("Search features");
         const props = {placeholder:label, accessibilityLabel:label, value:query, onChange:setFeatureSearch, autoCorrect:false, autoCapitalize:"none", returnKeyType:"search"};
@@ -1347,7 +1347,7 @@
             query.trim() ? null : setup,
             field,
             none ? el(RN.View, {key:"none", style:{alignItems:"center", gap:6, paddingTop:40, paddingBottom:24}, accessibilityLiveRegion:"polite"},
-                popIn("none", el(RN.View, {style:[s.badge, {marginBottom:6}]}, el(venusIcon(7017, "MagnifyingGlassIcon"), {size:"md"}))),
+                popIn("none", el(RN.View, {style:[s.badge, {marginBottom:6}]}, el(venusIcon(7316, "MagnifyingGlassIcon"), {size:"md"}))),
                 text(tr("No features found"), "text-md/semibold", "text-strong", {color:"#f2f3f5", fontSize:16, fontWeight:"600"}),
                 text(tr("Try a different word."), "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:14})) : null);
     }
@@ -1388,7 +1388,7 @@
             done:Object.assign({}, STARTER_DARK.done, {backgroundColor:c.STATUS_POSITIVE || c.TEXT_POSITIVE || "#23a55a"}),
             chip:Object.assign({}, STARTER_DARK.chip, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}), button:STARTER_DARK.button}), STARTER_DARK);
         if (!starterVisible()) return null;
-        const Text = inspectedExport(5187, "Text"), Button = inspectedExport(5479, "Button"), Press = RN.Pressable || RN.View;
+        const Text = inspectedExport(5783, "Text"), Button = inspectedExport(5790, "Button"), Press = RN.Pressable || RN.View;
         const line = (value, variant, color, fallback, extra) => Text ? el(Text, Object.assign({variant, color}, extra), value) : el(RN.Text, Object.assign({style:fallback}, extra), value);
         const done = !!starter.justOn, keys = done ? starter.justOn : starterKeys();
         const title = done ? pl(keys.length, "{n} feature turned on", "{n} features turned on") : tr("Start with the essentials");
@@ -1401,7 +1401,7 @@
             el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:14}},
                 // The badge pops when the card turns into its done state.
                 popIn(done ? "starter:done" : "starter:offer", el(RN.View, {style:done ? s.done : s.badge},
-                    el(done ? venusIcon(7101, "CheckmarkSmallIcon") : venusIcon(11733, "SparklesIcon"), {size:"md", color:"#ffffff"}))),
+                    el(done ? venusIcon(7399, "CheckmarkSmallIcon") : venusIcon(12467, "SparklesIcon"), {size:"md", color:"#ffffff"}))),
                 el(RN.View, {style:{flex:1, gap:2}},
                     line(title, "text-md/semibold", "text-strong", {color:"#f2f3f5", fontSize:16, fontWeight:"600"}, {accessibilityRole:"header"}),
                     line(tr(done ? "They're switched on below. Open any of them to fine-tune it." :
@@ -1475,11 +1475,11 @@
         useFeatureSearch(); useSettings();
         const s = useFeatureBarStyles();
         if (!RN) return null;
-        const Text = inspectedExport(5187, "Text"), Press = RN.Pressable || RN.TouchableOpacity || RN.View, edit = featureList.edit;
+        const Text = inspectedExport(5783, "Text"), Press = RN.Pressable || RN.TouchableOpacity || RN.View, edit = featureList.edit;
         const keys = Object.keys(FEATURE_ICONS).filter(key => features[key]), on = keys.filter(key => settings[key]).length, hidden = hiddenFeatureKeys().length;
         const summary = edit ? tr("Tap the eye to hide or show a feature.") :
             tr("{on} of {total} turned on", {on, total:keys.length}) + (hidden ? " \u00b7 " + pl(hidden, "{n} feature hidden", "{n} features hidden") : "");
-        const label = tr(edit ? "Done" : "Edit list"), Icon = edit ? venusIcon(7101, "CheckmarkSmallIcon") : venusIcon(10023, "PencilIcon");
+        const label = tr(edit ? "Done" : "Edit list"), Icon = edit ? venusIcon(7399, "CheckmarkSmallIcon") : venusIcon(10383, "PencilIcon");
         return el(RN.View, {style:s.bar},
             el(RN.View, {style:{flex:1}}, Text ? el(Text, {variant:"text-sm/medium", color:"text-muted", numberOfLines:2}, summary) :
                 el(RN.Text, {style:{color:"#949ba4", fontSize:14}, numberOfLines:2}, summary)),
@@ -1493,7 +1493,7 @@
         useSettings("hiddenFeatures");
         const s = useFeatureBarStyles();
         const Press = RN.Pressable || RN.TouchableOpacity || RN.View, hidden = featureHidden(props.feature);
-        const Icon = hidden ? venusIcon(6927, "EyeSlashIcon") : venusIcon(6929, "EyeIcon");
+        const Icon = hidden ? venusIcon(7195, "EyeSlashIcon") : venusIcon(7197, "EyeIcon");
         return el(Press, {onPress:() => setFeatureHidden(props.feature, !hidden), style:hidden ? s.eyeOff : s.eye, hitSlop:{top:4, bottom:4, left:4, right:4},
             accessibilityRole:"switch", accessibilityState:{checked:!hidden}, accessibilityLabel:tr(hidden ? "Show" : "Hide") + ": " + props.label},
             popIn(hidden ? "eye:off" : "eye:on", el(Icon, {size:"sm", color:hidden ? s.eyeOffIcon.color : s.eyeIcon.color})));
@@ -1501,7 +1501,7 @@
     // The Hidden features row's arrow, pointing down while closed and up while open.
     function HiddenChevron() {
         useSettings("hiddenFeatures");
-        const Chevron = venusIcon(10859, "ChevronSmallDownIcon");
+        const Chevron = venusIcon(11587, "ChevronSmallDownIcon");
         return el(RN.View, {style:{transform:[{rotate:featureList.open ? "180deg" : "0deg"}]}}, el(Chevron, {size:"sm"}));
     }
     // The Features list: Discord's own settings list, with the search bar as its header. While you search it only keeps
@@ -1513,7 +1513,7 @@
         return function VenusFeaturesPage() {
             useFeatureSearch(); useSettings("hiddenFeatures");
             React.useEffect(() => () => { featureSearch.query = ""; featureSearch.cache = null; featureList.edit = false; featureList.open = false; }, []);
-            const List = SettingsList || (SettingsList = inspectedExport(15733, "SettingsList"));
+            const List = SettingsList || (SettingsList = inspectedExport(16937, "SettingsList"));
             if (!React || !List) return null;
             if (!header) header = el(RN.View, {key:"venus-header"}, el(FeatureSearchBar, {key:"search"}), el(FeatureListBar, {key:"bar"}));
             const query = featureSearch.query.trim(), ids = query ? featureMatches(query) : null, edit = featureList.edit;
@@ -1589,7 +1589,7 @@
         const title = tr("Are you sure?"), body = RISKY_FEATURES[key](), yes = tr("Turn on"), ui = reviewUI();
         const confirm = () => { animateLayout(); setSetting(key, true); };
         if (ui.alerts && typeof ui.alerts.show === "function") try {
-            ui.alerts.show({title, body, confirmText:yes, cancelText:tr("Cancel"), confirmColor:(inspectedExport(1205, "ButtonColors") || {}).RED, onConfirm:confirm, onCancel:cancel}); return;
+            ui.alerts.show({title, body, confirmText:yes, cancelText:tr("Cancel"), confirmColor:(inspectedExport(1190, "ButtonColors") || {}).RED, onConfirm:confirm, onCancel:cancel}); return;
         } catch (_) {}
         if (RN && RN.Alert) RN.Alert.alert(title, body, [{text:tr("Cancel"), style:"cancel", onPress:cancel}, {text:yes, style:"destructive", onPress:confirm}],
             {cancelable:true, onDismiss:cancel});
@@ -1603,7 +1603,7 @@
     function RiskyDescription(props) {
         useLanguage();
         const s = useRiskChips();
-        const Text = inspectedExport(5187, "Text");
+        const Text = inspectedExport(5783, "Text");
         return el(RN.View, {accessible:true, accessibilityLabel:tr("Risky") + ", " + tr("Experimental") + ". " + tr(props.hint)},
             riskChips(s),
             // The same size and color as every other row's description, so this row doesn't look out of place.
@@ -1613,7 +1613,7 @@
         const chip = (key, Icon, label) => el(RN.View, {key, style:s.chip},
             el(Icon, {size:"xxs", color:s.text.color}),
             el(RN.Text, {numberOfLines:1, style:s.text}, tr(label)));
-        return el(RN.View, {style:flush ? [s.row, {marginTop:0, marginBottom:0}] : s.row}, chip("risky", venusIcon(7838, "WarningIcon"), "Risky"), chip("experimental", venusIcon(16650, "BeakerIcon"), "Experimental"));
+        return el(RN.View, {style:flush ? [s.row, {marginTop:0, marginBottom:0}] : s.row}, chip("risky", venusIcon(8129, "WarningIcon"), "Risky"), chip("experimental", venusIcon(12440, "BeakerIcon"), "Experimental"));
     }
     function useRiskChips() {
         return useThemed("riskChips", c => ({row:RISK_CHIP_DARK.row,
@@ -1627,7 +1627,7 @@
     function riskCard(key, body) {
         const s = useRiskChips(), c = useThemed("riskCard", t => ({card:Object.assign({}, RISK_CARD_DARK.card, {borderColor:t.BORDER_FEEDBACK_CRITICAL || t.TEXT_FEEDBACK_CRITICAL,
             backgroundColor:t.BACKGROUND_FEEDBACK_CRITICAL}), badge:RISK_CARD_DARK.badge}), RISK_CARD_DARK);
-        const Warn = venusIcon(7838, "WarningIcon");
+        const Warn = venusIcon(8129, "WarningIcon");
         return el(RN.View, {key, style:[c.card, {gap:12}], accessible:true, accessibilityLabel:tr("Risky") + ", " + tr("Experimental") + ". " + tr(body)},
             el(RN.View, {style:c.badge}, el(Warn, {size:"sm", color:s.text.color})),
             el(RN.View, {style:{flex:1, gap:4}},
@@ -1638,8 +1638,8 @@
     function SubpageTrailing(props) {
         useSettings(props.setting);
         // Kept once found; a missing one is looked up again next render, in case its module loads later.
-        const FormSwitch = trailingSwitch || (trailingSwitch = inspectedExport(7173, "FormSwitch"));
-        const Chevron = trailingChevron || (trailingChevron = inspectedExport(7182, "ChevronSmallRightIcon"));
+        const FormSwitch = trailingSwitch || (trailingSwitch = inspectedExport(7463, "FormSwitch"));
+        const Chevron = trailingChevron || (trailingChevron = inspectedExport(7471, "ChevronSmallRightIcon"));
         const Press = RN.Pressable || RN.TouchableOpacity || RN.View;
         const on = !!settings[props.setting];
         return el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:2}},
@@ -1659,9 +1659,9 @@
                 screen: { route: key, getComponent: () => page } };
         }
         // About: the version and how many features are on, whether settings are saved, and where to get help.
-        next.VENUS_VERSION = { type: "static", parent: "VENUS_GENERAL", IconComponent: venusIcon(9365, "TagIcon", icon),
+        next.VENUS_VERSION = { type: "static", parent: "VENUS_GENERAL", IconComponent: venusIcon(9686, "TagIcon", icon),
             useTitle: () => "Venus Patches " + revision, useDescription: function () { useSettings(); return featureSummary(); } };
-        next.VENUS_STATUS = { type: "static", parent: "VENUS_GENERAL", IconComponent: venusIcon(5145, "CircleInformationIcon", icon),
+        next.VENUS_STATUS = { type: "static", parent: "VENUS_GENERAL", IconComponent: venusIcon(5891, "CircleInformationIcon", icon),
             useTitle: () => { useLanguage(); return tr("Status"); }, useDescription: function () { useSettings(); return aboutText(); } };
         const links = [];
         function link(id, title, hint, url, iconId, iconName) {
@@ -1673,7 +1673,7 @@
         link("VENUS_LINK_ISSUES", "Report a problem", "Opens a new issue on GitHub.", REPO + "/issues/new/choose", 12113, "BugIcon");
         link("VENUS_LINK_SOURCE", "Source code", "Venus Patches on GitHub. Free and open source (GPL-3.0).", REPO, 7972, "LinkExternalSmallIcon");
         route("VENUS_GENERAL", "About", [section("Venus Patches", ["VENUS_VERSION", "VENUS_STATUS"]), section("Links", links)], undefined,
-            venusIcon(5145, "CircleInformationIcon", icon));
+            venusIcon(5891, "CircleInformationIcon", icon));
         // The nodes above stay for Discord's settings search; the page itself is the designed About page.
         next.VENUS_GENERAL.screen.getComponent = () => AboutSettings;
         // The features list: each row says what it does, grouped by where you'll notice it.
@@ -1715,7 +1715,7 @@
                 useTrailing: function () {
                     // Called as a hook by Discord's row, so it can read the settings stack it's in.
                     // Resolved once, so the row always calls the same number of hooks.
-                    if (stackNavigation === undefined) stackNavigation = inspectedExport(1505, "useStackNavigation") || null;
+                    if (stackNavigation === undefined) stackNavigation = inspectedExport(1499, "useStackNavigation") || null;
                     navigators.set(rowId, stackNavigation ? stackNavigation() : null);
                     return el(SubpageTrailing, {setting:key, label:tr(title), open});
                 } };
@@ -1823,7 +1823,7 @@
         const listed = [["Messages", groups.messages], ["Sending", groups.sending], ["People", groups.people],
             ["Servers", groups.servers], ["Appearance", groups.appearance], ["Quests", groups.quests], ["Advanced", groups.advanced]];
         const sections = listed.map(([label, ids]) => section(label, ids)).filter(entry => entry.settings.length);
-        route(P, "Features", sections, undefined, venusIcon(16003, "PuzzlePieceIcon", icon));
+        route(P, "Features", sections, undefined, venusIcon(19309, "PuzzlePieceIcon", icon));
         // Edit list: each feature again, with an eye instead of its switch; tapping the row hides or shows it too.
         const keyOf = {};
         featureSearch.rows.forEach(row => {
@@ -1836,11 +1836,11 @@
             if (hint) next["VENUS_EDIT_" + key].useDescription = () => tr(hint);
         });
         // The bottom of the list: one row that opens to show the hidden features, and Show all to bring them all back.
-        next.VENUS_HIDDEN_TOGGLE = { type: "pressable", parent: P, unsearchable: true, IconComponent: venusIcon(6927, "EyeSlashIcon", icon),
+        next.VENUS_HIDDEN_TOGGLE = { type: "pressable", parent: P, unsearchable: true, IconComponent: venusIcon(7195, "EyeSlashIcon", icon),
             useTitle: function () { useSettings("hiddenFeatures"); const n = hiddenFeatureKeys().length; return pl(n, "{n} feature hidden", "{n} features hidden"); },
             useDescription: function () { useSettings("hiddenFeatures"); return tr(featureList.open ? "Tap to fold them away again." : "They keep working. Tap to see them."); },
             onPress: toggleHiddenOpen, useTrailing: () => el(HiddenChevron, null) };
-        next.VENUS_HIDDEN_SHOWALL = { type: "pressable", parent: P, unsearchable: true, IconComponent: venusIcon(6929, "EyeIcon", icon),
+        next.VENUS_HIDDEN_SHOWALL = { type: "pressable", parent: P, unsearchable: true, IconComponent: venusIcon(7197, "EyeIcon", icon),
             useTitle: () => { useLanguage(); return tr("Show all"); },
             useDescription: () => tr("Puts every hidden feature back in its group."), onPress: showAllFeatures };
         // The nodes above stay for Discord's settings search; the page itself adds the Features search bar.
@@ -1853,11 +1853,11 @@
             return tr("{on} of {total} turned on", {on:keys.filter(key => settings[key]).length, total:keys.length});
         };
         // Language: the language Venus settings are shown in, Discord's own by default.
-        route("VENUS_LANGUAGE", "Language", [], undefined, venusIcon(9415, "LanguageIcon", icon));
+        route("VENUS_LANGUAGE", "Language", [], undefined, venusIcon(9741, "LanguageIcon", icon));
         next.VENUS_LANGUAGE.screen.getComponent = () => LanguageSettings;
         next.VENUS_LANGUAGE.useDescription = function () { useLanguage(); return languageLabel(settings.language); };
         // Backup and restore (#68): save every Venus setting to a file or the clipboard and bring it back after patching again.
-        route("VENUS_BACKUP", "Backup and restore", [], undefined, venusIcon(11977, "ArrowsUpDownIcon", icon));
+        route("VENUS_BACKUP", "Backup and restore", [], undefined, venusIcon(12717, "ArrowsUpDownIcon", icon));
         next.VENUS_BACKUP.screen.getComponent = () => BackupSettings;
         next.VENUS_BACKUP.useDescription = function () { useSettings(); return backup.last ? backupAgo() : tr("Save your settings or bring them back."); };
         status.menu = true;
@@ -2061,7 +2061,7 @@
                 Promise.resolve(info.isScreenReaderEnabled()).then(on => dlog("I", "device", "screen reader " + (on ? "on" : "off")), () => {});
         } catch (_) {}
         try {
-            const themes = inspectedExport(1207, "default");
+            const themes = inspectedExport(1192, "default");
             if (themes && typeof themes.theme === "string") dlog("I", "device", "Discord theme " + themes.theme + (themes.systemTheme ? ", system " + themes.systemTheme : ""));
         } catch (_) {}
     }
@@ -2225,7 +2225,7 @@
         }
         // Discord's Dispatcher (584) has no way to remove an interceptor: once added, it only reads the switch.
         if (!debugLog.flux) {
-            const dispatcher = inspectedExport(584, "default");
+            const dispatcher = inspectedExport(572, "default");
             if (dispatcher && typeof dispatcher.addInterceptor === "function") try {
                 dispatcher.addInterceptor(action => {
                     if (!settings.debugLog || !action || !action.type) return false;
@@ -2375,9 +2375,9 @@
             const copy = () => {
                 (reviewUI().clipboard || RN.Clipboard).setString(text);
                 diagBusy("");
-                reviewToast(reviewUI(), "Logs copied", venusIcon(5141, "CopyIcon"));
+                reviewToast(reviewUI(), "Logs copied", venusIcon(5887, "CopyIcon"));
             };
-            const saveDocuments = inspectedExport(11600, "saveDocuments"), dir = cacheDir();
+            const saveDocuments = inspectedExport(11264, "saveDocuments"), dir = cacheDir();
             if (toClipboard || !files || typeof saveDocuments !== "function" || !dir) { copy(); return undefined; }
             const name = "venus-logs-" + backupDate(Date.now()) + ".txt";
             return Promise.resolve().then(() => files.writeFile("cache", name, text, "utf8"))
@@ -2386,7 +2386,7 @@
                     const first = Array.isArray(result) ? result[0] : result;
                     if (first && first.error) throw new Error(String(first.error));
                     diagBusy("");
-                    reviewToast(reviewUI(), "Logs saved", venusIcon(7144, "CircleCheckIcon"));
+                    reviewToast(reviewUI(), "Logs saved", venusIcon(7434, "CircleCheckIcon"));
                 }, error => {
                     diagBusy("");
                     if (!pickerCancelled(error)) showProblem("Couldn't export the logs", tr("Try Copy logs instead."));
@@ -2399,7 +2399,7 @@
             debugLogFlush();
             diagCall("forget").catch(() => {});
             diag.last = ""; notify("diag");
-            reviewToast(reviewUI(), "Logs cleared", venusIcon(5148, "TrashIcon"));
+            reviewToast(reviewUI(), "Logs cleared", venusIcon(5894, "TrashIcon"));
         });
     }
     function troubleshootingGroup(ui) {
@@ -2408,19 +2408,19 @@
         return el(Group, {key:"troubleshooting", title:tr("Troubleshooting")},
             Switch ? el(Switch, {key:"debugLog", label:tr("Debug logging"),
                 subLabel:tr("Records what Discord and Venus do, so a problem can be tracked down. Discord runs a little slower while it's on."),
-                icon:rowIcon(6393, "ClipboardListIcon"), value:!!settings.debugLog, onValueChange:value => { animateLayout(); setSetting("debugLog", value); }}) : null,
+                icon:rowIcon(7001, "ClipboardListIcon"), value:!!settings.debugLog, onValueChange:value => { animateLayout(); setSetting("debugLog", value); }}) : null,
             Switch ? el(Switch, {key:"crashScreen", label:tr("Crash screen"), subLabel:tr("After Discord crashes, shows what went wrong, with Copy, Share and Export."),
-                icon:rowIcon(6573, "CircleXIcon"), value:!!settings.crashScreen, onValueChange:value => setSetting("crashScreen", value)}) : null,
+                icon:rowIcon(7191, "CircleXIcon"), value:!!settings.crashScreen, onValueChange:value => setSetting("crashScreen", value)}) : null,
             Row ? el(Row, {key:"crash", label:diag.last ? tr("View last crash") : tr("Preview crash screen"),
                 subLabel:diag.last ? diagSummary(diag.last) : tr("See what it looks like. Nothing crashes."),
-                icon:rowIcon(5145, "CircleInformationIcon"), arrow:true, onPress:diagShow}) : null,
+                icon:rowIcon(5891, "CircleInformationIcon"), arrow:true, onPress:diagShow}) : null,
             Row ? el(Row, {key:"export", label:busy === "export" ? tr("Saving…") : tr("Export logs"),
                 subLabel:tr("A text file with the logs, your phone's details and which features are on. Sign-ins are left out."),
-                icon:rowIcon(5143, "DownloadIcon"), disabled:!!busy, onPress:() => debugLogExport(false)}) : null,
+                icon:rowIcon(5889, "DownloadIcon"), disabled:!!busy, onPress:() => debugLogExport(false)}) : null,
             Row ? el(Row, {key:"copy", label:tr("Copy logs"), subLabel:tr("Paste them into a message or an issue on GitHub."),
-                icon:rowIcon(5141, "CopyIcon"), disabled:!!busy, onPress:() => debugLogExport(true)}) : null,
+                icon:rowIcon(5887, "CopyIcon"), disabled:!!busy, onPress:() => debugLogExport(true)}) : null,
             Row ? el(Row, {key:"clear", label:tr("Clear logs"), subLabel:tr("Removes the recorded logs and the last crash."),
-                icon:rowIcon(5148, "TrashIcon"), onPress:debugLogClear}) : null);
+                icon:rowIcon(5894, "TrashIcon"), onPress:debugLogClear}) : null);
     }
     const ABOUT_DARK = {hero:{backgroundColor:"#2b2d31", borderRadius:16, padding:20, alignItems:"center", gap:6},
         logo:{width:64, height:64, borderRadius:32, alignItems:"center", justifyContent:"center", backgroundColor:"#5865f2", marginBottom:6},
@@ -2436,10 +2436,10 @@
             logo:Object.assign({}, ABOUT_DARK.logo, {backgroundColor:c.BACKGROUND_BRAND || "#5865f2"}),
             chip:Object.assign({}, ABOUT_DARK.chip, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}),
             card:Object.assign({}, ABOUT_DARK.card, {backgroundColor:c.CARD_BACKGROUND_DEFAULT})}), ABOUT_DARK);
-        const Text = inspectedExport(5187, "Text"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
+        const Text = inspectedExport(5783, "Text"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
         const text = (value, variant, color, fallback) => Text ? el(Text, {variant, color}, value) : el(RN.Text, {style:fallback}, value);
         const keys = Object.keys(FEATURE_ICONS).filter(key => features[key]), on = keys.filter(key => settings[key]).length;
-        const health = aboutHealth(), Sparkles = venusIcon(11733, "SparklesIcon");
+        const health = aboutHealth(), Sparkles = venusIcon(12467, "SparklesIcon");
         const chips = FEATURE_GROUPS.map(([group, label, id, name]) => {
             const list = featureGroups && featureGroups[group] || [];
             if (!list.length) return null;
@@ -2620,7 +2620,7 @@
             }
         } finally { backup.restoring = false; }
         notify("*");
-        reviewToast(reviewUI(), reset ? "Settings reset to defaults" : "Settings restored", venusIcon(7144, "CircleCheckIcon"));
+        reviewToast(reviewUI(), reset ? "Settings reset to defaults" : "Settings restored", venusIcon(7434, "CircleCheckIcon"));
         // One question to reopen, only when the font or emojis actually changed.
         if (features.systemFont && (settings.systemFont !== fontWas || settings.systemFont && settings.systemFontSource !== fontSourceWas)) later(() => askRestart("font"), 0);
         else if (features.systemEmoji && (settings.systemEmoji !== emojiWas || settings.systemEmoji && settings.systemEmojiSource !== emojiSourceWas)) later(() => askRestart("emoji"), 0);
@@ -2647,7 +2647,7 @@
         backup.last = Date.now(); save(); backupBusy("");
     }
     const pickerCancelled = error => {
-        const codes = inspectedExport(11600, "errorCodes"), is = inspectedExport(11600, "isErrorWithCode");
+        const codes = inspectedExport(11264, "errorCodes"), is = inspectedExport(11264, "isErrorWithCode");
         try { if (codes && typeof is === "function" && is(error) && error.code === codes.OPERATION_CANCELED) return true; } catch (_) {}
         return /cancel/i.test(String(error && (error.code || error.message) || ""));
     };
@@ -2660,7 +2660,7 @@
     // Save to a file: written to Discord's cache first, then Android's own "Save to" screen (Discord's document picker
     // 11600, saveDocuments) copies it wherever you choose: Downloads, Drive, a USB stick.
     function backupToFile() {
-        const saveDocuments = inspectedExport(11600, "saveDocuments"), dir = cacheDir();
+        const saveDocuments = inspectedExport(11264, "saveDocuments"), dir = cacheDir();
         if (!files || typeof saveDocuments !== "function" || !dir) { backupToClipboard(); return; }
         const name = "venus-backup-" + backupDate(Date.now()) + ".json";
         backupBusy("save");
@@ -2670,7 +2670,7 @@
                 const first = Array.isArray(result) ? result[0] : result;
                 if (first && first.error) throw new Error(String(first.error));
                 backupSaved();
-                reviewToast(reviewUI(), "Backup saved", venusIcon(7144, "CircleCheckIcon"));
+                reviewToast(reviewUI(), "Backup saved", venusIcon(7434, "CircleCheckIcon"));
             }).catch(error => {
                 backupBusy("");
                 if (!pickerCancelled(error)) showProblem("Couldn't save the backup", tr("Try Copy to clipboard instead."));
@@ -2680,11 +2680,11 @@
         const clip = reviewUI().clipboard || RN && RN.Clipboard;
         try { clip.setString(backupText()); } catch (_) { showProblem("Couldn't save the backup", tr("Try again in a moment.")); return; }
         backupSaved();
-        reviewToast(reviewUI(), "Backup copied", venusIcon(5141, "CopyIcon"));
+        reviewToast(reviewUI(), "Backup copied", venusIcon(5887, "CopyIcon"));
     }
     // Restore from a file: Android's file picker, then a local copy Discord can read (keepLocalCopy), then the backup.
     function backupFromFile() {
-        const pick = inspectedExport(11600, "pick"), keep = inspectedExport(11600, "keepLocalCopy"), types = inspectedExport(11600, "types");
+        const pick = inspectedExport(11264, "pick"), keep = inspectedExport(11264, "keepLocalCopy"), types = inspectedExport(11264, "types");
         if (!files || typeof pick !== "function" || typeof keep !== "function") { backupFromClipboard(); return; }
         backupBusy("restore");
         Promise.resolve().then(() => pick({type:[types && types.allFiles || "*/*"], allowMultiSelection:false, mode:"import"})).then(picked => {
@@ -2720,8 +2720,8 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const s = useThemed("backup", c => ({chip:Object.assign({}, BACKUP_DARK.chip, {backgroundColor:c.BACKGROUND_MOD_SUBTLE})}), BACKUP_DARK);
-        const Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Text = inspectedExport(5187, "Text");
-        const what = backupContents(), busy = backup.busy, canFile = !!inspectedExport(11600, "saveDocuments") && !!cacheDir();
+        const Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Text = inspectedExport(5783, "Text");
+        const what = backupContents(), busy = backup.busy, canFile = !!inspectedExport(11264, "saveDocuments") && !!cacheDir();
         const chip = (key, id, name, label) => el(RN.View, {key, style:s.chip, accessible:true, accessibilityLabel:label},
             el(venusIcon(id, name), {size:"xs"}), Text ? el(Text, {variant:"text-xs/semibold", color:"text-strong"}, label) : el(RN.Text, {style:{color:"#dbdee1", fontSize:12}}, label));
         const chips = [chip("features", 16003, "PuzzlePieceIcon", tr("{on} of {total} turned on", {on:what.on, total:what.total})),
@@ -2736,7 +2736,7 @@
             onPress, disabled:!!busy || !!disabled}) : null;
         const groups = [
             statusCard("status", backup.last ? "Everything below goes into a backup." : "Save one now, so patching again or a new phone takes one tap to set up.",
-                {title:backup.last ? backupAgo() : tr("No backup yet"), IconComponent:venusIcon(11977, "ArrowsUpDownIcon"),
+                {title:backup.last ? backupAgo() : tr("No backup yet"), IconComponent:venusIcon(12717, "ArrowsUpDownIcon"),
                  footer:el(RN.View, {style:{flexDirection:"row", flexWrap:"wrap", gap:8, marginTop:10}}, chips)}),
             el(Group, {key:"save", title:tr("Back up")},
                 canFile ? backupRow("file", busy === "save" ? "Saving…" : "Save to a file", "Choose where to keep it, like Downloads or Drive.", 5143, "DownloadIcon", backupToFile) : null,
@@ -3332,13 +3332,13 @@
         return null;
     }
     function fakeDeafMuted() {
-        const media = inspectedExport(2014, "default");
+        const media = inspectedExport(2130, "default");
         return !!(media && typeof media.isSelfMute === "function" && media.isSelfMute());
     }
     // Discord's mute action toggles, so it only runs when the mic isn't already how we want it. True when it ran.
     function fakeDeafMic(muted) {
         try {
-            const actions = inspectedExport(5343, "default");
+            const actions = inspectedExport(6079, "default");
             if (actions && typeof actions.toggleSelfMute === "function" && fakeDeafMuted() !== muted) {
                 actions.toggleSelfMute({playSoundEffect:false});
                 return true;
@@ -3351,7 +3351,7 @@
         if (on === fakeDeaf.on) return;
         let toggled = false;
         if (on) {
-            const media = inspectedExport(2014, "default");
+            const media = inspectedExport(2130, "default");
             // Needs a call to be in, and means nothing when you're really deafened already.
             if (!known || known.channelId == null || (media && typeof media.isSelfDeaf === "function" && media.isSelfDeaf())) return;
             if (!fakeDeaf.real) fakeDeaf.real = known;
@@ -3410,9 +3410,9 @@
     // The row's own icon: a 72x72 PNG shipped inside Venus, drawn through Discord's icon image so it takes the theme's icon color.
     const FAKE_DEAF_ICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAICklEQVR4Xu2caYgcRRTH/293w8RrZvGLwRuV6AdFibd+EMUoisYDNCqZRDQxEfGIB+hsNL05JqI5iCgGL5LMEtwIxgM1HrhKiFdA8ESDijeLX9xZFbK4O0/epmbp6anqru6ubojsD/ZDprurq/793qvqV69Dl926GJOY6ZgUJ5xJgSLoijrBNbVq73SATwZwIjOfRESHAzgCQDeAqep+ewAMAfiFmX8lop8B7ATos3Jl6W5XfXrlibVT6vXhmwGcJfdjxqNze7zf/O1T1jFIdeJ8AJcCuATA9JQDHATwJoAtpVJxYNZtd/+bpD3p19BQvZ+IrvJdP8iM0/wiZSbQ5pXeYUS4D8BsANOSDMICEatf9+TDMIjTZH254t3V/IdzF1MuVFHCNF0mK0T4O4mwsFb1+pnH7pzbs7yeQhxBXH0CZwJtXvlgiaizF+CFvliSF/Ig5hF1/gRgqemmEZbT5CPnAtWq3jUAHsvQlWz5Mo04zLytu7v0rDOBVAB+Wp6e7QgUuwB8AOAbAD8w4ytg7G85Ji6y1xq7DgH4aADHqFnm7IgAv6xc8V7Q9cPGcpQ4s4NBP3GQVkF4G4DTLcXZDuBlZrwanEptUW58PYCbAvcVcbSulUYcIZFAKhC/b+FSsp7pB6jqcv0iqD5cIBZYrnhvubacJrEFqlU9sZhXLMTZxIyepNaSlrSW0yTWLKbEeRtAKWQAstK93fRU88BGHADbu7vbY04Qa4E2r1x6GICXIsTZVCoVFyRd3brARhxTQNZhJdCmFUsOIiJxq0NDBmEMlHlhI46t5cRysY6OrkcAzNANlJlHiegG0xSbFzbixLGcJpHpjlrVk5fMRSHizN8XxIlrOVYCiWsBkIWgFiK6v1zxNpmO54Gt5ZRKxVlJYmOoBSnXMsWdreWKtyYPEUzYimMzW5kwBum+Vd6xjQbPJyLdtbsLheKcfV0c9Q55IvPYWlMWwCgQM+4lItPxxdfekyxR5QIXllOrer0AHpL+EHUeBeBGXd+0LibWw8zzDYPZUK54r7sYaBJsxIkKyH5xFLPl3dJaIGaIa7VZj0zpzLxC11Ae2IgjU3lYQK5VvYualuNjKhFusRJo65q1UyTroDuZiJ6Z29PbktTOC1txLAKypE903CL3CB5oc7GRkeGZuhXz3gUhVucliB+H4kjEedcwhmn1+vjmQgu6GHS5wXp2zHnA+z5vgWzEiYo5flTaRRJ2OmRRHCmQ5Fh05L4gtBEnKuYYeM7wu+zAmAVSb+xt+1YqOL9julsW2IpjEXPakKymoc/TgrNZi4sR0YUG9/o8z+BsI04ctwqiknjaHVoinOM/PxiDTjAoq01pZoGNOAndKsiHhv6fGyaQaQqU3YfMsRUniVtpaNn/asLMR4YJdJxBha8NvzvDRpw0bqXhB0M4kWKKCYIupt1DZ+bfnSlhQFNI0IIjt/JBPxq6IpUmRoEO0F3EPDas+90lc3t6rw5pzyrBHgdm/sdwfsvefIsFMbNWoP32O1j2tzKnXPHacivuLWcv3d3FP2wGFJlylTVQnqkNv0hJcsi2DA39ub/h3JaKlOA6qM3s5K1epV5zQ4nk3K1a6TzQMKAWbwmmNESgtk1Bos4igL8MDWZCueJJNVpmENEBAOval3K/CYICScVWWw6aiH6tVT1dY1KsJKJ+C+BjAC+WK57pRTAX+lZ5ZzKPv3SeAeCUQO2jD604QksBVlCg70z7XwbE2uRPRJVUwf21qidL+GqhUNySV+zyFWMuZk5XAylFo/6xBoO0dvEUE3nZ3TgyMvyR2svPFLGYen14J4AnHRSIird8ESbQDoejmcHMH9SqXtziKmtqVW8RM96LUaNkQ0uVWmAWG48lzlB57Y21qnePs0YVIo6yGqeFoszjlW8TtAikMobOCrV9rHZpSWo/S1zKNbuD9Uy6haIpZ5uW9bKdlLYR1YZxOzwlbwSv1wlkyralpcSMrWrXJBFyrbQRUaOUhrb9vjaB1KZgVm/vM0ZGhpclHYG6VluG44BBXVWc6V1ss4MbamHme5NM/3KNXJtVvwA8pWtbKxAzPy4vqVl0Rs1sfXHe79S5fSG1AmnZwxxDIEnQyy5q2ruGMF2V1lihzk37lVAY/aZqXJOLSXZ/dVZWpFikqtdCCatwc8QeqeM2tWUUSNZERJT1VvO6sFlNHVvnSAgTj4QVuRsFEhqNUVE2qxlNmK5qAbSoY1m61qAUT4U9gFCB5i1ZITmgBRk/QW0tgCLsmAvmRX1fFiqQoNZFG1z0xsDxIW2HHUuLfFkYuSEaKZBQKBTvAPBp2h4ZCPusQVv15YBdpVJRPheNxEogSXwx86yM45GO8W/IHCMf7l5lWxJsJZCgiheuDKYkHSBZTBNhx5IwCNB5pjWPDmuBBJVvlgq00A9nYxJWEBp2LC7S51lxv1uLJVBTJCKc6sjd6o3G6IumkapjLh6GLFVmJtlQiC2QIItIZpZdg7SBe7laSmhRx5bHNZUAn0pfk4gjJBKoGZMKhaL8lw5JlwADNp8yqHMGEoq0QfqYpvjL6nsxE2pb59Za1ZMkm2T5wr4n8zPQaIxeYTtoObejo+tltbVkg7jUAhcF74ktyI90pNEYleq0h8NecNWxhwuF4sVhrhVEzpVrAEg+yBiTmu1LX1yII8T+qDcKKQQlouvUzmazIEum60+Y+fk05i5Ibqijo0uq4ps7p7JWEtFec9F+EOcC/d9w4mL/ZyYFimBSoEmB0jFpQRH8B5kI7yv7UOJwAAAAAElFTkSuQmCC";
     function FakeDeafIcon(props) {
-        const Base = inspectedExport(4912, "BaseIconImage");
+        const Base = inspectedExport(5873, "BaseIconImage");
         if (!Base) return null;
-        const tokens = inspectedExport(587, "default");
+        const tokens = inspectedExport(575, "default");
         const color = (props && props.color) || (tokens && tokens.colors && tokens.colors.INTERACTIVE_ICON_DEFAULT);
         return el(Base, Object.assign({}, props, {source:{uri:FAKE_DEAF_ICON, width:72, height:72}, color}));
     }
@@ -3929,7 +3929,7 @@
         const gId = guildId || channel && (channel.guild_id || channel.guildId);
         if (gId) {
             entry.g = String(gId);
-            const guilds = inspectedExport(2090, "default");
+            const guilds = inspectedExport(5041, "default");
             let guild = null;
             try { guild = guilds && typeof guilds.getGuild === "function" ? guilds.getGuild(gId) : null; } catch (_) {}
             if (guild && typeof guild.name === "string") entry.gn = guild.name;
@@ -4055,7 +4055,7 @@
         const key = deletedKey(channelId, String(message.id));
         const kept = deleted.has(key), history = !kept && !!settings.noDeleteEdits && edits.has(key);
         if (!kept && !history) return tree;
-        const label = kept ? tr("Dismiss deleted message") : tr("Remove edit history"), Icon = venusIcon(6927, "EyeSlashIcon");
+        const label = kept ? tr("Dismiss deleted message") : tr("Remove edit history"), Icon = venusIcon(7195, "EyeSlashIcon");
         let added = false;
         return cloneTree(tree, function (node, nodeProps) {
             if (added || !Array.isArray(nodeProps.children)) return nodeProps;
@@ -4082,7 +4082,7 @@
         // Discord's own dispatch, bound before Venus hooked it, so the removal isn't kept again.
         if (dispatcher) try { dispatcher({type:"MESSAGE_DELETE", channelId:entry.channelId, id:entry.id}); } catch (_) {}
         notify("noDelete");
-        reviewToast(reviewUI(), "Deleted message dismissed", venusIcon(6927, "EyeSlashIcon"));
+        reviewToast(reviewUI(), "Deleted message dismissed", venusIcon(7195, "EyeSlashIcon"));
     }
     function noDeleteHideHistory(key, message) {
         const entry = edits.get(key);
@@ -4095,7 +4095,7 @@
             update(content + "\u200b"); later(() => update(content), 120);
         }
         notify("noDelete");
-        reviewToast(reviewUI(), "Edit history removed", venusIcon(6927, "EyeSlashIcon"));
+        reviewToast(reviewUI(), "Edit history removed", venusIcon(7195, "EyeSlashIcon"));
     }
     function deleteMessage(orig, self, args) {
         const key = deletedKey(args[0], args[1]), event = deleted.get(key);
@@ -4207,18 +4207,18 @@
         if (typeof importer !== "function") return importer;
         return function () {
             const result = importer.apply(this, arguments), id = arguments[0];
-            if (result && id === 2090 && features.serverEdit) return serverEditRealResult(result);
+            if (result && id === 5041 && features.serverEdit) return serverEditRealResult(result);
             if (!result || id !== 4845 && id !== 4843) return result;
             const real = result.default || result;
             let facade = null;
-            if (id === 4845 && permissionsCanOrig) {
+            if (id === 5102 && permissionsCanOrig) {
                 if (!realPermissions || Object.getPrototypeOf(realPermissions) !== real) {
                     realPermissions = Object.create(real);
                     realPermissions.can = permissionsCanOrig;
                     if (permissionsBasicOrig) realPermissions.canBasicChannel = permissionsBasicOrig;
                 }
                 facade = realPermissions;
-            } else if (id === 4843 && guildChannelsGetOrig) {
+            } else if (id === 5100 && guildChannelsGetOrig) {
                 if (!realGuildChannels || Object.getPrototypeOf(realGuildChannels) !== real) {
                     realGuildChannels = Object.create(real);
                     realGuildChannels.getChannels = guildChannelsGetOrig;
@@ -4540,8 +4540,8 @@
         // themed card, Discord buttons. String title/body/confirmText + children
         // selects the modern AlertModal path in AlertActionCreators.show (module 5400).
         // Demand-loaded at tap time: no extra Metro factories are wrapped at startup.
-        const alerts = inspectedExport(5400, "default");
-        const Text = inspectedExport(5187, "Text");
+        const alerts = inspectedExport(6123, "default");
+        const Text = inspectedExport(5783, "Text");
         if (React && alerts && typeof alerts.show === "function" && Text) {
             try {
                 alerts.show({title, body, children:el(HiddenDetails, {rows, Text}),
@@ -4717,11 +4717,11 @@
         const c=readAllCache.api;
         if (c && c.sorted && c.guildStore && c.lurking && c.guildReads && c.markGuilds && c.privateReads && c.privateSort && c.requestUtils && c.reads && c.readActions && c.renderSections) return c;
         const x=(id,key) => inspectedExport(id,key);
-        const api={sorted:x(6219,"default"), guildStore:x(2090,"default"), lurking:x(4846,"default"),
-            guildReads:x(6362,"default"), markGuilds:x(14975,"default"), sections:x(1087,"AnalyticsSections"),
-            privateReads:x(14830,"default"), privateSort:x(7199,"default"), requestUtils:x(6360,"filterOutMessageRequestsAndSpamById"),
-            reads:x(6291,"default"), readActions:readActionsExport(), readTypes:x(6223,"ReadStateTypes"),
-            renderSections:x(17429,"FastListRenderSections")};
+        const api={sorted:x(6860,"default"), guildStore:x(5041,"default"), lurking:x(5103,"default"),
+            guildReads:x(6974,"default"), markGuilds:x(16126,"default"), sections:x(1072,"AnalyticsSections"),
+            privateReads:x(15983,"default"), privateSort:x(7492,"default"), requestUtils:x(6972,"filterOutMessageRequestsAndSpamById"),
+            reads:x(6930,"default"), readActions:readActionsExport(), readTypes:x(6864,"ReadStateTypes"),
+            renderSections:x(18727,"FastListRenderSections")};
         if (api.sorted && api.guildStore && api.lurking && api.guildReads && api.markGuilds && api.privateReads && api.privateSort && api.requestUtils && api.reads && api.readActions && api.renderSections) readAllCache.api=api;
         return api;
     }
@@ -4806,9 +4806,9 @@
         if (problem) {
             // What was already cleared stays cleared; say so instead of only the error.
             const done=parts.length ? " ("+tr("Marked {what} as read",{what:joinAnd(parts)})+")" : "";
-            reviewToast(ui,tr("Couldn't mark as read: {problem}",{problem:String(problem && problem.message || problem)})+done,venusIcon(6573,"CircleXIcon")); return;
+            reviewToast(ui,tr("Couldn't mark as read: {problem}",{problem:String(problem && problem.message || problem)})+done,venusIcon(7191,"CircleXIcon")); return;
         }
-        reviewToast(ui, parts.length ? tr("Marked {what} as read",{what:joinAnd(parts)}) : "Nothing unread",venusIcon(16684,"DoubleCheckmarkIcon"));
+        reviewToast(ui, parts.length ? tr("Marked {what} as read",{what:joinAnd(parts)}) : "Nothing unread",venusIcon(17976,"DoubleCheckmarkIcon"));
     }
     // Holding the button: an action sheet with the three one-time choices, each with the icon its choice has in
     // Read all's settings, and the one a plain tap does marked as such. Discord's SimpleActionSheet (6893) can't
@@ -4897,7 +4897,7 @@
                 hitSlop:6,onPress:readAllPress,onLongPress:readAllChooser,delayLongPress:350,collapsable:false,onLayout:trace ? readAllPillLayout : undefined,
                 style:({pressed}) => [READ_ALL_PILL_BASE,styles.pill,
                     pressed ? styles.pressed : null,pressed ? READ_ALL_PRESSED_SCALE : null]},
-                done ? popIn("done",el(venusIcon(7101,"CheckmarkSmallIcon"),{size:"xs",color:styles.text && styles.text.color})) :
+                done ? popIn("done",el(venusIcon(7399,"CheckmarkSmallIcon"),{size:"xs",color:styles.text && styles.text.color})) :
                     el(RN.Text,{numberOfLines:2,allowFontScaling:false,onLayout:settings.debugLog ? readAllLayoutLog : undefined,style:[READ_ALL_TEXT_BASE,readAllTextSize(tr("Read all")),styles.text]},tr("Read all"))));
     }
     function readAllBarProps(orig, self, args) {
@@ -4965,9 +4965,9 @@
     const haptics = {trigger:null, types:null};
     function haptic(kind) {
         try {
-            const trigger = haptics.trigger || (haptics.trigger = inspectedExport(5156, "triggerHapticFeedback"));
+            const trigger = haptics.trigger || (haptics.trigger = inspectedExport(5408, "triggerHapticFeedback"));
             if (typeof trigger !== "function") return;
-            const types = haptics.types || (haptics.types = inspectedExport(5157, "default") || inspectedExport(5156, "HapticFeedbackTypes"));
+            const types = haptics.types || (haptics.types = inspectedExport(5409, "default") || inspectedExport(5408, "HapticFeedbackTypes"));
             const type = types && types[kind || "IMPACT_LIGHT"];
             if (type !== undefined) trigger(type);
             else if (!kind || kind === "IMPACT_LIGHT") trigger(0);
@@ -4975,22 +4975,22 @@
     }
     function gestureHaptic() { haptic("IMPACT_LIGHT"); }
     function gestureCanReply(channel, message) {
-        const canReply = gesture.canReplyFn || (gesture.canReplyFn = inspectedExport(8261, "canReplyToMessage"));
+        const canReply = gesture.canReplyFn || (gesture.canReplyFn = inspectedExport(8537, "canReplyToMessage"));
         if (typeof canReply !== "function") return true;
         try { return !!canReply(channel, message); } catch (_) { return true; }
     }
     function gestureReply(message, channel, chatInputRef) {
         if (!gestureCanReply(channel, message)) return false;
-        const reply = gesture.replyFn || (gesture.replyFn = inspectedExport(11198, "default"));
+        const reply = gesture.replyFn || (gesture.replyFn = inspectedExport(11864, "default"));
         if (typeof reply !== "function") return false;
         const ref = chatInputRef !== undefined ? chatInputRef : gestureChatInputRef(channel);
         try { gestureHaptic(); reply({message, channel, chatInputRef:ref, actionSource:"message_swipe", invertible:true}); return true; } catch (_) { return false; }
     }
     function gestureEdit(message, channel, chatInputRef) {
         // Only what Discord itself would let you edit (sent, yours, not a system message); otherwise reply.
-        const canEdit = gesture.canEditFn || (gesture.canEditFn = inspectedExport(11199, "default")), user = userStore && userStore.getCurrentUser();
+        const canEdit = gesture.canEditFn || (gesture.canEditFn = inspectedExport(11865, "default")), user = userStore && userStore.getCurrentUser();
         try { if (typeof canEdit === "function" && !canEdit(message, user && user.id)) return false; } catch (_) { return false; }
-        const edit = gesture.editFn || (gesture.editFn = inspectedExport(9988, "handleEdit"));
+        const edit = gesture.editFn || (gesture.editFn = inspectedExport(10350, "handleEdit"));
         if (typeof edit !== "function") return false;
         const ref = chatInputRef !== undefined ? chatInputRef : gestureChatInputRef(channel);
         try { gestureHaptic(); edit(message, channel, ref, "message_swipe", true); return true; } catch (_) { return false; }
@@ -5000,13 +5000,13 @@
     // those used to send a delete the server refused, after waiting and buzzing for it.
     function gestureCanDelete(message) {
         if (!message || message.state && message.state !== "SENT" || !gestureOwn(message)) return false;
-        const sets = gesture.typeSets || (gesture.typeSets = inspectedExport(1087, "MessageTypesSets"));
+        const sets = gesture.typeSets || (gesture.typeSets = inspectedExport(1072, "MessageTypesSets"));
         try { if (sets && sets.UNDELETABLE && typeof sets.UNDELETABLE.has === "function" && sets.UNDELETABLE.has(message.type)) return false; } catch (_) {}
         return true;
     }
     function gestureDelete(message, channel) {
         if (!gestureCanDelete(message)) return false;
-        const actions = msgActions || inspectedExport(7445, "default");
+        const actions = msgActions || inspectedExport(7745, "default");
         if (!actions || typeof actions.deleteMessage !== "function") return false;
         // Discord's own delete, with QuickDelete and NoDelete still applying to it.
         try { gestureHaptic(); const result = actions.deleteMessage(channel && channel.id || message.channel_id, message.id, false);
@@ -5154,7 +5154,7 @@
                     tr(own ? "It opens for editing, so you can fix it" : "A reply to your own message opens")], [1500, () => {}]);
             return steps;
         }, [own, triple]);
-        const Trash = venusIcon(5148, "TrashIcon"), Spine = {borderColor:k.iconMuted.color};
+        const Trash = venusIcon(5894, "TrashIcon"), Spine = {borderColor:k.iconMuted.color};
         const picked = who => state.target === who && state.mode !== "deleted";
         const replyLine = who => who !== "mine" ? null : el(RN.View, {style:{flexDirection:"row", alignItems:"center", paddingHorizontal:12, paddingTop:4, marginBottom:-2}},
             el(RN.View, {style:[{width:28, height:10, marginLeft:19, marginRight:4, marginTop:6, borderLeftWidth:2, borderTopWidth:2, borderTopLeftRadius:6}, Spine]}),
@@ -5187,14 +5187,14 @@
         if (!RN) return null;
         const on = enabled("gestures");
         const groups = [
-            on ? null : offCard("status", venusIcon(9252, "ReactionIcon"), "gestures"),
+            on ? null : offCard("status", venusIcon(9566, "ReactionIcon"), "gestures"),
             el(GesturePreview, {key:"preview", on}),
             radioGroup(ui, "own", "Double-tap your own message", "gestureOwn", on, [
-                ["edit", "Edit it", "Opens it for editing, when Discord lets you.", rowIcon(10023, "PencilIcon")],
-                ["reply", "Reply to it", "Same as someone else's message.", rowIcon(12274, "ArrowAngleLeftUpIcon")]]),
+                ["edit", "Edit it", "Opens it for editing, when Discord lets you.", rowIcon(10383, "PencilIcon")],
+                ["reply", "Reply to it", "Same as someone else's message.", rowIcon(12981, "ArrowAngleLeftUpIcon")]]),
             el(ui.TableRowGroup || RN.View, {key:"triple", title:tr("Triple-tap")},
                 switchRow(ui.TableSwitchRow, "gestureTripleDelete", "Triple-tap to delete", "Tap your own message three times to delete it, with no confirmation. Never affects other people's messages.",
-                    rowIcon(5148, "TrashIcon"))),
+                    rowIcon(5894, "TrashIcon"))),
             footnote("note", "Double-tapping no longer adds a reaction. Hold a message to react instead.")];
         return settingsBody(ui, groups);
     }
@@ -5236,7 +5236,7 @@
     function questSleep(ms) { return new Promise(resolve => { later(resolve, ms); }); }
     function questStore() {
         if (quest.store) return quest.store;
-        const store = inspectedExport(7656, "default");
+        const store = inspectedExport(7955, "default");
         if (!store || typeof store.getQuest !== "function") return null;
         questAttach(store);
         return store;
@@ -5273,7 +5273,7 @@
     // headers: request headers of its own. Discord's prepareRequest only adds the signed-in token when the request
     // doesn't carry an Authorization header already, so Complete badges uses it to pin its account's token.
     function questRequest(url, body, desktop, method, active, headers) {
-        const http = inspectedExport(1297, "HTTP"), send = http && http[method || "post"];
+        const http = inspectedExport(1282, "HTTP"), send = http && http[method || "post"];
         if (typeof send !== "function") return Promise.reject(new Error("Discord's network client isn't ready"));
         const request = {url, interceptResponse:questIntercept};
         if (body !== undefined) request.body = body;
@@ -5304,7 +5304,7 @@
     }
     function questLocale() {
         try {
-            const read = inspectedExport(1362, "getSuperProperties"), own = typeof read === "function" ? read() : null;
+            const read = inspectedExport(1347, "getSuperProperties"), own = typeof read === "function" ? read() : null;
             const locale = own && own.system_locale;
             if (typeof locale === "string" && /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(locale)) return locale;
         } catch (_) {}
@@ -5325,7 +5325,7 @@
             client_event_source:null, launch_signature:identity.signature, client_heartbeat_session_id:identity.session,
             client_app_state:"unfocused"};
         try {
-            const encode = inspectedExport(1297, "encodeProperties"), encoded = typeof encode === "function" ? encode(properties) : null;
+            const encode = inspectedExport(1282, "encodeProperties"), encoded = typeof encode === "function" ? encode(properties) : null;
             if (typeof encoded === "string" && encoded) return encoded;
         } catch (_) {}
         return questBase64(JSON.stringify(properties));
@@ -5371,7 +5371,7 @@
         try { const value = store[key]; return typeof value === "function" ? value.call(store) : value; } catch (_) { return undefined; }
     }
     function questDispatch(action) {
-        const dispatcher = quest.dispatcher || inspectedExport(584, "default");
+        const dispatcher = quest.dispatcher || inspectedExport(572, "default");
         try {
             if (!dispatcher || typeof dispatcher.dispatch !== "function") return false;
             const result = dispatcher.dispatch(action);
@@ -5380,7 +5380,7 @@
         } catch (_) { return false; }
     }
     function questUserStatus(body) {
-        const convert = inspectedExport(7664, "questUserStatusFromServer");
+        const convert = inspectedExport(7964, "questUserStatusFromServer");
         try { return body && typeof convert === "function" ? convert(body) : null; } catch (_) { return null; }
     }
     function questRetryAfter(error) {
@@ -5562,7 +5562,7 @@
         return !!(body && body.completed_at);
     }
     function questOptimisticProgress(id, taskType, progress) {
-        const update = inspectedExport(9474, "updateOptimisticProgress");
+        const update = inspectedExport(9806, "updateOptimisticProgress");
         try { if (typeof update === "function") update(id, taskType, progress); } catch (_) {}
     }
     async function questVideo(entry, item) {
@@ -5725,7 +5725,7 @@
     }
     // Mobile only loads Quests when you open them; ask for them once in a while, through Discord's own fetch.
     function questsFetch(force) {
-        const store = questStore(), fetch = inspectedExport(9474, "fetchCurrentQuests");
+        const store = questStore(), fetch = inspectedExport(9806, "fetchCurrentQuests");
         if (!store || typeof fetch !== "function") return;
         try {
             if (questFlag(store, "isFetchingCurrentQuests") === true) return;
@@ -5836,13 +5836,13 @@
         const groups = [
             on ? statusCard("status", questStatusText(), {title:questStatusTitle(), IconComponent:venusIcon(quest.error ? 13123 : quest.running ? 11180 : 13929,
                 quest.error ? "ChatWarningIcon" : quest.running ? "TimerIcon" : "QuestsIcon"),
-                footer:questShare() != null ? el(VenusProgress, {key:"progress:" + quest.running.id, value:questShare()}) : null}) : offCard("status", venusIcon(13929, "QuestsIcon"), "quests"),
+                footer:questShare() != null ? el(VenusProgress, {key:"progress:" + quest.running.id, value:questShare()}) : null}) : offCard("status", venusIcon(14983, "QuestsIcon"), "quests"),
             el(Group, {key:"types", title:tr("Quests to complete")},
-                toggle("questsVideo", "Video Quests", "Reported as watched at normal speed, without playing the video.", rowIcon(11187, "VideoIcon")),
-                toggle("questsPlay", "Play Quests", "Play time counts without installing or opening the game.", rowIcon(9514, "GameControllerIcon")),
-                toggle("questsActivity", "Activity Quests", "Activity time counts without starting the Activity.", rowIcon(12158, "MagicWandIcon"))),
+                toggle("questsVideo", "Video Quests", "Reported as watched at normal speed, without playing the video.", rowIcon(11204, "VideoIcon")),
+                toggle("questsPlay", "Play Quests", "Play time counts without installing or opening the game.", rowIcon(9850, "GameControllerIcon")),
+                toggle("questsActivity", "Activity Quests", "Activity time counts without starting the Activity.", rowIcon(11137, "MagicWandIcon"))),
             el(Group, {key:"enroll", title:tr("New Quests")},
-                toggle("questsEnroll", "Accept new Quests", "Accepts new Quests for you, one at a time.", rowIcon(7144, "CircleCheckIcon"))),
+                toggle("questsEnroll", "Accept new Quests", "Accepts new Quests for you, one at a time.", rowIcon(7434, "CircleCheckIcon"))),
             footnote("note", "You still claim rewards yourself. Stream Quests need a real stream, so they're skipped. Discord may pause Quests on accounts that complete them automatically.")];
         return settingsBody(ui, groups);
     }
@@ -6002,13 +6002,13 @@
     // Discord only counts play time toward these badges with "Use data to personalize my Discord experience" on.
     function badgeConsented() {
         try {
-            const store = inspectedExport(6188, "default");
+            const store = inspectedExport(6829, "default");
             if (!store || typeof store.hasConsented !== "function") return null;
             return !!store.hasConsented("personalization");
         } catch (_) { return null; }
     }
     function badgeTurnOnPersonalization() {
-        const set = inspectedExport(15901, "setConsents");
+        const set = inspectedExport(17108, "setConsents");
         if (typeof set !== "function") return;
         try {
             const res = set(["personalization"], []);
@@ -6227,7 +6227,7 @@
     function badgePresence(entry, slot) {
         questDispatch({type:"LOCAL_ACTIVITY_UPDATE", socketId:"venus-badges" + (slot ? "-" + slot : ""), pid:BADGE_PID + (slot || 0),
             activity:entry ? {name:entry.game.name, application_id:entry.game.id, type:0, timestamps:{start:entry.startedAt}, flags:0} : null});
-        if (entry) try { const fetch = inspectedExport(6357, "fetchApplication"); if (typeof fetch === "function") { const r = fetch(entry.game.id); if (r && r.catch) r.catch(() => {}); } } catch (_) {}
+        if (entry) try { const fetch = inspectedExport(6969, "fetchApplication"); if (typeof fetch === "function") { const r = fetch(entry.game.id); if (r && r.catch) r.catch(() => {}); } } catch (_) {}
     }
     // Every game playing right now: the one that rotates for Unique games, then the ones kept running for Game time.
     function badgeEntries() { return [badges.current].concat(badges.extra).filter(Boolean); }
@@ -6326,7 +6326,7 @@
         else { backgroundSync(); notify("badges"); }
     }
     function badgeRefreshDirectory(force) {
-        const fetch = inspectedExport(8595, "fetchBadgeDirectory"), uid = badges.user || currentId();
+        const fetch = inspectedExport(8872, "fetchBadgeDirectory"), uid = badges.user || currentId();
         if (typeof fetch !== "function" || !uid || !force && Date.now() - badges.directoryAt < 10 * 60 * 1000) return;
         badges.directoryAt = Date.now();
         try { const res = fetch(uid, force ? {force:true} : undefined); if (res && typeof res.catch === "function") res.catch(() => {}); } catch (_) {}
@@ -6655,9 +6655,9 @@
     }
     // A badge's progress from Discord's Badge Directory: tier name, how far along and what the next tier needs.
     function badgeInfo(key) {
-        const store = badges.badgeStore || inspectedExport(8590, "default"), uid = badges.user || currentId();
+        const store = badges.badgeStore || inspectedExport(8867, "default"), uid = badges.user || currentId();
         if (!store || typeof store.getBadgeById !== "function" || !uid) return null;
-        const ids = inspectedExport(8582, "BadgeId"), id = ids && ids[key] != null ? ids[key] : key.toLowerCase();
+        const ids = inspectedExport(8859, "BadgeId"), id = ids && ids[key] != null ? ids[key] : key.toLowerCase();
         try {
             const badge = store.getBadgeById(id, uid);
             if (!badge) return null;
@@ -6691,7 +6691,7 @@
             art:Object.assign({}, BADGE_CARD_DARK.art, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}), divider:Object.assign({}, BADGE_CARD_DARK.divider, {backgroundColor:c.BORDER_SUBTLE})}), BADGE_CARD_DARK);
     }
     function badgeText(text, variant, color, fallback) {
-        const Text = inspectedExport(5187, "Text");
+        const Text = inspectedExport(5783, "Text");
         return Text ? el(Text, {variant, color}, text) : el(RN.Text, {style:fallback}, text);
     }
     // One card with every badge: its icon, name and tier, how far along it is and a bar to the next tier.
@@ -6762,7 +6762,7 @@
     function BadgeGrantPanel(props) {
         const [step, setStep] = React.useState(0), [word, setWord] = React.useState(""), [hours, setHours] = React.useState(100), [checks, setChecks] = React.useState([false, false, false]);
         useSettings("badges");
-        const ui = reviewUI(), s = props.s, Button = inspectedExport(5479, "Button"), Press = RN.Pressable || RN.View;
+        const ui = reviewUI(), s = props.s, Button = inspectedExport(5790, "Button"), Press = RN.Pressable || RN.View;
         const limit = badgeGrantLimit(), granting = badges.granting, keyword = tr("RISK");
         const danger = useThemed("badgeDanger", c => ({box:Object.assign({}, BADGE_DANGER_DARK.box, {borderColor:c.BORDER_FEEDBACK_CRITICAL || "#f23f43",
             backgroundColor:c.BACKGROUND_FEEDBACK_CRITICAL || "#f23f431a"})}), BADGE_DANGER_DARK);
@@ -6832,20 +6832,20 @@
         const [advanced, setAdvanced] = React.useState(false), [granting, setGranting] = React.useState(false);
         const ui = reviewUI(), s = badgeCardStyles();
         if (!RN) return null;
-        const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, on = enabled("badges"), Button = inspectedExport(5479, "Button");
+        const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, on = enabled("badges"), Button = inspectedExport(5790, "Button");
         const consent = on ? badgeConsented() : null;
         const groups = [
             riskCard("risk", "Discord doesn't allow reporting games you aren't playing, so this could get your account suspended or banned. Use it at your own risk."),
-            on ? badgeNowCard(s) : offCard("status", venusIcon(9211, "TrophyIcon"), "badges"),
+            on ? badgeNowCard(s) : offCard("status", venusIcon(9492, "TrophyIcon"), "badges"),
             consent === false ? statusCard("consent", "Discord only counts games toward these badges while \"Use data to personalize my Discord experience\" is on.",
-                {title:tr("Personalization is off"), IconComponent:venusIcon(13123, "ChatWarningIcon"),
+                {title:tr("Personalization is off"), IconComponent:venusIcon(14297, "ChatWarningIcon"),
                  trailing:Button ? el(Button, {text:tr("Turn on"), size:"sm", variant:"primary", onPress:() => { haptic("SELECTION"); badgeTurnOnPersonalization(); }}) : null}) : null,
             // Off, progress never loads, so the card would only say "Loading progress" three times.
             on || BADGE_ROWS.some(([key]) => badgeInfo(key)) ? badgeProgressCard(s, on) : null,
             on ? badgeHowCard(s) : null,
             el(Group, {key:"types", title:tr("What to count")},
-                switchRow(Switch, "badgesGameTime", "Game time", "Plays games in the background, toward Hours Played.", rowIcon(5150, "ClockIcon")),
-                switchRow(Switch, "badgesUniqueGames", "Unique games", "Switches to a game you haven't played yet, toward Unique Games Played.", rowIcon(9514, "GameControllerIcon"))),
+                switchRow(Switch, "badgesGameTime", "Game time", "Plays games in the background, toward Hours Played.", rowIcon(5896, "ClockIcon")),
+                switchRow(Switch, "badgesUniqueGames", "Unique games", "Switches to a game you haven't played yet, toward Unique Games Played.", rowIcon(9850, "GameControllerIcon"))),
             settings.badgesGameTime ? el(RN.View, {key:"atOnce", style:{gap:10}},
                 groupTitle("atOnceTitle", "Games at once"),
                 venusSegmented({key:"atOnceSeg", value:badgeAtOnce(settings.badgesGamesAtOnce), disabled:!on, onChange:value => setSetting("badgesGamesAtOnce", value),
@@ -6858,9 +6858,9 @@
                 presets:BADGE_CYCLE_PRESETS.map(n => ({value:n, label:tr("{n} min", {n})})),
                 hint:"Every 15 minutes reaches all 100 games for the top tier in about a day. After that, games stop switching."}) : null,
             on ? el(Group, {key:"actions", title:tr("Manage")},
-                badges.current && badgeCycleOn() && !badgeVarietyDone() ? actionRow(ui, "next", "Switch to the next game now", null, () => { haptic("SELECTION"); badgeNextGame(); }, false, false, rowIcon(9514, "GameControllerIcon")) : null,
-                actionRow(ui, "refresh", "Refresh badge progress", "Discord can take a day or two to add new play time.", () => { haptic("SELECTION"); badgeRefreshDirectory(true); }, false, false, rowIcon(11630, "RefreshIcon")),
-                actionRow(ui, "advanced", advanced ? "Hide advanced" : "Advanced", advanced ? null : "Add hours now. Risky.", () => { haptic("SELECTION"); animateLayout(); setAdvanced(!advanced); setGranting(false); }, false, false, rowIcon(16625, "WrenchIcon"))) : null,
+                badges.current && badgeCycleOn() && !badgeVarietyDone() ? actionRow(ui, "next", "Switch to the next game now", null, () => { haptic("SELECTION"); badgeNextGame(); }, false, false, rowIcon(9850, "GameControllerIcon")) : null,
+                actionRow(ui, "refresh", "Refresh badge progress", "Discord can take a day or two to add new play time.", () => { haptic("SELECTION"); badgeRefreshDirectory(true); }, false, false, rowIcon(12423, "RefreshIcon")),
+                actionRow(ui, "advanced", advanced ? "Hide advanced" : "Advanced", advanced ? null : "Add hours now. Risky.", () => { haptic("SELECTION"); animateLayout(); setAdvanced(!advanced); setGranting(false); }, false, false, rowIcon(17921, "WrenchIcon"))) : null,
             on && advanced ? el(RN.View, {key:"advancedBox", style:{gap:10}},
                 groupTitle("advancedTitle", "Add hours now"),
                 granting || badges.granting ? el(BadgeGrantPanel, {key:"panel", s, onClose:() => { animateLayout(); setGranting(false); }}) :
@@ -7061,7 +7061,7 @@
     }
     // Discord's channel header: back arrow, the channel (or person) with its small right chevron, and circular 32px action buttons on the right.
     function previewHeader(k, props) {
-        const Back = venusIcon(6482, "ArrowLargeLeftIcon"), Hash = venusIcon(16648, "HashmarkIcon"), Chevron = venusIcon(7182, "ChevronSmallRightIcon");
+        const Back = venusIcon(7101, "ArrowLargeLeftIcon"), Hash = venusIcon(18113, "HashmarkIcon"), Chevron = venusIcon(7471, "ChevronSmallRightIcon");
         return el(RN.View, {key:"header", style:k.header},
             el(RN.View, {style:{width:32, height:32, alignItems:"center", justifyContent:"center"}}, el(Back, {size:"md", color:k.icon.color})),
             el(RN.View, {style:{flex:1, flexDirection:"row", alignItems:"center", gap:8}},
@@ -7071,14 +7071,14 @@
                     props.badges || null,
                     el(Chevron, {size:"xxs", color:k.iconMuted.color}))),
             el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:8}},
-                (props.icons || [[8473, "ThreadIcon"], [7017, "MagnifyingGlassIcon"]]).map(([id, name]) =>
+                (props.icons || [[8749, "ThreadIcon"], [7316, "MagnifyingGlassIcon"]]).map(([id, name]) =>
                     el(RN.View, {key:name, style:k.headerPill}, el(venusIcon(id, name), {size:"sm", color:k.icon.color})))));
     }
     // Discord's message bar: the + button, the text pill with its gift and emoji/keyboard buttons, then the mic, or Send once there's text.
     function previewInput(k, s, props) {
-        const Plus = venusIcon(10621, "PlusLargeIcon"), Gift = venusIcon(12668, "GiftIcon"),
-            Expr = props.pickerOpen ? venusIcon(13747, "KeyboardIcon") : venusIcon(9252, "ReactionIcon"),
-            Mic = venusIcon(11492, "MicrophoneIcon"), Send = venusIcon(5139, "SendMessageIcon"), Press = RN.Pressable || RN.View, text = props.text || "";
+        const Plus = venusIcon(10979, "PlusLargeIcon"), Gift = venusIcon(13629, "GiftIcon"),
+            Expr = props.pickerOpen ? venusIcon(14794, "KeyboardIcon") : venusIcon(9566, "ReactionIcon"),
+            Mic = venusIcon(12170, "MicrophoneIcon"), Send = venusIcon(5885, "SendMessageIcon"), Press = RN.Pressable || RN.View, text = props.text || "";
         const showGift = !text && !(features.hideAnything && spotHidden("chat.gift"));
         const exprIcon = el(RN.View, {style:{justifyContent:"center", alignItems:"center"}},
             el(Expr, {size:"sm", color:props.pickerOpen ? s.name.color : k.icon.color}), props.smileRipple || null);
@@ -7095,7 +7095,7 @@
     }
     // The bar above the message box while replying or editing (ChatInputContextBar 12137): what it is, the @ ON toggle + vertical divider on replies, and the close X.
     function previewBar(k, s, Icon, text, onClose, key, mention) {
-        const X = venusIcon(6485, "XSmallIcon"), At = venusIcon(8490, "AtIcon"), Press = RN.Pressable || RN.View;
+        const X = venusIcon(7153, "XSmallIcon"), At = venusIcon(8766, "AtIcon"), Press = RN.Pressable || RN.View;
         return el(RN.View, {key:key || "bar", style:k.bar},
             Icon ? popIn("icon:" + text, el(Icon, {size:"xs", color:k.icon.color})) : null,
             el(RN.Text, {style:[s.muted, {flex:1, fontSize:14, fontWeight:"500"}], numberOfLines:1}, text),
@@ -7135,7 +7135,7 @@
     }
     // What Watch is showing (step 2 of 5), and the player: pause or play, the bar, the time, start over.
     function storyStrip(k, s, story) {
-        const Press = RN.Pressable || RN.View, Play = venusIcon(8674, "PlayIcon"), Pause = venusIcon(8676, "PauseIcon"), Again = venusIcon(11632, "RetryIcon");
+        const Press = RN.Pressable || RN.View, Play = venusIcon(8955, "PlayIcon"), Pause = venusIcon(8957, "PauseIcon"), Again = venusIcon(11247, "RetryIcon");
         const button = (key, Icon, label, onPress) => el(Press, {key, onPress, accessibilityRole:"button", accessibilityLabel:tr(label),
             hitSlop:{top:10, bottom:10, left:10, right:10}, style:{width:28, height:28, borderRadius:14, alignItems:"center", justifyContent:"center"}},
             el(Icon, {size:"xs", color:k.icon.color}));
@@ -7184,7 +7184,7 @@
     // Each choice may carry a fourth item, its row icon (rowIcon), like Discord's own radio lists.
     function radioGroup(ui,key,title,setting,on,choices,raw) {
         title=tr(title); if (!raw) choices=choices.map(([value,label,subLabel,icon]) => [value,tr(label),subLabel && tr(subLabel),icon]);
-        const RadioGroup=inspectedExport(6540,"TableRadioGroup"), RadioRow=inspectedExport(6539,"TableRadioRow");
+        const RadioGroup=inspectedExport(7157,"TableRadioGroup"), RadioRow=inspectedExport(7160,"TableRadioRow");
         if (RadioGroup && RadioRow) return el(RadioGroup,{key,title,value:settings[setting],onChange:value => { if (value!==settings[setting]) haptic("SELECTION"); setSetting(setting,value); }},
             choices.map(([value,label,subLabel,icon]) => el(RadioRow,{key:value,value,label,subLabel,icon,disabled:!on})));
         return el(ui.TableRowGroup || RN.View,{key,title},choices.map(([value,label,subLabel,icon]) => ui.TableRow &&
@@ -7193,7 +7193,7 @@
     // Small muted text under a page's groups: what else to know, without a row of its own.
     function footnote(key,text) {
         text=tr(text);
-        const Text=inspectedExport(5187,"Text");
+        const Text=inspectedExport(5783,"Text");
         return el(RN.View,{key,style:{paddingHorizontal:16}},
             Text ? el(Text,{variant:"text-xs/medium",color:"text-muted"},text) : el(RN.Text,{style:{color:"#949ba4",fontSize:12}},text));
     }
@@ -7222,7 +7222,7 @@
             badge:Object.assign({}, STATUS_CARD_DARK.badge, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}),
             accent:Object.assign({}, STATUS_CARD_DARK.accent, {backgroundColor:c.TOGGLEBUTTON_BACKGROUND_SELECTED || c.MENTION_BACKGROUND}),
             accentIcon:{color:c.ICON_BRAND || c.TEXT_BRAND}}), STATUS_CARD_DARK);
-        const Text = inspectedExport(5187, "Text"), Icon = props.IconComponent, title = props.title, body = props.body;
+        const Text = inspectedExport(5783, "Text"), Icon = props.IconComponent, title = props.title, body = props.body;
         const line = (value, variant, color, fallback) => Text ? el(Text, {variant, color}, value) : el(RN.Text, {style:fallback}, value);
         return el(RN.View, {key:props.key, style:s.card, accessible:true},
             // The badge pops in when the page opens, and again whenever the card's state (its title) changes.
@@ -7265,7 +7265,7 @@
     // The switch already says it's off, so the card introduces the feature instead: its name and what it does, the same
     // words as its row on the Features list, with its icon in the brand color.
     function offCard(key,IconComponent,feature) {
-        const FormSwitch=feature && features[feature] ? inspectedExport(7173,"FormSwitch") : null;
+        const FormSwitch=feature && features[feature] ? inspectedExport(7463,"FormSwitch") : null;
         const row=feature && featureSearch.rows.find(entry => entry.key===feature);
         const title=row ? tr(row.title) : tr("Turned off");
         return VenusStatusCard({key,title,IconComponent,accent:true,body:row && row.hint ? tr(row.hint) : tr(FormSwitch ? "Turn it on here to start." : "Switch it on in Features to start."),
@@ -7296,12 +7296,12 @@
     }
     // Discord's own icon in a settings row (TableRowIcon 6465), the way its own settings pages show them.
     function rowIcon(id,name) {
-        const RowIcon=inspectedExport(6465,"TableRowIcon");
+        const RowIcon=inspectedExport(7079,"TableRowIcon");
         return RowIcon ? el(RowIcon,{IconComponent:venusIcon(id,name)}) : undefined;
     }
     // A group title on its own, above something that isn't a list of rows (TableRowGroupTitle 6542).
     function groupTitle(key,title) {
-        const Title=inspectedExport(6542,"TableRowGroupTitle"), Text=inspectedExport(5187,"Text");
+        const Title=inspectedExport(7159,"TableRowGroupTitle"), Text=inspectedExport(5783,"Text");
         return Title ? el(Title,{key,title:tr(title)}) : el(RN.View,{key,style:{paddingHorizontal:16}},
             Text ? el(Text,{variant:"text-sm/semibold",color:"text-muted"},tr(title)) : el(RN.Text,{style:{color:"#949ba4",fontSize:13,fontWeight:"600"}},tr(title)));
     }
@@ -7342,7 +7342,7 @@
             label:{on:c.INTERACTIVE_TEXT_ACTIVE,off:c.TEXT_MUTED}}),
             {wrap:{flexDirection:"row",padding:4,gap:4,borderRadius:24,backgroundColor:"#1e1f22"},on:Object.assign({},pill,{backgroundColor:"#4e5058"}),off:pill,
              label:{on:"#ffffff",off:"#949ba4"}});
-        const Text=inspectedExport(5187,"Text"), Press=RN.Pressable || RN.View;
+        const Text=inspectedExport(5783,"Text"), Press=RN.Pressable || RN.View;
         const indicator=s.on && s.on.backgroundColor;
         return el(RN.View,{key:props.key,style:[s.wrap,{opacity:props.disabled ? 0.5 : 1}],accessibilityRole:"tablist"},
             motion() && index>=0 ? el(SegmentedSlider,{key:"slider",slot,index,count:props.items.length,color:indicator}) : null,
@@ -7357,7 +7357,7 @@
     const PRESET_CUSTOM = "\u0000custom";
     function PresetOrCustom(props) {
         const [editing, setEditing] = React.useState(false), [draft, setDraft] = React.useState("");
-        const ui = reviewUI(), Pencil = venusIcon(10023, "PencilIcon");
+        const ui = reviewUI(), Pencil = venusIcon(10383, "PencilIcon");
         const value = props.value, preset = props.presets.some(item => item.value === value), on = !props.disabled;
         const number = Number(draft), valid = draft !== "" && Number.isFinite(number) && number >= props.min && number <= props.max;
         const apply = () => { if (!on || !valid) return; haptic("SELECTION"); animateLayout(); props.onChange(number); setEditing(false); setDraft(""); };
@@ -7374,7 +7374,7 @@
     }
     // A text box with Discord's button (Button 5479) beside it, like its own "add" fields.
     function inputWithButton(ui,key,inputProps,onChange,buttonText,onPress,disabled) {
-        const Button=inspectedExport(5479,"Button");
+        const Button=inspectedExport(5790,"Button");
         const input=ui.TextInput ? el(ui.TextInput,Object.assign({onChange},inputProps)) :
             el(RN.TextInput,Object.assign({onChangeText:onChange,style:{fontSize:16,padding:12}},inputProps));
         const button=Button ? el(Button,{text:tr(buttonText),size:"md",variant:"primary",disabled:!!disabled,onPress}) :
@@ -7430,7 +7430,7 @@
     function HiddenChannelsPreview(props) {
         useSettings("hiddenChannels");
         const s = useChatPreviewStyles(), k = usePreviewChrome(), on = props.on, menu = settings.hiddenChannelsMenu;
-        const Hash = venusIcon(16648, "HashmarkIcon"), TextLock = venusIcon(8478, "TextLockIcon"), Down = venusIcon(10859, "ChevronSmallDownIcon");
+        const Hash = venusIcon(18113, "HashmarkIcon"), TextLock = venusIcon(8754, "TextLockIcon"), Down = venusIcon(11587, "ChevronSmallDownIcon");
         const blank = {shake:0, pulse:null, card:false, scroll:0};
         const [state, setState] = React.useState(blank), watching = on;
         const update = change => setState(st => Object.assign({}, st, typeof change === "function" ? change(st) : change));
@@ -7461,13 +7461,13 @@
             el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:4, paddingHorizontal:16, paddingVertical:6}},
                 el(Down, {size:"xxs", color:k.category.color}), el(RN.Text, {style:k.category}, tr("Text channels").toUpperCase())),
             channel("general", false, true), on ? channel("staff-only", true) : null, channel("memes", false), channel("clips", false));
-        const Chevron = venusIcon(7182, "ChevronSmallRightIcon"), Search = venusIcon(7017, "MagnifyingGlassIcon");
+        const Chevron = venusIcon(7471, "ChevronSmallRightIcon"), Search = venusIcon(7316, "MagnifyingGlassIcon");
         const server = el(RN.View, {key:"server", style:[k.header, {height:52, paddingHorizontal:16}]},
             el(RN.View, {style:{flex:1, flexDirection:"row", alignItems:"center", gap:4}},
                 el(RN.Text, {style:[k.title, {fontSize:18}], numberOfLines:1}, tr("Game Night")),
                 el(Chevron, {size:"xxs", color:k.iconMuted.color})),
             el(RN.View, {style:k.headerPill}, el(Search, {size:"sm", color:k.icon.color})),
-            el(RN.View, {style:k.headerPill}, el(venusIcon(9543, "MoreHorizontalIcon"), {size:"sm", color:k.icon.color})));
+            el(RN.View, {style:k.headerPill}, el(venusIcon(9879, "MoreHorizontalIcon"), {size:"sm", color:k.icon.color})));
         return el(RN.View, {key:"preview"},
             previewScreen(s, "preview", "Hidden channels preview", [el(RN.View, {key:"body", style:{minHeight:210, overflow:"hidden"}}, list, card)],
                 {header:server, footer:watching ? storyStrip(k, s, story) : null}));
@@ -7476,12 +7476,12 @@
         useSettings("hiddenChannels");
         const ui=reviewUI();
         if (!React || !RN) return null;
-        const on=enabled("hiddenChannels"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow, lock=venusIcon(8495,"LockIcon");
+        const on=enabled("hiddenChannels"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow, lock=venusIcon(8771,"LockIcon");
         const groups=[
             on ? null : offCard("status",lock,"hiddenChannels"),
             el(HiddenChannelsPreview,{key:"preview",on}),
             el(Group,{key:"tap",title:tr("When you tap a locked channel")},
-                switchRow(Switch,"hiddenChannelsMenu","Show its details","Shows when it was created, its last message and last pin, with View Anyway.",rowIcon(5145,"CircleInformationIcon"))),
+                switchRow(Switch,"hiddenChannelsMenu","Show its details","Shows when it was created, its last message and last pin, with View Anyway.",rowIcon(5891,"CircleInformationIcon"))),
             footnote("note","Only a tap opens it: scrolling past a locked channel, opening a server or opening Discord never does.")];
         return settingsBody(ui,groups);
     }
@@ -7517,7 +7517,7 @@
             el(RN.Text, {style:[k.title, {fontSize:16, paddingHorizontal:12, paddingBottom:6}], numberOfLines:1}, tr("Game Night")),
             ["general", "clips", "memes"].map((name, i) => el(RN.View, {key:name, style:[{flexDirection:"row", alignItems:"center", gap:6, paddingHorizontal:10,
                 paddingVertical:6, marginHorizontal:6, borderRadius:8}, i === 0 ? k.selected : null]},
-                el(venusIcon(16648, "HashmarkIcon"), {size:"xs", color:k.channel.color}),
+                el(venusIcon(18113, "HashmarkIcon"), {size:"xs", color:k.channel.color}),
                 el(RN.Text, {style:[s.text, {fontSize:14, color:i === 0 ? s.name.color : k.channel.color}]}, name))));
         const menuRow = (key, label, Icon, highlight) => el(RN.View, {key, style:[{flexDirection:"row", alignItems:"center", gap:12,
             paddingHorizontal:14, paddingVertical:10}, highlight && state.picked ? k.selected : null]},
@@ -7528,10 +7528,10 @@
         // Discord's own rows in that menu, then ours, the way they really show.
         const menu = state.menu ? overlay("menu", popIn("menu", el(RN.View, {style:[k.sheet, {paddingHorizontal:8, paddingBottom:8}]},
             el(RN.View, {style:[k.sheetRow, {borderRadius:16, borderWidth:1, overflow:"hidden"}]},
-                menuRow("invite", tr("Invite people"), venusIcon(5131, "UserPlusIcon")),
-                menuRow("bell", tr("Notifications"), venusIcon(9045, "BellIcon")),
-                menuRow("settings", tr("Settings"), venusIcon(7368, "SettingsIcon")),
-                menuRow("info", tr("Server info"), venusIcon(5145, "CircleInformationIcon"), true))))) : null;
+                menuRow("invite", tr("Invite people"), venusIcon(5877, "UserPlusIcon")),
+                menuRow("bell", tr("Notifications"), venusIcon(9321, "BellIcon")),
+                menuRow("settings", tr("Settings"), venusIcon(7666, "SettingsIcon")),
+                menuRow("info", tr("Server info"), venusIcon(5891, "CircleInformationIcon"), true))))) : null;
         const tile = (key, Icon, value, label) => el(RN.View, {key, style:[si.tile, {minWidth:0, flexBasis:"22%", paddingHorizontal:8, paddingVertical:8, gap:2, borderRadius:12}]},
             el(Icon, {size:"xs"}), el(RN.Text, {style:[s.name, {fontSize:16, fontWeight:"700"}]}, value),
             el(RN.Text, {style:[s.muted, {fontSize:11}], numberOfLines:1}, label));
@@ -7547,12 +7547,12 @@
                         el(RN.Text, {style:[s.muted, {fontSize:12}], numberOfLines:1},
                             tr("{count} online", {count:serverNumber(318)}) + " \u00b7 " + serverCount(1284, "{n} member", "{n} members"))))),
             el(RN.View, {style:{flexDirection:"row", gap:6}},
-                tile("c", venusIcon(16648, "HashmarkIcon"), serverNumber(24), tr("Channels")), tile("r", venusIcon(8895, "ShieldUserIcon"), serverNumber(12), tr("Roles")),
-                tile("e", venusIcon(9252, "ReactionIcon"), serverNumber(48), tr("Emojis")), tile("b", venusIcon(17349, "BoostTier2Icon"), serverNumber(9), tr("Boosts"))),
+                tile("c", venusIcon(18113, "HashmarkIcon"), serverNumber(24), tr("Channels")), tile("r", venusIcon(9172, "ShieldUserIcon"), serverNumber(12), tr("Roles")),
+                tile("e", venusIcon(9566, "ReactionIcon"), serverNumber(48), tr("Emojis")), tile("b", venusIcon(18646, "BoostTier2Icon"), serverNumber(9), tr("Boosts"))),
             el(RN.View, {style:[si.card, {flexDirection:"row", alignItems:"center", gap:10, paddingVertical:10, borderRadius:12}]},
-                friends ? avatarPile(SERVER_SAMPLE_FRIENDS, si.ring.borderColor) : el(venusIcon(4910, "FriendsIcon"), {size:"sm"}),
+                friends ? avatarPile(SERVER_SAMPLE_FRIENDS, si.ring.borderColor) : el(venusIcon(5872, "FriendsIcon"), {size:"sm"}),
                 el(RN.Text, {style:[s.text, {flex:1, fontSize:14}]}, serverCount(friends ? 3 : 1, "{n} friend here", "{n} friends here")),
-                el(venusIcon(10563, "CrownIcon"), {size:"xs", color:"#f0b232"}))))) : null;
+                el(venusIcon(10921, "CrownIcon"), {size:"xs", color:"#f0b232"}))))) : null;
         return el(RN.View, {key:"preview"},
             previewScreen(s, "preview", "Server info preview",
                 [el(RN.View, {key:"body", style:{minHeight:236, flexDirection:"row", overflow:"hidden"}}, rail, channels, menu, sheet)],
@@ -7564,10 +7564,10 @@
         if (!React || !RN) return null;
         const on = enabled("serverInfo"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
         const groups = [
-            on ? null : offCard("status", venusIcon(5145, "CircleInformationIcon"), "serverInfo"),
+            on ? null : offCard("status", venusIcon(5891, "CircleInformationIcon"), "serverInfo"),
             el(ServerInfoPreview, {key:"preview", on}),
             el(Group, {key:"friends", title:tr("Friends")},
-                switchRow(Switch, "serverInfoFriends", "Look up friends in the server", "Asks Discord which of your friends are members when you open it.", rowIcon(4910, "FriendsIcon"))),
+                switchRow(Switch, "serverInfoFriends", "Look up friends in the server", "Asks Discord which of your friends are members when you open it.", rowIcon(5872, "FriendsIcon"))),
             footnote("note", "Everything else comes from what Discord has already loaded, and updates while the sheet is open.")];
         return settingsBody(ui, groups);
     }
@@ -7582,14 +7582,14 @@
         return el(RN.View, {key:"preview", style:[s.chat, {flexDirection:"row", alignItems:"center", paddingVertical:0}], accessible:true,
             accessibilityLabel:tr("Everyone sees") + ": " + tr("Game Night") + ". " + tr("Only you see") + ": " + tr("Friday crew")},
             side("real", tr("Everyone sees"), "#4e5058", "GN", tr("Game Night"), 18),
-            el(venusIcon(10604, "ArrowSmallRightIcon"), {size:"md", color:k.icon.color}),
+            el(venusIcon(10962, "ArrowSmallRightIcon"), {size:"md", color:k.icon.color}),
             side("mine", tr("Only you see"), "#eb459e", "\ud83c\udfae", tr("Friday crew"), 26));
     }
     function ServerEditSettings() {
         useSettings("serverEdit");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("serverEdit"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Icon = venusIcon(10023, "PencilIcon");
+        const on = enabled("serverEdit"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Icon = venusIcon(10383, "PencilIcon");
         const label = item => item.edit.name || item.real && item.real.name || item.id;
         const list = Array.from(serverEdits.keys()).map(id => ({id, edit:serverEdits.get(id), real:serverEditReal(id)}))
             .sort((a, b) => String(label(a)).localeCompare(String(label(b))));
@@ -7603,7 +7603,7 @@
             on && !list.length ? statusCard("empty", "Hold a server's icon and tap Edit locally, or pick a server below.", {title:tr("No servers edited yet"), IconComponent:Icon}) : null,
             el(Group, {key:"servers", title:list.length ? pl(list.length, "{n} server edited", "{n} servers edited") : tr("Servers")},
                 list.map(row),
-                Row ? el(Row, {key:"add", label:tr(list.length ? "Edit another server" : "Pick a server"), icon:rowIcon(9545, "ServerIcon"), arrow:true, disabled:!on, onPress:openServerPicker}) : null),
+                Row ? el(Row, {key:"add", label:tr(list.length ? "Edit another server" : "Pick a server"), icon:rowIcon(9881, "ServerIcon"), arrow:true, disabled:!on, onPress:openServerPicker}) : null),
             list.length ? el(Group, {key:"reset"},
                 actionRow(ui, "reset", "Reset every server", null, () => confirmAction("Reset every server?", "Every server goes back to its real name and icon.", "Reset", serverEditReset), !on, true)) : null,
             footnote("note", "Only this phone sees these. Server settings always show the real name and icon, so nothing changes for the server or anyone in it.")];
@@ -7637,7 +7637,7 @@
     }
     function fontFileImport(kind) {
         const k = FONT_FILE_KINDS[kind], owner = kind === "font" ? "systemFont" : "systemEmoji";
-        const pick = inspectedExport(11600, "pick"), keep = inspectedExport(11600, "keepLocalCopy"), types = inspectedExport(11600, "types");
+        const pick = inspectedExport(11264, "pick"), keep = inspectedExport(11264, "keepLocalCopy"), types = inspectedExport(11264, "types");
         if (!files || typeof pick !== "function" || typeof keep !== "function" || fontFiles.busy) return;
         const fail = code => { fontFiles.busy = ""; notify(owner); showProblem("Couldn't import", fontFileProblem(kind, code)); };
         fontFiles.busy = kind; notify(owner);
@@ -7657,7 +7657,7 @@
         }).then(text => {
             fontFiles[kind] = fontFileInfo(text); fontFiles.busy = "";
             animateLayout(); notify(owner);
-            reviewToast(reviewUI(), kind === "font" ? "Font imported" : "Emoji font imported", venusIcon(7144, "CircleCheckIcon"));
+            reviewToast(reviewUI(), kind === "font" ? "Font imported" : "Emoji font imported", venusIcon(7434, "CircleCheckIcon"));
             // A new file applies from the next start, even when the file was already the source.
             if (settings[k.source] !== "file") setSetting(k.source, "file");
             else if (enabled(owner)) later(() => askRestart(kind), 0);
@@ -7684,12 +7684,12 @@
         if (!React || !RN) return null;
         React.useEffect(() => { fontFileRefresh(kind); }, []);
         const on = enabled(owner), info = fontFiles[kind], busy = fontFiles.busy === kind, Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
-        const canPick = !!files && typeof inspectedExport(11600, "pick") === "function" && typeof inspectedExport(11600, "keepLocalCopy") === "function";
+        const canPick = !!files && typeof inspectedExport(11264, "pick") === "function" && typeof inspectedExport(11264, "keepLocalCopy") === "function";
         const fileLabel = info ? (info.name || tr(font ? "Imported font" : "Imported emoji font")) + " \u00b7 " + formatSize(info.size) : "";
         const choices = [["phone", font ? tr("Your phone's font") : tr("Your phone's emojis"),
-            font ? tr("The font your phone uses everywhere else.") : tr("The emojis your phone's keyboard shows."), rowIcon(6919, "MobilePhoneIcon")]];
+            font ? tr("The font your phone uses everywhere else.") : tr("The emojis your phone's keyboard shows."), rowIcon(7231, "MobilePhoneIcon")]];
         if (info || settings[k.source] === "file") choices.push(["file", font ? tr("Imported font") : tr("Imported emoji font"),
-            info ? fileLabel : tr("The file is missing. Import it again."), rowIcon(9641, "PaperIcon")]);
+            info ? fileLabel : tr("The file is missing. Import it again."), rowIcon(10006, "PaperIcon")]);
         const groups = [
             on ? null : offCard("status", venusIcon(font ? 16730 : 13827, font ? "LettersIcon" : "ChatSmileIcon"), owner),
             // Only a choice once there's a file to choose; before that the phone's look is simply what's used.
@@ -7697,7 +7697,7 @@
             canPick && Row ? el(Group, {key:"file", title:tr(font ? "Font file" : "Emoji font")},
                 el(Row, {key:"import", label:tr(busy ? "Importing\u2026" : info ? (font ? "Replace the font" : "Replace the emoji font") : (font ? "Import a font" : "Import an emoji font")),
                     subLabel:tr(font ? "A TTF, OTF or TTC file, up to 32 MB." : "A color emoji TTF, like Twemoji or Noto Color Emoji, up to 64 MB."),
-                    icon:rowIcon(9705, "UploadIcon"), arrow:true, disabled:!!fontFiles.busy, onPress:() => fontFileImport(kind)}),
+                    icon:rowIcon(10071, "UploadIcon"), arrow:true, disabled:!!fontFiles.busy, onPress:() => fontFileImport(kind)}),
                 info ? actionRow(ui, "remove", font ? "Remove the font" : "Remove the emoji font", null, () => fontFileRemove(kind), !!fontFiles.busy, true) : null) : null,
             footnote("note", font ? "Code blocks keep a monospace font. A new font shows once Discord reopens." : "Emojis the font doesn't have keep your phone's. A new emoji font shows once Discord reopens.")];
         return settingsBody(ui, groups);
@@ -7710,10 +7710,10 @@
         if (!React || !RN) return null;
         const on=enabled("readAll");
         const groups=[
-            on ? null : offCard("status",venusIcon(16684,"DoubleCheckmarkIcon"), "readAll"),
-            radioGroup(ui,"mode","When you tap Read all","readAllMode",on,[["guilds","Servers","Marks every unread server as read.",rowIcon(9545,"ServerIcon")],
-                ["dms","Direct messages","Marks every unread DM and group DM as read.",rowIcon(7047,"EnvelopeIcon")],
-                ["both","Servers and DMs","Marks everything as read in one tap.",rowIcon(16684,"DoubleCheckmarkIcon")]]),
+            on ? null : offCard("status",venusIcon(17976,"DoubleCheckmarkIcon"), "readAll"),
+            radioGroup(ui,"mode","When you tap Read all","readAllMode",on,[["guilds","Servers","Marks every unread server as read.",rowIcon(9881,"ServerIcon")],
+                ["dms","Direct messages","Marks every unread DM and group DM as read.",rowIcon(7345,"EnvelopeIcon")],
+                ["both","Servers and DMs","Marks everything as read in one tap.",rowIcon(17976,"DoubleCheckmarkIcon")]]),
             footnote("note","Hold the button to pick just once, without changing this.")];
         return settingsBody(ui,groups);
     }
@@ -7750,9 +7750,9 @@
     // While on, it plays: you tap the emoji button in the message bar, pick a Nitro emoji from another server (unlocked
     // by Venus, so there's no lock icon on it), it's sent and everyone sees it; then the same with a sticker.
     function NitroPicker(props) {
-        const k = props.k, s = props.s, Down = venusIcon(10859, "ChevronSmallDownIcon"),
-            Search = venusIcon(7017, "MagnifyingGlassIcon"), Nitro = venusIcon(9327, "NitroWheelIcon"),
-            Smile = venusIcon(9252, "ReactionIcon"), Sticker = venusIcon(13217, "StickerIcon"), Backspace = venusIcon(9880, "BackspaceIcon");
+        const k = props.k, s = props.s, Down = venusIcon(11587, "ChevronSmallDownIcon"),
+            Search = venusIcon(7316, "MagnifyingGlassIcon"), Nitro = venusIcon(9645, "NitroWheelIcon"),
+            Smile = venusIcon(9566, "ReactionIcon"), Sticker = venusIcon(11206, "StickerIcon"), Backspace = venusIcon(10244, "BackspaceIcon");
         const kinds = props.kinds, tab = props.tab, item = NITRO_SAMPLES[tab];
         const tabPill = (kind, label, enabledTab) => {
             const active = tab === kind;
@@ -7835,14 +7835,14 @@
         if (!React || !RN) return null;
         const on=enabled("freeNitro"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow, hasAny=!!(settings.emojis || settings.stickers);
         const groups=[
-            !on ? offCard("status",venusIcon(9327,"NitroWheelIcon"), "freeNitro") : !hasAny ? statusCard("status","Turn on emojis or stickers below.",
-                {title:tr("Sending as links"),IconComponent:venusIcon(9327,"NitroWheelIcon")}) : null,
+            !on ? offCard("status",venusIcon(9645,"NitroWheelIcon"), "freeNitro") : !hasAny ? statusCard("status","Turn on emojis or stickers below.",
+                {title:tr("Sending as links"),IconComponent:venusIcon(9645,"NitroWheelIcon")}) : null,
             el(NitroPreview,{key:"preview",on}),
             el(Group,{key:"send",title:tr("Send as links")},
-                switchRow(Switch,"emojis","Emojis","Emojis from other servers, and animated emojis.",rowIcon(13827,"ChatSmileIcon")),
-                switchRow(Switch,"stickers","Stickers","Stickers from other servers. Animated ones may not move.",rowIcon(13217,"StickerIcon"))),
+                switchRow(Switch,"emojis","Emojis","Emojis from other servers, and animated emojis.",rowIcon(14878,"ChatSmileIcon")),
+                switchRow(Switch,"stickers","Stickers","Stickers from other servers. Animated ones may not move.",rowIcon(11206,"StickerIcon"))),
             el(Group,{key:"style",title:tr("Link style")},
-                switchRow(Switch,"hyperlinks","Short links","In chat it looks the same either way. Short links only change what's copied or quoted.",rowIcon(5137,"LinkIcon"))),
+                switchRow(Switch,"hyperlinks","Short links","In chat it looks the same either way. Short links only change what's copied or quoted.",rowIcon(5883,"LinkIcon"))),
             footnote("note","Everyone sees the image, but it's a link, not a real Nitro emoji or sticker.")];
         return settingsBody(ui,groups);
     }
@@ -7897,7 +7897,7 @@
             if (id === siteId) return;
             haptic("SELECTION"); animateLayout(); setSiteId(id); setState(blank);
         };
-        const Press = RN.Pressable || RN.View, Play = venusIcon(8674, "PlayIcon"), Picture = venusIcon(8487, "ImageIcon");
+        const Press = RN.Pressable || RN.View, Play = venusIcon(8955, "PlayIcon"), Picture = venusIcon(8763, "ImageIcon");
         const media = el(RN.View, {style:{height:118, borderRadius:8, marginTop:8, overflow:"hidden", backgroundColor:site.color, alignItems:"center", justifyContent:"center"}},
             el(RN.View, {style:{position:"absolute", left:0, right:0, bottom:0, height:59, backgroundColor:"#00000040"}}),
             el(RN.View, {style:{position:"absolute", right:-24, top:-24, width:96, height:96, borderRadius:48, backgroundColor:"#ffffff1f"}}),
@@ -7943,8 +7943,8 @@
         const s = useThemed("fixSites", c => ({card:Object.assign({}, FIX_LIST_DARK.card, {backgroundColor:c.CARD_BACKGROUND_DEFAULT}),
             divider:Object.assign({}, FIX_LIST_DARK.divider, {backgroundColor:c.BORDER_SUBTLE}),
             gear:Object.assign({}, FIX_LIST_DARK.gear, {backgroundColor:c.BACKGROUND_MOD_SUBTLE || c.BACKGROUND_SURFACE_HIGH})}), FIX_LIST_DARK);
-        const Text = inspectedExport(5187, "Text"), FormSwitch = inspectedExport(7173, "FormSwitch"), Press = RN.Pressable || RN.View;
-        const Gear = venusIcon(7368, "SettingsIcon");
+        const Text = inspectedExport(5783, "Text"), FormSwitch = inspectedExport(7463, "FormSwitch"), Press = RN.Pressable || RN.View;
+        const Gear = venusIcon(7666, "SettingsIcon");
         const line = (value, variant, color, fallback) => Text ? el(Text, {variant, color, lineClamp:1}, value) : el(RN.Text, {style:fallback, numberOfLines:1}, value);
         const rows = fixRows();
         const siteRow = (site, i, out) => {
@@ -7977,7 +7977,7 @@
     }
     // A long list of services as radio rows: the service's name, where links go and a check on the one in use.
     function fixServiceChoices(site, service, line) {
-        const Press = RN.Pressable || RN.View, Check = venusIcon(7101, "CheckmarkSmallIcon");
+        const Press = RN.Pressable || RN.View, Check = venusIcon(7399, "CheckmarkSmallIcon");
         return el(RN.View, {style:{gap:2}}, site.services.map(item => {
             const picked = item.id === service.id;
             return el(Press, {key:item.id, accessibilityRole:"radio", accessibilityLabel:item.name, accessibilityState:{selected:picked},
@@ -7995,13 +7995,13 @@
     function FixSiteSheet(props) {
         useSettings("fixEmbeds");
         const ui = reviewUI(), site = fixSite(props.siteId), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Text = inspectedExport(5187, "Text"), card = useThemed("fixSites", c => ({card:Object.assign({}, FIX_LIST_DARK.card, {backgroundColor:c.CARD_BACKGROUND_DEFAULT})}), FIX_LIST_DARK);
+        const Text = inspectedExport(5783, "Text"), card = useThemed("fixSites", c => ({card:Object.assign({}, FIX_LIST_DARK.card, {backgroundColor:c.CARD_BACKGROUND_DEFAULT})}), FIX_LIST_DARK);
         const close = () => hideReviewSheet(ui, FIX_SITE_SHEET);
         const header = ui.Header ? el(ui.Header, {title:site ? site.name : "", trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : undefined;
         const service = site && fixService(site);
         const wrap = body => {
             const content = el(RN.View, {style:{paddingHorizontal:12, paddingBottom:24, gap:20}}, body.filter(Boolean));
-            const Scroll = inspectedExport(6584, "BottomSheetScrollView");
+            const Scroll = inspectedExport(5424, "BottomSheetScrollView");
             return Scroll ? el(ui.ActionSheet || RN.View, {header, scrollable:true}, el(Scroll, null, content)) :
                 el(ui.ActionSheet || RN.View, {header}, RN.ScrollView ? el(RN.ScrollView, null, content) : content);
         };
@@ -8012,17 +8012,17 @@
         const styles = service.styles ? FIX_STYLES.filter(look => look === "full" || owns(service.styles, look)) : [];
         const style = styles.includes(options.style) ? options.style : "full";
         const lang = options.lang, custom = TRANSLATE_LANGUAGES.includes(lang), name = kind => languageName(localeCode(kind));
-        const RadioGroup = inspectedExport(6540, "TableRadioGroup"), RadioRow = inspectedExport(6539, "TableRadioRow");
+        const RadioGroup = inspectedExport(7157, "TableRadioGroup"), RadioRow = inspectedExport(7160, "TableRadioRow");
         const mode = custom ? "custom" : lang;
         const setMode = value => {
             if (value === mode) return;
             haptic("SELECTION"); animateLayout();
             fixSetOption(site.id, "lang", value === "custom" ? (custom ? lang : "en") : value);
         };
-        const translateChoices = [["off", tr("Off"), tr("Posts show in the language they were written in."), rowIcon(9393, "GlobeEarthIcon")],
-            ["discord", tr("Discord's language"), name("discord") + ".", rowIcon(13827, "ChatSmileIcon")],
-            ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(6919, "MobilePhoneIcon")],
-            ["custom", tr("Another language"), translateLanguageName(custom ? lang : "en") + ".", rowIcon(9415, "LanguageIcon")]];
+        const translateChoices = [["off", tr("Off"), tr("Posts show in the language they were written in."), rowIcon(9163, "GlobeEarthIcon")],
+            ["discord", tr("Discord's language"), name("discord") + ".", rowIcon(14878, "ChatSmileIcon")],
+            ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(7231, "MobilePhoneIcon")],
+            ["custom", tr("Another language"), translateLanguageName(custom ? lang : "en") + ".", rowIcon(9741, "LanguageIcon")]];
         // Each look's name and what it shows, written out so every text is found for translating.
         const labels = {full:tr("Full post"), gallery:tr("Media"), text:tr("Text"), media:tr("File")};
         const hints = {full:tr("The text, pictures or video, and likes."), gallery:tr("Just the picture or video and who posted it, without the text or counts."),
@@ -8044,7 +8044,7 @@
                     items:styles.map(look => ({value:look, label:labels[look]}))}),
                 footnote("t:styleHint", hints[style])) : null,
             service.dark ? el(Group, {key:"dark", title:tr("Look")},
-                toggle("dark", tr("Dark Tumblr posts"), tr("Tumblr posts are drawn on a dark background, to match Discord."), rowIcon(13620, "ThemeDarkIcon"), options.dark,
+                toggle("dark", tr("Dark Tumblr posts"), tr("Tumblr posts are drawn on a dark background, to match Discord."), rowIcon(11353, "ThemeDarkIcon"), options.dark,
                     value => fixSetOption(site.id, "dark", value))) : null,
             service.lang && RadioGroup && RadioRow ? el(RadioGroup, {key:"translate", title:tr("Translate posts"), value:mode, onChange:setMode},
                 translateChoices.map(([value, label, sub, icon]) => el(RadioRow, {key:value, value, label, subLabel:sub, icon, disabled:!on}))) : null,
@@ -8052,7 +8052,7 @@
             service.lang && lang !== "off" ? footnote("translateNote", service.lang === "pixiv" ? "pixiv shows titles and tags in English, Chinese or Korean." :
                 "The translation shows with the original under it, for everyone in the chat.") : null,
             el(Group, {key:"privacy", title:tr("Privacy")},
-                toggle("clean", tr("Remove tracking from links"), tr("Drops share IDs like ?igsh= and ?si= from the links Venus fixes."), rowIcon(10733, "ShieldIcon"), options.clean,
+                toggle("clean", tr("Remove tracking from links"), tr("Drops share IDs like ?igsh= and ?si= from the links Venus fixes."), rowIcon(11453, "ShieldIcon"), options.clean,
                     value => fixSetOption(site.id, "clean", value))),
             changed ? el(Group, {key:"manage"}, actionRow(ui, "reset", "Reset to defaults", null, () => {
                 animateLayout(); fixResetOptions(site.id); fixSetChoice(site.id, site.services[0].id); }, !on, true)) : null]);
@@ -8072,27 +8072,27 @@
         const percent = n => tr("{n}%", {n}), percentSteps = BRIGHTNESS_STEPS.map(n => ({value:n, label:percent(n)}));
         const chimes = settings.voiceOptionsJoinSound || settings.voiceOptionsLeaveSound;
         const groups = [
-            !on ? offCard("status", venusIcon(8501, "VoiceNormalIcon"), "voiceOptions") : null,
+            !on ? offCard("status", venusIcon(8777, "VoiceNormalIcon"), "voiceOptions") : null,
             el(Group, {key:"join", title:tr("When you join")},
-                switchRow(Switch, "voiceOptionsVolume", "Start at a set volume", "How loud everyone sounds each time you join a voice channel.", rowIcon(8501, "VoiceNormalIcon"))),
+                switchRow(Switch, "voiceOptionsVolume", "Start at a set volume", "How loud everyone sounds each time you join a voice channel.", rowIcon(8777, "VoiceNormalIcon"))),
             settings.voiceOptionsVolume ? el(PresetOrCustom, {key:"volume", title:"Call volume", value:settings.voiceOptionsVolumeLevel, disabled:!on, placeholder:50, min:0, max:100,
                 inputLabel:tr("Volume, 0 to 100"), format:percent, presets:percentSteps, onChange:value => setSetting("voiceOptionsVolumeLevel", value),
                 hint:"0% joins with everyone muted. You can still change it in the call."}) : null,
             radioGroup(ui, "output", "Play calls through", "voiceOptionsOutput", on, [
-                ["default", "Don't change", null, rowIcon(11733, "SparklesIcon")],
-                ["speaker", "Speaker", null, rowIcon(8501, "VoiceNormalIcon")],
-                ["earpiece", "Earpiece", null, rowIcon(12666, "PhoneIcon")],
-                ["bluetooth", "Bluetooth", null, rowIcon(13214, "HeadphonesIcon")],
-                ["wired", "Wired headset", null, rowIcon(13214, "HeadphonesIcon")]]),
+                ["default", "Don't change", null, rowIcon(12467, "SparklesIcon")],
+                ["speaker", "Speaker", null, rowIcon(8777, "VoiceNormalIcon")],
+                ["earpiece", "Earpiece", null, rowIcon(13627, "PhoneIcon")],
+                ["bluetooth", "Bluetooth", null, rowIcon(14375, "HeadphonesIcon")],
+                ["wired", "Wired headset", null, rowIcon(14375, "HeadphonesIcon")]]),
             footnote("outputNote", "If it isn't connected, Discord picks as usual."),
             el(Group, {key:"sounds", title:tr("Join and leave chimes")},
-                switchRow(Switch, "voiceOptionsJoinSound", "Join chime", "Plays as people join the voice channel.", rowIcon(9045, "BellIcon")),
-                switchRow(Switch, "voiceOptionsLeaveSound", "Leave chime", "Plays as people leave the voice channel.", rowIcon(10654, "BellSlashIcon"))),
+                switchRow(Switch, "voiceOptionsJoinSound", "Join chime", "Plays as people join the voice channel.", rowIcon(9321, "BellIcon")),
+                switchRow(Switch, "voiceOptionsLeaveSound", "Leave chime", "Plays as people leave the voice channel.", rowIcon(11154, "BellSlashIcon"))),
             chimes ? el(PresetOrCustom, {key:"soundVolume", title:"Chime volume", value:settings.voiceOptionsSoundVolume, disabled:!on, placeholder:100, min:0, max:100,
                 inputLabel:tr("Volume, 0 to 100"), format:percent, presets:percentSteps, onChange:value => setSetting("voiceOptionsSoundVolume", value),
                 hint:"Only these two chimes change. Voices and other sounds stay the same."}) : null,
             el(Group, {key:"exit", title:tr("When you leave")},
-                switchRow(Switch, "voiceOptionsExit", "Goodbye sound", "When you tap Disconnect, a soundboard sound plays for everyone in the channel. Needs Nitro.", rowIcon(13212, "SoundboardIcon"))),
+                switchRow(Switch, "voiceOptionsExit", "Goodbye sound", "When you tap Disconnect, a soundboard sound plays for everyone in the channel. Needs Nitro.", rowIcon(14373, "SoundboardIcon"))),
             settings.voiceOptionsExit ? el(VoiceSoundPicker, {key:"exitSound", on}) : null,
             settings.voiceOptionsExit && !voiceNitro() ? footnote("exitNitro", "Your account doesn't have Nitro, so no sound is sent.") : null];
         return settingsBody(ui, groups);
@@ -8120,7 +8120,7 @@
     // A token for your Spotify account from Discord's own connection. It lasts about an hour, so one is reused for 45 minutes.
     function listenAlongToken(fresh) {
         if (!fresh && listenAlong.token && Date.now() - listenAlong.tokenAt < 45 * 60000) return Promise.resolve(listenAlong.token);
-        const HTTP = inspectedExport(1297, "HTTP"), store = inspectedExport(6017, "default");
+        const HTTP = inspectedExport(1282, "HTTP"), store = inspectedExport(6659, "default");
         let accounts = [];
         try { accounts = (store && typeof store.getAccounts === "function" && store.getAccounts()) || []; } catch (_) {}
         const spotify = accounts.find(a => a && a.type === "spotify");
@@ -8179,7 +8179,7 @@
         return tr("Listen along couldn't reach Spotify. Try again.");
     }
     function listenAlongActivity() {
-        const presence = inspectedExport(5207, "default");
+        const presence = inspectedExport(5922, "default");
         let list = [];
         try { list = (presence && presence.getActivities(listenAlong.userId)) || []; } catch (_) {}
         return list.find(a => a && a.sync_id && a.timestamps && a.timestamps.start) || null;
@@ -8230,9 +8230,9 @@
     }
     // The feature's own icon in Venus's settings list, drawn through Discord's icon image so it takes the theme's icon color.
     function ListenAlongRowIcon(props) {
-        const Base = inspectedExport(4912, "BaseIconImage");
+        const Base = inspectedExport(5873, "BaseIconImage");
         if (!Base) return null;
-        const tokens = inspectedExport(587, "default");
+        const tokens = inspectedExport(575, "default");
         const color = (props && props.color) || (tokens && tokens.colors && tokens.colors.INTERACTIVE_ICON_DEFAULT);
         return el(Base, Object.assign({}, props, {source:{uri:LISTEN_ALONG_ICON, width:72, height:72}, color}));
     }
@@ -8251,7 +8251,7 @@
         const activity = args[0] && args[0].activity;
         const match = /^spotify:(\d+)$/.exec((activity && activity.party && activity.party.id) || "");
         let me = null;
-        try { me = inspectedExport(1392, "default").getCurrentUser(); } catch (_) {}
+        try { me = inspectedExport(1385, "default").getCurrentUser(); } catch (_) {}
         // Not your own profile, and only an activity that carries what the sync needs.
         if (!match || !activity.sync_id || !activity.timestamps || (me && me.id === match[1])) return row;
         const active = listenAlongActive() && listenAlong.userId === match[1];
@@ -8285,7 +8285,7 @@
         useSettings("listenAlong");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("listenAlong"), Slider = inspectedExport(15065, "Slider"), Text = inspectedExport(5187, "Text");
+        const on = enabled("listenAlong"), Slider = inspectedExport(16198, "Slider"), Text = inspectedExport(5783, "Text");
         const offset = typeof settings.listenAlongOffset === "number" ? settings.listenAlongOffset : 0;
         const shown = offset === 0 ? tr("No change") : offset > 0 ? tr("{n} s forward", {n:offset}) : tr("{n} s back", {n:-offset});
         const groups = [
@@ -8305,9 +8305,9 @@
         if (!React || !RN) return null;
         const on = enabled("fakeDeafen"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
         const groups = [
-            on ? null : offCard("status", venusIcon(9074, "HeadphonesSlashIcon"), "fakeDeafen"),
+            on ? null : offCard("status", venusIcon(9351, "HeadphonesSlashIcon"), "fakeDeafen"),
             el(Group, {key:"mic", title:tr("Microphone")},
-                switchRow(Switch, "fakeDeafenMuteMic", "Keep my microphone muted", "You can't talk while you look deafened, and unmuting ends it. Turn this off to keep your mic working.", rowIcon(11492, "MicrophoneIcon"))),
+                switchRow(Switch, "fakeDeafenMuteMic", "Keep my microphone muted", "You can't talk while you look deafened, and unmuting ends it. Turn this off to keep your mic working.", rowIcon(12170, "MicrophoneIcon"))),
             footnote("how", "In a call, open the voice controls and use the Fake deafen switch under Deafen.")];
         return settingsBody(ui, groups);
     }
@@ -8315,13 +8315,13 @@
         useSettings("tenorGifs");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("tenorGifs"), Icon = venusIcon(10051, "GifIcon");
+        const on = enabled("tenorGifs"), Icon = venusIcon(10411, "GifIcon");
         const groups = [
             !on ? offCard("status", Icon, "tenorGifs") : tenor.down ? statusCard("status", "Discord's own GIFs show until it answers again.",
-                {title:tr("Tenor isn't answering"), IconComponent:venusIcon(8481, "ImageWarningIcon")}) : null,
+                {title:tr("Tenor isn't answering"), IconComponent:venusIcon(8757, "ImageWarningIcon")}) : null,
             radioGroup(ui, "source", "GIFs from", "tenorGifsSource", on, [
-                ["both", "Tenor and Discord's GIFs", "Tenor's come first, with Discord's mixed in, so you get the most choice.", rowIcon(12328, "ImagesIcon")],
-                ["tenor", "Only Tenor", "Search, trending and categories all come from Tenor, like before.", rowIcon(8487, "ImageIcon")]]),
+                ["both", "Tenor and Discord's GIFs", "Tenor's come first, with Discord's mixed in, so you get the most choice.", rowIcon(13049, "ImagesIcon")],
+                ["tenor", "Only Tenor", "Search, trending and categories all come from Tenor, like before.", rowIcon(8763, "ImageIcon")]]),
             footnote("note", "What you search for goes to Tenor, without your Discord account. GIFs you pick are sent as tenor.com links, which play for everyone.")];
         return settingsBody(ui, groups);
     }
@@ -8331,7 +8331,7 @@
         useSettings("fixEmbeds");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("fixEmbeds"), Group = ui.TableRowGroup || RN.View, Icon = venusIcon(13836, "EmbedIcon");
+        const on = enabled("fixEmbeds"), Group = ui.TableRowGroup || RN.View, Icon = venusIcon(14887, "EmbedIcon");
         const none = !fixRows().some(row => fixService(fixEmbeds.sites[row[0]]));
         const changed = settings.fixEmbedsSites !== "" || settings.fixEmbedsOptions !== "";
         const groups = [
@@ -8371,11 +8371,11 @@
         if (!React || !RN) return null;
         const on=enabled("pastelize"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
         const groups=[
-            on ? null : offCard("status",venusIcon(16320,"PaintPaletteIcon"), "pastelize"),
+            on ? null : offCard("status",venusIcon(17608,"PaintPaletteIcon"), "pastelize"),
             el(PastelPreview,{key:"preview",on}),
             el(Group,{key:"colors",title:tr("Colors")},
-                switchRow(Switch,"pastelAll","Replace role colors","Every name uses its pastel color, even with a role color.",rowIcon(10563,"CrownIcon")),
-                switchRow(Switch,"pastelContent","Color message text","What people write is colored too, in a lighter shade of their name.",rowIcon(8480,"TextIcon"))),
+                switchRow(Switch,"pastelAll","Replace role colors","Every name uses its pastel color, even with a role color.",rowIcon(10921,"CrownIcon")),
+                switchRow(Switch,"pastelContent","Color message text","What people write is colored too, in a lighter shade of their name.",rowIcon(8756,"TextIcon"))),
             footnote("note","Each person always gets the same color, on every device.")];
         return settingsBody(ui,groups);
     }
@@ -8417,7 +8417,7 @@
                 previewMessage(s, "a2", tr("You"), "#5865f2", tr("Today at 4:02 PM"), el(Text, {style:s.text}, tr("Yes, see you there!")))),
             previewInput(k, s, {placeholder:tr("Message {channel}", {channel:"@Alex"})})];
         const dmHeader = () => el(RN.View, {key:"hd"}, previewHeader(k, {title:"Alex", leading:avatar("A", "#3ba55c", clients, 32, k.header.backgroundColor),
-            badges:icons("piDmHeader", clients), icons:[[9621, "PhoneCallIcon"], [11187, "VideoIcon"], [7017, "MagnifyingGlassIcon"]]}), ripple);
+            badges:icons("piDmHeader", clients), icons:[[9986, "PhoneCallIcon"], [11204, "VideoIcon"], [7316, "MagnifyingGlassIcon"]]}), ripple);
         // The member list: Discord's "Online — 3" header and a row per person, status under the name.
         const memberRow = (name, color, c, alex) => el(RN.View, {key:name, style:[{flexDirection:"row", alignItems:"center", gap:12, paddingHorizontal:16, paddingVertical:6},
             alex ? {marginHorizontal:8, paddingHorizontal:8, borderRadius:8} : null]},
@@ -8436,11 +8436,11 @@
                 el(Text, {style:[s.muted, {fontSize:14, fontWeight:"600"}]}, "alex"),
                 el(RN.View, {style:{flexDirection:"row", gap:8, marginTop:4}},
                     el(RN.View, {style:[k.brand, {flex:1, borderRadius:20, paddingVertical:10, alignItems:"center", flexDirection:"row", justifyContent:"center", gap:8}]},
-                        el(venusIcon(8471, "ChatIcon"), {size:"sm", color:k.brandText.color}), el(Text, {style:[k.brandText, {fontWeight:"600"}]}, tr("Message"))),
+                        el(venusIcon(8747, "ChatIcon"), {size:"sm", color:k.brandText.color}), el(Text, {style:[k.brandText, {fontWeight:"600"}]}, tr("Message"))),
                     el(RN.View, {style:[k.secondary, {width:40, height:40, borderRadius:20, alignItems:"center", justifyContent:"center"}]},
-                        el(venusIcon(9621, "PhoneCallIcon"), {size:"sm", color:k.secondaryText.color})),
+                        el(venusIcon(9986, "PhoneCallIcon"), {size:"sm", color:k.secondaryText.color})),
                     el(RN.View, {style:[k.secondary, {width:40, height:40, borderRadius:20, alignItems:"center", justifyContent:"center"}]},
-                        el(venusIcon(11187, "VideoIcon"), {size:"sm", color:k.secondaryText.color})))))];
+                        el(venusIcon(11204, "VideoIcon"), {size:"sm", color:k.secondaryText.color})))))];
         const body = screen === "piDmHeader" ? dm() : screen === "piUserList" ? list() : profile();
         const header = screen === "piDmHeader" ? dmHeader() : screen === "piUserList" ? previewHeader(k, {title:"general"}) : null;
         const off = on && !settings[screen] ? el(RN.View, {key:"off", style:{marginHorizontal:12, marginBottom:8, padding:10, borderRadius:8, backgroundColor:"#4e505833"}},
@@ -8453,10 +8453,10 @@
             el(Press, {onPress:() => { animateLayout(); update(st => ({demo:st.demo + 1, pulse:{who:"alex", id:"t" + (st.demo + 1)}})); },
                 accessibilityRole:"button", accessibilityLabel:tr("Change Alex's devices"), accessibilityHint:tr("Tap to change Alex's devices"),
                 style:{flexDirection:"row", alignItems:"center", gap:10, paddingLeft:4}},
-                el(venusIcon(15994, "LaptopPhoneIcon"), {size:"sm", color:s.muted.color}),
+                el(venusIcon(17213, "LaptopPhoneIcon"), {size:"sm", color:s.muted.color}),
                 el(Text, {style:[s.muted, {flex:1, fontSize:13}], numberOfLines:2}, tr("Alex is on: {devices}", {devices:now})),
                 el(RN.View, {style:[k.secondary, {width:36, height:36, borderRadius:18, alignItems:"center", justifyContent:"center"}]},
-                    el(venusIcon(11632, "RetryIcon"), {size:"sm", color:k.secondaryText.color})))) : null;
+                    el(venusIcon(11247, "RetryIcon"), {size:"sm", color:k.secondaryText.color})))) : null;
         return el(RN.View, {key:"preview"},
             previewScreen(s, "preview", "Device indicators preview", [el(RN.View, {key:"screen:" + screen, style:{minHeight:236, justifyContent:screen === "piDmHeader" ? "flex-end" : "flex-start"}}, popIn("screen:" + screen,
                 el(RN.View, null, body))), off],
@@ -8469,15 +8469,15 @@
         const on=enabled("platformIndicators"), Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
         const hasPlace=!!(settings.piDmHeader || settings.piUserList || settings.piProfile);
         const groups=[
-            !on ? offCard("status",venusIcon(15994,"LaptopPhoneIcon"), "platformIndicators") : !hasPlace ? statusCard("status","Turn on at least one place below.",
-                {title:tr("Device indicators"),IconComponent:venusIcon(15994,"LaptopPhoneIcon")}) : null,
+            !on ? offCard("status",venusIcon(17213,"LaptopPhoneIcon"), "platformIndicators") : !hasPlace ? statusCard("status","Turn on at least one place below.",
+                {title:tr("Device indicators"),IconComponent:venusIcon(17213,"LaptopPhoneIcon")}) : null,
             el(PlatformPreview,{key:"preview",on}),
             el(Group,{key:"where",title:tr("Show icons")},
-                switchRow(Switch,"piDmHeader","In DMs","Next to the name at the top of a DM.",rowIcon(7047,"EnvelopeIcon")),
-                switchRow(Switch,"piUserList","In lists","Member list, friends, DM list and voice channels.",rowIcon(8489,"GroupIcon")),
-                switchRow(Switch,"piProfile","On profiles","Next to the name on a profile.",rowIcon(11671,"UserIcon"))),
+                switchRow(Switch,"piDmHeader","In DMs","Next to the name at the top of a DM.",rowIcon(7345,"EnvelopeIcon")),
+                switchRow(Switch,"piUserList","In lists","Member list, friends, DM list and voice channels.",rowIcon(8765,"GroupIcon")),
+                switchRow(Switch,"piProfile","On profiles","Next to the name on a profile.",rowIcon(12318,"UserIcon"))),
             el(Group,{key:"avatars",title:tr("Avatars")},
-                switchRow(Switch,"piHideMobile","Hide the phone badge","Avatars show a plain status dot, since the icons already show mobile.",rowIcon(6919,"MobilePhoneIcon"))),
+                switchRow(Switch,"piHideMobile","Hide the phone badge","Avatars show a plain status dot, since the icons already show mobile.",rowIcon(7231,"MobilePhoneIcon"))),
             footnote("note","Icons are colored by status on each device: desktop, mobile, web, console or VR.")];
         return settingsBody(ui,groups);
     }
@@ -8547,7 +8547,7 @@
         return false;
     }
     function highlightRoleMentioned(source) {
-        const me = currentUser(), check = inspectedExport(5888, "isRawMessageMentioned");
+        const me = currentUser(), check = inspectedExport(6608, "isRawMessageMentioned");
         if (!me || !me.id || typeof check !== "function") return false;
         // isRawMessageMentioned reads channel_id/mention_roles; a MessageRecord has the camelCase names instead. Only roles
         // are asked about here: everyone and user mentions are already checked above.
@@ -8574,7 +8574,7 @@
     function messageHighlightRedraw() {
         let d = dispatcher;
         if (!d) {
-            const mod = inspectedExport(584, "default");
+            const mod = inspectedExport(572, "default");
             if (mod && typeof mod.dispatch === "function") d = mod.dispatch.bind(mod);
         }
         if (typeof d !== "function" || !highlightRecent.size) return;
@@ -8752,9 +8752,9 @@
         const [,update] = React.useState(0);
         // SessionsStore is the upstream source for the current user's own clients.
         if (enabled("platformIndicators")) {
-            if (!sessionsStore) sessionsStore = inspectedExport(5211,"default");
-            if (!presenceStore) presenceStore = inspectedExport(5207,"default");
-            if (!userStore) userStore = inspectedExport(1392,"default");
+            if (!sessionsStore) sessionsStore = inspectedExport(5927,"default");
+            if (!presenceStore) presenceStore = inspectedExport(5922,"default");
+            if (!userStore) userStore = inspectedExport(1385,"default");
         }
         const userId = props.userId;
         React.useEffect(() => platformSubscribe(userId, () => update(n => n+1)),[presenceStore,sessionsStore,userId]);
@@ -9013,12 +9013,12 @@
         };
         let tokens=null;
         try { const t=typeof global.__r==="function" && global.__r(587); tokens=t && (t.default || t); } catch (_) {}
-        const parts={TableRow:x(6457,"TableRow"),TableRowGroup:nativeRowGroup || x(6542,"TableRowGroup"),TableSwitchRow:nativeSwitchRow || x(7172,"TableSwitchRow"),
-            Stack:x(5477,"Stack"),Card:x(6459,"Card"),FormRow:x(8855,"FormRow"),FormLabel:x(8855,"FormLabel"),FormSubLabel:x(8855,"FormSubLabel"),
-            TextInput:x(6563,"TextInput"),Send:x(5139,"SendMessageIcon"),ActionSheet:x(7175,"ActionSheet"),Header:x(7117,"BottomSheetTitleHeader"),
-            Close:x(7170,"ActionSheetCloseButton"),sheets:x(5155,"default"),showSheet:x(5155,"showActionSheet"),simpleSheet:x(7167,"showSimpleActionSheet"),clipboard:x(7165,"Clipboard"),
-            alerts:x(5400,"default"),toasts:x(4904,"default"),pushModal:x(5072,"pushModal"),popModal:x(5072,"popModal"),OAuth:oauthModal || x(11024,"default"),
-            createStyles:x(5191,"createStyles"),theme:x(4926,"useThemeContext"),colors:tokens && tokens.colors};
+        const parts={TableRow:x(7071,"TableRow"),TableRowGroup:nativeRowGroup || x(7159,"TableRowGroup"),TableSwitchRow:nativeSwitchRow || x(7462,"TableSwitchRow"),
+            Stack:x(6191,"Stack"),Card:x(7073,"Card"),FormRow:x(8279,"FormRow"),FormLabel:x(8279,"FormLabel"),FormSubLabel:x(8279,"FormSubLabel"),
+            TextInput:x(7181,"TextInput"),Send:x(5885,"SendMessageIcon"),ActionSheet:x(7459,"ActionSheet"),Header:x(7415,"BottomSheetTitleHeader"),
+            Close:x(7460,"ActionSheetCloseButton"),sheets:x(5406,"default"),showSheet:x(5406,"showActionSheet"),simpleSheet:x(7456,"showSimpleActionSheet"),clipboard:x(7454,"Clipboard"),
+            alerts:x(6123,"default"),toasts:x(5869,"default"),pushModal:x(5346,"pushModal"),popModal:x(5346,"popModal"),OAuth:oauthModal || x(11063,"default"),
+            createStyles:x(5170,"createStyles"),theme:x(5187,"useThemeContext"),colors:tokens && tokens.colors};
         if (Object.keys(parts).every(key => parts[key] != null)) reviewParts=parts;
         return parts;
     }
@@ -9063,19 +9063,19 @@
         const Group=ui.TableRowGroup || RN.View, Switch=ui.TableSwitchRow;
         const me=currentUser(), myName=me && (me.globalName || me.global_name || me.username);
         const groups=[
-            !on ? offCard("status",venusIcon(9658,"ThumbsUpIcon"), "reviewDB") :
+            !on ? offCard("status",venusIcon(10023,"ThumbsUpIcon"), "reviewDB") :
                 // Signed out, the Sign in row below says it all; signed in, the card shows who you are.
                 authenticated ? statusCard("status","You can read, write, delete and report reviews.",
                     {title:myName ? tr("Signed in as {name}",{name:myName}) : tr("Signed in"),
-                        IconComponent:venusIcon(9658,"ThumbsUpIcon"),leading:me ? avatarBubble(me,40) : null}) : null,
+                        IconComponent:venusIcon(10023,"ThumbsUpIcon"),leading:me ? avatarBubble(me,40) : null}) : null,
             // One row: the action you can take now.
             el(Group,{key:"auth",title:tr("Account")},
-                authenticated ? el(ui.TableRow,{key:"logout",label:tr("Sign out of ReviewDB"),icon:rowIcon(11384,"DoorExitIcon"),variant:"danger",onPress:clearReviewAuth,
+                authenticated ? el(ui.TableRow,{key:"logout",label:tr("Sign out of ReviewDB"),icon:rowIcon(12078,"DoorExitIcon"),variant:"danger",onPress:clearReviewAuth,
                     subLabel:tr("ReviewDB stays in Discord's Authorized Apps until you remove it there.")}) :
-                el(ui.TableRow,{key:"login",label:tr(pending ? "Signing in…" : "Sign in to ReviewDB"),icon:rowIcon(6917,"KeyIcon"),
+                el(ui.TableRow,{key:"login",label:tr(pending ? "Signing in…" : "Sign in to ReviewDB"),icon:rowIcon(7229,"KeyIcon"),
                     arrow:true,disabled:!on || pending,onPress:authenticateReviews,subLabel:reviewAuthError || tr("Needed to post, delete or report reviews. Never uses your Discord token.")})),
             el(Group,{key:"settings",title:tr("Display")},
-                switchRow(Switch,"reviewWarning","Show the be-respectful note","ReviewDB's reminder to be kind, shown above reviews.",rowIcon(10733,"ShieldIcon"))),
+                switchRow(Switch,"reviewWarning","Show the be-respectful note","ReviewDB's reminder to be kind, shown above reviews.",rowIcon(11453,"ShieldIcon"))),
             footnote("note","Reviews come from manti.vendicated.dev. Opening reviews sends that profile's or server's ID to ReviewDB.")];
         return settingsBody(ui,groups);
     }
@@ -9100,7 +9100,7 @@
                 previewMessage(s,"msg","Sam","#eb459e",tr("Today at 4:03 PM"),el(RN.View,null,
                     el(RN.Text,{style:s.text},tr("Oops, wrong chat. Deleting this.")),
                     el(RN.View,{style:{flexDirection:"row",alignItems:"center",gap:4,marginTop:4}},
-                        el(venusIcon(6929,"EyeIcon"),{size:"xxs",color:s.muted.color}),
+                        el(venusIcon(7197,"EyeIcon"),{size:"xxs",color:s.muted.color}),
                         el(RN.Text,{style:[s.muted,{flexShrink:1}]},tr("This message was deleted")+" \u2022 ",el(RN.Text,{style:s.link},tr("Dismiss message")))))))],
             {header:previewHeader(k,{title:"general"}),footer:previewInput(k,s,{placeholder:tr("Message {channel}",{channel:"#general"})})}));
     }
@@ -9120,20 +9120,20 @@
         const kept=deleted.size, changed=edits.size, hasKept=kept>0 || changed>0;
         const summary=hasKept ? tr(settings.noDeleteSave ? "{deleted} and {edited} kept, saved on this phone." : "{deleted} and {edited} kept until Discord restarts.",
             {deleted:count(kept,"deleted message"),edited:count(changed,"edited message")}) : "";
-        const choices=[["noDeleteLogDeleted",tr("Deleted messages"),tr("What they said, who sent them and where."),rowIcon(5148,"TrashIcon"),tr("Deletions")],
-            ["noDeleteLogEdits",tr("Edits"),tr("The text before and after each edit."),rowIcon(10023,"PencilIcon"),tr("Edits")],
-            ["noDeleteLogOwn",tr("Your own messages"),tr("Also log what you delete or edit yourself."),rowIcon(10598,"UserCircleIcon"),tr("Your own")],
-            ["noDeleteLogBots",tr("Bots"),tr("Also log messages from bots and apps."),rowIcon(16003,"PuzzlePieceIcon"),tr("Bots")]];
+        const choices=[["noDeleteLogDeleted",tr("Deleted messages"),tr("What they said, who sent them and where."),rowIcon(5894,"TrashIcon"),tr("Deletions")],
+            ["noDeleteLogEdits",tr("Edits"),tr("The text before and after each edit."),rowIcon(10383,"PencilIcon"),tr("Edits")],
+            ["noDeleteLogOwn",tr("Your own messages"),tr("Also log what you delete or edit yourself."),rowIcon(10956,"UserCircleIcon"),tr("Your own")],
+            ["noDeleteLogBots",tr("Bots"),tr("Also log messages from bots and apps."),rowIcon(19309,"PuzzlePieceIcon"),tr("Bots")]];
         const groups=[
-            !settings.noDelete ? offCard("status",venusIcon(5148,"TrashIcon"), "noDelete") : hasKept ? statusCard("status",summary,{title:pl(kept+changed,"{n} message kept","{n} messages kept"),
-                IconComponent:venusIcon(5148,"TrashIcon")}) : null,
+            !settings.noDelete ? offCard("status",venusIcon(5894,"TrashIcon"), "noDelete") : hasKept ? statusCard("status",summary,{title:pl(kept+changed,"{n} message kept","{n} messages kept"),
+                IconComponent:venusIcon(5894,"TrashIcon")}) : null,
             el(NoDeletePreview,{key:"preview",edits:!!settings.noDeleteEdits,on:!!settings.noDelete}),
             el(Group,{key:"log",title:tr("Log")},
-                logOpenRow(ui,nav,"open",tr("Message log"),logs.messages,rowIcon(5150,"ClockIcon"),on),
+                logOpenRow(ui,nav,"open",tr("Message log"),logs.messages,rowIcon(5896,"ClockIcon"),on),
                 logChoicesRow(ui,"choices","noDelete",choices,on)),
             el(Group,{key:"options",title:tr("In chat")},
-                toggle("noDeleteEdits","Show edit history","What a message said before it was edited, faded and crossed out above it. Up to 10 versions each.",rowIcon(10023,"PencilIcon")),
-                toggle("noDeleteSave","Keep after restarting","Deleted and edited messages survive closing Discord. Saved only on this phone, for this account.",rowIcon(5143,"DownloadIcon"))),
+                toggle("noDeleteEdits","Show edit history","What a message said before it was edited, faded and crossed out above it. Up to 10 versions each.",rowIcon(10383,"PencilIcon")),
+                toggle("noDeleteSave","Keep after restarting","Deleted and edited messages survive closing Discord. Saved only on this phone, for this account.",rowIcon(5889,"DownloadIcon"))),
             el(RN.View,{key:"look",style:{gap:8}},
                 groupTitle("title","Look"),
                 el(RN.View,{style:card},
@@ -9158,7 +9158,7 @@
     }
     // Discord's settings stack, for opening a page from a row inside a page. Looked up once, so every render calls the same hooks.
     function useVenusNav() {
-        if (stackNavigation === undefined) stackNavigation = inspectedExport(1505, "useStackNavigation") || null;
+        if (stackNavigation === undefined) stackNavigation = inspectedExport(1499, "useStackNavigation") || null;
         return stackNavigation ? stackNavigation() : null;
     }
     function openVenusScreen(navigation, screen) {
@@ -9177,12 +9177,12 @@
     function logChoicesRow(ui, key, feature, choices, on) {
         const picked = choices.filter(choice => settings[choice[0]]).map(choice => choice[4]);
         return ui.TableRow ? el(ui.TableRow, {key, label:tr("What to log"), subLabel:picked.length ? picked.join(", ") : tr("Nothing"),
-            icon:rowIcon(12331, "FiltersHorizontalIcon"), arrow:true, disabled:!on, onPress:() => openLogChoices(feature, choices)}) : null;
+            icon:rowIcon(13052, "FiltersHorizontalIcon"), arrow:true, disabled:!on, onPress:() => openLogChoices(feature, choices)}) : null;
     }
     const LOG_CHOICES_SHEET = "VenusLogChoices";
     function LogChoicesSheet(props) {
         useSettings(props.feature);
-        const ui = reviewUI(), Check = inspectedExport(6454, "TableCheckboxRow"), Group = ui.TableRowGroup || RN.View;
+        const ui = reviewUI(), Check = inspectedExport(7070, "TableCheckboxRow"), Group = ui.TableRowGroup || RN.View;
         const flip = key => { haptic("SELECTION"); setSetting(key, !settings[key]); };
         return el(ui.ActionSheet, {header:ui.Header ? el(ui.Header, {title:tr("What to log"),
                 trailing:ui.Close ? el(ui.Close, {onPress:() => hideReviewSheet(ui, LOG_CHOICES_SHEET)}) : undefined}) : undefined},
@@ -9208,7 +9208,7 @@
             quote:Object.assign({}, LOG_DARK.quote, {borderColor:c.BORDER_STRONG}), pressed:{backgroundColor:c.BACKGROUND_MOD_SUBTLE}}), LOG_DARK);
     }
     function logLine(value, variant, color, lines, style) {
-        const Text = inspectedExport(5187, "Text");
+        const Text = inspectedExport(5783, "Text");
         return Text ? el(Text, {variant, color, lineClamp:lines, style}, value) :
             el(RN.Text, {numberOfLines:lines, style:[{color:color === "text-muted" ? "#949ba4" : "#dbdee1", fontSize:/text-xs/.test(variant) ? 12 : /text-sm/.test(variant) ? 14 : 16}, style]}, value);
     }
@@ -9281,12 +9281,12 @@
     }
     function logEntryMenu(log, entry) {
         const ui = reviewUI(), text = entry.x || entry.b || "", options = [];
-        if (text) options.push({label:tr("Copy Text"), IconComponent:venusIcon(5141, "CopyIcon"), onPress:() => {
+        if (text) options.push({label:tr("Copy Text"), IconComponent:venusIcon(5887, "CopyIcon"), onPress:() => {
             try { (ui.clipboard || RN.Clipboard).setString(text); } catch (_) {}
-            reviewToast(ui, "Message copied", venusIcon(5141, "CopyIcon"));
+            reviewToast(ui, "Message copied", venusIcon(5887, "CopyIcon"));
         }});
-        if (entry.c && entry.k !== "s") options.push({label:entry.m ? tr("Go to message") : tr("Go to chat"), IconComponent:venusIcon(10604, "ArrowSmallRightIcon"), onPress:() => logGo(entry)});
-        options.push({label:tr("Remove from log"), IconComponent:venusIcon(5148, "TrashIcon"), isDestructive:true, onPress:() => logRemove(log, entry)});
+        if (entry.c && entry.k !== "s") options.push({label:entry.m ? tr("Go to message") : tr("Go to chat"), IconComponent:venusIcon(10962, "ArrowSmallRightIcon"), onPress:() => logGo(entry)});
+        options.push({label:tr("Remove from log"), IconComponent:venusIcon(5894, "TrashIcon"), isDestructive:true, onPress:() => logRemove(log, entry)});
         const title = entry.u.n;
         if (typeof ui.simpleSheet === "function") try { ui.simpleSheet({key:"VenusLogEntry", header:{title, onClose:() => hideReviewSheet(ui, "VenusLogEntry")}, options}); return; } catch (_) {}
         if (RN.Alert) RN.Alert.alert(title, undefined, options.map(o => ({text:o.label, style:o.isDestructive ? "destructive" : "default", onPress:o.onPress})).concat([{text:tr("Cancel"), style:"cancel"}]));
@@ -9294,11 +9294,11 @@
     // Settings sits on top of the chat (the root "settings" screen openSettings opens), so it's closed first.
     function logGo(entry) {
         try {
-            const ref = inspectedExport(5073, "getRootNavigationRef"), nav = ref && ref();
+            const ref = inspectedExport(5347, "getRootNavigationRef"), nav = ref && ref();
             const state = nav && typeof nav.getRootState === "function" ? nav.getRootState() : null, top = state && state.routes && state.routes[state.index];
             if (top && top.name === "settings" && typeof nav.goBack === "function") nav.goBack();
         } catch (_) {}
-        const go = inspectedExport(1114, "transitionTo");
+        const go = inspectedExport(1099, "transitionTo");
         if (typeof go === "function") later(() => { try { go("/channels/" + (entry.g || "@me") + "/" + entry.c + (entry.m ? "/" + entry.m : "")); } catch (_) {} }, 250);
     }
     function VenusLogPage(props) {
@@ -9308,7 +9308,7 @@
         React.useEffect(() => { logReady(log); }, []);
         const s = useLogStyles(), ui = reviewUI();
         if (!RN) return null;
-        const Group = ui.TableRowGroup || RN.View, SearchField = inspectedExport(7016, "SearchField"), Button = inspectedExport(5479, "Button");
+        const Group = ui.TableRowGroup || RN.View, SearchField = inspectedExport(7315, "SearchBar"), Button = inspectedExport(5790, "Button");
         const choice = props.filters.find(f => f[0] === filter) || props.filters[0], kinds = choice[2];
         const text = typeof query === "string" ? query.trim().toLowerCase() : "", entries = log.entries;
         // Newest first, only as many as are shown: a log of 100,000 entries costs the same to draw as one of 50.
@@ -9340,16 +9340,16 @@
                 Button ? el(Button, {text:tr("Show older"), variant:"secondary", size:"md", onPress:() => setLimit(limit + LOG_PAGE * 2)}) : null) : null,
             entries.length ? el(Group, {key:"manage", title:tr("Manage")},
                 actionRow(ui, "clear", "Clear log", props.clearHint,
-                    () => confirmAction("Clear the log?", "Every entry is removed from this phone. This can't be undone.", "Clear", () => { logClear(log); reviewToast(ui, "Log cleared", venusIcon(5148, "TrashIcon")); }), false, true)) : null,
+                    () => confirmAction("Clear the log?", "Every entry is removed from this phone. This can't be undone.", "Clear", () => { logClear(log); reviewToast(ui, "Log cleared", venusIcon(5894, "TrashIcon")); }), false, true)) : null,
             footnote("note", "Saved only on this phone, for this account. Nothing is uploaded. Tap an entry to copy it, open it or remove it.")];
         return settingsBody(ui, groups, {keyboardShouldPersistTaps:"handled"});
     }
     function MessageLogPage() {
-        return el(VenusLogPage, {log:logs.messages, icon:venusIcon(5150, "ClockIcon"), clearHint:tr("Removes every entry from this phone. Kept messages stay in chat."), empty:tr("Deleted and edited messages show up here as they happen."),
+        return el(VenusLogPage, {log:logs.messages, icon:venusIcon(5896, "ClockIcon"), clearHint:tr("Removes every entry from this phone. Kept messages stay in chat."), empty:tr("Deleted and edited messages show up here as they happen."),
             filters:[["all", tr("All"), null], ["d", tr("Deleted"), ["d"]], ["e", tr("Edited"), ["e"]]]});
     }
     function ActivityLogPage() {
-        return el(VenusLogPage, {log:logs.activity, icon:venusIcon(5150, "ClockIcon"), clearHint:tr("Removes every entry from this phone."), empty:tr("What the people you watch do shows up here as it happens."),
+        return el(VenusLogPage, {log:logs.activity, icon:venusIcon(5896, "ClockIcon"), clearHint:tr("Removes every entry from this phone."), empty:tr("What the people you watch do shows up here as it happens."),
             filters:[["all", tr("All"), null], ["s", tr("Status"), ["s"]], ["m", tr("Messages"), ["m"]], ["t", tr("Typing"), ["t"]]]});
     }
     // Clear kept messages: every kept deletion leaves chat and the saved file, and so does edit history.
@@ -9358,7 +9358,7 @@
         const events=Array.from(deleted.values());
         deleted.clear(); deletedByChannel.clear(); edits.clear(); invalidateDeleted();
         dispatchRemovals(events); persistDeleted(); notify("noDelete");
-        reviewToast(reviewUI(),"Kept messages cleared",venusIcon(5148,"TrashIcon"));
+        reviewToast(reviewUI(),"Kept messages cleared",venusIcon(5894,"TrashIcon"));
     }
     function authenticateReviews() {
         if (!enabled("reviewDB") || reviewAuthState==="exchanging") return;
@@ -9374,7 +9374,7 @@
         function fail(error) {
             if (!live()) return;
             reviewAuthState="idle";reviewAuthError=String(error && error.message || error);notify("reviewDB");
-            reviewToast(ui,tr("Couldn't sign in: {problem}",{problem:reviewAuthError}),venusIcon(6573,"CircleXIcon"));
+            reviewToast(ui,tr("Couldn't sign in: {problem}",{problem:reviewAuthError}),venusIcon(7191,"CircleXIcon"));
         }
         ui.pushModal({key,modal:{key,modal:ui.OAuth,animation:"slide-up",shouldPersistUnderModals:false,closable:true,props:{
             clientId:"915703782174752809",redirectUri:REVIEW_API+"/auth",scopes:["identify"],responseType:"code",permissions:BigInt(0),cancelCompletesFlow:false,
@@ -9393,7 +9393,7 @@
                     if (!live()) return;
                     if (auth.success!==true || typeof auth.token!=="string" || !auth.token.trim() || auth.token.length>8192) throw new Error(auth.message || "ReviewDB did not return a token");
                     reviewToken=auth.token;reviewAccount=accountId;reviewAuthState="idle";reviewAuthError="";reviewCache.clear();
-                    save();notify("reviewDB");reviewToast(ui,"Signed in to ReviewDB",venusIcon(7144,"CircleCheckIcon"));
+                    save();notify("reviewDB");reviewToast(ui,"Signed in to ReviewDB",venusIcon(7434,"CircleCheckIcon"));
                 }).catch(fail);
             }}}});
     }
@@ -9440,12 +9440,12 @@
             RN.Alert.alert(title,content,[{text:tr("No"),style:"cancel"},{text:tr("Yes"),style:"destructive",onPress:onConfirm}]);
         }
         function mutate(path, method, body, done) {
-            reviewRequest(path,method,body).then(result => {reviewCache.delete(owner);refetch();reviewToast(ui,result && result.message || done,venusIcon(7144,"CircleCheckIcon"));},
-                error => reviewToast(ui,String(error && error.message || error),venusIcon(6573,"CircleXIcon")));
+            reviewRequest(path,method,body).then(result => {reviewCache.delete(owner);refetch();reviewToast(ui,result && result.message || done,venusIcon(7434,"CircleCheckIcon"));},
+                error => reviewToast(ui,String(error && error.message || error),venusIcon(7191,"CircleXIcon")));
         }
         const options=[{label:tr("Copy Text"),onPress:() => {
             try { (ui.clipboard || RN.Clipboard).setString(review.comment); } catch (_) {}
-            reviewToast(ui,"Review copied",venusIcon(5141,"CopyIcon"));
+            reviewToast(ui,"Review copied",venusIcon(5887,"CopyIcon"));
         }}];
         if (reviewAuth() && !system) {
             if (sender.discordID===me || owner===me || reviewAdmins.has(me)) options.push({label:tr("Delete review"),isDestructive:true,
@@ -9473,7 +9473,7 @@
         // ReviewDB's be-respectful note is a quiet line above the reviews, not a review of its own.
         if (review.type===3) return el(RN.Pressable,{onLongPress:() => reviewActions(review,props.owner,ui,props.refetch),
             style:{flexDirection:"row",alignItems:"center",gap:8,paddingHorizontal:8,paddingVertical:4}},
-            el(venusIcon(10733,"ShieldIcon"),{size:"xs",color:styles.muted.color}),
+            el(venusIcon(11453,"ShieldIcon"),{size:"xs",color:styles.muted.color}),
             el(RN.Text,{style:[styles.muted,{flex:1,fontSize:13}]},review.comment));
         // Every review is a row of one card, with the reviewer's picture (or first letter) like Discord's own lists.
         return el(ui.FormRow,{label,
@@ -9497,7 +9497,7 @@
         const authenticated=!!reviewAuth(), canSend=authenticated && !busy && text.trim().length>0;
         // Signed out, a button that signs in right here, instead of a box that can't be typed in and points to settings.
         if (!authenticated) {
-            const Button=inspectedExport(5479,"Button"), pending=reviewAuthState==="exchanging", label=tr(pending ? "Signing in…" : "Sign in to write a review");
+            const Button=inspectedExport(5790,"Button"), pending=reviewAuthState==="exchanging", label=tr(pending ? "Signing in…" : "Sign in to write a review");
             return el(RN.View,{style:{paddingHorizontal:8,paddingVertical:4}},Button ?
                 el(Button,{text:label,size:"md",variant:"secondary",disabled:pending,onPress:authenticateReviews}) :
                 el(RN.Pressable,{accessibilityRole:"button",accessibilityLabel:label,disabled:pending,onPress:authenticateReviews,
@@ -9509,8 +9509,8 @@
             if (!canSend || !text.trim()) return;
             setBusy(true);
             reviewRequest("/users/"+props.userId+"/reviews","PUT",{comment:text.trim()}).then(result => {
-                setText("");props.refetch();reviewToast(ui,result && result.message || "Review posted",venusIcon(7144,"CircleCheckIcon"));
-            },error => reviewToast(ui,String(error && error.message || error),venusIcon(6573,"CircleXIcon"))).then(() => setBusy(false));
+                setText("");props.refetch();reviewToast(ui,result && result.message || "Review posted",venusIcon(7434,"CircleCheckIcon"));
+            },error => reviewToast(ui,String(error && error.message || error),venusIcon(7191,"CircleXIcon"))).then(() => setBusy(false));
         }
         const input=ui.TextInput ?
             el(ui.TextInput,{style:[{flex:1,fontSize:16},styles.text],isDisabled:!authenticated,placeholder,placeholderTextColor:styles.placeholder.color,
@@ -9558,7 +9558,7 @@
     }
     // Discord's own small secondary button (Button 5282), or a themed pill if it hasn't loaded.
     function reviewRetry(onPress) {
-        const Button=inspectedExport(5479,"Button");
+        const Button=inspectedExport(5790,"Button");
         if (Button) return el(RN.View,{style:{alignSelf:"flex-start"}},
             el(Button,{text:tr("Retry"),size:"sm",variant:"secondary",accessibilityLabel:tr("Retry reviews"),onPress}));
         return el(RN.Pressable,{accessibilityRole:"button",accessibilityLabel:tr("Retry reviews"),onPress,
@@ -9573,14 +9573,14 @@
     function openReviewSheet(userId) {
         if (!enabled("reviewDB") || !React || !RN || typeof userId!=="string" || !/^\d{17,20}$/.test(userId)) return;
         const ui=reviewUI();
-        if (!ui.ActionSheet || typeof ui.showSheet!=="function") { reviewToast(ui,"Reviews are unavailable. Reopen the server menu and try again.",venusIcon(6573,"CircleXIcon")); return; }
+        if (!ui.ActionSheet || typeof ui.showSheet!=="function") { reviewToast(ui,"Reviews are unavailable. Reopen the server menu and try again.",venusIcon(7191,"CircleXIcon")); return; }
         // 4801's NAMED showActionSheet (HBC fn32121) takes an already-created
         // element, then schedules SHOW_ACTION_SHEET through Dispatcher.wait.
         // Reviews are bundled, not lazy imports: avoid openLazy's detached Promise
         // chain entirely. The inspected store (fn31181) accepts "stack".
         const key="VenusReviews:"+userId;
         try { ui.showSheet({key,content:el(ReviewSheet,{userId,sheetKey:key}),stackingBehavior:"stack"}); }
-        catch (error) { reviewToast(ui,tr("Couldn't open reviews: {problem}",{problem:String(error && error.message || error)}),venusIcon(6573,"CircleXIcon")); }
+        catch (error) { reviewToast(ui,tr("Couldn't open reviews: {problem}",{problem:String(error && error.message || error)}),venusIcon(7191,"CircleXIcon")); }
     }
     // Profiles: reviews go in as the LAST card of the profile card stack
     // (after the note). In 350.8 UserProfileNote (14101) is that last card in the normal, bot,
@@ -9599,7 +9599,7 @@
         React.useEffect(() => {setOpen(false);},[props.guildId]);
         if (!enabled("reviewDB") || !RN || !ui.TableRow) return null;
         return el(RN.View,null,
-            el(ui.TableRowGroup || RN.View,null,el(ui.TableRow,{label:tr("Reviews"),icon:rowIcon(9658,"ThumbsUpIcon"),arrow:!open,
+            el(ui.TableRowGroup || RN.View,null,el(ui.TableRow,{label:tr("Reviews"),icon:rowIcon(10023,"ThumbsUpIcon"),arrow:!open,
                 accessibilityState:{expanded:open},onPress:() => {if (enabled("reviewDB")) setOpen(value => !value);}})),
             open ? el(ReviewSection,{key:props.guildId,userId:props.guildId,standalone:true}) : null);
     }
@@ -9760,7 +9760,7 @@
         const user = userStore && serverCall(userStore, "getUser", snap.ownerId);
         if (!user && !serverInfo.fetched.has(snap.ownerId)) {
             serverInfo.fetched.add(snap.ownerId);
-            const getUser = inspectedExport(8579, "getUser");
+            const getUser = inspectedExport(8856, "getUser");
             if (typeof getUser === "function") Promise.resolve().then(() => getUser(snap.ownerId)).catch(() => {});
         }
         const member = serverCall(serverStore(2128), "getMember", snap.id, snap.ownerId);
@@ -9768,7 +9768,7 @@
             handle:user && user.username ? "@" + user.username : "", status:serverCall(serverStore(5207), "getStatus", snap.ownerId) || null};
     }
     function serverOpenProfile(userId, guildId) {
-        const show = inspectedExport(8577, "default");
+        const show = inspectedExport(8854, "default");
         if (typeof show !== "function" || !userId) return;
         haptic("SELECTION");
         try { show({userId, guildId}); } catch (_) {}
@@ -9777,7 +9777,7 @@
         const ui = reviewUI();
         try { (ui.clipboard || RN.Clipboard).setString(text); } catch (_) { return; }
         haptic("SELECTION");
-        reviewToast(ui, toast, venusIcon(5141, "CopyIcon"));
+        reviewToast(ui, toast, venusIcon(5887, "CopyIcon"));
     }
     // Redraws when any store it reads changes, at most about three times a second (presence changes all the time).
     function useServerStores(guildId) {
@@ -9809,11 +9809,11 @@
             acronym:{backgroundColor:c.BACKGROUND_BRAND || "#5865f2"}}), SERVER_INFO_DARK);
     }
     function serverText(value, variant, color, fallback, extra) {
-        const Text = inspectedExport(5187, "Text");
+        const Text = inspectedExport(5783, "Text");
         return Text ? el(Text, Object.assign({variant, color}, extra), value) : el(RN.Text, Object.assign({style:fallback}, extra), value);
     }
     function serverBoostIcon(level) {
-        return level >= 3 ? venusIcon(14600, "BoostTier3Icon") : level === 2 ? venusIcon(17349, "BoostTier2Icon") : venusIcon(13268, "BoostTier1Icon");
+        return level >= 3 ? venusIcon(15729, "BoostTier3Icon") : level === 2 ? venusIcon(18646, "BoostTier2Icon") : venusIcon(14427, "BoostTier1Icon");
     }
     // The top of the sheet: banner, the server's icon over it, name, badges, description and who's online.
     function serverHero(s, snap) {
@@ -9833,7 +9833,7 @@
                             el(RN.Text, {style:{color:"#ffffff", fontSize:24, fontWeight:"700"}}, serverAcronym(snap.name))))),
                 serverText(snap.name, "heading-xl/bold", "text-strong", {color:"#f2f3f5", fontSize:22, fontWeight:"700"}, {numberOfLines:2, selectable:true}),
                 snap.badges.length ? el(RN.View, {style:{flexDirection:"row", flexWrap:"wrap", gap:6}}, snap.badges.map(label =>
-                    el(RN.View, {key:label, style:s.chip}, el(venusIcon(7144, "CircleCheckIcon"), {size:"xxs"}),
+                    el(RN.View, {key:label, style:s.chip}, el(venusIcon(7434, "CircleCheckIcon"), {size:"xxs"}),
                         serverText(label, "text-xs/semibold", "text-strong", {color:"#f2f3f5", fontSize:12, fontWeight:"600"})))) : null,
                 snap.description ? serverText(snap.description, "text-sm/medium", "text-default", {color:"#dbdee1", fontSize:14}, {selectable:true}) : null,
                 el(RN.View, {style:{flexDirection:"row", flexWrap:"wrap", gap:16}},
@@ -9849,11 +9849,11 @@
             serverText(label, "text-xs/medium", "text-muted", {color:"#949ba4", fontSize:12}, {numberOfLines:1}),
             sub ? serverText(sub, "text-xxs/medium", "text-muted", {color:"#949ba4", fontSize:11}, {numberOfLines:1}) : null);
         const tiles = [
-            snap.channels ? tile("channels", venusIcon(16648, "HashmarkIcon"), snap.channels, tr("Channels"), tr("{text} text, {voice} voice", {text:snap.text, voice:snap.voice})) : null,
-            snap.roles != null ? tile("roles", venusIcon(8895, "ShieldUserIcon"), snap.roles, tr("Roles")) : null,
-            tile("emojis", venusIcon(9252, "ReactionIcon"), snap.emojis, tr("Emojis")),
-            tile("stickers", venusIcon(13217, "StickerIcon"), snap.stickers, tr("Stickers")),
-            snap.events ? tile("events", venusIcon(8952, "CalendarIcon"), snap.events, tr("Events")) : null];
+            snap.channels ? tile("channels", venusIcon(18113, "HashmarkIcon"), snap.channels, tr("Channels"), tr("{text} text, {voice} voice", {text:snap.text, voice:snap.voice})) : null,
+            snap.roles != null ? tile("roles", venusIcon(9172, "ShieldUserIcon"), snap.roles, tr("Roles")) : null,
+            tile("emojis", venusIcon(9566, "ReactionIcon"), snap.emojis, tr("Emojis")),
+            tile("stickers", venusIcon(11206, "StickerIcon"), snap.stickers, tr("Stickers")),
+            snap.events ? tile("events", venusIcon(9228, "CalendarIcon"), snap.events, tr("Events")) : null];
         return el(RN.View, {key:"tiles", style:{flexDirection:"row", flexWrap:"wrap", gap:8}}, tiles.filter(Boolean));
     }
     // Boost level, with a bar to the next one.
@@ -9892,22 +9892,22 @@
             tr(looking ? "Looking for friends\u2026" : "None of your friends are here");
         // Rows you can tap to copy carry Discord's copy icon, so it shows without a note at the bottom.
         const detail = (key, label, value, id, name, onPress) => Row ? el(Row, {key, label:tr(label), subLabel:value, icon:rowIcon(id, name), onPress,
-            trailing:onPress ? el(venusIcon(5141, "CopyIcon"), {size:"sm"}) : undefined}) : null;
+            trailing:onPress ? el(venusIcon(5887, "CopyIcon"), {size:"sm"}) : undefined}) : null;
         const body = [
             serverHero(s, snap),
             serverTiles(s, snap),
             serverBoostCard(s, snap),
             // With friends here, the title counts them and the rows are them; the summary row only stays to say there are none.
             el(Group, {key:"friends", title:friends.length ? friendsTitle : tr("Friends")},
-                !friends.length && Row ? el(Row, {key:"summary", label:friendsTitle, icon:rowIcon(4910, "FriendsIcon"),
+                !friends.length && Row ? el(Row, {key:"summary", label:friendsTitle, icon:rowIcon(5872, "FriendsIcon"),
                     subLabel:!settings.serverInfoFriends ? tr("Only friends Discord has already loaded show here.") : undefined}) : null,
                 shown.map(friendRow),
                 friends.length > 5 && Row ? el(Row, {key:"more", label:all ? tr("Show fewer") : tr("Show all {n}", {n:friends.length}), arrow:!all,
                     onPress:() => { animateLayout(); haptic("SELECTION"); setAll(v => !v); }}) : null),
             owner && Row ? el(Group, {key:"owner", title:tr("Owner")},
                 el(Row, {key:"owner", label:snap.mine ? tr("You own this server") : owner.name || tr("Loading\u2026"), subLabel:snap.mine ? undefined : owner.handle || undefined,
-                    icon:owner.user ? avatarBubble(owner.user, 32, owner.status, ring) : rowIcon(10563, "CrownIcon"), arrow:!snap.mine,
-                    trailing:el(venusIcon(10563, "CrownIcon"), {size:"sm", color:"#f0b232"}),
+                    icon:owner.user ? avatarBubble(owner.user, 32, owner.status, ring) : rowIcon(10921, "CrownIcon"), arrow:!snap.mine,
+                    trailing:el(venusIcon(10921, "CrownIcon"), {size:"sm", color:"#f0b232"}),
                     onPress:snap.mine ? undefined : () => serverOpenProfile(owner.id, guildId)})) : null,
             el(Group, {key:"details", title:tr("Details")},
                 detail("created", "Created", serverDate(snap.created) + " \u00b7 " + serverAge(snap.created), 8952, "CalendarIcon"),
@@ -9920,14 +9920,14 @@
         // Discord's own long sheets (channel picker, forum tags) pass scrollable and scroll with the sheet's
         // BottomSheetScrollView (6584). A plain RN ScrollView fought the sheet's drag: swiping up either scrolled the
         // page or dragged the sheet, and the sheet couldn't be pulled down from the middle of the page.
-        const Scroll = inspectedExport(6584, "BottomSheetScrollView");
+        const Scroll = inspectedExport(5424, "BottomSheetScrollView");
         return Scroll ? el(ui.ActionSheet || RN.View, {header, scrollable:true}, el(Scroll, null, content)) :
             el(ui.ActionSheet || RN.View, {header}, RN.ScrollView ? el(RN.ScrollView, null, content) : content);
     }
     function openServerInfo(guildId) {
         if (!enabled("serverInfo") || !React || !RN || typeof guildId !== "string") return;
         const ui = reviewUI();
-        if (!ui.ActionSheet || typeof ui.showSheet !== "function") { reviewToast(ui, "Server info is unavailable right now.", venusIcon(6573, "CircleXIcon")); return; }
+        if (!ui.ActionSheet || typeof ui.showSheet !== "function") { reviewToast(ui, "Server info is unavailable right now.", venusIcon(7191, "CircleXIcon")); return; }
         const key = "VenusServerInfo:" + guildId;
         try { ui.showSheet({key, content:el(ServerInfoSheet, {guildId, sheetKey:key}), stackingBehavior:"stack"}); } catch (_) {}
     }
@@ -9935,7 +9935,7 @@
     function serverInfoMenu(orig, self, args) {
         const items = orig.apply(self, args), guildId = args[0] == null ? null : String(args[0]);
         if (!enabled("serverInfo") || !Array.isArray(items) || !guildId || !/^\d{17,20}$/.test(guildId)) return items;
-        return items.concat([{IconComponent:venusIcon(5145, "CircleInformationIcon"), label:tr("Server info"), action:() => openServerInfo(guildId)}]);
+        return items.concat([{IconComponent:venusIcon(5891, "CircleInformationIcon"), label:tr("Server info"), action:() => openServerInfo(guildId)}]);
     }
     // Edit servers locally (#114, based on EditServers by mwittrien): your own name and icon for any server, only on this
     // phone. GuildStore (2090) hands out a copy of the server's record with the name and icon swapped, so everywhere Discord
@@ -10103,7 +10103,7 @@
     }
     // Android's picker, then a copy in Discord's own files (keepLocalCopy), so the icon stays when the original is deleted.
     function serverEditPick(guildId) {
-        const pick = inspectedExport(11600, "pick"), keep = inspectedExport(11600, "keepLocalCopy"), types = inspectedExport(11600, "types");
+        const pick = inspectedExport(11264, "pick"), keep = inspectedExport(11264, "keepLocalCopy"), types = inspectedExport(11264, "types");
         if (!files || typeof pick !== "function" || typeof keep !== "function") return Promise.reject(new Error("unreadable"));
         return Promise.resolve().then(() => pick({type:[types && types.images || "image/*"], allowMultiSelection:false, mode:"import"})).then(picked => {
             const file = Array.isArray(picked) ? picked[0] : picked;
@@ -10139,7 +10139,7 @@
             el(RN.View, {style:[box, s.acronym]}, el(RN.Text, {style:{color:"#ffffff", fontSize:Math.round(size * 0.34), fontWeight:"700"}, numberOfLines:1}, serverAcronym(props.name)));
     }
     function serverEditScroll(ui, header, content) {
-        const Scroll = inspectedExport(6584, "BottomSheetScrollView");
+        const Scroll = inspectedExport(5424, "BottomSheetScrollView");
         return Scroll ? el(ui.ActionSheet || RN.View, {header, scrollable:true}, el(Scroll, null, content)) :
             el(ui.ActionSheet || RN.View, {header}, RN.ScrollView ? el(RN.ScrollView, {keyboardShouldPersistTaps:"handled"}, content) : content);
     }
@@ -10158,7 +10158,7 @@
         const header = ui.Header ? el(ui.Header, {title:tr("Edit locally"), trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : undefined;
         if (!real) return el(ui.ActionSheet || RN.View, {header}, el(RN.View, {style:{padding:24}},
             serverText(tr("This server isn't available right now."), "text-md/medium", "text-muted", {color:"#949ba4", fontSize:16})));
-        const Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Button = inspectedExport(5479, "Button");
+        const Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Button = inspectedExport(5790, "Button");
         const draft = {name:serverEditName(name), icon}, realName = real.name || "", shown = draft.name || realName;
         const uri = serverEditIconUri(real, draft, 160), failed = !!uri && broken === uri;
         const changed = draft.name !== saved.name || draft.icon !== saved.icon, edited = !!(saved.name || saved.icon);
@@ -10179,7 +10179,7 @@
             if (!serverEditLink(value)) { showProblem("Couldn't use that link", tr("That isn't a picture link. Picture links start with https://.")); return; }
             animateLayout(); haptic("SELECTION"); setIcon(value); setBroken(""); setLink(null);
         };
-        const commit = next => { serverEditSet(guildId, next); haptic("SELECTION"); reviewToast(ui, next ? "Saved on this phone" : "Back to the real name and icon", venusIcon(7144, "CircleCheckIcon")); close(); };
+        const commit = next => { serverEditSet(guildId, next); haptic("SELECTION"); reviewToast(ui, next ? "Saved on this phone" : "Back to the real name and icon", venusIcon(7434, "CircleCheckIcon")); close(); };
         const button = (key, text, onPress, variant, disabled) => Button ? el(Button, {key, text, size:"lg", variant, disabled:!!disabled, onPress}) :
             el(RN.Pressable || RN.View, {key, onPress:disabled ? undefined : onPress, accessibilityRole:"button", accessibilityLabel:text,
                 style:{height:48, borderRadius:24, alignItems:"center", justifyContent:"center", backgroundColor:variant === "primary" ? "#5865f2" : "#4e5058", opacity:disabled ? 0.5 : 1}},
@@ -10191,7 +10191,7 @@
                 serverText(shown, "heading-lg/bold", "text-strong", {color:"#f2f3f5", fontSize:20, fontWeight:"700", textAlign:"center"}, {numberOfLines:2, style:{textAlign:"center"}}),
                 draft.name && draft.name !== realName ? serverText(tr("Real name: {name}", {name:realName}), "text-sm/medium", "text-muted", {color:"#949ba4", fontSize:14}, {numberOfLines:1}) : null,
                 failed ? serverText(tr("Couldn't load that picture."), "text-sm/semibold", "text-feedback-critical", Object.assign({fontSize:14, fontWeight:"600"}, s.error)) :
-                    el(RN.View, {style:s.chip}, el(venusIcon(8495, "LockIcon"), {size:"xxs"}),
+                    el(RN.View, {style:s.chip}, el(venusIcon(8771, "LockIcon"), {size:"xxs"}),
                         serverText(tr("Only you see this"), "text-xs/semibold", "text-default", {color:"#dbdee1", fontSize:12, fontWeight:"600"}))),
             el(RN.View, {key:"name", style:{gap:8}},
                 groupTitle("nameTitle", "Name"),
@@ -10201,10 +10201,10 @@
             el(RN.View, {key:"icon", style:{gap:8}},
                 el(Group, {key:"iconRows", title:tr("Icon")},
                     Row ? el(Row, {key:"phone", label:tr(busy ? "Opening\u2026" : "Choose from your phone"), subLabel:serverEditFile(icon) ? tr("Using a picture from your phone") : tr("PNG, JPG, WebP or GIF, up to 8 MB."),
-                        icon:rowIcon(11657, "ImagePlusIcon"), arrow:true, disabled:busy, onPress:pickPhone}) : null,
-                    Row ? el(Row, {key:"link", label:tr("Use a link"), subLabel:linkShown || undefined, icon:rowIcon(5137, "LinkIcon"), arrow:link == null,
+                        icon:rowIcon(12314, "ImagePlusIcon"), arrow:true, disabled:busy, onPress:pickPhone}) : null,
+                    Row ? el(Row, {key:"link", label:tr("Use a link"), subLabel:linkShown || undefined, icon:rowIcon(5883, "LinkIcon"), arrow:link == null,
                         onPress:() => { animateLayout(); haptic("SELECTION"); setLink(link == null ? (serverEditLink(icon) ? icon : "") : null); }}) : null,
-                    icon && Row ? el(Row, {key:"real", label:tr("Use the server's icon"), icon:rowIcon(11630, "RefreshIcon"),
+                    icon && Row ? el(Row, {key:"real", label:tr("Use the server's icon"), icon:rowIcon(12423, "RefreshIcon"),
                         onPress:() => { animateLayout(); haptic("SELECTION"); setIcon(""); setBroken(""); setLink(null); }}) : null),
                 link != null ? inputWithButton(ui, "linkInput", {value:link, placeholder:"https://", autoCapitalize:"none", autoCorrect:false, keyboardType:"url",
                     autoFocus:true, returnKeyType:"done", onSubmitEditing:useLink, accessibilityLabel:tr("Use a link")}, text => setLink(String(text || "")), "Use", useLink, !String(link).trim()) : null),
@@ -10250,7 +10250,7 @@
     function serverEditMenu(orig, self, args) {
         const items = orig.apply(self, args), guildId = args[0] == null ? null : String(args[0]);
         if (!enabled("serverEdit") || !Array.isArray(items) || !guildId || !/^\d{17,20}$/.test(guildId)) return items;
-        return items.concat([{IconComponent:venusIcon(10023, "PencilIcon"), label:tr("Edit locally"), action:() => openServerEdit(guildId)}]);
+        return items.concat([{IconComponent:venusIcon(10383, "PencilIcon"), label:tr("Edit locally"), action:() => openServerEdit(guildId)}]);
     }
     // Rewrites a component's props before Discord's own render, through memo and forwardRef wrappers.
     // The change runs inside the render, so it may use hooks, and it always runs, so the hook count never changes.
@@ -10448,7 +10448,7 @@
     // Discord drops a gradient from accounts without Nitro, so for those it's left out of what is sent.
     function nitroThemeStrips(user) { return !!user && enabled("nitroThemes") && !nitroThemeHasNitro(user); }
     function nitroThemeProtoTypes() {
-        const A = inspectedExport(1211, "AppearanceSettings"), C = inspectedExport(1211, "ClientThemeSettings"), U = inspectedExport(1242, "UInt32Value");
+        const A = inspectedExport(1196, "AppearanceSettings"), C = inspectedExport(1196, "ClientThemeSettings"), U = inspectedExport(1227, "UInt32Value");
         return A && C && U && typeof A.create === "function" && typeof C.create === "function" && typeof U.create === "function" ? {A, C, U} : null;
     }
     // A new appearance message: everything the given one had, plus the gradient and theme kept for this account.
@@ -10464,7 +10464,7 @@
         try { return types.A.create(fields); } catch (_) { return null; }
     }
     function nitroThemeSettingsType() {
-        const types = inspectedExport(1097, "UserSettingsTypes");
+        const types = inspectedExport(1082, "UserSettingsTypes");
         return types && typeof types.PRELOADED_USER_SETTINGS === "number" ? types.PRELOADED_USER_SETTINGS : 1;
     }
     // Flux interceptor (Dispatcher 584): runs before every store, so ThemeStore and ClientThemesBackgroundStore only ever
@@ -10489,7 +10489,7 @@
             const appearance = nitroThemeAppearance(proto.appearance, currentUser());
             if (!appearance) return false;
             // Never change the proto object itself: for a local edit it is also what gets sent to Discord.
-            const PreloadedUserSettings = inspectedExport(1211, "PreloadedUserSettings");
+            const PreloadedUserSettings = inspectedExport(1196, "PreloadedUserSettings");
             let copy = null;
             try { copy = PreloadedUserSettings && typeof PreloadedUserSettings.create === "function" ? PreloadedUserSettings.create(Object.assign({}, proto, {appearance})) : null; } catch (_) { copy = null; }
             if (!copy) copy = Object.assign(Object.create(Object.getPrototypeOf(proto)), proto, {appearance});
@@ -10539,10 +10539,10 @@
         const me = currentUser();
         if (!nitroTheme.attached || !me || !nitroThemeKeeps(me) || !nitroThemeEntry(me.id)) return;
         try {
-            const creators = inspectedExport(2049, "PreloadedUserSettingsActionCreators");
+            const creators = inspectedExport(5000, "PreloadedUserSettingsActionCreators");
             const current = creators && typeof creators.getCurrentValue === "function" ? creators.getCurrentValue() : null;
-            const PreloadedUserSettings = inspectedExport(1211, "PreloadedUserSettings");
-            const dispatcher = inspectedExport(584, "default");
+            const PreloadedUserSettings = inspectedExport(1196, "PreloadedUserSettings");
+            const dispatcher = inspectedExport(572, "default");
             if (!current || !PreloadedUserSettings || !dispatcher) return;
             const proto = PreloadedUserSettings.create({appearance:current.appearance});
             dispatcher.dispatch({type:"USER_SETTINGS_PROTO_UPDATE", local:true, partial:true, settings:{type:nitroThemeSettingsType(), proto}});
@@ -10558,7 +10558,7 @@
         if (sharedGradient) nitroTheme.shared = nitroThemeClean({preset:null, theme:nitroTheme.shared.theme});
         save();
         try {
-            const reset = inspectedExport(16220, "resetBackgroundGradientPreset");
+            const reset = inspectedExport(17360, "resetBackgroundGradientPreset");
             if (typeof reset === "function") reset();
         } catch (_) {}
     }
@@ -10569,7 +10569,7 @@
         const me = currentUser();
         let preset = null, theme = null;
         try {
-            const creators = inspectedExport(2049, "PreloadedUserSettingsActionCreators");
+            const creators = inspectedExport(5000, "PreloadedUserSettingsActionCreators");
             const current = creators && typeof creators.getCurrentValue === "function" ? creators.getCurrentValue() : null;
             const appearance = current && current.appearance;
             if (appearance) { preset = nitroThemePresetOf(appearance); theme = typeof appearance.theme === "number" ? appearance.theme : null; }
@@ -10589,7 +10589,7 @@
     function appIconsScreen(orig, self, args) {
         useSettings("appIcons");
         const rendered = orig.apply(self, args);
-        return enabled("appIcons") && React ? withoutAppIconUpsell(rendered, 0, inspectedExport(10081, "default"), inspectedExport(6457, "TableRow") || null) : rendered;
+        return enabled("appIcons") && React ? withoutAppIconUpsell(rendered, 0, inspectedExport(10441, "default"), inspectedExport(7071, "TableRow") || null) : rendered;
     }
     // Remove anything: buttons you never use, removed right where they are. Each removable button is a "spot". Removal mode
     // (hideEdit.on, never saved) marks every spot on screen with a dashed outline and a red X; a tap on the X asks first, then the
@@ -10704,9 +10704,9 @@
     HIDE_SPOTS.forEach(spot => { HIDE_SPOT_KEYS[spot[0]] = spot; });
     // Modules hooked for it (also selected in targetModules).
     const HIDE_HOOKED = {14015:1, 15735:1, 15736:1, 10331:1, 16133:1, 16225:1, 12892:1, 12897:1, 12901:1, 12908:1, 12909:1, 13780:1, 14204:1, 15590:1, 17157:1, 9419:1,
-        15046:1, 8805:1, 9052:1, 10858:1, 12942:1, 14988:1, 14994:1, 14925:1, 14998:1,
-        11678:1, 11679:1, 14197:1, 10939:1, 7158:1, 14182:1, 14101:1, 17156:1, 17263:1,
-        13151:1, 12000:1, 10838:1, 17949:1, 16773:1, 17265:1, 17881:1, 17869:1, 11164:1, 9978:1, 13759:1};
+        16199:1, 8805:1, 9052:1, 10858:1, 12942:1, 14988:1, 14994:1, 14925:1, 14998:1,
+        12374:1, 11679:1, 14197:1, 10939:1, 7158:1, 14182:1, 14101:1, 17156:1, 17263:1,
+        14312:1, 12000:1, 10838:1, 17949:1, 16773:1, 17265:1, 17881:1, 17869:1, 11164:1, 9978:1, 13759:1};
     const hideEdit = {on:false, top:false, last:null};
     // Labels of the profile menu's removable items while removal mode draws them (ContextMenuItem only gets the label).
     const hideMenuLabels = new Map();
@@ -10794,7 +10794,7 @@
         const name = hideSpotTitle(key), title = tr("Remove this button?");
         const body = tr("{name} disappears right away. You can bring it back any time in Venus, under Remove anything.", {name});
         const confirm = () => { setSpotHidden(key, true); haptic("IMPACT_MEDIUM"); };
-        const alerts = inspectedExport(5400, "default");
+        const alerts = inspectedExport(6123, "default");
         if (alerts && typeof alerts.show === "function") {
             try { alerts.show({title, body, confirmText:tr("Remove"), cancelText:tr("Cancel"), onConfirm:confirm}); return; } catch (_) {}
         }
@@ -10817,7 +10817,7 @@
             backgroundColor:"#f23f43", borderWidth:2, borderColor:"#ffffff", elevation:6}};
     // The red X on its own: the one place a tap asks to remove the spot. before() runs first (the profile menu closes itself).
     function HideBadge(props) {
-        const Press = RN.Pressable || RN.TouchableOpacity || RN.View, X = inspectedExport(10806, "XSmallBoldIcon");
+        const Press = RN.Pressable || RN.TouchableOpacity || RN.View, X = inspectedExport(11532, "XSmallBoldIcon");
         const ask = () => { if (props.before) try { props.before(); } catch (_) {} askRemoveSpot(props.spot); };
         return el(Press, {style:props.style, onPress:ask, hitSlop:{top:12, bottom:12, left:12, right:12}, accessibilityRole:"button",
             accessibilityLabel:tr("Remove: {name}", {name:hideSpotTitle(props.spot)})},
@@ -10882,13 +10882,13 @@
     // Discord's Settings list (SettingsList 15733) reads its rows through toSettingListItems (15736) and redraws when its
     // blocklist (SettingBlocklistStore 15601) changes, so removed rows are left out there and a fresh blocklist redraws it.
     function settingTitle(key) {
-        try { const get = inspectedExport(15600, "getCachedSettingTitle"), title = typeof get === "function" ? get(key) : null; if (typeof title === "string" && title) return title; } catch (_) {}
+        try { const get = inspectedExport(16781, "getCachedSettingTitle"), title = typeof get === "function" ? get(key) : null; if (typeof title === "string" && title) return title; } catch (_) {}
         const words = key.replace(/^VENUS_/, "").replace(/_ROW$/, "").toLowerCase().replace(/_/g, " ");
         return words.charAt(0).toUpperCase() + words.slice(1);
     }
     function pokeSettingsList() {
         try {
-            const store = inspectedExport(15601, "default"), state = store && typeof store.getState === "function" ? store.getState() : null;
+            const store = inspectedExport(16782, "default"), state = store && typeof store.getState === "function" ? store.getState() : null;
             if (state && typeof store.setState === "function") store.setState({blocklist:new Set(state.blocklist || [])});
         } catch (_) {}
     }
@@ -10964,7 +10964,7 @@
         if (spotHidden("profile.more")) return null;
         const edit = hideEditing();
         if (!edit && !settings.hideAnythingSpots) return rendered;
-        const Menu = inspectedExport(9662, "ContextMenu");
+        const Menu = inspectedExport(10029, "ContextMenu");
         if (!Menu) return rendered;
         const labels = profileMenuLabels();
         if (edit) hideMenuLabels.clear();
@@ -11099,8 +11099,8 @@
     // IconButton), and Add Friend is the FriendRequestButton, the one element given a ButtonComponent.
     function profileSpot(node) {
         const props = node.props, icon = props.icon, type = icon && typeof icon === "object" ? icon.type : null;
-        if (type && type === inspectedExport(9621, "PhoneCallIcon")) return "profile.call";
-        if (type && type === inspectedExport(8471, "ChatIcon")) return "profile.message";
+        if (type && type === inspectedExport(9986, "PhoneCallIcon")) return "profile.call";
+        if (type && type === inspectedExport(8747, "ChatIcon")) return "profile.message";
         return props.ButtonComponent && props.user && "hasCustomProfileTheme" in props ? "profile.addFriend" : null;
     }
     // The Messages tab header (MessagesHeader 17157): search and new message are IconButtons (new message's icon is
@@ -11108,12 +11108,12 @@
     function messagesSpot(node) {
         const type = node.type;
         if (!type || typeof type === "string") return null;
-        if (type === inspectedExport(7840, "IconButton")) {
+        if (type === inspectedExport(8131, "IconButton")) {
             const icon = node.props.icon;
-            return icon && typeof icon === "object" && icon.type === inspectedExport(10621, "PlusLargeIcon") ? "messages.newDM" : "messages.search";
+            return icon && typeof icon === "object" && icon.type === inspectedExport(10979, "PlusLargeIcon") ? "messages.newDM" : "messages.search";
         }
-        if (type === inspectedExport(5479, "Button")) return "messages.addFriend";
-        if (type === inspectedExport(17158, "default")) return "messages.requests";
+        if (type === inspectedExport(5790, "Button")) return "messages.addFriend";
+        if (type === inspectedExport(18458, "default")) return "messages.requests";
         return null;
     }
     // The message bar's actions (ChatInputActions 12892) hold the attach button next to Apps and gift/thread, which are
@@ -11122,15 +11122,15 @@
     function chatAttachSpot(node) {
         const type = node.type;
         if (!type || typeof type === "string") return null;
-        if (type === inspectedExport(9662, "ContextMenu")) return "chat.attach";
+        if (type === inspectedExport(10029, "ContextMenu")) return "chat.attach";
         const Icon = node.props.IconComponent;
-        return Icon && (Icon === inspectedExport(12895, "MediaKeyboardButtonIcon") || Icon === inspectedExport(8487, "ImageIcon")) ? "chat.attach" : null;
+        return Icon && (Icon === inspectedExport(14065, "MediaKeyboardButtonIcon") || Icon === inspectedExport(8763, "ImageIcon")) ? "chat.attach" : null;
     }
     // Your profile's floating pill (YouBannerDecorations 9419) keys its buttons by name, like Hide extra buttons reads them.
     function youSpot(node) { const k = node.key; return k === "quests" || k === "shop" || k === "nitro" ? "you." + k : null; }
     // The ⋯ menu's rows are drawn by ContextMenuItem (14279), which only gets each item's label: the ones profileMenu marked
     // get the dashed outline and the X. Tapping the X closes the menu first, so the "Remove this button?" alert is on top.
-    function closeContextMenu() { try { const hide = inspectedExport(9663, "hideContextMenu"); if (typeof hide === "function") hide(); } catch (_) {} }
+    function closeContextMenu() { try { const hide = inspectedExport(10030, "hideContextMenu"); if (typeof hide === "function") hide(); } catch (_) {} }
     // Every row of every context menu renders through this: (props) and (props, ref) calls skip the arguments object and
     // apply (Hermes HBC98: 38.1 -> 20.5 us per 100 rows, 1.86x).
     function menuItemMarked(rendered, props) {
@@ -11193,7 +11193,7 @@
     // Message requests (MessageRequestsButton 17158) only draws while there are some, so the header counts them too.
     function messageRequestCount() {
         try {
-            const a = inspectedExport(6333, "default"), b = inspectedExport(6334, "default");
+            const a = inspectedExport(6944, "default"), b = inspectedExport(6945, "default");
             return (a && typeof a.getMessageRequestsCount === "function" ? a.getMessageRequestsCount() || 0 : 0) +
                 (b && typeof b.getSpamChannelsCount === "function" ? b.getSpamChannelsCount() || 0 : 0);
         } catch (_) { return 0; }
@@ -11201,7 +11201,7 @@
     function useMessageRequestCount() {
         const [count, setCount] = React.useState(messageRequestCount);
         React.useEffect(() => {
-            const stores = [inspectedExport(6333, "default"), inspectedExport(6334, "default")].filter(store => store && typeof store.addChangeListener === "function");
+            const stores = [inspectedExport(6944, "default"), inspectedExport(6945, "default")].filter(store => store && typeof store.addChangeListener === "function");
             const update = () => setCount(messageRequestCount());
             stores.forEach(store => store.addChangeListener(update));
             update();
@@ -11229,7 +11229,7 @@
         if (!specs || typeof specs !== "object" || typeof specs.headerSize !== "number" || !enabled("hideAnything") || !messagesHeaderEmpty(count)) return specs;
         let entry = specsCache.get(specs);
         if (!entry) {
-            const button = inspectedExport(5484, "SMALL_BUTTON_HEIGHT"), row = typeof button === "number" ? button : 32;
+            const button = inspectedExport(5796, "SMALL_BUTTON_HEIGHT"), row = typeof button === "number" ? button : 32;
             entry = Object.assign({}, specs, {headerSize:Math.max(0, specs.headerSize - row)});
             if (typeof specs.listTop === "number") entry.listTop = Math.max(0, specs.listTop - row);
             specsCache.set(specs, entry);
@@ -11245,7 +11245,7 @@
         if (typeof height !== "number" || !enabled("hideAnything") || !serverHeaderEmpty()) return height;
         // Only real servers have the row (not Favorites).
         if (!guild || typeof guild.id !== "string" || !/^\d{15,}$/.test(guild.id)) return height;
-        const button = inspectedExport(5484, "SMALL_BUTTON_HEIGHT"), margin = inspectedExport(11895, "SEARCH_BAR_MARGIN_BOTTOM");
+        const button = inspectedExport(5796, "SMALL_BUTTON_HEIGHT"), margin = inspectedExport(5914, "SEARCH_BAR_MARGIN_BOTTOM");
         return Math.max(0, height - (typeof button === "number" ? button : 32) - (typeof margin === "number" ? margin : 0));
     }
     function guildHeaderHeight(orig, self, args) {
@@ -11271,7 +11271,7 @@
     function joinDateSpot(node) {
         const props = node.props, icon = props.icon;
         if (!icon || typeof icon !== "object" || !("themeType" in props) || !("accessibilityLabel" in props)) return null;
-        if (icon.type && icon.type === inspectedExport(10475, "ClydeIcon")) return "profile.discordJoined";
+        if (icon.type && icon.type === inspectedExport(10836, "ClydeIcon")) return "profile.discordJoined";
         return icon.props && "guild" in icon.props ? "profile.serverJoined" : null;
     }
     function isBullet(node) { return !!node && !!node.props && node.props.accessibilityElementsHidden === true && typeof node.props.children === "string" && node.props.children.trim().length <= 2; }
@@ -11386,8 +11386,8 @@
     function serverHeaderSpot(node) {
         const type = node.type, props = node.props;
         if (!type || typeof type === "string") return null;
-        if (type === inspectedExport(7840, "IconButton")) return "onPressDisabled" in props ? "server.invite" : "server.events";
-        if (type === inspectedExport(5479, "Button")) return "server.search";
+        if (type === inspectedExport(8131, "IconButton")) return "onPressDisabled" in props ? "server.invite" : "server.events";
+        if (type === inspectedExport(5790, "Button")) return "server.search";
         return typeof props.onPressIn === "function" && typeof props.onPressOut === "function" ? "server.search" : null;
     }
     // GuildSearchAndInvite's default is a memo of a connector that only draws the module's own (local) GuildSearchAndInvite,
@@ -11426,9 +11426,9 @@
     // Boost, Invite and Notifications (GuildActionSheetTabItems 14994) are IconButtons: Boost by its gem icon (its label can be
     // a count), the others by Discord's own label.
     function guildTabSpot(node) {
-        if (node.type !== inspectedExport(7840, "IconButton")) return null;
+        if (node.type !== inspectedExport(8131, "IconButton")) return null;
         const icon = node.props.icon, label = node.props.label;
-        if (icon && typeof icon === "object" && icon.type && icon.type === inspectedExport(9709, "BoostGemIcon")) return "guild.boost";
+        if (icon && typeof icon === "object" && icon.type && icon.type === inspectedExport(10075, "BoostGemIcon")) return "guild.boost";
         if (typeof label !== "string" || !label) return null;
         // One probe lookup per button instead of up to three intl lookups; the table is rebuilt only when Discord's language
         // changes, and the first entry wins like the old ternary chain (Hermes HBC98 6.10 -> 4.39 us per 6 buttons, 1.39x).
@@ -11587,7 +11587,7 @@
         if (!out || !React || !enabled("hideAnything")) return out;
         const edit = hideEditing();
         if (!edit && !spotHidden("server.memberCount") && !spotHidden("server.community")) return out;
-        const Text = inspectedExport(5187, "Text"), community = discordText("1g9A/f");
+        const Text = inspectedExport(5783, "Text"), community = discordText("1g9A/f");
         return Text && community ? stickySubheader(out, 0, Text, community, edit) : out;
     }
     // A channel's details (ChannelDetailsNavigationBar 17881): its TransitionGroup draws NavigationHeader through renderItem,
@@ -11761,51 +11761,51 @@
     function hideAnythingHooks(id, exports) {
         if (!exports) return exports;
         switch (id) {
-            case 12892: return hookComponent(exports, hideTree(chatAttachSpot));
-            case 12897: return hookComponent(exports, hideWhole("chat.apps"));
-            case 12901: return hookComponent(exports, hideWhole("chat.gift"));
-            case 12909: return hookComponent(exports, hideWhole("chat.voice"));
-            case 12908: return exports.default ? replaceValue(exports, "default", propsComponent(exports.default, withoutVoiceButton)) : exports;
-            case 13780: return hookComponent(exports, hideTree(dmSpot));
-            case 14204: return hookComponent(exports, hideTree(profileSpot));
-            case 17157: return hookComponent(exports, hideTree(messagesSpot, messagesGone));
-            case 17156: return hookExport(exports, "default", messagesSpecs);
-            case 17263: return hookExport(exports, "useRedesignGuildHeaderHeight", guildHeaderHeight);
-            case 11678: return hookComponent(exports, profileTabsBar, "Tabs");
-            case 11679: return hookComponent(exports, segmentedItemMark, "TabItem");
-            case 14197: return hookComponent(exports, hideWhole("profile.mutuals"));
-            case 10939: return hookComponent(exports, aboutMeCard);
-            case 7158: return hookComponent(exports, rolesCard);
-            case 14182: return hookComponent(exports, hideWhole("profile.connections"), "UserProfileAccountConnectionsCard");
-            case 14101: return hookComponent(exports, noteSpot);
-            case 9419: return hookComponent(exports, hideTree(youSpot));
-            case 15590: return hookComponent(exports, appWithHideBar);
-            case 14015: return hookComponent(exports, profileMenu);
-            case 15735: return hookExport(exports, "renderSettingItem", settingItemMark);
-            case 15736: return hookExport(exports, "toSettingListItems", settingListItems);
-            case 10331: return exports.default ? replaceValue(exports, "default", propsComponent(exports.default, attachMenuSpots)) : exports;
-            case 15046: return hookComponent(exports, menuItemMark, "ContextMenuItem");
-            case 8805: return hookExport(exports, "useSegmentedControlState", segmentedState);
-            case 9052: return hookComponent(exports, segmentedItemMark, "SegmentedControlItem");
-            case 10858: return hookComponent(exports, primaryInfo);
-            case 12942: return hookComponent(exports, serverHeaderOuter);
-            case 14988: return hookComponent(exports, hideTree(guildHeaderSpot));
-            case 14994: return hookComponent(exports, hideTree(guildTabSpot));
-            case 14925: return hookComponent(hookComponent(exports, hideTree(guildRowSpot), "GuildUnreadAction"), hideTree(guildRowSpot), "GuildActionSheetSecondaryActions");
-            case 14998: return hookComponent(exports, hideWhole("guild.emoji"));
-            case 13151: return hookComponent(exports, chatBeginning);
-            case 12000: return hookComponent(exports, hideWhole("chat.emoji"));
-            case 10838: return hookComponent(exports, statusBubble);
-            case 17949: return hookComponent(exports, hideWhole("you.friends"));
-            case 16773: return hookComponent(exports, hideWhole("you.orbs"));
-            case 17265: return hookComponent(exports, channelStickyHeader);
-            case 17881: return hookComponent(exports, detailsBar);
-            case 17869: return hookExport(exports, "useSearchSegmentedControlState", searchTabsState);
-            case 11164: return hookExport(exports, "default", memberListAction);
-            case 9978: return hookComponent(exports, messageMenu);
-            case 13759: return hookComponent(exports, quickReactions);
-            case 16133: return hideQuestHooks(exports);
-            case 16225: return hideQuestDock(exports);
+            case 14062: return hookComponent(exports, hideTree(chatAttachSpot));
+            case 14066: return hookComponent(exports, hideWhole("chat.apps"));
+            case 14070: return hookComponent(exports, hideWhole("chat.gift"));
+            case 14079: return hookComponent(exports, hideWhole("chat.voice"));
+            case 14078: return exports.default ? replaceValue(exports, "default", propsComponent(exports.default, withoutVoiceButton)) : exports;
+            case 14832: return hookComponent(exports, hideTree(dmSpot));
+            case 15316: return hookComponent(exports, hideTree(profileSpot));
+            case 18457: return hookComponent(exports, hideTree(messagesSpot, messagesGone));
+            case 18456: return hookExport(exports, "default", messagesSpecs);
+            case 18561: return hookExport(exports, "useRedesignGuildHeaderHeight", guildHeaderHeight);
+            case 12374: return hookComponent(exports, profileTabsBar, "Tabs");
+            case 12375: return hookComponent(exports, segmentedItemMark, "TabItem");
+            case 15309: return hookComponent(exports, hideWhole("profile.mutuals"));
+            case 11669: return hookComponent(exports, aboutMeCard);
+            case 7448: return hookComponent(exports, rolesCard);
+            case 15290: return hookComponent(exports, hideWhole("profile.connections"), "UserProfileAccountConnectionsCard");
+            case 15171: return hookComponent(exports, noteSpot);
+            case 9745: return hookComponent(exports, hideTree(youSpot));
+            case 16759: return hookComponent(exports, appWithHideBar);
+            case 15076: return hookComponent(exports, profileMenu);
+            case 16939: return hookExport(exports, "renderSettingItem", settingItemMark);
+            case 16940: return hookExport(exports, "toSettingListItems", settingListItems);
+            case 10690: return exports.default ? replaceValue(exports, "default", propsComponent(exports.default, attachMenuSpots)) : exports;
+            case 16199: return hookComponent(exports, menuItemMark, "ContextMenuItem");
+            case 9092: return hookExport(exports, "useSegmentedControlState", segmentedState);
+            case 9328: return hookComponent(exports, segmentedItemMark, "SegmentedControlItem");
+            case 11586: return hookComponent(exports, primaryInfo);
+            case 14111: return hookComponent(exports, serverHeaderOuter);
+            case 16139: return hookComponent(exports, hideTree(guildHeaderSpot));
+            case 16145: return hookComponent(exports, hideTree(guildTabSpot));
+            case 16075: return hookComponent(hookComponent(exports, hideTree(guildRowSpot), "GuildUnreadAction"), hideTree(guildRowSpot), "GuildActionSheetSecondaryActions");
+            case 16149: return hookComponent(exports, hideWhole("guild.emoji"));
+            case 14312: return hookComponent(exports, chatBeginning);
+            case 12741: return hookComponent(exports, hideWhole("chat.emoji"));
+            case 11569: return hookComponent(exports, statusBubble);
+            case 19290: return hookComponent(exports, hideWhole("you.friends"));
+            case 18065: return hookComponent(exports, hideWhole("you.orbs"));
+            case 18563: return hookComponent(exports, channelStickyHeader);
+            case 19204: return hookComponent(exports, detailsBar);
+            case 19192: return hookExport(exports, "useSearchSegmentedControlState", searchTabsState);
+            case 11812: return hookExport(exports, "default", memberListAction);
+            case 10340: return hookComponent(exports, messageMenu);
+            case 14805: return hookComponent(exports, quickReactions);
+            case 17422: return hideQuestHooks(exports);
+            case 17511: return hideQuestDock(exports);
         }
         return exports;
     }
@@ -11814,7 +11814,7 @@
         haptic("SELECTION");
         setHideEdit(true);
         try {
-            const ref = inspectedExport(5073, "getRootNavigationRef"), nav = ref && ref();
+            const ref = inspectedExport(5347, "getRootNavigationRef"), nav = ref && ref();
             const state = nav && typeof nav.getRootState === "function" ? nav.getRootState() : null, route = state && state.routes && state.routes[state.index];
             if (route && /settings/i.test(String(route.name))) nav.dispatch({type:"POP", payload:{count:1}, target:state.key});
         } catch (_) {}
@@ -11824,7 +11824,7 @@
     function HideAnythingHero(props) {
         const s = useThemed("hideHero", c => ({card:Object.assign({}, HIDE_HERO_DARK.card, {backgroundColor:c.CARD_BACKGROUND_DEFAULT}),
             badge:HIDE_HERO_DARK.badge, icon:HIDE_HERO_DARK.icon}), HIDE_HERO_DARK);
-        const Text = inspectedExport(5187, "Text"), Button = inspectedExport(5479, "Button"), X = venusIcon(10561, "XLargeIcon"), editing = hideEditing();
+        const Text = inspectedExport(5783, "Text"), Button = inspectedExport(5790, "Button"), X = venusIcon(10919, "XLargeIcon"), editing = hideEditing();
         const line = (value, variant, color, fallback) => Text ? el(Text, {variant, color}, value) : el(RN.Text, {style:fallback}, value);
         const press = editing ? () => { haptic("SELECTION"); setHideEdit(false); } : startRemoving;
         const label = editing ? tr("Stop removing") : tr("Start removing");
@@ -11842,18 +11842,18 @@
         useSettings("hideAnything");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("hideAnything"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Row = ui.TableRow, Button = inspectedExport(5479, "Button");
+        const on = enabled("hideAnything"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Row = ui.TableRow, Button = inspectedExport(5790, "Button");
         const hidden = hiddenSpots(), removed = HIDE_SPOTS.filter(spot => hidden.has(spot[0])).concat(Array.from(hidden).filter(key => !HIDE_SPOT_KEYS[key])
             .map(key => [key, /^settings\./.test(key) ? "settings" : "options", 7368, "SettingsIcon"]));
         const icon = spot => rowIcon(spot[2], spot[3]);
         const groups = [
-            on ? null : offCard("status", venusIcon(10561, "XLargeIcon"), "hideAnything"),
+            on ? null : offCard("status", venusIcon(10919, "XLargeIcon"), "hideAnything"),
             el(HideAnythingHero, {key:"hero", on}),
             removed.length && Row ? el(Group, {key:"removed", title:pl(removed.length, "{n} button removed", "{n} buttons removed")},
                 removed.map(spot => el(Row, {key:spot[0], label:hideSpotTitle(spot[0]), subLabel:hidePlaceTitle(spot[1]), icon:icon(spot), disabled:!on,
                     trailing:Button ? el(Button, {text:tr("Bring back"), size:"sm", variant:"secondary", disabled:!on, onPress:() => { haptic("SELECTION"); setSpotHidden(spot[0], false); }}) : undefined,
                     onPress:() => { haptic("SELECTION"); setSpotHidden(spot[0], false); }})).concat(removed.length > 1 ? [el(Row, {key:"all", label:tr("Bring everything back"),
-                    icon:rowIcon(12093, "UndoIcon"), disabled:!on, onPress:restoreAllSpots})] : [])) : null]
+                    icon:rowIcon(12381, "UndoIcon"), disabled:!on, onPress:restoreAllSpots})] : [])) : null]
             .concat(HIDE_PLACES.map(place => el(Group, {key:"place:" + place, title:hidePlaceTitle(place)},
                 HIDE_SPOTS.filter(spot => spot[1] === place).map(spot => Switch ? el(Switch, {key:spot[0], label:hideSpotTitle(spot[0]), icon:icon(spot),
                     value:hidden.has(spot[0]), disabled:!on, onValueChange:value => setSpotHidden(spot[0], value)}) : null))))
@@ -11864,7 +11864,7 @@
     let noQuestDock = null;
     function questDockHidden() { useSettings("hideAnything"); return spotHidden("you.questBanner"); }
     function hideQuestHooks(exports) {
-        const types = inspectedExport(6235, "AdCreativeType");
+        const types = inspectedExport(6876, "AdCreativeType");
         if (!types || types.NO_FILL === undefined) return exports;
         noQuestDock = Object.freeze({type:types.NO_FILL});
         // These hooks take no argument and run on every render of the dock: the no-argument call skips the arguments
@@ -12104,7 +12104,7 @@
         valid.queued.delete(id);
         if (valid.tried.size >= 5000) valid.tried.delete(valid.tried.values().next().value);
         valid.tried.add(id);
-        const getUser = inspectedExport(8579, "getUser");
+        const getUser = inspectedExport(8856, "getUser");
         let wait = 400;
         Promise.resolve().then(() => {
             if (knownUser(id)) return;
@@ -12172,7 +12172,7 @@
     const BACKGROUND_SERVICE_KEY = "venus-background";
     const bgKeepAlive = {active:false, title:"", content:"", socketHooked:false, pauseHooked:false, fg:null, setIsPaused:null};
     function isAppActive() {
-        const store = inspectedExport(2001, "default");
+        const store = inspectedExport(2117, "default");
         try {
             if (store && typeof store.getState === "function") return store.getState() === "active";
         } catch (_) {}
@@ -12196,10 +12196,10 @@
     function unpauseGateway() {
         let fn = bgKeepAlive.setIsPaused;
         if (typeof fn !== "function") {
-            const named = inspectedExport(14748, "setIsPaused");
+            const named = inspectedExport(15878, "setIsPaused");
             if (typeof named === "function") fn = named;
             else {
-                const def = inspectedExport(14748, "default");
+                const def = inspectedExport(15878, "default");
                 if (def && typeof def.setIsPaused === "function") fn = def.setIsPaused.bind(def);
             }
         }
@@ -12211,7 +12211,7 @@
         const pushListening = !!(settings.userNotifPush && userNotifHasTargets()) || removedPushing();
         const needed = questBusy || badgeBusy || pushListening;
         if (needed) unpauseGateway();
-        const fg = bgKeepAlive.fg || inspectedExport(10002, "default");
+        const fg = bgKeepAlive.fg || inspectedExport(10362, "default");
         if (!needed) {
             if (!bgKeepAlive.active) return;
             bgKeepAlive.active = false; bgKeepAlive.title = ""; bgKeepAlive.content = "";
@@ -12275,7 +12275,7 @@
     // NativeModules. Looking it up there found nothing and every check reported "allowed", even with
     // Android's notifications switched off for Discord, so the pushes were lost without any warning.
     function userNotifNativePerm() {
-        const turbo = inspectedExport(7772, "default");
+        const turbo = inspectedExport(8065, "default");
         if (turbo && typeof turbo.getNotificationAuthorizationStatus === "function") return turbo;
         const native = RN && RN.NativeModules;
         return native && (native.NativePermissionManagerModule || native.NativePermissionManager) || null;
@@ -12307,7 +12307,7 @@
         return Promise.resolve(true);
     }
     function userNotifRequestPermissions(showFeedback) {
-        const ui = reviewUI(), pushMod = inspectedExport(11028, "default"), perm = userNotifNativePerm();
+        const ui = reviewUI(), pushMod = inspectedExport(11072, "default"), perm = userNotifNativePerm();
         const openSystemSettings = () => {
             try { if (pushMod && typeof pushMod.openNotificationSettings === "function") { pushMod.openNotificationSettings(); return; } } catch (_) {}
             try { if (perm && typeof perm.openSettings === "function") perm.openSettings(); } catch (_) {}
@@ -12320,7 +12320,7 @@
         };
         const checkStatus = () => userNotifCheckPermissions().then(ok => {
             if (!ok) askEnableInSystem();
-            else if (showFeedback) reviewToast(ui, "Notification permission granted", venusIcon(7144,"CircleCheckIcon"));
+            else if (showFeedback) reviewToast(ui, "Notification permission granted", venusIcon(7434,"CircleCheckIcon"));
             return ok;
         });
         if (perm && typeof perm.requestNotificationAuthorization === "function") {
@@ -12333,7 +12333,7 @@
                 const granted = !res || res === "granted" || (permsAndroid.RESULTS && res === permsAndroid.RESULTS.GRANTED);
                 userNotif.permissionGranted = granted; notify("userNotif");
                 if (!granted) askEnableInSystem();
-                else if (showFeedback) reviewToast(ui, "Notification permission granted", venusIcon(7144,"CircleCheckIcon"));
+                else if (showFeedback) reviewToast(ui, "Notification permission granted", venusIcon(7434,"CircleCheckIcon"));
                 return granted;
             }, () => checkStatus());
         }
@@ -12345,7 +12345,7 @@
     // one silently replaced the one before it. A unique message_id inside userInfo keeps them all.
     let pushCounter = 0;
     function venusPush(title, body) {
-        const pushMod = inspectedExport(11028, "default");
+        const pushMod = inspectedExport(11072, "default");
         if (!pushMod || typeof pushMod.presentLocalNotification !== "function") return false;
         const mid = "venus-" + Date.now().toString(36) + "-" + (++pushCounter);
         try {
@@ -12358,14 +12358,14 @@
         venusPush(title || tr("Activity notifications"), content);
     }
     function userNotifFriendIds() {
-        const store = userNotif.relationships || (userNotif.relationships = inspectedExport(4855, "default"));
+        const store = userNotif.relationships || (userNotif.relationships = inspectedExport(5112, "default"));
         try {
             const list = store && typeof store.getFriendIDs === "function" ? store.getFriendIDs() : null;
             return Array.isArray(list) ? list.filter(id => typeof id === "string" && /^\d{17,20}$/.test(id)) : [];
         } catch (_) { return []; }
     }
     function userNotifIsFriend(id) {
-        const store = userNotif.relationships || (userNotif.relationships = inspectedExport(4855, "default"));
+        const store = userNotif.relationships || (userNotif.relationships = inspectedExport(5112, "default"));
         try {
             if (store && typeof store.isFriend === "function") return !!store.isFriend(id);
             if (store && typeof store.getFriendIDs === "function") {
@@ -12385,7 +12385,7 @@
     // The chat you're looking at right now, while Discord is open: its messages and typing are already on screen.
     function userNotifInView(channelId) {
         if (!channelId || !isAppActive()) return false;
-        const store = inspectedExport(2119, "default");
+        const store = inspectedExport(5073, "default");
         try {
             const current = store && (typeof store.getCurrentlySelectedChannelId === "function" ? store.getCurrentlySelectedChannelId() :
                 typeof store.getChannelId === "function" ? store.getChannelId() : null);
@@ -12393,7 +12393,7 @@
         } catch (_) { return false; }
     }
     function userNotifPersonName(id, fallbackUser) {
-        const store = userNotif.relationships || (userNotif.relationships = inspectedExport(4855, "default"));
+        const store = userNotif.relationships || (userNotif.relationships = inspectedExport(5112, "default"));
         try {
             const nick = store && typeof store.getNickname === "function" && store.getNickname(id);
             if (typeof nick === "string" && nick.trim()) return nick.trim();
@@ -12410,7 +12410,7 @@
     function userNotifPlace(channelId, guildId) {
         const channel = channelId ? receivedChannel(channelId) : null;
         const gId = guildId || channel && (channel.guild_id || channel.guildId);
-        const guilds = userNotif.guilds || (userNotif.guilds = inspectedExport(2090, "default"));
+        const guilds = userNotif.guilds || (userNotif.guilds = inspectedExport(5041, "default"));
         const guild = guilds && gId && typeof guilds.getGuild === "function" ? guilds.getGuild(gId) : null;
         const raw = channel && typeof channel.name === "string" ? channel.name : "";
         const shownName = raw && features.cleanChannels ? channelNameFormat(channel, raw) : raw;
@@ -12422,7 +12422,7 @@
     function userNotifSubscribeGuild(guildId, subFn) {
         if (typeof guildId !== "string" || !/^\d{17,20}$/.test(guildId) || userNotif.subscribedGuilds.has(guildId)) return;
         userNotif.subscribedGuilds.add(guildId);
-        const sub = subFn !== undefined ? subFn : inspectedExport(7254, "subscribeGuild");
+        const sub = subFn !== undefined ? subFn : inspectedExport(7548, "subscribeGuild");
         try {
             if (typeof sub === "function") { sub(guildId); return; }
         } catch (_) {}
@@ -12445,8 +12445,8 @@
         if (!userNotifHasTargets()) return;
         const strangers = userNotifStrangers();
         if (!strangers.length) return;
-        const members = inspectedExport(2128, "default"), isMember = members && typeof members.isMember === "function" ? members : null;
-        const guilds = userNotif.guilds || (userNotif.guilds = inspectedExport(2090, "default"));
+        const members = inspectedExport(5082, "default"), isMember = members && typeof members.isMember === "function" ? members : null;
+        const guilds = userNotif.guilds || (userNotif.guilds = inspectedExport(5041, "default"));
         if (!guilds) return;
         let ids = null;
         try {
@@ -12457,7 +12457,7 @@
             }
         } catch (_) {}
         if (!Array.isArray(ids)) return;
-        const sub = inspectedExport(7254, "subscribeGuild");
+        const sub = inspectedExport(7548, "subscribeGuild");
         let asked = 0;
         for (let i = 0; i < ids.length && asked < 200; i++) {
             const guildId = ids[i];
@@ -12485,7 +12485,7 @@
         userNotif.shown++;
         userNotif.last = {text, vars};
         const content = tr(text, vars);
-        const ui = reviewUI(), Icon = venusIcon(9045, "BellIcon");
+        const ui = reviewUI(), Icon = venusIcon(9321, "BellIcon");
         try {
             showToast(ui, "venus-user-notif:" + userNotif.shown, content, Icon);
         } catch (_) {}
@@ -12519,7 +12519,7 @@
         };
         userNotif.ids.forEach(seedId);
         if (!settings.userNotifFriends) return;
-        const store = userNotif.relationships || (userNotif.relationships = inspectedExport(4855, "default"));
+        const store = userNotif.relationships || (userNotif.relationships = inspectedExport(5112, "default"));
         try {
             const list = store && typeof store.getFriendIDs === "function" ? store.getFriendIDs() : null;
             if (Array.isArray(list)) for (let i = 0; i < list.length; i++) {
@@ -12673,12 +12673,12 @@
         if (enabled("userNotif")) userNotifSubscribeGuilds();
         backgroundSync();
         notify("userNotif");
-        reviewToast(reviewUI(), "People list reset", venusIcon(7144,"CircleCheckIcon"));
+        reviewToast(reviewUI(), "People list reset", venusIcon(7434,"CircleCheckIcon"));
     }
     function userNotifAvatarUri(user, size) {
         if (!user) return null;
         let uri = null;
-        const avatars = inspectedExport(1417, "default");
+        const avatars = inspectedExport(1411, "default");
         try { if (avatars && typeof avatars.getUserAvatarURL === "function") uri = avatars.getUserAvatarURL(user, false, size || 64); } catch (_) {}
         if ((typeof uri !== "string" || !/^https?:\/\//.test(uri)) && typeof user.id === "string" && typeof user.avatar === "string" && user.avatar)
             uri = "https://cdn.discordapp.com/avatars/" + user.id + "/" + user.avatar + ".png?size=" + (size || 64);
@@ -12747,7 +12747,7 @@
         const ui = reviewUI();
         const [query, setQuery] = React.useState(""), [idDraft, setIdDraft] = React.useState(""), [, redraw] = React.useState(0);
         React.useEffect(() => {
-            const stores = [userStore, presenceStore, userNotif.relationships || (userNotif.relationships = inspectedExport(4855, "default"))].filter(Boolean);
+            const stores = [userStore, presenceStore, userNotif.relationships || (userNotif.relationships = inspectedExport(5112, "default"))].filter(Boolean);
             const wake = () => redraw(n => n + 1);
             stores.forEach(s => { try { if (typeof s.addChangeListener === "function") s.addChangeListener(wake); } catch (_) {} });
             return () => stores.forEach(s => { try { if (typeof s.removeChangeListener === "function") s.removeChangeListener(wake); } catch (_) {} });
@@ -12757,7 +12757,7 @@
             button:Object.assign({}, USER_NOTIF_DARK.button, {backgroundColor:c.BACKGROUND_MOD_SUBTLE})}), USER_NOTIF_DARK);
         const ringColor = theme.ring && theme.ring.backgroundColor, rowColor = theme.row && theme.row.backgroundColor;
         const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Row = ui.TableRow, Press = RN.Pressable || RN.View;
-        const CheckboxRow = inspectedExport(6454, "TableCheckboxRow"), SearchField = inspectedExport(7016, "SearchField");
+        const CheckboxRow = inspectedExport(7070, "TableCheckboxRow"), SearchField = inspectedExport(7315, "SearchBar");
         const on = enabled("userNotif"), allFriends = !!settings.userNotifFriends;
         const friends = userNotifFriendIds(), friendSet = new Set(friends);
         const lookup = id => {
@@ -12824,16 +12824,16 @@
         const addById = () => {
             if (!on || !validDraft) return;
             const me = currentUser();
-            if (me && me.id === idText) { reviewToast(ui, "That's your own user ID", venusIcon(5145,"CircleInformationIcon")); return; }
+            if (me && me.id === idText) { reviewToast(ui, "That's your own user ID", venusIcon(5891,"CircleInformationIcon")); return; }
             userNotifSetId(idText, true);
-            const getUser = inspectedExport(8579, "getUser");
+            const getUser = inspectedExport(8856, "getUser");
             if (!knownUser(idText) && typeof getUser === "function") try { Promise.resolve(getUser(idText)).catch(() => {}); } catch (_) {}
             setIdDraft("");
         };
         const idInput = inputWithButton(ui, "input", {value:idText, keyboardType:"number-pad", maxLength:20, placeholder:tr("User ID"),
             onSubmitEditing:addById, returnKeyType:"done", editable:on, isDisabled:!on}, onIdText, "Add", addById, !on || !validDraft);
         const removeButton = id => el(Press, {style:[theme.button, {opacity:on ? 1 : 0.5}], accessibilityRole:"button", accessibilityLabel:tr("Stop watching"),
-            disabled:!on, hitSlop:{top:6, bottom:6, left:6, right:6}, onPress:on ? () => userNotifSetId(id, false) : undefined}, el(venusIcon(6485, "XSmallIcon"), {size:"sm"}));
+            disabled:!on, hitSlop:{top:6, bottom:6, left:6, right:6}, onPress:on ? () => userNotifSetId(id, false) : undefined}, el(venusIcon(7153, "XSmallIcon"), {size:"sm"}));
         const customRows = customIds.map(id => {
             const entry = lookup(id), known = entry.name !== id;
             const sub = known ? [handle(entry), userNotifStatusName(entry.status)].filter(Boolean).join(" \u00b7 ") : tr("Not loaded yet");
@@ -12843,24 +12843,24 @@
         // Someone added by ID who hasn't loaded yet is a "#" here too, like their own row, not the first digit of the ID.
         const watchedUsers = userNotifWatchedIds().slice(0, 4).map(lookup).map(e => e.user || {id:e.id, username:e.name !== e.id ? e.name : "#"});
         const groups = [
-            on ? VenusStatusCard({key:"status", title:userNotifSummaryTitle(), IconComponent:venusIcon(9045, "BellIcon"),
+            on ? VenusStatusCard({key:"status", title:userNotifSummaryTitle(), IconComponent:venusIcon(9321, "BellIcon"),
                 leading:userNotifAnyEvent() && watchedUsers.length ? avatarPile(watchedUsers, ringColor) : null, body:userNotifSummary()}) :
-                offCard("status", venusIcon(9045, "BellIcon"), "userNotif"),
+                offCard("status", venusIcon(9321, "BellIcon"), "userNotif"),
             el(Group, {key:"events", title:tr("Notify me when they")},
-                switchRow(Switch, "userNotifStatus", "Change status", "Online, Idle, Do Not Disturb or Offline.", rowIcon(10598, "UserCircleIcon")),
-                switchRow(Switch, "userNotifMessages", "Send a message", "In DMs or in any server channel your client receives.", rowIcon(8471, "ChatIcon")),
-                switchRow(Switch, "userNotifTyping", "Start typing", "In DMs or in a channel you have open.", rowIcon(13747, "KeyboardIcon"))),
+                switchRow(Switch, "userNotifStatus", "Change status", "Online, Idle, Do Not Disturb or Offline.", rowIcon(10956, "UserCircleIcon")),
+                switchRow(Switch, "userNotifMessages", "Send a message", "In DMs or in any server channel your client receives.", rowIcon(8747, "ChatIcon")),
+                switchRow(Switch, "userNotifTyping", "Start typing", "In DMs or in a channel you have open.", rowIcon(14794, "KeyboardIcon"))),
             el(Group, {key:"push", title:tr("Outside Discord")},
-                switchRow(Switch, "userNotifPush", "Phone notifications", "Also notify you while Discord is closed. Keeps Discord connected, which uses more battery.", rowIcon(6919, "MobilePhoneIcon")),
+                switchRow(Switch, "userNotifPush", "Phone notifications", "Also notify you while Discord is closed. Keeps Discord connected, which uses more battery.", rowIcon(7231, "MobilePhoneIcon")),
                 settings.userNotifPush && userNotif.permissionGranted === false && Row ?
                     el(Row, {key:"perm", label:tr("Allow notification permission"), subLabel:tr("Android notifications are turned off for Discord. Tap to check or open system settings."),
-                        icon:rowIcon(10654, "BellSlashIcon"), variant:"danger", arrow:true, disabled:!on, onPress:() => userNotifRequestPermissions(true)}) : null),
+                        icon:rowIcon(11154, "BellSlashIcon"), variant:"danger", arrow:true, disabled:!on, onPress:() => userNotifRequestPermissions(true)}) : null),
             el(Group, {key:"log", title:tr("Log")},
-                logOpenRow(ui, nav, "open", tr("Activity log"), logs.activity, rowIcon(5150, "ClockIcon"), on),
+                logOpenRow(ui, nav, "open", tr("Activity log"), logs.activity, rowIcon(5896, "ClockIcon"), on),
                 logChoicesRow(ui, "choices", "userNotif", [
-                    ["userNotifLogStatus", tr("Status changes"), tr("Online, Idle, Do Not Disturb or Offline."), rowIcon(10598, "UserCircleIcon"), tr("Status")],
-                    ["userNotifLogMessages", tr("Messages"), tr("What they send, and where."), rowIcon(8471, "ChatIcon"), tr("Messages")],
-                    ["userNotifLogTyping", tr("Typing"), tr("Once a minute per person and chat."), rowIcon(13747, "KeyboardIcon"), tr("Typing")]], on)),
+                    ["userNotifLogStatus", tr("Status changes"), tr("Online, Idle, Do Not Disturb or Offline."), rowIcon(10956, "UserCircleIcon"), tr("Status")],
+                    ["userNotifLogMessages", tr("Messages"), tr("What they send, and where."), rowIcon(8747, "ChatIcon"), tr("Messages")],
+                    ["userNotifLogTyping", tr("Typing"), tr("Once a minute per person and chat."), rowIcon(14794, "KeyboardIcon"), tr("Typing")]], on)),
             el(RN.View, {key:"who", style:{gap:8}},
                 groupTitle("title", "Who to watch"),
                 venusSegmented({key:"choice", value:allFriends ? "all" : "picked", disabled:!on, onChange:setWho,
@@ -12895,9 +12895,9 @@
         if (!enabled("youBarSettings") || !RN) return null;
         // Looked up once they've all loaded, not on every render of the bar.
         if (!youBarParts) {
-            const Button = inspectedExport(17537, "default"), Icon = inspectedExport(7368, "SettingsIcon");
+            const Button = inspectedExport(18852, "default"), Icon = inspectedExport(7666, "SettingsIcon");
             if (!Button || !Icon) return null;
-            const size = inspectedExport(16140, "YOU_BAR_BUTTON_ICON_SIZE") || 20;
+            const size = inspectedExport(17430, "YOU_BAR_BUTTON_ICON_SIZE") || 20;
             youBarParts = {Button, Icon, style:{width:size, height:size}};
         }
         const nameplate = !!(props && props.hasNameplate);
@@ -12911,12 +12911,12 @@
         // Ensure SettingsRendererConfig (15602) and SettingListRenderer (15733) are initialized before
         // opening SettingsNavigator so VENUS_PLUGINS is registered even on first tap after app restart
         // and SettingsList is non-null so the page never renders a blank black screen (#58).
-        if (!status.menu) inspectedExport(15602, "SETTING_RENDERER_CONFIG");
-        if (!SettingsList) SettingsList = inspectedExport(15733, "SettingsList");
+        if (!status.menu) inspectedExport(16783, "SETTING_RENDERER_CONFIG");
+        if (!SettingsList) SettingsList = inspectedExport(16937, "SettingsList");
         const screen = status.menu ? (typeof target === "string" ? target : "VENUS_PLUGINS") : undefined;
-        const open = inspectedExport(7370, "openUserSettings");
+        const open = inspectedExport(7668, "openUserSettings");
         try { if (typeof open === "function") { open(screen ? {screen} : undefined); return; } } catch (_) {}
-        try { const ref = inspectedExport(5073, "getRootNavigationRef"); const nav = ref && ref(); if (nav) nav.navigate("settings", screen ? {screen} : undefined); } catch (_) {}
+        try { const ref = inspectedExport(5347, "getRootNavigationRef"); const nav = ref && ref(); if (nav) nav.navigate("settings", screen ? {screen} : undefined); } catch (_) {}
     }
     function youBarButtons(orig, self, args) {
         // Always the same shape, so switching it on or off never remounts the bell.
@@ -12954,7 +12954,7 @@
     function accountSwitcherCurrentEntry() {
         const me = currentUser();
         if (!me || !me.id) return null;
-        const statuses = inspectedExport(13074, "MultiAccountTokenStatus");
+        const statuses = inspectedExport(14243, "MultiAccountTokenStatus");
         const validStatus = statuses && typeof statuses.VALID === "number" ? statuses.VALID : 2;
         return {id:me.id, avatar:me.avatar || null, username:me.username || "", discriminator:me.discriminator || "0", tokenStatus:validStatus};
     }
@@ -12963,14 +12963,14 @@
         if (!enabled("accountSwitcher")) return base;
         const entry = accountSwitcherCurrentEntry();
         if (!entry) return base;
-        const statuses = inspectedExport(13074, "MultiAccountTokenStatus");
+        const statuses = inspectedExport(14243, "MultiAccountTokenStatus");
         const invalidStatus = statuses && typeof statuses.INVALID === "number" ? statuses.INVALID : 0;
         const filtered = validOnly ? base.filter(u => u && u.tokenStatus !== invalidStatus) : base;
         if (filtered.some(u => u && u.id === entry.id)) return filtered;
         return [entry].concat(filtered);
     }
     function accountSwitcherStore() {
-        return accountSwitcher.store || (accountSwitcher.store = inspectedExport(13074, "default"));
+        return accountSwitcher.store || (accountSwitcher.store = inspectedExport(14243, "default"));
     }
     function accountSwitcherUsers() {
         const store = accountSwitcherStore();
@@ -13101,7 +13101,7 @@
     // refuses is marked expired (Discord's own MULTI_ACCOUNT_VALIDATE_TOKEN_FAILURE) and Add account opens to sign in
     // again; no answer at all (offline) switches as before.
     function accountSwitchCheck(userId, token) {
-        const http = inspectedExport(1297, "HTTP"), endpoints = inspectedExport(1087, "Endpoints");
+        const http = inspectedExport(1282, "HTTP"), endpoints = inspectedExport(1072, "Endpoints");
         if (!http || typeof http.get !== "function") return Promise.resolve("unknown");
         let status = 0;
         // Its own interceptResponse: Discord's global one (captcha, MFA screens) never sees this check.
@@ -13137,7 +13137,7 @@
             try { still = tokens.getToken(userId); } catch (_) {}
             // Signed in to it again while the check ran: switch with the new token.
             if (result !== "invalid" || still !== token) return orig.apply(self, args);
-            const d = inspectedExport(584, "default");
+            const d = inspectedExport(572, "default");
             try { if (d && typeof d.dispatch === "function") d.dispatch({type:"MULTI_ACCOUNT_VALIDATE_TOKEN_FAILURE", userId}); } catch (_) {}
             notify("accountSwitcher");
             openAddAccountModal();
@@ -13173,7 +13173,7 @@
     }
     // Sync again right away when the switch changes, instead of at Discord's next start.
     function accountSwitcherPushResync() {
-        const manager = inspectedExport(15471, "default");
+        const manager = inspectedExport(16620, "default");
         try { if (manager && manager.token && manager.canSync && typeof manager.registerToken === "function") manager.registerToken(); } catch (_) {}
     }
     function hookIsStaffForMultiAccount(exports) {
@@ -13196,21 +13196,21 @@
     }
     function openAccountSwitcherSheet() {
         accountSwitcherSync();
-        const showSheet = inspectedExport(17514, "showYouAccountActionSheet");
+        const showSheet = inspectedExport(18830, "showYouAccountActionSheet");
         try { if (typeof showSheet === "function") { showSheet(false); return; } } catch (_) {}
         openManageAccounts();
     }
     function openManageAccounts(screen) {
         accountSwitcherSync();
         if (!screen) {
-            const screens = inspectedExport(17521, "ManageAccountsScreens") || inspectedExport(17521, "ManageAccountsModalRoutes");
+            const screens = inspectedExport(18837, "ManageAccountsScreens") || inspectedExport(18837, "ManageAccountsModalRoutes");
             screen = screens && screens.MANAGE_ACCOUNTS || "manage_accounts";
         }
-        const openModal = inspectedExport(17519, "default");
+        const openModal = inspectedExport(18835, "default");
         try { if (typeof openModal === "function") { openModal(screen); return; } } catch (_) {}
     }
     function openAddAccountModal() {
-        const screens = inspectedExport(17521, "ManageAccountsScreens") || inspectedExport(17521, "ManageAccountsModalRoutes");
+        const screens = inspectedExport(18837, "ManageAccountsScreens") || inspectedExport(18837, "ManageAccountsModalRoutes");
         const loginRoute = screens && screens.LOGIN || "login";
         openManageAccounts(loginRoute);
     }
@@ -13227,23 +13227,23 @@
     const REGISTRATION_ROUTES = ["REGISTER_IDENTITY", "REGISTER_DISPLAY_NAME", "REGISTER_ACCOUNT_INFORMATION", "VERIFY_PHONE",
         "AGE_GATE", "AGE_GATE_UNDERAGE", "COUNTRY_SELECT", "EXTERNAL_LINK"];
     function resetMultiAccountRegistration() {
-        const resetReg = inspectedExport(17065, "resetRegistration");
+        const resetReg = inspectedExport(18358, "resetRegistration");
         try { if (typeof resetReg === "function") resetReg(); } catch (_) {}
     }
     function registerIdentityRoute() {
-        const auth = inspectedExport(1087, "AuthStates");
+        const auth = inspectedExport(1072, "AuthStates");
         return auth && auth.REGISTER_IDENTITY || "register_identity";
     }
     function addAccountLogin(orig, self, args) {
         // Login itself calls useNavigation; calling it here too, before any early return, keeps the hook order
         // stable when Account switcher is toggled. Inside the Add account modal it's the modal's own stack.
-        const useNav = inspectedExport(1505, "useNavigation");
+        const useNav = inspectedExport(1499, "useNavigation");
         let nav = null;
         try { if (typeof useNav === "function") nav = useNav(); } catch (_) {}
         const rendered = orig.apply(self, args);
         const props = args[0];
         if (!enabled("accountSwitcher") || !props || !props.isMultiAccount || !React) return rendered;
-        const LinkButton = inspectedExport(6900, "LinkButton");
+        const LinkButton = inspectedExport(7212, "LinkButton");
         if (typeof LinkButton !== "function" && !(LinkButton && LinkButton.$$typeof)) return rendered;
         const onRegister = () => {
             resetMultiAccountRegistration();
@@ -13292,14 +13292,14 @@
     function manageAccountsModalWithRegister(orig, self, args) {
         const rendered = orig.apply(self, args);
         if (!enabled("accountSwitcher") || !rendered || !React) return rendered;
-        const getAllAuthScreens = inspectedExport(17064, "getAllAuthScreens");
+        const getAllAuthScreens = inspectedExport(18357, "getAllAuthScreens");
         if (typeof getAllAuthScreens !== "function") return rendered;
         let authScreens = null;
         try { authScreens = getAllAuthScreens(); } catch (_) {}
         if (!authScreens || typeof authScreens !== "object") return rendered;
-        const parts = {BackButtonWithTracking:inspectedExport(17073, "BackButtonWithTracking"), HeaderBackImage:inspectedExport(6478, "HeaderBackImage")};
-        const TrackRegistrationContext = inspectedExport(17062, "TrackRegistrationContext");
-        const getTrackRegTransition = inspectedExport(17073, "getTrackRegTransition");
+        const parts = {BackButtonWithTracking:inspectedExport(18367, "BackButtonWithTracking"), HeaderBackImage:inspectedExport(7097, "HeaderBackImage")};
+        const TrackRegistrationContext = inspectedExport(18355, "TrackRegistrationContext");
+        const getTrackRegTransition = inspectedExport(18367, "getTrackRegTransition");
         let patched = false;
         const tree = cloneTree(rendered, function (node, nodeProps) {
             if (patched) return nodeProps;
@@ -13340,8 +13340,8 @@
         const wrapRegister = function (orig, self, args) {
             if (!enabled("accountSwitcher") || !currentUser() || accountSwitcher.registering) return orig.apply(self, args);
             accountSwitcherSync();
-            const d = inspectedExport(584, "default");
-            const authActions = inspectedExport(6186, "default");
+            const d = inspectedExport(572, "default");
+            const authActions = inspectedExport(6827, "default");
             if (!d || typeof d.dispatch !== "function" || !authActions || typeof authActions.switchAccountToken !== "function") {
                 return orig.apply(self, args);
             }
@@ -13368,7 +13368,7 @@
             return Promise.resolve(res).then(val => {
                 restore();
                 // A token equal to the signed-in one would only reconnect to the same account; never switch to it.
-                const tokenMgr = inspectedExport(1113, "getToken") ? global.__r(1113) : null;
+                const tokenMgr = inspectedExport(1098, "getToken") ? global.__r(1113) : null;
                 let activeToken = null;
                 try { activeToken = tokenMgr ? tokenMgr.getToken() : null; } catch (_) {}
                 if (capturedToken && capturedToken !== activeToken) {
@@ -13391,7 +13391,7 @@
     // requests made while signed in now go out signed out, like the Add account login.
     function isSignUpUrl(url) {
         if (typeof url !== "string") return false;
-        const endpoints = inspectedExport(1087, "Endpoints");
+        const endpoints = inspectedExport(1072, "Endpoints");
         const register = endpoints && endpoints.REGISTER || "/auth/register";
         const registerPhone = endpoints && endpoints.REGISTER_PHONE || "/auth/register/phone";
         return url === register || url === registerPhone;
@@ -13416,7 +13416,7 @@
         accountSwitcherSync();
         const rawActions = global.__r && global.__r(13078);
         const actions = rawActions && typeof rawActions.switchAccount === "function" ? rawActions : rawActions && rawActions.default;
-        const locs = inspectedExport(13075, "MultiAccountSwitchLocation");
+        const locs = inspectedExport(14244, "MultiAccountSwitchLocation");
         const location = locs && (locs.MANAGE_ACCOUNTS_MODAL || locs.YOU_ACCOUNT_ACTION_SHEET) || "manage_accounts_modal";
         try {
             if (actions && typeof actions.switchAccount === "function") {
@@ -13439,9 +13439,9 @@
         useSettings("accountSwitcherYouBar");
         if (!enabled("accountSwitcher") || !settings.accountSwitcherYouBar || !RN) return null;
         if (!accountSwitcher.youBarParts) {
-            const Button = inspectedExport(17537, "default"), Icon = inspectedExport(8489, "GroupIcon") || inspectedExport(10598, "UserCircleIcon");
+            const Button = inspectedExport(18852, "default"), Icon = inspectedExport(8765, "GroupIcon") || inspectedExport(10956, "UserCircleIcon");
             if (!Button || !Icon) return null;
-            const size = inspectedExport(16140, "YOU_BAR_BUTTON_ICON_SIZE") || 20;
+            const size = inspectedExport(17430, "YOU_BAR_BUTTON_ICON_SIZE") || 20;
             accountSwitcher.youBarParts = {Button, Icon, style:{width:size, height:size}};
         }
         const nameplate = !!(props && props.hasNameplate);
@@ -13484,9 +13484,9 @@
             const toClipboard = () => {
                 const clip = reviewUI().clipboard || RN && RN.Clipboard;
                 try { clip.setString(text); } catch (_) { showProblem("Couldn't export accounts", tr("Try again in a moment.")); return; }
-                reviewToast(reviewUI(), "Accounts copied", venusIcon(5141, "CopyIcon"));
+                reviewToast(reviewUI(), "Accounts copied", venusIcon(5887, "CopyIcon"));
             };
-            const saveDocuments = inspectedExport(11600, "saveDocuments"), dir = cacheDir();
+            const saveDocuments = inspectedExport(11264, "saveDocuments"), dir = cacheDir();
             if (!files || typeof saveDocuments !== "function" || !dir) { toClipboard(); return; }
             const name = "venus-accounts-" + backupDate(Date.now()) + ".json", path = dir + "/" + name;
             const cleanup = () => { try { if (typeof files.removeFile === "function") files.removeFile(path); else files.writeFile("cache", name, "", "utf8"); } catch (_) {} };
@@ -13496,7 +13496,7 @@
                     const first = Array.isArray(result) ? result[0] : result;
                     if (first && first.error) throw new Error(String(first.error));
                     cleanup();
-                    reviewToast(reviewUI(), "Accounts exported", venusIcon(7144, "CircleCheckIcon"));
+                    reviewToast(reviewUI(), "Accounts exported", venusIcon(7434, "CircleCheckIcon"));
                 }).catch(error => { cleanup(); if (!pickerCancelled(error)) showProblem("Couldn't export accounts", tr("Try again in a moment.")); });
         });
     }
@@ -13509,7 +13509,7 @@
         const store = accountsReady(), tokens = accountTokens();
         if (!store || !tokens || typeof store.initialize !== "function") return {error:tr("Try again in a moment.")};
         const state = store.getState() || {}, saved = Array.isArray(state.users) ? state.users.slice() : [];
-        const me = currentUser(), statuses = inspectedExport(13074, "MultiAccountTokenStatus");
+        const me = currentUser(), statuses = inspectedExport(14243, "MultiAccountTokenStatus");
         const checking = statuses && typeof statuses.VALIDATING === "number" ? statuses.VALIDATING : 1;
         // TokenManager.setToken(token, userId) makes that token the active sign-in too (it sets the main token before
         // saving the per-account copy), and saves it. Importing used to leave the last imported account's token as the
@@ -13538,7 +13538,7 @@
             if (typeof store.asyncPersist === "function") store.asyncPersist();
             if (typeof store.emitChange === "function") store.emitChange();
         } catch (_) { return {error:tr("Try again in a moment.")}; }
-        const validate = inspectedExport(13078, "validateMultiAccountTokens");
+        const validate = inspectedExport(14247, "validateMultiAccountTokens");
         try { if (typeof validate === "function") validate(); } catch (_) {}
         notify("accountSwitcher");
         return {added};
@@ -13546,10 +13546,10 @@
     function accountsImportDone(text) {
         const result = accountsImportText(text);
         if (result.error) showProblem("Couldn't import accounts", result.error);
-        else reviewToast(reviewUI(), pl(result.added, "{n} account added", "{n} accounts added"), venusIcon(7144, "CircleCheckIcon"));
+        else reviewToast(reviewUI(), pl(result.added, "{n} account added", "{n} accounts added"), venusIcon(7434, "CircleCheckIcon"));
     }
     function accountsImport() {
-        const pick = inspectedExport(11600, "pick"), keep = inspectedExport(11600, "keepLocalCopy"), types = inspectedExport(11600, "types");
+        const pick = inspectedExport(11264, "pick"), keep = inspectedExport(11264, "keepLocalCopy"), types = inspectedExport(11264, "types");
         if (!files || typeof pick !== "function" || typeof keep !== "function") {
             const clip = reviewUI().clipboard || RN && RN.Clipboard;
             if (!clip || typeof clip.getString !== "function") return;
@@ -13589,7 +13589,7 @@
         const ui = reviewUI();
         React.useEffect(() => {
             accountSwitcherSync();
-            const validate = inspectedExport(13078, "validateMultiAccountTokens");
+            const validate = inspectedExport(14247, "validateMultiAccountTokens");
             try { if (enabled("accountSwitcher") && typeof validate === "function") validate(); } catch (_) {}
             const wake = () => forceUpdate(n => n + 1);
             const stores = [userStore, accountSwitcherStore()].filter(Boolean);
@@ -13601,7 +13601,7 @@
         const on = enabled("accountSwitcher");
         const me = currentUser(), myId = me && me.id;
         const accounts = accountSwitcherUsers();
-        const statuses = inspectedExport(13074, "MultiAccountTokenStatus");
+        const statuses = inspectedExport(14243, "MultiAccountTokenStatus");
         const invalidStatus = statuses && typeof statuses.INVALID === "number" ? statuses.INVALID : 0;
         const validatingStatus = statuses && typeof statuses.VALIDATING === "number" ? statuses.VALIDATING : 1;
         const accountRows = accounts.length ? accounts.map(acc => {
@@ -13615,7 +13615,7 @@
                 acc.tokenStatus === validatingStatus ? tr("Checking session…") : tr("Tap to switch");
             return el(Row, {key:"acc:" + acc.id, label:displayName, subLabel:handle + statusText,
                 icon:avatarBubble(fullUser, 32, active ? "online" : acc.tokenStatus === invalidStatus ? "dnd" : null), disabled:!on,
-                trailing:active ? popIn("on:" + acc.id, el(venusIcon(7101, "CheckmarkSmallIcon"), {size:"md"})) : undefined,
+                trailing:active ? popIn("on:" + acc.id, el(venusIcon(7399, "CheckmarkSmallIcon"), {size:"md"})) : undefined,
                 onPress:() => {
                     if (active) { openAccountSwitcherSheet(); return; }
                     if (acc.tokenStatus === invalidStatus) { openAddAccountModal(); return; }
@@ -13627,24 +13627,24 @@
         }) : [];
         const groups = [
             on ? statusCard("status", accountSwitcherSummary(), {title:accounts.length > 1 ? pl(accounts.length, "{n} account", "{n} accounts") : accounts.length ? tr("One account so far") : tr("No saved accounts yet"),
-                IconComponent:venusIcon(8489, "GroupIcon"), leading:accounts.length ? avatarPile(accounts.slice(0, 4).map(acc => (myId && acc.id === myId ? me : userStore && userStore.getUser(acc.id)) || acc)) : null}) :
-                offCard("status", venusIcon(8489, "GroupIcon"), "accountSwitcher"),
+                IconComponent:venusIcon(8765, "GroupIcon"), leading:accounts.length ? avatarPile(accounts.slice(0, 4).map(acc => (myId && acc.id === myId ? me : userStore && userStore.getUser(acc.id)) || acc)) : null}) :
+                offCard("status", venusIcon(8765, "GroupIcon"), "accountSwitcher"),
             el(Group, {key:"accounts", title:tr("Accounts")},
                 accountRows,
-                Row ? el(Row, {key:"add", label:tr("Add account"), subLabel:tr("Sign in to another Discord account on this phone."), icon:rowIcon(5131, "UserPlusIcon"),
+                Row ? el(Row, {key:"add", label:tr("Add account"), subLabel:tr("Sign in to another Discord account on this phone."), icon:rowIcon(5877, "UserPlusIcon"),
                     arrow:true, disabled:!on || accounts.length >= multiAccountLimit(), onPress:openAddAccountModal}) : null,
-                Row ? el(Row, {key:"export", label:tr("Export accounts"), subLabel:tr("Save your accounts and their sign-ins to a file, for another phone or a fresh install."), icon:rowIcon(5143, "DownloadIcon"),
+                Row ? el(Row, {key:"export", label:tr("Export accounts"), subLabel:tr("Save your accounts and their sign-ins to a file, for another phone or a fresh install."), icon:rowIcon(5889, "DownloadIcon"),
                     arrow:true, disabled:!on || !accounts.length, onPress:accountsExport}) : null,
-                Row ? el(Row, {key:"import", label:tr("Import accounts"), subLabel:tr("Add accounts from an export, without signing in again."), icon:rowIcon(9705, "UploadIcon"),
+                Row ? el(Row, {key:"import", label:tr("Import accounts"), subLabel:tr("Add accounts from an export, without signing in again."), icon:rowIcon(10071, "UploadIcon"),
                     arrow:true, disabled:!on || accounts.length >= multiAccountLimit(), onPress:accountsImport}) : null,
-                Row ? el(Row, {key:"manage", label:tr("Manage accounts"), subLabel:tr("Open Discord's account manager to reorder or remove accounts."), icon:rowIcon(7368, "SettingsIcon"),
+                Row ? el(Row, {key:"manage", label:tr("Manage accounts"), subLabel:tr("Open Discord's account manager to reorder or remove accounts."), icon:rowIcon(7666, "SettingsIcon"),
                     arrow:true, disabled:!on, onPress:() => openManageAccounts()}) : null,
                 null),
             el(Group, {key:"shortcuts", title:tr("Shortcuts")},
-                switchRow(Switch, "accountSwitcherYouBar", "Button on the profile bar", "Shows a Switch accounts button next to the notifications bell on the bottom bar.", rowIcon(10598, "UserCircleIcon"))),
+                switchRow(Switch, "accountSwitcherYouBar", "Button on the profile bar", "Shows a Switch accounts button next to the notifications bell on the bottom bar.", rowIcon(10956, "UserCircleIcon"))),
             el(Group, {key:"shared", title:tr("Every account")},
-                switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notifications for all your saved accounts, not just the one you're using. Each one shows which account it's for.", rowIcon(9045, "BellIcon")),
-                switchRow(Switch, "accountSwitcherShare", "Same theme on every account", "Your theme and Nitro theme follow you when you switch. Venus settings are always shared.", rowIcon(16320, "PaintPaletteIcon"))),
+                switchRow(Switch, "accountSwitcherNotify", "Notifications from every account", "Get notifications for all your saved accounts, not just the one you're using. Each one shows which account it's for.", rowIcon(9321, "BellIcon")),
+                switchRow(Switch, "accountSwitcherShare", "Same theme on every account", "Your theme and Nitro theme follow you when you switch. Venus settings are always shared.", rowIcon(17608, "PaintPaletteIcon"))),
             footnote("note", "Tap your avatar on the You tab, or hold the You tab, to switch from anywhere. Hold an account above to remove it.")];
         return settingsBody(ui, groups);
     }
@@ -13658,7 +13658,7 @@
         const user = currentUser();
         if (!user) return realLimits.normal;
         try {
-            const premium = split.premium || (split.premium = inspectedExport(4864, "default"));
+            const premium = split.premium || (split.premium = inspectedExport(2171, "default"));
             const check = premium && premium.canUseIncreasedMessageLength;
             if (typeof check === "function") return check.call(premium, user) ? realLimits.premium : realLimits.normal;
         } catch (_) {}
@@ -13768,7 +13768,7 @@
         const channel = receivedChannel(channelId);
         const slowmode = channel && Number(channel.rateLimitPerUser) || 0;
         if (slowmode <= 0) return 1000;
-        const canBypass = split.canBypassSlowmode || (split.canBypassSlowmode = inspectedExport(7641, "canBypassSlowmode"));
+        const canBypass = split.canBypassSlowmode || (split.canBypassSlowmode = inspectedExport(7940, "canBypassSlowmode"));
         try { if (typeof canBypass === "function" && canBypass(channel)) return 1000; } catch (_) {}
         return Math.max(1000, slowmode * 1000 + 500);
     }
@@ -13886,7 +13886,7 @@
         const text = edit.content, ui = reviewUI();
         const copy = () => {
             try { (ui.clipboard || RN.Clipboard).setString(text); } catch (_) { return; }
-            reviewToast(ui, "Copied your edit", venusIcon(5141, "CopyIcon"));
+            reviewToast(ui, "Copied your edit", venusIcon(5887, "CopyIcon"));
         };
         const title = tr("This edit is too long");
         const body = tr("Edits can't be sent in parts, so they have to fit in one message: {count} of {limit} characters. Copy your edit to shorten it or send it as a new message.",
@@ -13904,7 +13904,7 @@
         const text = rest.join("\n"), ui = reviewUI();
         const copy = () => {
             try { (ui.clipboard || RN.Clipboard).setString(text); } catch (_) { return; }
-            reviewToast(ui, "Copied the rest of your message", venusIcon(5141, "CopyIcon"));
+            reviewToast(ui, "Copied the rest of your message", venusIcon(5887, "CopyIcon"));
         };
         const title = tr("Your long message didn't finish sending");
         const body = pl(rest.length, "{n} part wasn't sent. Copy it to paste it into the message box and send it again.",
@@ -14008,22 +14008,22 @@
         return [
             // FxTwitter and vxTwitter translate a post when its link ends in a language (/status/20/ja), and FxTwitter can show
             // just the media (g.), just the text (t.) or the file itself (d.).
-            ["x", "X (Twitter)", "#000000", [8404, "XNeutralIcon"], ["x.com", "twitter.com", "nitter.net", "xcancel.com", "nitter.poast.org", "nitter.privacyredirect.com",
+            ["x", "X (Twitter)", "#000000", [8680, "XNeutralIcon"], ["x.com", "twitter.com", "nitter.net", "xcancel.com", "nitter.poast.org", "nitter.privacyredirect.com",
                 "nitter.space", "nitter.tiekoetter.com", "lightbrd.com"], /^\/(?:[A-Za-z0-9_]{1,15}|i(?:\/web)?)\/status(?:es)?\/\d+/,
                 [["fxtwitter", "FxTwitter", fixMirror("fixupx.com", "fxtwitter.com"), {styles:{gallery:"g.", text:"t.", media:"d."}, lang:"fx", at:FIX_X_POST}],
                  ["vxtwitter", "vxTwitter", fixMirror("fixvx.com", "vxtwitter.com"), {styles:{media:"d."}, lang:"vx", at:FIX_X_POST}], FIXEMBED], {group:"social"}],
-            ["instagram", "Instagram", "#e1306c", [8408, "InstagramNeutralIcon"], ["instagram.com"], /^\/(?:(?:[\w.]+\/)?(?:p|reels?|tv|share(?:\/(?:p|reels?))?)\/[\w-]+|stories\/[\w.]+\/\d+)/,
+            ["instagram", "Instagram", "#e1306c", [8684, "InstagramNeutralIcon"], ["instagram.com"], /^\/(?:(?:[\w.]+\/)?(?:p|reels?|tv|share(?:\/(?:p|reels?))?)\/[\w-]+|stories\/[\w.]+\/\d+)/,
                 [["oginstagram", "OGInstagram", {"instagram.com":"oginstagram.com"}], ["instafix", "InstaFix", {"instagram.com":"eeinstagram.com"}],
                  ["kkinstagram", "KKInstagram", {"instagram.com":"kkinstagram.com"}], ["vxinstagram", "vxInstagram", {"instagram.com":"vxinstagram.com"}], FIXEMBED], {group:"social"}],
-            ["tiktok", "TikTok", "#ee1d52", [13000, "TiktokNeutralIcon"], ["tiktok.com", "vm.tiktok.com", "vt.tiktok.com"],
+            ["tiktok", "TikTok", "#ee1d52", [14169, "TiktokNeutralIcon"], ["tiktok.com", "vm.tiktok.com", "vt.tiktok.com"],
                 {"tiktok.com":/^\/(?:@[\w.-]+\/(?:video|photo)\/\d+|t\/\w+)/, "vm.tiktok.com":/^\/\w+/, "vt.tiktok.com":/^\/\w+/},
                 [["fxtiktok", "fxTikTok", {"tiktok.com":"tnktok.com", "vm.tiktok.com":"vm.tnktok.com", "vt.tiktok.com":"vt.tnktok.com"}, {styles:{full:"a.", gallery:"", media:"d."}}],
                  ["tiktxk", "tiktxk", {"tiktok.com":"tiktxk.com", "vm.tiktok.com":"vm.tiktxk.com", "vt.tiktok.com":"vt.tiktxk.com"}], FIXEMBED], {group:"video"}],
-            ["reddit", "Reddit", "#ff4500", [9399, "RedditNeutralIcon"], ["reddit.com", "redd.it"], {"reddit.com":/^\/(?:r|u|user)\/[\w-]+\/(?:comments|s)\/\w+/, "redd.it":/^\/\w{5,10}(?:$|[\/?#])/},
+            ["reddit", "Reddit", "#ff4500", [9721, "RedditNeutralIcon"], ["reddit.com", "redd.it"], {"reddit.com":/^\/(?:r|u|user)\/[\w-]+\/(?:comments|s)\/\w+/, "redd.it":/^\/\w{5,10}(?:$|[\/?#])/},
                 [["vxreddit", "vxReddit", {"reddit.com":"vxreddit.com", "redd.it":"vxreddit.com"}], ["fixreddit", "FixReddit", {"reddit.com":"fxreddit.seria.moe", "redd.it":"fxreddit.seria.moe"}],
                  ["rxddit", "rxddit", {"reddit.com":"rxddit.com", "redd.it":"rxddit.com"}], FIXEMBED],
                 {group:"social"}],
-            ["bluesky", "Bluesky", "#1185fe", [9397, "BlueskyNeutralIcon"], ["bsky.app"], /^\/profile\/[^\/\s]+\/post\/\w+/,
+            ["bluesky", "Bluesky", "#1185fe", [9719, "BlueskyNeutralIcon"], ["bsky.app"], /^\/profile\/[^\/\s]+\/post\/\w+/,
                 [["fxbsky", "FxBluesky", {"bsky.app":"fxbsky.app"}, {styles:{gallery:"g.", text:"t.", media:"d."}, lang:"bsky", at:/^\/profile\/[^\/\s?#]+\/post\/\w+(?:\/photo\/\d+)?\/?$/}],
                  ["vixbluesky", "VixBluesky", {"bsky.app":"bskx.app"}, {styles:{media:"r."}}], ["fixbluesky", "FixBluesky", {"bsky.app":"bsyy.app"}],
                  ["bskye", "bskye", {"bsky.app":"bskye.app"}]], {group:"social"}],
@@ -14032,7 +14032,7 @@
             // Tumblr (#87): fxtumblr shows the whole post, drawn as a picture, and can draw it dark.
             ["tumblr", "Tumblr", "#001935", "t", ["tumblr.com"], {"tumblr.com":/^\/[\w-]+\/\d+/, "*.tumblr.com":/^\/post\/\d+/},
                 [["fxtumblr", "fxtumblr", {"tumblr.com":"tpmblr.com", "*.tumblr.com":"*.tpmblr.com"}, {dark:"dark"}], FIXEMBED], {group:"social", sub:true}],
-            ["facebook", "Facebook", "#0866ff", [8406, "FacebookNeutralIcon"], ["facebook.com"],
+            ["facebook", "Facebook", "#0866ff", [8682, "FacebookNeutralIcon"], ["facebook.com"],
                 /^\/(?:reel\/\d+|watch\/?\?|share\/[rvp]\/\w+|[\w.]+\/(?:videos|posts)\/[\w.-]+|story\.php|permalink\.php|groups\/[\w.]+\/(?:posts|permalink)\/\w+)/,
                 [["facebed", "facebed", {"facebook.com":"facebed.com"}]], {group:"social"}],
             ["mastodon", "Mastodon", "#6364ff", "M", ["mastodon.social", "mstdn.social", "mastodon.online", "mastodon.world", "mas.to", "mstdn.jp", "fosstodon.org",
@@ -14040,16 +14040,16 @@
                 [["fxmastodon", "FxMastodon", "https://fxmas.to/{host}{path}"]], {group:"social", off:true}],
             ["ptt", "PTT", "#1f1f1f", "PTT", ["ptt.cc"], /^\/bbs\/\w+\/M\.\d+\.A\.\w+\.html/,
                 [["fxptt", "fxptt", {"ptt.cc":"fxptt.seria.moe"}]], {group:"social"}],
-            ["youtube", "YouTube", "#ff0033", [9395, "YoutubeNeutralIcon"], ["youtube.com", "youtu.be", "music.youtube.com"],
+            ["youtube", "YouTube", "#ff0033", [9717, "YoutubeNeutralIcon"], ["youtube.com", "youtu.be", "music.youtube.com"],
                 {"youtube.com":/^\/(?:watch\?(?:[^#]*&)?v=[\w-]{11}|shorts\/[\w-]{11}|live\/[\w-]{11})/, "youtu.be":/^\/[\w-]{11}/, "music.youtube.com":/^\/watch\?(?:[^#]*&)?v=[\w-]{11}/},
                 [["koutube", "Koutube", {"youtube.com":"koutube.com", "youtu.be":"koutu.be", "music.youtube.com":"music.koutube.com"}], FIXEMBED], {group:"video", off:true}],
-            ["twitch", "Twitch clips", "#9146ff", [9401, "TwitchNeutralIcon"], ["twitch.tv", "clips.twitch.tv"],
+            ["twitch", "Twitch clips", "#9146ff", [9723, "TwitchNeutralIcon"], ["twitch.tv", "clips.twitch.tv"],
                 {"twitch.tv":/^\/(?:[\w-]+\/)?clip\/[\w-]+/, "clips.twitch.tv":/^\/(?!embed\b)[\w-]{3,}/},
                 [["fxtwitch", "fxtwitch", {"twitch.tv":"fxtwitch.seria.moe", "clips.twitch.tv":"fxtwitch.seria.moe/clip"}], FIXEMBED], {group:"video"}],
             ["bilibili", "Bilibili", "#fb7299", "B", ["bilibili.com", "b23.tv"], {"bilibili.com":/^\/video\/\w+/, "b23.tv":/^\/\w+/},
                 [["bilifix", "BiliFix", {"bilibili.com":"vxbilibili.com", "b23.tv":"vxb23.tv"}], ["fxbilibili", "fxbilibili", {"bilibili.com":"fxbilibili.seria.moe", "b23.tv":"fxbilibili.seria.moe/b23"}],
                  FIXEMBED], {group:"video"}],
-            ["spotify", "Spotify", "#1db954", [17210, "SpotifyNeutralIcon"], ["open.spotify.com"], /^\/(?:intl-[\w-]+\/)?track\/\w+/,
+            ["spotify", "Spotify", "#1db954", [18512, "SpotifyNeutralIcon"], ["open.spotify.com"], /^\/(?:intl-[\w-]+\/)?track\/\w+/,
                 [["fxspotify", "FxSpotify", {"open.spotify.com":"fxspotify.com"}]], {group:"video", off:true}],
             // phixiv shows the title and tags in English, Chinese or Korean when the link starts with the language (/en/artworks/...).
             ["pixiv", "pixiv", "#0096fa", "P", ["pixiv.net"], /^\/(?:(?:[a-z]{2}(?:_[a-z]{2})?\/)?artworks\/\d+|member_illust\.php\?(?:[^#]*&)?illust_id=\d+)/,
@@ -14347,18 +14347,18 @@
     }
     function voiceVolumeApply() {
         if (!enabled("voiceOptions") || !settings.voiceOptionsVolume) return;
-        const audio = inspectedExport(5343, "default");
+        const audio = inspectedExport(6079, "default");
         if (audio && typeof audio.setOutputVolume === "function") try { audio.setOutputVolume(settings.voiceOptionsVolumeLevel); } catch (_) {}
     }
     function voiceOptionsState(event) {
         if (!event || !enabled("voiceOptions") || settings.voiceOptionsOutput === "default") return;
-        const states = inspectedExport(1087, "RTCConnectionStates"), contexts = inspectedExport(5216, "MediaEngineContextTypes");
+        const states = inspectedExport(1072, "RTCConnectionStates"), contexts = inspectedExport(5929, "MediaEngineContextTypes");
         if (!states || event.state !== states.CONNECTED || contexts && event.context !== contexts.DEFAULT) return;
         later(voiceOutputApply, 0);
     }
     function voiceOutputApply() {
         if (!enabled("voiceOptions") || settings.voiceOptionsOutput === "default") return;
-        const store = inspectedExport(9059, "default"), choose = inspectedExport(9068, "setAudioOutputDevice"), types = inspectedExport(9060, "AudioDeviceType");
+        const store = inspectedExport(9335, "default"), choose = inspectedExport(9344, "setAudioOutputDevice"), types = inspectedExport(9336, "AudioDeviceType");
         if (!store || typeof choose !== "function" || !types || typeof store.getAudioDevices !== "function") return;
         try {
             const devices = store.getAudioDevices(), wanted = types[VOICE_OUTPUT_TYPES[settings.voiceOptionsOutput]];
@@ -14384,7 +14384,7 @@
     }
     function voiceSoundPatch() {
         if (voiceSoundPatched) return true;
-        const Sound = inspectedExport(11376, "MobileAudioSound"), proto = Sound && Sound.prototype;
+        const Sound = inspectedExport(11196, "MobileAudioSound"), proto = Sound && Sound.prototype;
         if (!proto || typeof proto.play !== "function" || typeof proto.playWithListener !== "function") return false;
         ["play", "playWithListener"].forEach(name => {
             const orig = proto[name];
@@ -14406,10 +14406,10 @@
     function voiceLeave(orig, self, args) {
         const channelId = voiceOptions.channelId, saved = settings.voiceOptionsExitSound;
         if (!channelId || voiceOptions.leaving || !enabled("voiceOptions") || !settings.voiceOptionsExit || !VOICE_SOUND_ID.test(saved) || !voiceNitro()) return orig.apply(self, args);
-        const http = inspectedExport(1297, "HTTP"), endpoints = inspectedExport(1087, "Endpoints");
+        const http = inspectedExport(1282, "HTTP"), endpoints = inspectedExport(1072, "Endpoints");
         if (!http || typeof http.post !== "function" || !endpoints || typeof endpoints.SEND_SOUNDBOARD_SOUND !== "function") return orig.apply(self, args);
         const cut = saved.indexOf(":"), guildId = saved.slice(0, cut), body = {sound_id:saved.slice(cut + 1)};
-        if (guildId !== String(inspectedExport(5530, "DEFAULT_SOUND_GUILD_ID"))) body.source_guild_id = guildId;
+        if (guildId !== String(inspectedExport(6225, "DEFAULT_SOUND_GUILD_ID"))) body.source_guild_id = guildId;
         let sent = null;
         try { sent = http.post({url:endpoints.SEND_SOUNDBOARD_SOUND(channelId), body}); } catch (_) {}
         if (!sent || typeof sent.then !== "function") return orig.apply(self, args);
@@ -14431,7 +14431,7 @@
         head:{flexDirection:"row", alignItems:"center", gap:4, paddingVertical:2}};
     // Every sound the store has loaded, one list per server with Discord's own first. Each is {id, name, emojiId, emojiName}.
     function voiceSoundLists() {
-        const store = inspectedExport(5528, "default"), defaultId = String(inspectedExport(5530, "DEFAULT_SOUND_GUILD_ID")), guilds = inspectedExport(2090, "default");
+        const store = inspectedExport(6223, "default"), defaultId = String(inspectedExport(6225, "DEFAULT_SOUND_GUILD_ID")), guilds = inspectedExport(5041, "default");
         let raw = null;
         try { raw = store && typeof store.getSounds === "function" ? store.getSounds() : null; } catch (_) {}
         const lists = new Map();
@@ -14458,7 +14458,7 @@
     function useVoiceSounds() {
         const [, refresh] = React.useState(0);
         React.useEffect(() => {
-            const store = inspectedExport(5528, "default"), fetchSounds = inspectedExport(7324, "maybeFetchSoundboardSounds");
+            const store = inspectedExport(6223, "default"), fetchSounds = inspectedExport(7622, "maybeFetchSoundboardSounds");
             if (!voiceOptions.asked && typeof fetchSounds === "function") { voiceOptions.asked = true; try { fetchSounds(); } catch (_) {} }
             if (!store || typeof store.addChangeListener !== "function") return undefined;
             const fn = () => refresh(n => n + 1);
@@ -14469,7 +14469,7 @@
     }
     // The sound's own emoji (a custom one is an image, a standard one is text), or Discord's soundboard icon.
     function VoiceSoundEmoji(props) {
-        const Icon = venusIcon(13212, "SoundboardIcon"), sound = props.sound;
+        const Icon = venusIcon(14373, "SoundboardIcon"), sound = props.sound;
         if (sound.emojiId) return el(RN.Image, {style:{width:24, height:24}, source:{uri:"https://cdn.discordapp.com/emojis/" + sound.emojiId + ".webp?size=64&quality=lossless"}, accessible:false});
         if (sound.emojiName) return el(RN.Text, {style:{fontSize:20, width:24, textAlign:"center"}, accessible:false}, sound.emojiName);
         return el(RN.View, {style:{width:24, alignItems:"center"}}, el(Icon, {size:"sm", color:props.color}));
@@ -14481,17 +14481,17 @@
     }
     // On the page: one row with the picked sound (its emoji, name and server). It opens the sheet.
     function VoiceSoundPicker(props) {
-        const ui = reviewUI(), Group = ui.TableRowGroup || RN.View, Chevron = venusIcon(7182, "ChevronSmallRightIcon"), data = useVoiceSounds(), saved = settings.voiceOptionsExitSound;
+        const ui = reviewUI(), Group = ui.TableRowGroup || RN.View, Chevron = venusIcon(7471, "ChevronSmallRightIcon"), data = useVoiceSounds(), saved = settings.voiceOptionsExitSound;
         let current = null, currentGuild = "";
         data.lists.forEach((list, guild) => { const found = list.find(sound => sound.id === saved); if (found) { current = found; currentGuild = guild; } });
         return el(Group, {key:"sound"}, ui.TableRow ? el(ui.TableRow, {key:"current", label:current ? current.name : tr("Choose a sound"), subLabel:current ? data.name(currentGuild) : undefined,
-            icon:current && (current.emojiId || current.emojiName) ? el(VoiceSoundEmoji, {sound:current}) : rowIcon(13212, "SoundboardIcon"),
+            icon:current && (current.emojiId || current.emojiName) ? el(VoiceSoundEmoji, {sound:current}) : rowIcon(14373, "SoundboardIcon"),
             trailing:el(Chevron, {size:"sm"}), onPress:() => { if (!props.on) return; haptic("SELECTION"); openVoiceSounds(); }, disabled:!props.on}) : null);
     }
     function VoiceSoundSheet() {
         const [query, setQuery] = React.useState(""), [server, setServer] = React.useState(""), [width, setWidth] = React.useState(0);
-        const ui = reviewUI(), Text = inspectedExport(5187, "Text"), SearchField = inspectedExport(7016, "SearchField"), Scroll = inspectedExport(6584, "BottomSheetScrollView");
-        const Press = RN.Pressable || RN.TouchableOpacity, Icon = venusIcon(13212, "SoundboardIcon");
+        const ui = reviewUI(), Text = inspectedExport(5783, "Text"), SearchField = inspectedExport(7315, "SearchBar"), Scroll = inspectedExport(5424, "BottomSheetScrollView");
+        const Press = RN.Pressable || RN.TouchableOpacity, Icon = venusIcon(14373, "SoundboardIcon");
         const s = useThemed("voiceSounds", c => ({top:Object.assign({}, VOICE_SOUND_DARK.top, {backgroundColor:c.MOBILE_ACTIONSHEET_BACKGROUND || c.BACKGROUND_SURFACE_HIGH}),
             chip:Object.assign({}, VOICE_SOUND_DARK.chip, {backgroundColor:c.BACKGROUND_MOD_SUBTLE}), chipOn:{borderColor:c.BACKGROUND_BRAND},
             initials:Object.assign({}, VOICE_SOUND_DARK.initials, {color:c.TEXT_DEFAULT}),
@@ -14528,7 +14528,7 @@
                     accessibilityLabel:data.name(guild), style:s.head},
                     Text ? el(Text, {variant:"text-sm/semibold", color:"text-muted", lineClamp:1, style:{flexShrink:1}}, data.name(guild)) :
                         el(RN.Text, {numberOfLines:1, style:{color:"#949ba4", fontSize:13, fontWeight:"600", flexShrink:1}}, data.name(guild)),
-                    capped ? el(venusIcon(7182, "ChevronSmallRightIcon"), {size:"xs"}) : null),
+                    capped ? el(venusIcon(7471, "ChevronSmallRightIcon"), {size:"xs"}) : null),
                 el(RN.View, {style:{flexDirection:"row", flexWrap:"wrap", gap:VOICE_GAP}}, (capped ? all.slice(0, columns * VOICE_PEEK) : all.slice(0, 60)).map(tile))));
         });
         const empty = !data.order.length ? footnote("empty", "Your sounds show up here once Discord has loaded them. Open the soundboard in a voice channel if the list is empty.") :
@@ -15146,7 +15146,7 @@
     // A message you asked to translate from the hold menu that has nothing to translate says so, once.
     function translateNothing(id) {
         if (!translate.asked.delete(id)) return;
-        later(() => reviewToast(reviewUI(), "This message is already in your language", venusIcon(9415,"LanguageIcon")), 0);
+        later(() => reviewToast(reviewUI(), "This message is already in your language", venusIcon(9741,"LanguageIcon")), 0);
     }
     // The message a reply quotes, above the reply. It was always shown as written, even when that message was
     // shown translated in chat (#51). It now gets the same translation, without the note or the original, since
@@ -15219,7 +15219,7 @@
         if (settings.translateMode === "manual" && settings.translateAsk === "bar" && !shownNow && !translateChatOn(message.channel_id || message.channelId)) return tree;
         const label = shownNow ? tr("Show original") : tr("Translate");
         let added = false;
-        const Icon = venusIcon(9415, "LanguageIcon");
+        const Icon = venusIcon(9741, "LanguageIcon");
         return cloneTree(tree, function (node, nodeProps) {
             if (added || !Array.isArray(nodeProps.children)) return nodeProps;
             const rows = nodeProps.children.filter(child => child && child.props && typeof child.props.label === "string" && typeof child.props.onPress === "function");
@@ -15479,7 +15479,7 @@
     const TRANSLATE_SAMPLE = "\u00a1Hola a todos! \u00bfQui\u00e9n viene esta noche?";
     // A message's long-press menu (LongPressMessageActionSheet 9978 + EmojiRow 12834): 5 quick reactions + Add Reaction, and a rounded card of actions.
     function previewSheet(k, s, rows, pulse) {
-        const Press = RN.Pressable || RN.View, AddReaction = venusIcon(9252, "ReactionIcon");
+        const Press = RN.Pressable || RN.View, AddReaction = venusIcon(9566, "ReactionIcon");
         return el(RN.View, {key:"sheet", style:[k.sheet, {marginTop:6}]},
             el(RN.View, {style:{alignSelf:"center", width:36, height:4, borderRadius:2, backgroundColor:"#80848e66", marginBottom:8}}),
             el(RN.View, {style:{flexDirection:"row", justifyContent:"space-between", paddingHorizontal:16, paddingBottom:10}},
@@ -15523,7 +15523,7 @@
             return steps;
         }, [manual, barAsk, settings.translateNote, settings.translateOriginal, target]);
         const translated = on ? state.done : true;
-        const Lang = venusIcon(9415, "LanguageIcon");
+        const Lang = venusIcon(9741, "LanguageIcon");
         const body = state.busy ? el(RN.View, null, el(RN.Text, {style:s.text}, TRANSLATE_SAMPLE),
                 el(RN.Text, {style:[s.muted, {marginTop:2}]}, tr("Translating\u2026"))) :
             !translated ? el(RN.Text, {style:s.text}, TRANSLATE_SAMPLE) : el(RN.View, null,
@@ -15540,8 +15540,8 @@
         const sheet = watching && state.menu ? el(RN.View, {key:"overlay", style:[k.scrim, {position:"absolute", left:0, right:0, top:0, bottom:0, justifyContent:"flex-end"}]},
             el(RN.View, {style:{flex:1}}),
             popIn("sheet", previewSheet(k, s, [
-                ["reply", venusIcon(12274, "ArrowAngleLeftUpIcon"), tr("Reply"), null],
-                ["copy", venusIcon(5141, "CopyIcon"), tr("Copy Text"), null],
+                ["reply", venusIcon(12981, "ArrowAngleLeftUpIcon"), tr("Reply"), null],
+                ["copy", venusIcon(5887, "CopyIcon"), tr("Copy Text"), null],
                 ["translate", Lang, actionLabel, null]], state.pulse))) : null;
         return el(RN.View, {key:"preview"},
             previewScreen(s, "preview", "Translation preview",
@@ -15625,8 +15625,8 @@
     // The pill's insides, shared by chat and the settings preview so both always look the same.
     function translatePill(s, on, label, onPress, onCog, Press, extra) {
         Press = Press || RN.View;
-        const Lang = venusIcon(9415, "LanguageIcon"), Cog = venusIcon(12331, "FiltersHorizontalIcon", venusIcon(7368, "SettingsIcon"));
-        const Text = inspectedExport(5187, "Text");
+        const Lang = venusIcon(9741, "LanguageIcon"), Cog = venusIcon(13052, "FiltersHorizontalIcon", venusIcon(7666, "SettingsIcon"));
+        const Text = inspectedExport(5783, "Text");
         return el(RN.View, {style:s.bar},
             el(Press, {style:{flexDirection:"row", alignItems:"center", gap:8, height:34, paddingRight:6, flexShrink:1},
                 accessibilityRole:onPress ? "button" : undefined, accessibilityLabel:label, accessibilityState:{checked:on}, onPress, hitSlop:{top:6, bottom:6, left:6}},
@@ -15650,7 +15650,7 @@
         const channelId = props.channelId, headerHeight = useTranslateHeaderHeight(channelId);
         React.useEffect(() => {
             if (!channelId || !enabled("translate") || settings.translateMode !== "manual" || settings.translateAsk === "menu") return undefined;
-            if (!msgStore) msgStore = inspectedExport(5532, "default");
+            if (!msgStore) msgStore = inspectedExport(6226, "default");
             if (!msgStore || typeof msgStore.addChangeListener !== "function" || typeof msgStore.removeChangeListener !== "function") return undefined;
             const check = () => {
                 if (translate.foreign.get(channelId) !== true && translateScanChannel(channelId)) bump(n => n + 1);
@@ -15661,7 +15661,7 @@
         }, [channelId, settings.translate, settings.translateMode, settings.translateAsk, settings.translateTarget, settings.translateLanguage]);
         const s = useTranslateBarStyles();
         if (!translateBarShown(channelId) || expandBar.expanded) return null;
-        const on = translate.channels.has(channelId), Press = inspectedExport(6462, "PressableOpacity") || RN.TouchableOpacity || RN.Pressable || RN.View;
+        const on = translate.channels.has(channelId), Press = inspectedExport(7076, "PressableOpacity") || RN.TouchableOpacity || RN.Pressable || RN.View;
         const label = on ? tr("Show original") : tr("Translate to {language}", {language:translateTargetName()});
         const tap = () => { haptic("SELECTION"); animateLayout(); translateChannel(channelId, !on); };
         // A plain view placed with layout (top), never a native-driven transform or popIn wrapper: on Android those draw the
@@ -15672,9 +15672,9 @@
     }
     function openTranslateSettings() {
         haptic("SELECTION");
-        if (!status.menu) inspectedExport(15602, "SETTING_RENDERER_CONFIG");
-        if (!SettingsList) SettingsList = inspectedExport(15733, "SettingsList");
-        const open = inspectedExport(7370, "openUserSettings");
+        if (!status.menu) inspectedExport(16783, "SETTING_RENDERER_CONFIG");
+        if (!SettingsList) SettingsList = inspectedExport(16937, "SettingsList");
+        const open = inspectedExport(7668, "openUserSettings");
         try { if (typeof open === "function") { open({screen:status.menu ? "VENUS_TRANSLATE" : undefined}); return; } } catch (_) {}
         openSettings();
     }
@@ -15688,8 +15688,8 @@
         // value and onChange instead of a setting: Fix link previews keeps each site's language inside one setting.
         const key = props.setting || "translateLanguage", value = props.onChange ? props.value : settings[key];
         const [query, setQuery] = React.useState(""), [open, setOpen] = React.useState(false), ui = reviewUI(), on = !!props.on;
-        const RadioGroup = inspectedExport(6540, "TableRadioGroup"), RadioRow = inspectedExport(6539, "TableRadioRow");
-        const SearchField = inspectedExport(7016, "SearchField"), Group = ui.TableRowGroup || RN.View;
+        const RadioGroup = inspectedExport(7157, "TableRadioGroup"), RadioRow = inspectedExport(7160, "TableRadioRow");
+        const SearchField = inspectedExport(7315, "SearchBar"), Group = ui.TableRowGroup || RN.View;
         const shownIn = i18n.shownIn;
         const all = React.useMemo(() => TRANSLATE_LANGUAGES.map(code => {
             const local = translateLanguageName(code), own = translateNativeName(code);
@@ -15707,7 +15707,7 @@
         const Chevron = venusIcon(open ? 10859 : 7182, open ? "ChevronSmallDownIcon" : "ChevronSmallRightIcon");
         const subLabel = props.note ? (current && current.sub ? current.sub + " \u00b7 " : "") + props.note : current && current.sub;
         const head = ui.TableRow ? el(ui.TableRow, {key:"current", label:current ? current.label : value, subLabel,
-            icon:rowIcon(9415, "LanguageIcon"), trailing:el(Chevron, {size:"sm"}), onPress:toggle, disabled:!on,
+            icon:rowIcon(9741, "LanguageIcon"), trailing:el(Chevron, {size:"sm"}), onPress:toggle, disabled:!on,
             accessibilityHint:tr(open ? "Close the list" : "Choose a language")}) : null;
         const title = props.title === null ? undefined : tr(props.title || "Language");
         if (!open) return el(Group, {key:"language", title}, head);
@@ -15717,7 +15717,7 @@
             RadioGroup && RadioRow ? el(RadioGroup, {key:"list", value, onChange:pick},
                 shown.map(entry => el(RadioRow, {key:entry.code, value:entry.code, label:entry.label, subLabel:entry.sub, disabled:!on}))) :
             el(Group, {key:"list"}, shown.map(entry => ui.TableRow && el(ui.TableRow, {key:entry.code, label:entry.label, subLabel:entry.sub,
-                trailing:entry.code === value ? el(venusIcon(7101, "CheckmarkSmallIcon"), {size:"sm"}) : undefined, disabled:!on, onPress:() => pick(entry.code)})));
+                trailing:entry.code === value ? el(venusIcon(7399, "CheckmarkSmallIcon"), {size:"sm"}) : undefined, disabled:!on, onPress:() => pick(entry.code)})));
         return el(RN.View, {key:"language", style:{gap:12}}, el(Group, {key:"head", title}, head),
             el(RN.View, {style:{paddingHorizontal:16}}, search), rows);
     }
@@ -15730,11 +15730,11 @@
         let saved = 0; translate.cache.forEach(entry => { if (entry.state === "done") saved++; });
         const groups = [
             // While on, the card only speaks up when there's news (a count or an error): "Into English" alone repeats Translate into below.
-            on ? (translate.error || translate.translated ? statusCard("status", translateStatus(), {title:tr("Into {language}", {language:translateTargetName()}), IconComponent:venusIcon(9415, "LanguageIcon")}) : null) :
-                offCard("status", venusIcon(9415, "LanguageIcon"), "translate"),
+            on ? (translate.error || translate.translated ? statusCard("status", translateStatus(), {title:tr("Into {language}", {language:translateTargetName()}), IconComponent:venusIcon(9741, "LanguageIcon")}) : null) :
+                offCard("status", venusIcon(9741, "LanguageIcon"), "translate"),
             el(TranslatePreview, {key:"preview", on}),
-            radioGroup(ui, "mode", "When to translate", "translateMode", on, [["auto", "Automatically", "Every message on screen in another language.", rowIcon(11733, "SparklesIcon")],
-                ["manual", "Only when you ask", "From the bar at the top of a chat, or a message's menu. Nothing else is sent.", rowIcon(9252, "ReactionIcon")]]),
+            radioGroup(ui, "mode", "When to translate", "translateMode", on, [["auto", "Automatically", "Every message on screen in another language.", rowIcon(12467, "SparklesIcon")],
+                ["manual", "Only when you ask", "From the bar at the top of a chat, or a message's menu. Nothing else is sent.", rowIcon(9566, "ReactionIcon")]]),
             // How you ask (#82): one choice, so there's always a way to translate. Only shown when it matters.
             settings.translateMode === "manual" ? el(RN.View, {key:"ask", style:{gap:8}},
                 groupTitle("title", "How you ask"),
@@ -15743,18 +15743,18 @@
                 footnote("hint", settings.translateAsk === "bar" ? "Chats with messages in another language show a bar at the top. Tap it to translate the chat until Discord restarts. Hold a message there to see its original." :
                     settings.translateAsk === "menu" ? "Hold a message and tap Translate. No bar at the top of chats." :
                     "Chats with messages in another language show a bar at the top. Tap it to translate the chat until Discord restarts, or hold one message and tap Translate.")) : null,
-            radioGroup(ui, "target", "Translate into", "translateTarget", on, [["discord", tr("Discord's language"), tr("{language}. Change it in Discord's Language settings.", {language:name("discord")}), rowIcon(13827, "ChatSmileIcon")],
-                ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(6919, "MobilePhoneIcon")],
-                ["custom", tr("Another language"), translateLanguageName(settings.translateLanguage) + ".", rowIcon(9415, "LanguageIcon")]], true),
+            radioGroup(ui, "target", "Translate into", "translateTarget", on, [["discord", tr("Discord's language"), tr("{language}. Change it in Discord's Language settings.", {language:name("discord")}), rowIcon(14878, "ChatSmileIcon")],
+                ["phone", tr("Your phone's language"), name("phone") + ".", rowIcon(7231, "MobilePhoneIcon")],
+                ["custom", tr("Another language"), translateLanguageName(settings.translateLanguage) + ".", rowIcon(9741, "LanguageIcon")]], true),
             settings.translateTarget === "custom" ? el(TranslateLanguagePicker, {key:"language", on}) : null,
             el(TranslateSkipPicker, {key:"skip", on}),
             el(Group, {key:"show", title:tr("Display")},
                 // The quoted original always comes with its "Translated from" line, so while it's on that switch shows on and
                 // can't be turned off, instead of reading off while the line still shows in chat.
-                settings.translateOriginal && Switch ? el(Switch, {key:"translateNote", label:tr("Show the original language"), icon:rowIcon(9393, "GlobeEarthIcon"),
+                settings.translateOriginal && Switch ? el(Switch, {key:"translateNote", label:tr("Show the original language"), icon:rowIcon(9163, "GlobeEarthIcon"),
                     subLabel:tr("Always shown with the original text."), value:true, disabled:true, onValueChange:() => {}}) :
-                    switchRow(Switch, "translateNote", "Show the original language", "A small \"Translated from Spanish\" line under each translation.", rowIcon(9393, "GlobeEarthIcon")),
-                switchRow(Switch, "translateOriginal", "Show the original text", "The untranslated message, in a quote under the translation.", rowIcon(14150, "QuoteIcon"))),
+                    switchRow(Switch, "translateNote", "Show the original language", "A small \"Translated from Spanish\" line under each translation.", rowIcon(9163, "GlobeEarthIcon")),
+                switchRow(Switch, "translateOriginal", "Show the original text", "The untranslated message, in a quote under the translation.", rowIcon(15257, "QuoteIcon"))),
             // Only once something is saved: a greyed-out "Nothing saved yet" row has nothing to offer.
             saved ? el(Group, {key:"clear", title:tr("Manage")}, actionRow(ui, "clear", "Clear saved translations",
                 tr("{count} kept on this phone, so chats you reopen show them at once.", {count:count(saved, "translation")}),
@@ -15770,7 +15770,7 @@
         useSettings("translateSkip");
         const [open, setOpen] = React.useState(false), [query, setQuery] = React.useState("");
         const ui = reviewUI(), on = !!props.on, Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
-        const CheckboxRow = inspectedExport(6454, "TableCheckboxRow"), SearchField = inspectedExport(7016, "SearchField");
+        const CheckboxRow = inspectedExport(7070, "TableCheckboxRow"), SearchField = inspectedExport(7315, "SearchBar");
         const Press = RN.Pressable || RN.TouchableOpacity || RN.View;
         const shownIn = i18n.shownIn;
         const all = React.useMemo(() => TRANSLATE_LANGUAGES.map(code => {
@@ -15787,7 +15787,7 @@
             setSetting("translateSkip", (pickedSet.has(code) ? picked.filter(c => c !== code) : picked.concat(code)).join(","));
         };
         const flip = () => { if (!on) return; haptic("SELECTION"); animateLayout(); setOpen(!open); setQuery(""); };
-        const Remove = venusIcon(6485, "XSmallIcon");
+        const Remove = venusIcon(7153, "XSmallIcon");
         const rows = picked.map(code => {
             const entry = byCode.get(code);
             return el(Row, {key:code, label:entry.label, subLabel:entry.sub, disabled:!on,
@@ -15796,7 +15796,7 @@
         });
         const addRow = el(Row, {key:"add", label:tr(open ? "Done" : "Add a language"), onPress:flip, disabled:!on,
             subLabel:!open && !picked.length ? tr("Languages you read stay as written, even when translating automatically.") : undefined,
-            icon:open ? rowIcon(7101, "CheckmarkSmallIcon") : rowIcon(10621, "PlusLargeIcon"),
+            icon:open ? rowIcon(7399, "CheckmarkSmallIcon") : rowIcon(10979, "PlusLargeIcon"),
             accessibilityHint:tr(open ? "Close the list" : "Choose a language")});
         const head = el(Group, {key:"head", title:tr("Don't translate")}, rows.concat([addRow]));
         if (!open) return el(RN.View, {key:"skip", style:{gap:8}}, head,
@@ -15816,7 +15816,7 @@
         translate.generation++; translate.cache.clear(); translate.queue.length = 0; translate.translated = 0; translate.error = ""; translate.choice.clear(); translate.asked.clear(); translate.channels.clear(); translate.foreign.clear(); translateScans.clear();
         if (files) Promise.resolve().then(() => files.writeFile("documents", TRANSLATE_FILE, "{\"version\":1,\"entries\":[]}", "utf8")).catch(() => {});
         translateChanged(); notify("translate");
-        reviewToast(reviewUI(), "Saved translations cleared", venusIcon(5148, "TrashIcon"));
+        reviewToast(reviewUI(), "Saved translations cleared", venusIcon(5894, "TrashIcon"));
     }
 
     // Custom themes: installs Revenge / Vendetta JSON themes from links and compiles their rawColors,
@@ -16788,7 +16788,7 @@
         customThemesBumpFallbackContextKey();
         // Notify ThemeStore (1207) so RootThemeContextProvider re-evaluates createThemedContext (4926) with the new
         // revision key, invalidating createStyles (5191) and useToken (4818) caches once and keeping O(1) lookups.
-        const store = customThemes.themeStore || (customThemes.themeStore = inspectedExport(1207, "default"));
+        const store = customThemes.themeStore || (customThemes.themeStore = inspectedExport(1192, "default"));
         try { if (store && typeof store.emitChange === "function") store.emitChange(); } catch (_) {}
         if (features.iconPacks && enabled("iconPacks")) iconPacksApply();
         if (features.materialYou || features.customThemes) myNativeSync(active);
@@ -16883,7 +16883,7 @@
         // Until it's signed, draw no image rather than a broken one; the theme's own background color still shows.
         const entry = {uri:hit && hit.uri || "", pending:true, expires:0};
         themeWallpapers.set(url, entry);
-        const http = inspectedExport(1297, "HTTP");
+        const http = inspectedExport(1282, "HTTP");
         const sent = http && typeof http.post === "function" ? Promise.resolve().then(() => http.post({url:"/attachments/refresh-urls",
             body:{attachment_urls:[url]}, interceptResponse:questIntercept})) : Promise.reject(new Error("no client"));
         sent.then(response => {
@@ -17021,7 +17021,7 @@
             customThemes.error = "";
             customThemesPersist();
             customThemesApply();
-            reviewToast(reviewUI(), tr("Applied {name}", {name:spec.name}), venusIcon(7144, "CircleCheckIcon"));
+            reviewToast(reviewUI(), tr("Applied {name}", {name:spec.name}), venusIcon(7434, "CircleCheckIcon"));
             if (typeof onDone === "function") onDone();
             return true;
         }).catch(err => {
@@ -17041,7 +17041,7 @@
         if (customThemes.active === id) customThemes.active = "";
         customThemesPersist();
         customThemesApply();
-        reviewToast(reviewUI(), tr("Removed {name}", {name:removed.name}), venusIcon(5148, "TrashIcon"));
+        reviewToast(reviewUI(), tr("Removed {name}", {name:removed.name}), venusIcon(5894, "TrashIcon"));
     }
     function customThemesClearAll() {
         customThemes.loaded = true;
@@ -17050,7 +17050,7 @@
         customThemes.error = "";
         customThemesPersist();
         customThemesApply();
-        reviewToast(reviewUI(), "Themes cleared", venusIcon(5148, "TrashIcon"));
+        reviewToast(reviewUI(), "Themes cleared", venusIcon(5894, "TrashIcon"));
     }
     // A theme's own colors: the first key it sets wins, in Discord's newer names first.
     function themeColorOf(item, keys) {
@@ -17095,7 +17095,7 @@
     }
     // One theme in the gallery: its mini chat, its name and one short line. The one in use has a ring and a check.
     function themeTile(s, opts) {
-        const Text = inspectedExport(5187, "Text"), Press = RN.Pressable || RN.View, Check = venusIcon(7101, "CheckmarkSmallIcon");
+        const Text = inspectedExport(5783, "Text"), Press = RN.Pressable || RN.View, Check = venusIcon(7399, "CheckmarkSmallIcon");
         const line = (value, variant, color, fallback) => Text ? el(Text, {variant, color, lineClamp:1, numberOfLines:1}, value) :
             el(RN.Text, {style:fallback, numberOfLines:1}, value);
         return el(Press, {key:opts.key, style:[s.tile, opts.selected ? s.on : null, {opacity:opts.disabled ? 0.5 : 1}],
@@ -17126,7 +17126,7 @@
         }, []);
         if (!React || !RN) return null;
         const s = useThemeTileStyles();
-        const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Text = inspectedExport(5187, "Text"), Press = RN.Pressable || RN.View;
+        const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Text = inspectedExport(5783, "Text"), Press = RN.Pressable || RN.View;
         const on = enabled("customThemes"), busy = customThemes.installing;
         const canInstall = on && !busy && /^https?:\/\/\S+/i.test(urlDraft.trim());
         const onInstall = () => {
@@ -17169,7 +17169,7 @@
                 onPress:() => customThemesUse(item.id),
                 onLongPress:() => confirmAction("Remove theme?", tr("Remove {name} from this phone?", {name:item.name}), "Remove", () => customThemesRemove(item.id))}));
         });
-        const Link = venusIcon(7972, "LinkExternalSmallIcon");
+        const Link = venusIcon(8264, "LinkExternalSmallIcon");
         tiles.push(el(Press, {key:"browse", style:s.add, accessibilityRole:"link", accessibilityLabel:tr("Browse Revenge themes"),
             onPress:() => openLink("https://plugins-list.pages.dev/Themes/")},
             el(RN.View, {style:s.addIcon}, el(Link, {size:"sm"})),
@@ -17183,12 +17183,12 @@
             text(tr("Couldn't install the theme"), "text-sm/semibold", "text-feedback-critical", {color:"#f23f43", fontSize:14, fontWeight:"600"}),
             text(customThemes.error, "text-xs/medium", "text-muted", {color:"#949ba4", fontSize:12})) : null;
         const groups = [
-            on ? null : offCard("status", venusIcon(16412, "EyeDropperIcon"), "customThemes"),
+            on ? null : offCard("status", venusIcon(17699, "EyeDropperIcon"), "customThemes"),
             gallery,
             el(Group, {key:"install", title:tr("Add from link"), description:tr("Downloads the theme once and keeps it on this phone.")},
                 el(RN.View, {key:"input", style:{padding:12}}, urlInput), problem),
             el(Group, {key:"display", title:tr("Display")},
-                switchRow(Switch, "customThemesBackground", "Show theme background image", "Shows the wallpaper behind chat, for themes that come with one.", rowIcon(8487, "ImageIcon"))),
+                switchRow(Switch, "customThemesBackground", "Show theme background image", "Shows the wallpaper behind chat, for themes that come with one.", rowIcon(8763, "ImageIcon"))),
             customThemes.list.length ? el(Group, {key:"manage", title:tr("Manage")},
                 actionRow(ui, "clear", "Clear installed themes",
                     pl(customThemes.list.length, "Removes {n} saved theme and restores Discord's default colors.", "Removes {n} saved themes and restores Discord's default colors."),
@@ -17505,7 +17505,7 @@
     };
     // Which appearance Discord shows: ThemeStore's theme is the slot key the color tables use.
     function nativeThemeSlot() {
-        const store = customThemes.themeStore || (customThemes.themeStore = inspectedExport(1207, "default"));
+        const store = customThemes.themeStore || (customThemes.themeStore = inspectedExport(1192, "default"));
         let theme = "";
         try { theme = store && typeof store.theme === "string" ? store.theme : ""; } catch (_) {}
         return THEME_SLOTS.indexOf(theme) >= 0 ? theme : "dark";
@@ -17571,8 +17571,8 @@
         if (!React || !RN) return null;
         const ui = reviewUI(), s = useThemeTileStyles(), card = highlightCardStyle();
         const sw = useThemed("myPicker", c => ({ring:{borderColor:c.TEXT_STRONG}, dashed:{borderColor:c.TEXT_MUTED}}), {ring:{borderColor:"#f2f3f5"}, dashed:{borderColor:"#949ba4"}});
-        const Text = inspectedExport(5187, "Text"), Press = RN.Pressable || RN.View, Check = venusIcon(7101, "CheckmarkSmallIcon"), Dropper = venusIcon(16412, "EyeDropperIcon");
-        const Wall = venusIcon(8487, "ImageIcon");
+        const Text = inspectedExport(5783, "Text"), Press = RN.Pressable || RN.View, Check = venusIcon(7399, "CheckmarkSmallIcon"), Dropper = venusIcon(17699, "EyeDropperIcon");
+        const Wall = venusIcon(8763, "ImageIcon");
         const on = enabled("materialYou"), choice = settings.materialYouColor, sys = mySystemSource();
         const overridden = on && !!customThemesActiveEntry();
         const text = (value, variant, color, fallback) => Text ? el(Text, {variant, color}, value) : el(RN.Text, {style:fallback}, value);
@@ -17622,9 +17622,9 @@
             venusSegmented({key:"tintSeg", value:settings.materialYouTint, disabled:!on, onChange:value => setSetting("materialYouTint", value),
                 items:[{value:"subtle", label:tr("Subtle")}, {value:"balanced", label:tr("Balanced")}, {value:"vivid", label:tr("Vivid")}]}));
         const groups = [
-            on ? null : offCard("status", venusIcon(16320, "PaintPaletteIcon"), "materialYou"),
+            on ? null : offCard("status", venusIcon(17608, "PaintPaletteIcon"), "materialYou"),
             overridden ? statusCard("override", "Your custom theme's colors show instead. Pick Discord's colors in Custom themes to see these.",
-                {title:tr("A custom theme is in use"), IconComponent:venusIcon(16412, "EyeDropperIcon")}) : null,
+                {title:tr("A custom theme is in use"), IconComponent:venusIcon(17699, "EyeDropperIcon")}) : null,
             preview, colors, tint,
             footnote("note", "Light or dark follows your Appearance setting in Discord.")];
         return settingsBody(ui, groups);
@@ -17979,7 +17979,7 @@
     function iconPacksBumpThemeRevision() {
         customThemes.revision++;
         customThemesBumpFallbackContextKey();
-        const store = customThemes.themeStore || (customThemes.themeStore = inspectedExport(1207, "default"));
+        const store = customThemes.themeStore || (customThemes.themeStore = inspectedExport(1192, "default"));
         try { if (store && typeof store.emitChange === "function") store.emitChange(); } catch (_) {}
     }
     function iconPacksApply() {
@@ -18174,7 +18174,7 @@
             iconPacksPersist();
             iconPacks.appliedKey = "";
             iconPacksApply();
-            reviewToast(reviewUI(), tr("Applied {name}", {name:spec.name}), venusIcon(7144, "CircleCheckIcon"));
+            reviewToast(reviewUI(), tr("Applied {name}", {name:spec.name}), venusIcon(7434, "CircleCheckIcon"));
             if (typeof onDone === "function") onDone();
             return Promise.resolve(true);
         }
@@ -18217,7 +18217,7 @@
             iconPacksPersist();
             iconPacks.appliedKey = "";
             iconPacksApply();
-            reviewToast(reviewUI(), tr("Applied {name}", {name:spec.name}), venusIcon(7144, "CircleCheckIcon"));
+            reviewToast(reviewUI(), tr("Applied {name}", {name:spec.name}), venusIcon(7434, "CircleCheckIcon"));
             if (typeof onDone === "function") onDone();
             return true;
         }).catch(err => {
@@ -18253,7 +18253,7 @@
         iconPacksPersist();
         iconPacks.appliedKey = "";
         iconPacksApply();
-        reviewToast(reviewUI(), tr("Removed {name}", {name:removed.name}), venusIcon(5148, "TrashIcon"));
+        reviewToast(reviewUI(), tr("Removed {name}", {name:removed.name}), venusIcon(5894, "TrashIcon"));
     }
     function iconPacksClearCustom() {
         iconPacks.loaded = true;
@@ -18264,17 +18264,17 @@
         iconPacksPersist();
         iconPacks.appliedKey = "";
         iconPacksApply();
-        reviewToast(reviewUI(), "Custom icon packs cleared", venusIcon(5148, "TrashIcon"));
+        reviewToast(reviewUI(), "Custom icon packs cleared", venusIcon(5894, "TrashIcon"));
     }
     // Six icons that exist in every built-in pack and represent Discord's core surfaces: Chat, Notifications, Friends,
     // Reactions, Settings and Voice. Each tile in the gallery renders these 6 icons directly from that pack's URLs.
     const ICONPACK_SHOWCASE = [
-        [8471, "ChatIcon"],
-        [9045, "BellIcon"],
-        [4910, "FriendsIcon"],
-        [9252, "ReactionIcon"],
-        [7368, "SettingsIcon"],
-        [11492, "MicrophoneIcon"]
+        [8747, "ChatIcon"],
+        [9321, "BellIcon"],
+        [5872, "FriendsIcon"],
+        [9566, "ReactionIcon"],
+        [7666, "SettingsIcon"],
+        [12170, "MicrophoneIcon"]
     ];
     // The pack's own image for a design-system icon, or "" when its file list says it has none (then Discord's stays).
     function iconPackSampleUri(pack, iconName) {
@@ -18328,7 +18328,7 @@
             TabIcon(7368, "SettingsIcon", false));
         return el(RN.View, {key:"preview"},
             previewScreen(s, "preview", "Icon packs preview", [body], {
-                header:previewHeader(k, {title:"design", icons:[[10641, "PinIcon"], [9045, "BellIcon"], [7017, "MagnifyingGlassIcon"]]}),
+                header:previewHeader(k, {title:"design", icons:[[11141, "PinIcon"], [9321, "BellIcon"], [7316, "MagnifyingGlassIcon"]]}),
                 footer:el(RN.View, {key:"foot"},
                     previewInput(k, s, {placeholder:tr("Message {channel}", {channel:"#design"})}),
                     tabs,
@@ -18345,7 +18345,7 @@
         }, []);
         if (!React || !RN) return null;
         const s = useThemeTileStyles(), k = usePreviewChrome();
-        const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Text = inspectedExport(5187, "Text"), Press = RN.Pressable || RN.View, Check = venusIcon(7101, "CheckmarkSmallIcon");
+        const Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Text = inspectedExport(5783, "Text"), Press = RN.Pressable || RN.View, Check = venusIcon(7399, "CheckmarkSmallIcon");
         const on = enabled("iconPacks"), busy = iconPacks.installing;
         const canInstall = on && !busy && /^https?:\/\/\S+/i.test(urlDraft.trim());
         const onInstall = () => {
@@ -18433,17 +18433,17 @@
         // instead of the pack looking picked but doing nothing.
         const stuck = on && active && !active.custom && !iconPacks.trees.has(active.id) && !iconPacks.loadingTrees.has(active.id) &&
             (iconPacks.treeTries.get(active.id) || 0) > 0;
-        const RetryButton = stuck ? inspectedExport(5479, "Button") : null;
+        const RetryButton = stuck ? inspectedExport(5790, "Button") : null;
         const retry = () => { haptic("SELECTION"); iconPacks.treeTries.delete(active.id); iconPacksFetchTree(active); notify("iconPacks"); };
         const groups = [
-            on ? null : offCard("status", venusIcon(11449, "ImageSparkleIcon"), "iconPacks"),
-            stuck ? statusCard("status", "Can't reach the internet right now. Try again in a moment.", {title:active.name, IconComponent:venusIcon(11449, "ImageSparkleIcon"),
+            on ? null : offCard("status", venusIcon(12127, "ImageSparkleIcon"), "iconPacks"),
+            stuck ? statusCard("status", "Can't reach the internet right now. Try again in a moment.", {title:active.name, IconComponent:venusIcon(12127, "ImageSparkleIcon"),
                 trailing:RetryButton ? el(RetryButton, {text:tr("Retry"), size:"sm", variant:"secondary", onPress:retry}) : null}) : null,
             el(IconPacksPreview, {key:"preview", on, active}),
             gallery,
             // Its only row needs Custom themes; without it the group was an empty "Display" title.
             features.customThemes ? el(Group, {key:"display", title:tr("Display")},
-                switchRow(Switch, "iconPacksTheme", "Follow theme's icon pack", "Uses the icon pack recommended by your active custom theme, when it sets one.", rowIcon(16412, "EyeDropperIcon"))) : null,
+                switchRow(Switch, "iconPacksTheme", "Follow theme's icon pack", "Uses the icon pack recommended by your active custom theme, when it sets one.", rowIcon(17699, "EyeDropperIcon"))) : null,
             el(Group, {key:"install", title:tr("Add from link"), description:tr("Paste a custom icon pack folder URL or config.json link.")},
                 el(RN.View, {key:"input", style:{padding:12}}, urlInput), problem),
             iconPacks.custom.length ? el(Group, {key:"manage", title:tr("Manage")},
@@ -18473,7 +18473,7 @@
     }
     // Discord's own color picker sheet, the one its role and profile colors use. Returns false when it can't open.
     function highlightPickColor(current, presets, onPick) {
-        const show = inspectedExport(15613, "default");
+        const show = inspectedExport(16794, "default");
         if (typeof show !== "function") return false;
         try {
             show({color:hexInt(current), suggestedColors:presets.map(choice => choice[2]), onSelect:value => {
@@ -18560,7 +18560,7 @@
     // One highlight's colors: its name and current color, then a row of swatches and a last one for any color.
     function highlightColorPicker(props) {
         const s = useThemed("highlightPicker", c => ({ring:{borderColor:c.TEXT_STRONG}, dashed:{borderColor:c.TEXT_MUTED}}), HIGHLIGHT_DARK);
-        const Text = inspectedExport(5187, "Text"), Press = RN.Pressable || RN.View, Check = venusIcon(7101, "CheckmarkSmallIcon"), Dropper = venusIcon(16412, "EyeDropperIcon");
+        const Text = inspectedExport(5783, "Text"), Press = RN.Pressable || RN.View, Check = venusIcon(7399, "CheckmarkSmallIcon"), Dropper = venusIcon(17699, "EyeDropperIcon");
         const value = props.value, on = props.on, custom = typeof value === "string" && value.startsWith("#");
         const active = props.choices.find(choice => choice[0] === value), activeHex = highlightColorHex(value, props.defaultHex);
         const activeName = active ? tr(active[1]) : activeHex.toUpperCase();
@@ -18601,7 +18601,7 @@
         const changed = settings.messageHighlightThickness !== 2 || settings.messageHighlightPingColor !== "default" || settings.messageHighlightBrightness !== 50;
         const resetAll = () => {
             setSetting("messageHighlightThickness", 2); setSetting("messageHighlightPingColor", "default"); setSetting("messageHighlightBrightness", 50);
-            setHexOpen(false); reviewToast(ui, "Highlights reset", venusIcon(7144,"CircleCheckIcon"));
+            setHexOpen(false); reviewToast(ui, "Highlights reset", venusIcon(7434,"CircleCheckIcon"));
         };
         // When Discord's color picker can't open, a hex box opens under the colors instead.
         const cleanHex = String(hexDraft || "").trim(), validHex = /^#?[0-9a-fA-F]{6}$/.test(cleanHex);
@@ -18611,7 +18611,7 @@
             setHexOpen(false); setHexDraft("");
         };
         const groups = [
-            on ? null : offCard("status", venusIcon(17627, "PaintbrushThinIcon"), "messageHighlight"),
+            on ? null : offCard("status", venusIcon(18940, "PaintbrushThinIcon"), "messageHighlight"),
             el(HighlightPreview, {key:"preview", on, me:currentUser(), bar:barWidth, ping:pingHex, pingAlpha, deleted:showDeleted ? delHex : null, deletedAlpha:delAlpha, fresh}),
             el(RN.View, {key:"thickness", style:{gap:8}},
                 groupTitle("title", "Left bar width"),
@@ -18643,7 +18643,7 @@
     const experiments = {dispatcher:null, unlocked:false};
     const EXPERIMENT_STORES = new Set(["ExperimentStore", "DeveloperExperimentStore"]);
     function experimentsMe() {
-        const store = userStore || inspectedExport(1392, "default");
+        const store = userStore || inspectedExport(1385, "default");
         try { return store && typeof store.getCurrentUser === "function" ? store.getCurrentUser() : null; } catch (_) { return null; }
     }
     function hookStaffEnv(exports) {
@@ -18663,8 +18663,8 @@
         dispatcher.subscribe("CONNECTION_OPEN", () => { if (enabled("experiments")) experimentsEnable(); });
     }
     function experimentsEnable() {
-        const d = experiments.dispatcher || inspectedExport(584, "default"), me = experimentsMe();
-        const store = inspectedExport(5112, "default"), flags = inspectedExport(1087, "UserFlags");
+        const d = experiments.dispatcher || inspectedExport(572, "default"), me = experimentsMe();
+        const store = inspectedExport(5386, "default"), flags = inspectedExport(1072, "UserFlags");
         if (!d || !me || !store || typeof store.getSerializedState !== "function" || !flags || typeof flags.STAFF !== "number") return false;
         let handlers = null;
         try { handlers = d._actionHandlers.getOrderedActionHandlers({type:"OVERLAY_INITIALIZE"}); } catch (_) { return false; }
@@ -18674,7 +18674,7 @@
             if (!entry || !EXPERIMENT_STORES.has(entry.name) || typeof entry.actionHandler !== "function") return;
             try { entry.actionHandler(action); experiments.unlocked = true; } catch (_) {}
         });
-        [store, inspectedExport(7674, "default")].forEach(changed => { try { if (changed && typeof changed.emitChange === "function") changed.emitChange(); } catch (_) {} });
+        [store, inspectedExport(7974, "default")].forEach(changed => { try { if (changed && typeof changed.emitChange === "function") changed.emitChange(); } catch (_) {} });
         return experiments.unlocked;
     }
     function experimentsAskReopen() {
@@ -18701,7 +18701,7 @@
     function hideBlockedAuthorBlocked(msg) {
         if (!msg || typeof msg !== "object") return false;
         if (msg.blocked === true) return true;
-        const rel = hideBlocked.relationships || (hideBlocked.relationships = inspectedExport(4855, "default"));
+        const rel = hideBlocked.relationships || (hideBlocked.relationships = inspectedExport(5112, "default"));
         if (!rel) return false;
         try {
             if (typeof rel.isBlockedForMessage === "function") return !!rel.isBlockedForMessage(msg);
@@ -18713,7 +18713,7 @@
     function hideBlockedAuthorIgnored(msg) {
         if (!msg || typeof msg !== "object") return false;
         if (msg.ignored === true) return true;
-        const rel = hideBlocked.relationships || (hideBlocked.relationships = inspectedExport(4855, "default"));
+        const rel = hideBlocked.relationships || (hideBlocked.relationships = inspectedExport(5112, "default"));
         if (!rel) return false;
         try {
             if (typeof rel.isIgnoredForMessage === "function") return !!rel.isIgnoredForMessage(msg);
@@ -18731,7 +18731,7 @@
         const refId = ref.messageId || ref.message_id;
         const refChannelId = ref.channelId || ref.channel_id || msg.channel_id || msg.channelId;
         if (!refId) return null;
-        const store = hideBlocked.references || (hideBlocked.references = inspectedExport(7579, "default"));
+        const store = hideBlocked.references || (hideBlocked.references = inspectedExport(7875, "default"));
         if (store) {
             try {
                 const entry = typeof store.getMessage === "function" && refChannelId ? store.getMessage(refChannelId, refId) :
@@ -18800,11 +18800,11 @@
     }
     function hideBlockedCloseDm(userId) {
         try {
-            const store = channelStore || inspectedExport(2068, "default");
+            const store = channelStore || inspectedExport(5019, "default");
             const channelId = store && typeof store.getDMFromUserId === "function" ? store.getDMFromUserId(userId) : null;
-            const actions = channelId && inspectedExport(7290, "default");
+            const actions = channelId && inspectedExport(7582, "default");
             if (!actions || typeof actions.closePrivateChannel !== "function") return;
-            const selected = inspectedExport(2119, "default");
+            const selected = inspectedExport(5073, "default");
             const open = !!(selected && typeof selected.getChannelId === "function" && selected.getChannelId() === channelId);
             const done = actions.closePrivateChannel(channelId, open, false);
             if (done && typeof done.catch === "function") done.catch(() => {});
@@ -18812,7 +18812,7 @@
     }
     function hideBlockedChanged() {
         hideBlocked.version++;
-        if (!msgStore) msgStore = inspectedExport(5532, "default");
+        if (!msgStore) msgStore = inspectedExport(6226, "default");
         try { if (msgStore && typeof msgStore.emitChange === "function") msgStore.emitChange(); } catch (_) {}
     }
     const HIDE_BLOCKED_DARK = {row:{flexDirection:"row", alignItems:"center", gap:12, marginHorizontal:12, marginVertical:4, paddingHorizontal:12, paddingVertical:10,
@@ -18829,7 +18829,7 @@
             pill:Object.assign({}, HIDE_BLOCKED_DARK.pill, {backgroundColor:c.CONTROL_SECONDARY_BACKGROUND_DEFAULT || c.BACKGROUND_MOD_STRONG}),
             spine:Object.assign({}, HIDE_BLOCKED_DARK.spine, {borderColor:c.INTERACTIVE_MUTED || c.BORDER_STRONG})}), HIDE_BLOCKED_DARK);
         const hideB = on && settings.hideBlockedBlocked, hideI = on && settings.hideBlockedIgnored, hideR = on && settings.hideBlockedReplies;
-        const Shield = venusIcon(11619, "ChatShieldIcon"), EyeSlash = venusIcon(6927, "EyeSlashIcon");
+        const Shield = venusIcon(13242, "ChatShieldIcon"), EyeSlash = venusIcon(7195, "EyeSlashIcon");
         const collapsedRow = (key, Icon, label) => popIn(key, el(RN.View, {key, style:b.row},
             el(RN.View, {style:b.badge}, el(Icon, {size:"xs", color:s.muted.color})),
             el(RN.Text, {style:[s.muted, {flex:1, fontSize:13, fontWeight:"600"}], numberOfLines:1}, label),
@@ -18866,18 +18866,18 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("hideBlocked"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(11619, "ChatShieldIcon");
+        const Icon = venusIcon(13242, "ChatShieldIcon");
         const hasAny = !!(settings.hideBlockedBlocked || settings.hideBlockedIgnored || settings.hideBlockedReplies || settings.hideBlockedCloseDms);
         const groups = [
             !on ? offCard("status", Icon, "hideBlocked") : !hasAny ? statusCard("status", "Turn on at least one option below.",
                 {title:tr("Nothing hidden"), IconComponent:Icon}) : null,
             el(HideBlockedPreview, {key:"preview", on}),
             el(Group, {key:"what", title:tr("Hide in chat")},
-                switchRow(Switch, "hideBlockedBlocked", "Blocked messages", "Hides the \"blocked messages\" row and the messages inside it.", rowIcon(5135, "UserMinusIcon")),
-                switchRow(Switch, "hideBlockedIgnored", "Ignored messages", "Hides the \"ignored messages\" row from people you've ignored.", rowIcon(6927, "EyeSlashIcon")),
-                switchRow(Switch, "hideBlockedReplies", "Replies to them", "Also hides messages that reply to someone you've blocked or ignored.", rowIcon(12274, "ArrowAngleLeftUpIcon"))),
+                switchRow(Switch, "hideBlockedBlocked", "Blocked messages", "Hides the \"blocked messages\" row and the messages inside it.", rowIcon(5881, "UserMinusIcon")),
+                switchRow(Switch, "hideBlockedIgnored", "Ignored messages", "Hides the \"ignored messages\" row from people you've ignored.", rowIcon(7195, "EyeSlashIcon")),
+                switchRow(Switch, "hideBlockedReplies", "Replies to them", "Also hides messages that reply to someone you've blocked or ignored.", rowIcon(12981, "ArrowAngleLeftUpIcon"))),
             el(Group, {key:"block", title:tr("When you block someone")},
-                switchRow(Switch, "hideBlockedCloseDms", "Close their DM", "Your DM with them leaves the Messages list. No messages are deleted.", rowIcon(8471, "ChatIcon"))),
+                switchRow(Switch, "hideBlockedCloseDms", "Close their DM", "Your DM with them leaves the Messages list. No messages are deleted.", rowIcon(8747, "ChatIcon"))),
             footnote("note", "Changes show in chat right away, with no restart.")
         ];
         return settingsBody(ui, groups);
@@ -18905,9 +18905,9 @@
         if (hit && now - hit.at < 30000) return hit.kind;
         let kind = null;
         try {
-            const guilds = staffTag.guilds || (staffTag.guilds = inspectedExport(2090, "default"));
-            const members = staffTag.members || (staffTag.members = inspectedExport(2128, "default"));
-            const roles = staffTag.roles || (staffTag.roles = inspectedExport(2122, "default"));
+            const guilds = staffTag.guilds || (staffTag.guilds = inspectedExport(5041, "default"));
+            const members = staffTag.members || (staffTag.members = inspectedExport(5082, "default"));
+            const roles = staffTag.roles || (staffTag.roles = inspectedExport(5076, "default"));
             const guild = guilds && typeof guilds.getGuild === "function" ? guilds.getGuild(guildId) : null;
             if (guild && String(guild.ownerId) === String(authorId)) kind = "owner";
             else if (guild && members && roles && typeof members.getMember === "function" && typeof roles.getRole === "function") {
@@ -18948,7 +18948,7 @@
     // Switched on or off, or an option changed: redraw the chat that's open, the way Message highlights does.
     function staffTagChanged() {
         staffTag.cache.clear();
-        const selected = inspectedExport(2119, "default"), store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        const selected = inspectedExport(5073, "default"), store = msgStore || (msgStore = inspectedExport(6226, "default"));
         const channelId = selected && typeof selected.getChannelId === "function" ? selected.getChannelId() : null;
         if (!channelId || !store || typeof store.getMessages !== "function") return;
         let messages = null;
@@ -18982,21 +18982,21 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("staffTag"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(10563, "CrownIcon");
+        const Icon = venusIcon(10921, "CrownIcon");
         const hasAny = !!(settings.staffTagOwner || settings.staffTagAdmin || settings.staffTagManager || settings.staffTagMod);
         const groups = [
             !on ? offCard("status", Icon, "staffTag") : !hasAny ? statusCard("status", "Turn on at least one option below.",
                 {title:tr("Nobody is tagged"), IconComponent:Icon}) : null,
             el(StaffTagPreview, {key:"preview", on}),
             el(Group, {key:"who", title:tr("Who gets a tag")},
-                switchRow(Switch, "staffTagOwner", "Owners", "Whoever owns the server.", rowIcon(10563, "CrownIcon")),
+                switchRow(Switch, "staffTagOwner", "Owners", "Whoever owns the server.", rowIcon(10921, "CrownIcon")),
                 // The crown belongs to the Owner tag, so it sits right under it, only while owners are tagged, and its
                 // subtitle shows the tag as chat draws it (already translated, so switchRow's tr() leaves it as is).
                 settings.staffTagOwner ? switchRow(Switch, "staffTagCrown", "Crown for owners",
-                    tr("Shows the tag as {tag}.", {tag:"\ud83d\udc51 " + staffTagLabel("owner")}), rowIcon(10563, "CrownIcon")) : null,
-                switchRow(Switch, "staffTagAdmin", "Admins", "Anyone with the Administrator permission.", rowIcon(10733, "ShieldIcon")),
-                switchRow(Switch, "staffTagManager", "Managers", "Anyone who can manage the server, its roles or its channels.", rowIcon(16625, "WrenchIcon")),
-                switchRow(Switch, "staffTagMod", "Moderators", "Anyone who can kick, ban, time out or delete messages.", rowIcon(8895, "ShieldUserIcon"))),
+                    tr("Shows the tag as {tag}.", {tag:"\ud83d\udc51 " + staffTagLabel("owner")}), rowIcon(10921, "CrownIcon")) : null,
+                switchRow(Switch, "staffTagAdmin", "Admins", "Anyone with the Administrator permission.", rowIcon(11453, "ShieldIcon")),
+                switchRow(Switch, "staffTagManager", "Managers", "Anyone who can manage the server, its roles or its channels.", rowIcon(17921, "WrenchIcon")),
+                switchRow(Switch, "staffTagMod", "Moderators", "Anyone who can kick, ban, time out or delete messages.", rowIcon(9172, "ShieldUserIcon"))),
             footnote("note", "Tags come from the roles you can see, and each person only gets their highest one. Bots keep their own tags.")
         ];
         return settingsBody(ui, groups);
@@ -19009,8 +19009,8 @@
     const REMOVED_KEEP = 20, REMOVED_MAX_FRIENDS = 2000, REMOVED_MAX_GUILDS = 600, REMOVED_BATCH = 3, REMOVED_MINE_MS = 30000, REMOVED_COOLDOWN_MS = 10000;
     const removed = {dispatcher:null, subscribed:false, friends:new Map(), guilds:new Map(), saved:null, history:[], mine:new Map(), cooldowns:new Map(),
         user:null, shown:0, refreshQueued:false, checkQueued:false, rels:null, guildStore:null};
-    function removedRels() { return removed.rels || (removed.rels = inspectedExport(4855, "default")); }
-    function removedGuildStore() { return removed.guildStore || (removed.guildStore = inspectedExport(2090, "default")); }
+    function removedRels() { return removed.rels || (removed.rels = inspectedExport(5112, "default")); }
+    function removedGuildStore() { return removed.guildStore || (removed.guildStore = inspectedExport(5041, "default")); }
     function removedMyId() { const me = currentUser(); return me && typeof me.id === "string" ? me.id : null; }
     function removedUserName(id) {
         const rels = removedRels();
@@ -19035,11 +19035,11 @@
         return out;
     }
     function removedLurking(id) {
-        const store = inspectedExport(4846, "default");
+        const store = inspectedExport(5103, "default");
         try { return !!(store && typeof store.isLurking === "function" && store.isLurking(id)); } catch (_) { return false; }
     }
     function removedUnavailable(id) {
-        const store = inspectedExport(6221, "default");
+        const store = inspectedExport(6862, "default");
         try { return !!(store && typeof store.isUnavailable === "function" && store.isUnavailable(id)); } catch (_) { return false; }
     }
     // Every server you belong to, as id -> name. Servers you're only previewing (lurking) don't count.
@@ -19101,7 +19101,7 @@
         removed.history.unshift(entry);
         if (removed.history.length > REMOVED_KEEP) removed.history.length = REMOVED_KEEP;
         const text = removedLabel(entry);
-        try { showToast(reviewUI(), "venus-removed:" + removed.shown, text, venusIcon(5135, "UserMinusIcon")); } catch (_) {}
+        try { showToast(reviewUI(), "venus-removed:" + removed.shown, text, venusIcon(5881, "UserMinusIcon")); } catch (_) {}
         removedPushSend(text);
         save();
         notify("removedAlerts");
@@ -19271,7 +19271,7 @@
     }
     const REMOVED_RED = "#f23f43";
     function removedBanner(s, key, text, on) {
-        const Icon = venusIcon(5135, "UserMinusIcon");
+        const Icon = venusIcon(5881, "UserMinusIcon");
         const body = el(RN.View, {style:{flexDirection:"row", gap:12, alignItems:"center", marginHorizontal:12, marginVertical:6, padding:12, borderRadius:12,
             backgroundColor:REMOVED_RED + "1f", borderWidth:1, borderColor:REMOVED_RED + "47", opacity:on ? 1 : 0.45}},
             el(RN.View, {style:{width:36, height:36, borderRadius:18, alignItems:"center", justifyContent:"center", backgroundColor:REMOVED_RED + "33"}},
@@ -19294,7 +19294,7 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("removedAlerts"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, Row = ui.TableRow;
-        const Icon = venusIcon(5135, "UserMinusIcon");
+        const Icon = venusIcon(5881, "UserMinusIcon");
         const watching = !!(settings.removedAlertsFriends || settings.removedAlertsServers || settings.removedAlertsClosed);
         const groups = [
             !on ? offCard("status", Icon, "removedAlerts") : VenusStatusCard({key:"status", IconComponent:Icon, accent:true,
@@ -19304,14 +19304,14 @@
                     {friends:pl(removed.friends.size, "{n} friend", "{n} friends"), servers:pl(removed.guilds.size, "{n} server", "{n} servers")})}),
             el(RemovedAlertsPreview, {key:"preview", on}),
             el(Group, {key:"when", title:tr("Alert me when")},
-                switchRow(Switch, "removedAlertsFriends", "A friend removes you", "They unfriend you.", rowIcon(5135, "UserMinusIcon")),
-                switchRow(Switch, "removedAlertsServers", "A server removes you", "You're kicked or banned, or the server is deleted. Never when you leave yourself.", rowIcon(9545, "ServerIcon")),
-                switchRow(Switch, "removedAlertsClosed", "Catch up when Discord opens", "Also tells you about removals that happened while Discord was closed or offline.", rowIcon(5150, "ClockIcon"))),
+                switchRow(Switch, "removedAlertsFriends", "A friend removes you", "They unfriend you.", rowIcon(5881, "UserMinusIcon")),
+                switchRow(Switch, "removedAlertsServers", "A server removes you", "You're kicked or banned, or the server is deleted. Never when you leave yourself.", rowIcon(9881, "ServerIcon")),
+                switchRow(Switch, "removedAlertsClosed", "Catch up when Discord opens", "Also tells you about removals that happened while Discord was closed or offline.", rowIcon(5896, "ClockIcon"))),
             el(Group, {key:"push", title:tr("Outside Discord")},
-                switchRow(Switch, "removedAlertsPush", "Phone notifications", "Get these even while Discord is closed. Keeps Discord connected in the background, which uses more battery.", rowIcon(6919, "MobilePhoneIcon")),
+                switchRow(Switch, "removedAlertsPush", "Phone notifications", "Get these even while Discord is closed. Keeps Discord connected in the background, which uses more battery.", rowIcon(7231, "MobilePhoneIcon")),
                 settings.removedAlertsPush && userNotif.permissionGranted === false && Row ?
                     el(Row, {key:"perm", label:tr("Allow notification permission"), subLabel:tr("Android notifications are turned off for Discord. Tap to check or open system settings."),
-                        icon:rowIcon(10654, "BellSlashIcon"), variant:"danger", arrow:true, disabled:!on,
+                        icon:rowIcon(11154, "BellSlashIcon"), variant:"danger", arrow:true, disabled:!on,
                         onPress:() => Promise.resolve(userNotifRequestPermissions(true)).then(() => notify("removedAlerts"))}) : null),
             el(Group, {key:"recent", title:tr("Recent")},
                 removed.history.length && Row ? removed.history.map((entry, i) => el(Row, {key:"h" + i + ":" + entry.t, label:removedLabel(entry), subLabel:removedAgo(entry.t),
@@ -19443,7 +19443,7 @@
     function quietReplyMentionsMe(channel, message, messageId) {
         let msg = message;
         if (!msg && messageId) {
-            const store = msgStore || inspectedExport(5532, "default");
+            const store = msgStore || inspectedExport(6226, "default");
             try { msg = store && typeof store.getMessage === "function" ? store.getMessage(channel.id, messageId) : null; } catch (_) { msg = null; }
         }
         if (!msg) return false;
@@ -19499,16 +19499,16 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("quietReplies"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(10654, "BellSlashIcon");
+        const Icon = venusIcon(11154, "BellSlashIcon");
         const any = !!(settings.quietRepliesGuilds || settings.quietRepliesGroups);
         const groups = [
             !on ? offCard("status", Icon, "quietReplies") : !any ? statusCard("status", "Turn on at least one option below.", {title:tr("Every reply pings"), IconComponent:Icon}) : null,
             el(QuietRepliesPreview, {key:"preview", on}),
             el(Group, {key:"where", title:tr("Turn the ping off in")},
-                switchRow(Switch, "quietRepliesGuilds", "Servers", "Replies in server channels and threads.", rowIcon(9545, "ServerIcon")),
-                switchRow(Switch, "quietRepliesGroups", "Group DMs", "Replies in group DMs. Discord already does this in one-on-one DMs.", rowIcon(8489, "GroupIcon"))),
+                switchRow(Switch, "quietRepliesGuilds", "Servers", "Replies in server channels and threads.", rowIcon(9881, "ServerIcon")),
+                switchRow(Switch, "quietRepliesGroups", "Group DMs", "Replies in group DMs. Discord already does this in one-on-one DMs.", rowIcon(8765, "GroupIcon"))),
             el(Group, {key:"keep", title:tr("Keep the ping")},
-                switchRow(Switch, "quietRepliesMentioned", "When they mentioned you", "Replying to a message that mentions you still pings them, so they see your answer.", rowIcon(8490, "AtIcon"))),
+                switchRow(Switch, "quietRepliesMentioned", "When they mentioned you", "Replying to a message that mentions you still pings them, so they see your answer.", rowIcon(8766, "AtIcon"))),
             footnote("note", "Tap @ on the reply bar to ping someone for just one reply.")];
         return settingsBody(ui, groups);
     }
@@ -19544,7 +19544,7 @@
         let api = 0;
         try { api = Number(RN && RN.Platform && RN.Platform.Version) || 0; } catch (_) {}
         if (api > 34) return Math.min(120, source);
-        const config = inspectedExport(8046, "DEFAULT_VIDEO_ENCODING_CONFIG"), most = config && config.frameRate > 0 ? config.frameRate : 30;
+        const config = inspectedExport(8333, "DEFAULT_VIDEO_ENCODING_CONFIG"), most = config && config.frameRate > 0 ? config.frameRate : 30;
         return Math.min(most, source);
     }
     function compressVideoPlan(meta, limit, width, height) {
@@ -19582,17 +19582,17 @@
     }
     function compressLimit(item, channelId) {
         try {
-            const get = inspectedExport(8057, "getUploadTarget"), target = typeof get === "function" ? get(item && item.target) : null;
+            const get = inspectedExport(8344, "getUploadTarget"), target = typeof get === "function" ? get(item && item.target) : null;
             if (target && typeof target.getMaxFileSize === "function") {
                 const value = target.getMaxFileSize(channelId);
                 if (Number.isFinite(value) && value > 0) return value;
             }
         } catch (_) {}
-        const free = inspectedExport(8047, "FREE_UPLOAD_LIMIT_BYTES");
+        const free = inspectedExport(8334, "FREE_UPLOAD_LIMIT_BYTES");
         return Number.isFinite(free) && free > 0 ? free : 20971520;
     }
     function selectedChannelId() {
-        const selected = inspectedExport(2119, "default");
+        const selected = inspectedExport(5073, "default");
         try { return selected && typeof selected.getChannelId === "function" ? selected.getChannelId() : undefined; } catch (_) { return undefined; }
     }
     // The gate: what can be made smaller is let through to be prepared; the rest is refused exactly as Discord always did.
@@ -19650,7 +19650,7 @@
     function compressUri(upload) { return upload && (upload.item && upload.item.uri || upload.uri); }
     function compressCancelled(upload, job) { return job.cancelled || typeof upload.isCancelled === "function" && upload.isCancelled(); }
     function compressName(name, extension) { return String(name || "file").replace(/\.[^./\\]+$/, "") + "." + extension; }
-    function compressToast(text) { showToast(reviewUI(), "venus-toast:" + (++reviewToastSeq), text, venusIcon(11636, "FileUpIcon")); }
+    function compressToast(text) { showToast(reviewUI(), "venus-toast:" + (++reviewToastSeq), text, venusIcon(12429, "FileUpIcon")); }
     function compressDoneToast(from, to) {
         if (Number.isFinite(from) && Number.isFinite(to) && to < from) compressToast(tr("Made smaller: {from} to {to}", {from:formatSize(from), to:formatSize(to)}));
     }
@@ -19765,7 +19765,7 @@
     // The preview: a 25 MB video in the message box, over the limit, shrinks to just under it and is sent.
     const COMPRESS_PREVIEW = {big:25 * 1048576, fit:19.2 * 1048576, limit:20 * 1048576};
     function compressCard(k, s, bytes, bar) {
-        const over = bytes > COMPRESS_PREVIEW.limit, Video = venusIcon(11187, "VideoIcon");
+        const over = bytes > COMPRESS_PREVIEW.limit, Video = venusIcon(11204, "VideoIcon");
         const percent = Math.min(100, Math.round(bytes / COMPRESS_PREVIEW.limit * 100));
         return el(RN.View, {key:"card", style:[k.card, {flexDirection:"row", alignItems:"center", gap:10, padding:10, borderRadius:8, borderWidth:1, marginTop:4}]},
             el(RN.View, {style:[k.secondary, {width:36, height:36, borderRadius:8, alignItems:"center", justifyContent:"center"}]}, el(Video, {size:"md", color:k.icon.color})),
@@ -19807,15 +19807,15 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("compressUploads"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(11636, "FileUpIcon");
+        const Icon = venusIcon(12429, "FileUpIcon");
         const any = !!(settings.compressUploadsPhotos || settings.compressUploadsVideos || settings.compressUploadsAudio);
         const groups = [
             !on ? offCard("status", Icon, "compressUploads") : !any ? statusCard("status", "Turn on at least one option below.", {title:tr("Nothing is made smaller"), IconComponent:Icon}) : null,
             el(CompressUploadsPreview, {key:"preview", on}),
             el(Group, {key:"what", title:tr("What to make smaller")},
-                switchRow(Switch, "compressUploadsPhotos", "Photos", "Keeps the picture whole and sharp, and only shrinks it when nothing else fits.", rowIcon(8487, "ImageIcon")),
-                switchRow(Switch, "compressUploadsVideos", "Videos", "Picks the best quality that fits, and lowers the resolution only for long videos.", rowIcon(11187, "VideoIcon")),
-                switchRow(Switch, "compressUploadsAudio", "Audio", "Re-saves the sound as AAC at the best quality that fits.", rowIcon(10551, "MusicIcon"))),
+                switchRow(Switch, "compressUploadsPhotos", "Photos", "Keeps the picture whole and sharp, and only shrinks it when nothing else fits.", rowIcon(8763, "ImageIcon")),
+                switchRow(Switch, "compressUploadsVideos", "Videos", "Picks the best quality that fits, and lowers the resolution only for long videos.", rowIcon(11204, "VideoIcon")),
+                switchRow(Switch, "compressUploadsAudio", "Audio", "Re-saves the sound as AAC at the best quality that fits.", rowIcon(10909, "MusicIcon"))),
             footnote("note", "Files under the limit are never touched. Nitro and boosted servers raise the limit, so they need less or no compression.")];
         return settingsBody(ui, groups);
     }
@@ -19826,7 +19826,7 @@
     // redrawn once a minute: the tag counts down, and goes away when the timeout ends.
     const timeoutTag = {members:null, shown:new Map(), timer:undefined, due:0};
     function timeoutUntil(guildId, userId) {
-        const members = timeoutTag.members || (timeoutTag.members = inspectedExport(2128, "default"));
+        const members = timeoutTag.members || (timeoutTag.members = inspectedExport(5082, "default"));
         let member = null;
         try { member = members && typeof members.getMember === "function" ? members.getMember(String(guildId), String(userId)) : null; } catch (_) {}
         const raw = member && member.communicationDisabledUntil, until = raw ? Date.parse(raw) : NaN;
@@ -19881,7 +19881,7 @@
     function timeoutTagTick() {
         timeoutTag.timer = undefined; timeoutTag.due = 0;
         if (!enabled("timeoutDuration") || !timeoutTag.shown.size) return;
-        const selected = inspectedExport(2119, "default");
+        const selected = inspectedExport(5073, "default");
         let channelId = null;
         try { channelId = selected && typeof selected.getChannelId === "function" ? String(selected.getChannelId()) : null; } catch (_) {}
         const ids = channelId && timeoutTag.shown.get(channelId);
@@ -19892,7 +19892,7 @@
     // After the language changes (or its file finishes loading), the open chat's timeout tags and Download buttons are
     // drawn again in it: Discord keeps a native row until something about it changes.
     function chatAdditionsRelabel() {
-        const selected = inspectedExport(2119, "default");
+        const selected = inspectedExport(5073, "default");
         let channelId = null;
         try { channelId = selected && typeof selected.getChannelId === "function" ? String(selected.getChannelId()) : null; } catch (_) {}
         if (!channelId) return;
@@ -19908,7 +19908,7 @@
     // from Discord's servers and are never touched.
     const dndBanners = {presence:null};
     function dndIsOn() {
-        const store = dndBanners.presence || (dndBanners.presence = inspectedExport(6015, "default"));
+        const store = dndBanners.presence || (dndBanners.presence = inspectedExport(6657, "default"));
         try { return !!store && typeof store.getStatus === "function" && store.getStatus() === "dnd"; } catch (_) { return false; }
     }
     function dndShouldNotify(orig, self, args) {
@@ -19999,11 +19999,11 @@
         if (!enabled("voiceDownload")) return false;
         let data = event && event.nativeEvent;
         if (!data || data.callback == null) {
-            const read = inspectedExport(9976, "getNativeSyntheticEventData");
+            const read = inspectedExport(10338, "getNativeSyntheticEventData");
             try { data = typeof read === "function" ? read(event) : data; } catch (_) {}
         }
         if (!data || data.callback !== VOICE_DOWNLOAD_CALLBACK) return false;
-        const store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        const store = msgStore || (msgStore = inspectedExport(6226, "default"));
         let message = null;
         try { message = store && typeof store.getMessage === "function" ? store.getMessage(String(data.channelId), String(data.messageId)) : null; } catch (_) {}
         voiceDownloadSave(voiceDownloadAttachment(message), String(data.messageId));
@@ -20014,10 +20014,10 @@
         return /\.[a-z0-9]{2,4}$/i.test(name) ? name : name + ".ogg";
     }
     function voiceDownloadSave(file, id) {
-        const ui = reviewUI(), icon = venusIcon(5143, "DownloadIcon");
+        const ui = reviewUI(), icon = venusIcon(5889, "DownloadIcon");
         if (!file) { showToast(ui, "venus-voice-download", tr("Couldn't download the voice message."), icon); return; }
         if (voiceDownload.busy.has(id)) return;
-        const media = inspectedExport(1447, "default");
+        const media = inspectedExport(1441, "default");
         if (!media || typeof media.downloadMediaAssetWithContentType !== "function") { showToast(ui, "venus-voice-download", tr("Couldn't download the voice message."), icon); return; }
         haptic("IMPACT_LIGHT");
         voiceDownload.busy.add(id);
@@ -20044,13 +20044,13 @@
     }
     // Servers you can add it to, with their free slots for this kind of expression.
     function cloneTargets(kind, animated) {
-        const guildStore = inspectedExport(2090, "default"), perms = permissions || inspectedExport(4845, "default");
-        const P = inspectedExport(1087, "Permissions") || inspectedExport(1098, "Permissions");
+        const guildStore = inspectedExport(5041, "default"), perms = permissions || inspectedExport(5102, "default");
+        const P = inspectedExport(1072, "Permissions") || inspectedExport(1083, "Permissions");
         if (!guildStore || !perms || !P) return [];
         let guilds = {};
         try { guilds = guildStore.getGuilds() || {}; } catch (_) {}
-        const emojiStore = inspectedExport(6243, "default"), stickerStore = inspectedExport(6286, "default");
-        const maxEmoji = inspectedExport(8294, "getMaxEmojiSlots"), maxStickers = inspectedExport(8294, "getTotalStickerCountForTier");
+        const emojiStore = inspectedExport(6884, "default"), stickerStore = inspectedExport(6925, "default");
+        const maxEmoji = inspectedExport(8567, "getMaxEmojiSlots"), maxStickers = inspectedExport(8567, "getTotalStickerCountForTier");
         const out = [];
         Object.keys(guilds).forEach(id => {
             const guild = guilds[id];
@@ -20090,29 +20090,29 @@
     }
     function cloneUpload(item, guildId, name) {
         if (item.kind === "emoji") {
-            const upload = inspectedExport(9845, "uploadEmoji");
+            const upload = inspectedExport(10210, "uploadEmoji");
             if (typeof upload !== "function") return Promise.reject(new Error("unavailable"));
             return cloneDataUri(item.url, item.animated ? "image/gif" : "image/png").then(image => upload({guildId, image, name, roles:[]}));
         }
-        const create = inspectedExport(10058, "createGuildSticker");
+        const create = inspectedExport(10418, "createGuildSticker");
         if (typeof create !== "function") return Promise.reject(new Error("unavailable"));
         return Promise.resolve(create({guildId, name, tags:item.tags || name, description:item.description || "", uri:item.url, mimeType:item.mimeType, platform:"mobile"}));
     }
     function CloneSheet(props) {
         useSettings("cloneExpressions");
-        const ui = reviewUI(), item = props.item, Group = ui.TableRowGroup || RN.View, Text = inspectedExport(5187, "Text");
+        const ui = reviewUI(), item = props.item, Group = ui.TableRowGroup || RN.View, Text = inspectedExport(5783, "Text");
         const [name, setName] = React.useState(item.name), [busy, setBusy] = React.useState(""), targets = React.useMemo(() => cloneTargets(item.kind, item.animated), []);
-        const iconUrl = inspectedExport(1417, "default");
+        const iconUrl = inspectedExport(1411, "default");
         const pick = target => {
             if (busy || !target.free) return;
             const clean = cloneName(name, item.kind === "sticker");
             haptic("IMPACT_LIGHT"); setBusy(target.id);
             cloneUpload(item, target.id, clean).then(() => {
                 hideReviewSheet(ui, CLONE_SHEET);
-                showToast(ui, "venus-clone", tr("Added to {server}", {server:target.name}), venusIcon(7144, "CircleCheckIcon"));
+                showToast(ui, "venus-clone", tr("Added to {server}", {server:target.name}), venusIcon(7434, "CircleCheckIcon"));
             }, error => {
                 setBusy("");
-                showToast(ui, "venus-clone", tr("Couldn't add it: {reason}", {reason:cloneError(error)}), venusIcon(6573, "CircleXIcon"));
+                showToast(ui, "venus-clone", tr("Couldn't add it: {reason}", {reason:cloneError(error)}), venusIcon(7191, "CircleXIcon"));
             });
         };
         const preview = el(RN.View, {style:{alignItems:"center", gap:8, paddingTop:4}},
@@ -20128,7 +20128,7 @@
             return ui.TableRow ? el(ui.TableRow, {key:target.id, label:target.name, subLabel:sub, icon, disabled:!target.free || !!busy && busy !== target.id, arrow:!!target.free, onPress:() => pick(target)}) : null;
         });
         const empty = statusCard("empty", item.kind === "sticker" ? "You can't add stickers to any of your servers. You need the Create Expressions permission." :
-            "You can't add emojis to any of your servers. You need the Create Expressions permission.", {title:tr("No servers to add it to"), IconComponent:venusIcon(9545, "ServerIcon")});
+            "You can't add emojis to any of your servers. You need the Create Expressions permission.", {title:tr("No servers to add it to"), IconComponent:venusIcon(9881, "ServerIcon")});
         const Sheet = ui.ActionSheet || RN.View;
         return el(Sheet, {startExpanded:true},
             ui.Header ? el(ui.Header, {title:tr("Add to a server"), trailing:ui.Close ? el(ui.Close, {onPress:() => hideReviewSheet(ui, CLONE_SHEET)}) : undefined}) : null,
@@ -20146,7 +20146,7 @@
     // A component of its own, so it follows Venus's language inside Discord's sheet.
     function CloneButton({item}) {
         useLanguage();
-        const Button = inspectedExport(5479, "Button");
+        const Button = inspectedExport(5790, "Button");
         return el(RN.View, {style:{paddingHorizontal:16, paddingTop:12, paddingBottom:8}},
             // No icon: Discord's Button only draws an asset source or an element there, so a component left an empty slot
             // that pushed the text off center.
@@ -20192,7 +20192,7 @@
     function cloneEmojiSheet(orig, self, args) {
         const tree = orig.apply(self, args), props = args[0], node = props && props.emojiNode;
         if (!enabled("cloneExpressions") || !node || !node.id || !/^\d{17,20}$/.test(String(node.id))) return tree;
-        const store = inspectedExport(6243, "default");
+        const store = inspectedExport(6884, "default");
         let custom = null;
         try { custom = store && typeof store.getCustomEmojiById === "function" ? store.getCustomEmojiById(String(node.id)) : null; } catch (_) {}
         const animated = !!(custom && custom.animated) || /\.gif|animated=true/.test(String(node.src || ""));
@@ -20202,7 +20202,7 @@
     function cloneStickerSheet(orig, self, args) {
         const tree = orig.apply(self, args), props = args[0], shown = props && (props.renderableSticker || props.sticker);
         if (!enabled("cloneExpressions") || !shown || !shown.id) return tree;
-        const store = inspectedExport(6286, "default");
+        const store = inspectedExport(6925, "default");
         let sticker = shown;
         try { sticker = store && typeof store.getStickerById === "function" && store.getStickerById(String(shown.id)) || shown; } catch (_) {}
         const format = Number(sticker.format_type != null ? sticker.format_type : sticker.formatType);
@@ -20217,13 +20217,13 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("alwaysTrust"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(10733, "ShieldIcon");
+        const Icon = venusIcon(11453, "ShieldIcon");
         const any = !!(settings.alwaysTrustLinks || settings.alwaysTrustFiles);
         const groups = [
             !on ? offCard("status", Icon, "alwaysTrust") : !any ? statusCard("status", "Turn on at least one option below.", {IconComponent:Icon}) : null,
             el(Group, {key:"what", title:tr("Skip the warning for")},
-                switchRow(Switch, "alwaysTrustLinks", "Links", "No \"Leaving Discord\" before opening links to other sites.", rowIcon(7972, "LinkExternalSmallIcon")),
-                switchRow(Switch, "alwaysTrustFiles", "Downloads", "No \"potentially dangerous download\" before opening files.", rowIcon(5143, "DownloadIcon"))),
+                switchRow(Switch, "alwaysTrustLinks", "Links", "No \"Leaving Discord\" before opening links to other sites.", rowIcon(8264, "LinkExternalSmallIcon")),
+                switchRow(Switch, "alwaysTrustFiles", "Downloads", "No \"potentially dangerous download\" before opening files.", rowIcon(5889, "DownloadIcon"))),
             footnote("note", "Links Discord knows are harmful stay blocked.")];
         return settingsBody(ui, groups);
     }
@@ -20234,7 +20234,7 @@
     function silentLeaveClose(orig, self, args) {
         if (!enabled("silentLeave") || !args.length) return orig.apply(self, args);
         let channel = null;
-        try { const store = channelStore || inspectedExport(2068, "default"); channel = store && typeof store.getChannel === "function" ? store.getChannel(args[0]) : null; } catch (_) { channel = null; }
+        try { const store = channelStore || inspectedExport(5019, "default"); channel = store && typeof store.getChannel === "function" ? store.getChannel(args[0]) : null; } catch (_) { channel = null; }
         if (!channel || channel.type !== 3) return orig.apply(self, args);
         const next = Array.from(args);
         while (next.length < 2) next.push(undefined);
@@ -20266,16 +20266,16 @@
         return /^[A-Za-z0-9-]{2,32}$/.test(value) ? {code:value} : null;
     }
     function guildLurkGuild(id) {
-        const guilds = inspectedExport(2090, "default");
+        const guilds = inspectedExport(5041, "default");
         try { return guilds && typeof guilds.getGuild === "function" ? guilds.getGuild(id) || null : null; } catch (_) { return null; }
     }
     function guildLurkIsLurking(id) {
-        const lurking = inspectedExport(4846, "default");
+        const lurking = inspectedExport(5103, "default");
         try { return !!(lurking && typeof lurking.isLurking === "function" && lurking.isLurking(id)); } catch (_) { return false; }
     }
     // An invite's server, through Discord's own HTTP client (1297); null when the invite is invalid or expired.
     function guildLurkInvite(code) {
-        const http = inspectedExport(1297, "HTTP");
+        const http = inspectedExport(1282, "HTTP");
         if (!http || typeof http.get !== "function") return Promise.resolve(null);
         return Promise.resolve().then(() => http.get({url:"/invites/" + encodeURIComponent(code)})).then(response => {
             const body = response && response.body, id = body && (body.guild && body.guild.id || body.guild_id);
@@ -20285,15 +20285,15 @@
     // Closes Settings (like starting removal mode) and opens the server.
     function guildLurkGo(id) {
         try {
-            const ref = inspectedExport(5073, "getRootNavigationRef"), nav = ref && ref();
+            const ref = inspectedExport(5347, "getRootNavigationRef"), nav = ref && ref();
             const state = nav && typeof nav.getRootState === "function" ? nav.getRootState() : null, route = state && state.routes && state.routes[state.index];
             if (route && /settings/i.test(String(route.name))) nav.dispatch({type:"POP", payload:{count:1}, target:state.key});
         } catch (_) {}
         later(() => {
             try {
-                const actions = inspectedExport(6377, "default");
+                const actions = inspectedExport(6990, "default");
                 if (actions && typeof actions.transitionToGuildSync === "function") actions.transitionToGuildSync(id);
-                else { const go = inspectedExport(1114, "transitionToGuild"); if (typeof go === "function") go(id); }
+                else { const go = inspectedExport(1099, "transitionToGuild"); if (typeof go === "function") go(id); }
             } catch (_) {}
         }, 0);
     }
@@ -20314,7 +20314,7 @@
     function guildLurkRemember(id) { setSetting("guildLurkIds", [id].concat(guildLurkList().filter(other => other !== id)).join(",")); }
     function guildLurkForget(id) { haptic("SELECTION"); animateLayout(); setSetting("guildLurkIds", guildLurkList().filter(other => other !== id).join(",")); }
     function guildLurkOpen(target) {
-        const ui = reviewUI(), info = venusIcon(5145, "CircleInformationIcon");
+        const ui = reviewUI(), info = venusIcon(5891, "CircleInformationIcon");
         if (!enabled("guildLurk") || !target) return Promise.resolve(false);
         haptic("SELECTION");
         return Promise.resolve(target.id || guildLurkInvite(target.code)).then(id => {
@@ -20326,10 +20326,10 @@
     }
     // Joins as a lurker (Discord's own joinGuild with lurker:true), remembers the server, and says so when Discord refuses.
     function guildLurkJoin(id) {
-        const ui = reviewUI(), info = venusIcon(5145, "CircleInformationIcon");
+        const ui = reviewUI(), info = venusIcon(5891, "CircleInformationIcon");
         if (!enabled("guildLurk")) return Promise.resolve(false);
         if (guildLurkGuild(id) || guildLurkIsLurking(id)) { guildLurkRemember(id); return Promise.resolve(true); }
-        const actions = inspectedExport(6377, "default");
+        const actions = inspectedExport(6990, "default");
         if (!actions || typeof actions.joinGuild !== "function") { reviewToast(ui, "This server doesn't allow previews", info); return Promise.resolve(false); }
         haptic("SELECTION");
         return Promise.resolve().then(() => actions.joinGuild(id, {lurker:true})).then(() => { guildLurkRemember(id); return true; },
@@ -20348,7 +20348,7 @@
     }
     function InvitePreviewButton(props) {
         const [busy, setBusy] = React.useState(false);
-        const Button = inspectedExport(5479, "Button");
+        const Button = inspectedExport(5790, "Button");
         if (!Button) return null;
         const press = () => {
             if (busy) return;
@@ -20368,7 +20368,7 @@
     function invitePreviewDetails(orig, self, args) {
         const result = orig.apply(self, args), props = args[0];
         if (!enabled("guildLurk") || !React || !props || props.isGuildMember || props.isRegistration) return result;
-        const guildId = invitePreviewable(props.invite), Group = inspectedExport(6214, "ButtonGroup");
+        const guildId = invitePreviewable(props.invite), Group = inspectedExport(6855, "ButtonGroup");
         if (!guildId || !Group || !result) return result;
         let added = false;
         return cloneTree(result, (node, nodeProps) => {
@@ -20387,7 +20387,7 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("guildLurk"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
-        const Press = RN.Pressable || RN.TouchableOpacity || RN.View, Remove = venusIcon(6485, "XSmallIcon");
+        const Press = RN.Pressable || RN.TouchableOpacity || RN.View, Remove = venusIcon(7153, "XSmallIcon");
         const target = guildLurkParse(draft);
         const open = next => {
             if (!on || !next || busy) return;
@@ -20401,7 +20401,7 @@
                     accessibilityLabel:tr("Remove: {name}", {name:name || id})}, el(Remove, {size:"sm"}))});
         }) : [];
         const groups = [
-            on ? null : offCard("status", venusIcon(6929, "EyeIcon"), "guildLurk"),
+            on ? null : offCard("status", venusIcon(7197, "EyeIcon"), "guildLurk"),
             el(RN.View, {key:"open", style:{gap:8}}, groupTitle("title", "Preview a server"),
                 el(RN.View, {style:{paddingHorizontal:4}}, inputWithButton(ui, "input", {value:draft, placeholder:tr("Server ID or invite link"), autoCapitalize:"none", autoCorrect:false,
                     returnKeyType:"go", onSubmitEditing:() => open(target), editable:on && !busy, isDisabled:!on || busy}, text => setDraft(String(text || "")), "Preview", () => open(target), !on || !target || busy))),
@@ -20418,7 +20418,7 @@
     // Gateway deletes caused by these two aren't kept by Keep deleted messages: they were meant to vanish.
     function silentRemovingKey(key) { silentRemoving.add(key); later(() => silentRemoving.delete(key), 20000, false); }
     function httpCall(method, request) {
-        const http = inspectedExport(1297, "HTTP"), send = http && http[method];
+        const http = inspectedExport(1282, "HTTP"), send = http && http[method];
         if (typeof send !== "function") return Promise.reject(new Error("Discord's network client isn't ready"));
         return Promise.resolve().then(() => send.call(http, request));
     }
@@ -20453,7 +20453,7 @@
         if (blocker) {
             if (settings.silentEditNotice && (blocker === "latest" || blocker === "files")) later(() => reviewToast(reviewUI(),
                 blocker === "latest" ? "Edited the normal way: only your latest message can be edited silently" :
-                    "Edited the normal way: a message with files can't be edited silently", venusIcon(10023, "PencilIcon")), 0);
+                    "Edited the normal way: a message with files can't be edited silently", venusIcon(10383, "PencilIcon")), 0);
             return orig.apply(self, args);
         }
         const body = {content, tts:false, nonce:silentNonce(), allowed_mentions:{parse:[], replied_user:false}};
@@ -20582,7 +20582,7 @@
         const text = typeof message.content === "string" ? message.content : "";
         if (!text.trim() && !localEdits.has(channelId + ":" + message.id)) return tree;
         const id = String(message.id), name = message.author && (message.author.globalName || message.author.username) || "";
-        return sheetAddRow(tree, props, "venus-local-edit", tr("Edit locally"), venusIcon(10023, "PencilIcon"),
+        return sheetAddRow(tree, props, "venus-local-edit", tr("Edit locally"), venusIcon(10383, "PencilIcon"),
             () => localEditOpen(channelId, id, text, String(name)));
     }
     function localEditOpen(channelId, id, original, name) {
@@ -20592,7 +20592,7 @@
     }
     function LocalEditSheet(props) {
         useSettings("localEdit");
-        const ui = reviewUI(), Button = inspectedExport(5479, "Button"), key = props.channelId + ":" + props.id;
+        const ui = reviewUI(), Button = inspectedExport(5790, "Button"), key = props.channelId + ":" + props.id;
         const saved = localEdits.get(key), start = saved !== undefined ? saved : props.original;
         const [text, setText] = React.useState(start);
         const changed = text !== start && String(text).trim().length > 0;
@@ -20603,11 +20603,11 @@
             const clean = String(text).slice(0, LOCAL_EDIT_TEXT);
             localEditSet(props.channelId, props.id, clean === props.original ? undefined : clean);
             close();
-            reviewToast(ui, "Edited on this phone", venusIcon(10023, "PencilIcon"));
+            reviewToast(ui, "Edited on this phone", venusIcon(10383, "PencilIcon"));
         };
         const restore = () => {
             haptic("IMPACT_LIGHT"); localEditSet(props.channelId, props.id, undefined); close();
-            reviewToast(ui, "Original message back", venusIcon(12093, "UndoIcon"));
+            reviewToast(ui, "Original message back", venusIcon(12381, "UndoIcon"));
         };
         const button = (id, label, onPress, variant, disabled) => Button ? el(Button, {key:id, text:label, variant, size:"lg", grow:true, disabled:!!disabled, onPress}) : null;
         const header = ui.Header ? el(ui.Header, {title:tr("Edit locally"), trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : null;
@@ -20626,11 +20626,11 @@
         if (!React || !RN) return null;
         const on = enabled("silentEdit"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
         const groups = [
-            on ? null : offCard("status", venusIcon(10023, "PencilIcon"), "silentEdit"),
+            on ? null : offCard("status", venusIcon(10383, "PencilIcon"), "silentEdit"),
             statusCard("limit", "Only works when your message is the latest in the chat. Edit an older message and it's edited the normal way, with (edited).",
-                {title:tr("Latest message only"), IconComponent:venusIcon(7838, "WarningIcon")}),
+                {title:tr("Latest message only"), IconComponent:venusIcon(8129, "WarningIcon")}),
             el(Group, {key:"opts", title:tr("When it can't be silent")},
-                switchRow(Switch, "silentEditNotice", "Tell me", "A short message says the edit was sent the normal way.", rowIcon(5145, "CircleInformationIcon"))),
+                switchRow(Switch, "silentEditNotice", "Tell me", "A short message says the edit was sent the normal way.", rowIcon(5891, "CircleInformationIcon"))),
             footnote("note", "Venus sends your new text as a message and deletes the old one, so it has a new time and loses its reactions. Messages with files, stickers or polls are always edited the normal way.")];
         return settingsBody(ui, groups);
     }
@@ -20640,13 +20640,13 @@
         if (!React || !RN) return null;
         const on = enabled("localEdit"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow, n = localEdits.size;
         const groups = [
-            on ? null : offCard("status", venusIcon(10023, "PencilIcon"), "localEdit"),
+            on ? null : offCard("status", venusIcon(10383, "PencilIcon"), "localEdit"),
             statusCard("count", n ? pl(n, "{n} message reads differently on this phone.", "{n} messages read differently on this phone.") :
-                "Hold any message in a chat and tap Edit locally to change how it reads here.", {IconComponent:venusIcon(10023, "PencilIcon")}),
+                "Hold any message in a chat and tap Edit locally to change how it reads here.", {IconComponent:venusIcon(10383, "PencilIcon")}),
             el(Group, {key:"opts", title:tr("In chat")},
-                switchRow(Switch, "localEditMark", "Mark edited messages", "A small line under the message says you changed it.", rowIcon(5145, "CircleInformationIcon"))),
+                switchRow(Switch, "localEditMark", "Mark edited messages", "A small line under the message says you changed it.", rowIcon(5891, "CircleInformationIcon"))),
             n ? el(Group, {key:"clear"}, actionRow(ui, "restore", "Restore all messages", "Every message goes back to what was sent.",
-                () => confirmAction("Restore all messages?", "Every message you edited locally goes back to what was sent.", "Restore all", localEditClear), !on, true, rowIcon(12093, "UndoIcon"))) : null,
+                () => confirmAction("Restore all messages?", "Every message you edited locally goes back to what was sent.", "Restore all", localEditClear), !on, true, rowIcon(12381, "UndoIcon"))) : null,
             footnote("note", "Only you see these changes, and only on this phone. Nothing is sent to Discord.")];
         return settingsBody(ui, groups);
     }
@@ -20671,27 +20671,27 @@
         const request = house ? httpCall("post", {url:"/hypesquad/online", body:{house_id:house}}) : httpCall("del", {url:"/hypesquad/online"});
         request.then(() => {
             hype.busy = false; hype.house = house; notify("hypeSquad"); haptic("IMPACT_LIGHT");
-            reviewToast(reviewUI(), house ? "HypeSquad house changed" : "Left HypeSquad", venusIcon(6473, "CheckmarkLargeIcon"));
+            reviewToast(reviewUI(), house ? "HypeSquad house changed" : "Left HypeSquad", venusIcon(7092, "CheckmarkLargeIcon"));
         }, () => {
             hype.busy = false; notify("hypeSquad");
-            reviewToast(reviewUI(), "Couldn't change your HypeSquad house", venusIcon(7838, "WarningIcon"));
+            reviewToast(reviewUI(), "Couldn't change your HypeSquad house", venusIcon(8129, "WarningIcon"));
         });
     }
     function HypeSquadSettings() {
         useSettings("hypeSquad");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("hypeSquad"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, current = hypeSquadHouse(), Check = venusIcon(6473, "CheckmarkLargeIcon");
+        const on = enabled("hypeSquad"), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, current = hypeSquadHouse(), Check = venusIcon(7092, "CheckmarkLargeIcon");
         const house = HYPESQUAD_HOUSES.find(entry => entry[0] === current);
         const dot = color => el(RN.View, {style:{width:24, height:24, borderRadius:12, backgroundColor:color}});
         const rows = Row ? HYPESQUAD_HOUSES.map(([id, , color]) => el(Row, {key:id, label:houseName(id), icon:dot(color), disabled:!on || hype.busy,
             trailing:id === current ? el(Check, {size:"md"}) : undefined, onPress:() => { if (id !== current) { haptic("SELECTION"); hypeSquadJoin(id); } }})) : [];
         const groups = [
-            on ? null : offCard("status", venusIcon(18747, "HomeIcon"), "hypeSquad"),
-            statusCard("now", house ? tr("You're in {house}.", {house:houseName(house[0])}) : "You're not in a HypeSquad house.", {IconComponent:venusIcon(18747, "HomeIcon")}),
+            on ? null : offCard("status", venusIcon(20165, "HomeIcon"), "hypeSquad"),
+            statusCard("now", house ? tr("You're in {house}.", {house:houseName(house[0])}) : "You're not in a HypeSquad house.", {IconComponent:venusIcon(20165, "HomeIcon")}),
             el(Group, {key:"houses", title:tr("Pick a house")}, rows),
             current ? el(Group, {key:"leave"}, actionRow(ui, "leave", "Leave HypeSquad", "You keep your account. Only the house badge goes.",
-                () => confirmAction("Leave HypeSquad?", "Your house badge is removed from your profile.", "Leave", () => hypeSquadJoin(0)), !on || hype.busy, true, rowIcon(6485, "XSmallIcon"))) : null,
+                () => confirmAction("Leave HypeSquad?", "Your house badge is removed from your profile.", "Leave", () => hypeSquadJoin(0)), !on || hype.busy, true, rowIcon(7153, "XSmallIcon"))) : null,
             footnote("note", "Discord limits how often you can change house, so a change may be refused for a while.")];
         return settingsBody(ui, groups);
     }
@@ -20711,7 +20711,7 @@
         useSettings("customIdle");
         const ui = reviewUI();
         if (!React || !RN) return null;
-        const on = enabled("customIdle"), minutes = customIdleValue(settings.customIdleMinutes), Icon = venusIcon(14205, "UserClockIcon");
+        const on = enabled("customIdle"), minutes = customIdleValue(settings.customIdleMinutes), Icon = venusIcon(15317, "UserClockIcon");
         const text = n => n === 0 ? tr("Never") : n >= 60 && n % 60 === 0 ? tr("{n} h", {n:n / 60}) : tr("{n} min", {n});
         const groups = [
             on ? null : offCard("status", Icon, "customIdle"),
@@ -20739,7 +20739,7 @@
         return pauseInvitesFeatures(guild).indexOf("INVITES_DISABLED") >= 0 || pauseInvitesStamp(until) > Date.now();
     }
     function pauseInvitesAllowed(guild) {
-        const P = inspectedExport(1087, "Permissions") || inspectedExport(1098, "Permissions"), perms = permissions || inspectedExport(4845, "default");
+        const P = inspectedExport(1072, "Permissions") || inspectedExport(1083, "Permissions"), perms = permissions || inspectedExport(5102, "default");
         try { return !!(guild && P && P.MANAGE_GUILD != null && perms && perms.can(P.MANAGE_GUILD, guild)); } catch (_) { return false; }
     }
     function pauseInvitesMenu(orig, self, args) {
@@ -20748,7 +20748,7 @@
         const guild = pauseInvitesGuild(guildId);
         if (!guild || !pauseInvitesAllowed(guild)) return items;
         const paused = pauseInvitesPaused(guild);
-        return items.concat([{IconComponent:paused ? venusIcon(12093, "UndoIcon") : venusIcon(8676, "PauseIcon"), label:tr(paused ? "Resume invites" : "Pause invites"),
+        return items.concat([{IconComponent:paused ? venusIcon(12381, "UndoIcon") : venusIcon(8957, "PauseIcon"), label:tr(paused ? "Resume invites" : "Pause invites"),
             action:() => pauseInvitesSet(guildId, !paused)}]);
     }
     // Pausing adds INVITES_DISABLED. Resuming removes it and also ends a timed pause from Discord's own menu, so one tap
@@ -20766,8 +20766,8 @@
                 body:{invites_disabled_until:null, dms_disabled_until:dms > Date.now() ? new Date(dms).toISOString() : null}}));
         }
         Promise.all(calls).then(() => {
-            haptic("IMPACT_LIGHT"); reviewToast(reviewUI(), pause ? "Invites paused" : "Invites resumed", venusIcon(6473, "CheckmarkLargeIcon"));
-        }, () => reviewToast(reviewUI(), "Couldn't change invites. Check that you can manage this server.", venusIcon(7838, "WarningIcon")));
+            haptic("IMPACT_LIGHT"); reviewToast(reviewUI(), pause ? "Invites paused" : "Invites resumed", venusIcon(7092, "CheckmarkLargeIcon"));
+        }, () => reviewToast(reviewUI(), "Couldn't change invites. Check that you can manage this server.", venusIcon(8129, "WarningIcon")));
     }
     // Fast delete channels: channel settings stops asking, and a channel's hold menu gets a Delete channel row.
     const FAST_DELETE_TITLES = ["8D8Rsb", "H7vTe2", "nEOg1N", "ifbXnL"];
@@ -20778,7 +20778,7 @@
     }
     function fastDeleteAllowed(channel) {
         if (!channel || !channel.guild_id || channel.type === 10 || channel.type === 11 || channel.type === 12) return false;
-        const P = inspectedExport(1087, "Permissions") || inspectedExport(1098, "Permissions"), perms = permissions || inspectedExport(4845, "default");
+        const P = inspectedExport(1072, "Permissions") || inspectedExport(1083, "Permissions"), perms = permissions || inspectedExport(5102, "default");
         try { return !!(P && P.MANAGE_CHANNELS != null && perms && perms.can(P.MANAGE_CHANNELS, channel)); } catch (_) { return false; }
     }
     const fastDeleteInner = sheetInnerHook(function (tree, props) {
@@ -20787,14 +20787,14 @@
         if (!channelId) return tree;
         const channel = channelStore && typeof channelStore.getChannel === "function" ? channelStore.getChannel(String(channelId)) : null;
         if (!fastDeleteAllowed(channel)) return tree;
-        return sheetAddRow(tree, props, "venus-delete-channel", tr("Delete channel"), venusIcon(5148, "TrashIcon"), () => fastDeleteChannel(channel),
+        return sheetAddRow(tree, props, "venus-delete-channel", tr("Delete channel"), venusIcon(5894, "TrashIcon"), () => fastDeleteChannel(channel),
             "ChannelLongPress-" + channelId, "destructive");
     });
     function fastDeleteSheet(orig, self, args) { return fastDeleteInner(orig, self, args); }
     function fastDeleteChannel(channel) {
         if (!channel || !channel.id) return;
-        httpCall("del", {url:"/channels/" + channel.id}).then(() => { haptic("IMPACT_LIGHT"); reviewToast(reviewUI(), "Channel deleted", venusIcon(5148, "TrashIcon")); },
-            () => reviewToast(reviewUI(), "Couldn't delete the channel", venusIcon(7838, "WarningIcon")));
+        httpCall("del", {url:"/channels/" + channel.id}).then(() => { haptic("IMPACT_LIGHT"); reviewToast(reviewUI(), "Channel deleted", venusIcon(5894, "TrashIcon")); },
+            () => reviewToast(reviewUI(), "Couldn't delete the channel", venusIcon(8129, "WarningIcon")));
     }
     function FastDeleteChannelsSettings() {
         useSettings("fastDeleteChannels");
@@ -20802,11 +20802,11 @@
         if (!React || !RN) return null;
         const on = enabled("fastDeleteChannels"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
         const groups = [
-            on ? null : offCard("status", venusIcon(18679, "ChannelListIcon"), "fastDeleteChannels"),
-            statusCard("warn", "A deleted channel can't be brought back.", {title:tr("No undo"), IconComponent:venusIcon(7838, "WarningIcon")}),
+            on ? null : offCard("status", venusIcon(20099, "ChannelListIcon"), "fastDeleteChannels"),
+            statusCard("warn", "A deleted channel can't be brought back.", {title:tr("No undo"), IconComponent:venusIcon(8129, "WarningIcon")}),
             el(Group, {key:"opts", title:tr("Delete faster")},
-                switchRow(Switch, "fastDeleteChannelsConfirm", "Skip the confirmation", "Channel settings deletes right away, without asking first.", rowIcon(6573, "CircleXIcon")),
-                switchRow(Switch, "fastDeleteChannelsMenu", "Delete from the channel menu", "Hold a channel to delete it from its menu. Needs Manage Channels.", rowIcon(5148, "TrashIcon"))),
+                switchRow(Switch, "fastDeleteChannelsConfirm", "Skip the confirmation", "Channel settings deletes right away, without asking first.", rowIcon(7191, "CircleXIcon")),
+                switchRow(Switch, "fastDeleteChannelsMenu", "Delete from the channel menu", "Hold a channel to delete it from its menu. Needs Manage Channels.", rowIcon(5894, "TrashIcon"))),
             footnote("note", "Threads and forum posts are always deleted the normal way.")];
         return settingsBody(ui, groups);
     }
@@ -20855,13 +20855,13 @@
     // What the viewer shows: the kind (its name and icon), a title, the id, and the JSON text. null when Discord has nothing.
     function rawKind(channel) {
         const type = channel && channel.type;
-        if (type === 1) return {label:tr("Direct message"), icon:[11671, "UserIcon"]};
-        if (type === 3) return {label:tr("Group DM"), icon:[8489, "GroupIcon"]};
+        if (type === 1) return {label:tr("Direct message"), icon:[12318, "UserIcon"]};
+        if (type === 3) return {label:tr("Group DM"), icon:[8765, "GroupIcon"]};
         if (type === 10 || type === 11 || type === 12) {
             const parent = serverCall(serverStore(2068), "getChannel", channel.parent_id);
-            return parent && (parent.type === 15 || parent.type === 16) ? {label:tr("Forum post"), icon:[8488, "ForumIcon"]} : {label:tr("Thread"), icon:[8473, "ThreadIcon"]};
+            return parent && (parent.type === 15 || parent.type === 16) ? {label:tr("Forum post"), icon:[8764, "ForumIcon"]} : {label:tr("Thread"), icon:[8749, "ThreadIcon"]};
         }
-        return type === 15 || type === 16 ? {label:tr("Channel"), icon:[8488, "ForumIcon"]} : {label:tr("Channel"), icon:[16648, "HashmarkIcon"]};
+        return type === 15 || type === 16 ? {label:tr("Channel"), icon:[8764, "ForumIcon"]} : {label:tr("Channel"), icon:[18113, "HashmarkIcon"]};
     }
     // A role's own color as #rrggbb (roles with no color are 0), so its badge in the viewer can wear it.
     function rawColor(role) {
@@ -20875,7 +20875,7 @@
             const message = spec.message;
             if (!message) return null;
             data = rawValue(message, ctx, 0);
-            kind = {label:tr("Message"), icon:[8471, "ChatIcon"]};
+            kind = {label:tr("Message"), icon:[8747, "ChatIcon"]};
             title = message.author && (message.author.globalName || message.author.username) || "";
             content = typeof message.content === "string" ? message.content : "";
         } else if (spec.kind === "channel") {
@@ -20888,7 +20888,7 @@
             const guild = serverCall(serverStore(2090), "getGuild", spec.id);
             if (!guild) return null;
             data = rawValue(guild, ctx, 0);
-            kind = {label:tr("Server"), icon:[9545, "ServerIcon"]};
+            kind = {label:tr("Server"), icon:[9881, "ServerIcon"]};
             title = guild.name ? String(guild.name) : "";
         } else if (spec.kind === "user") {
             const user = serverCall(serverStore(1392), "getUser", spec.id);
@@ -20897,13 +20897,13 @@
             // In a server, what the server holds about them (nickname, roles, join date) follows the person's own data.
             const member = spec.guildId ? serverCall(serverStore(2128), "getMember", spec.guildId, spec.id) : null;
             if (member && data && typeof data === "object") data.member = rawValue(member, ctx, 1);
-            kind = {label:tr("User"), icon:[11671, "UserIcon"]};
+            kind = {label:tr("User"), icon:[12318, "UserIcon"]};
             title = user.globalName || user.username || "";
         } else if (spec.kind === "role") {
             const role = (spec.guildId ? serverCall(serverStore(2122), "getRole", spec.guildId, spec.id) : null) || spec.role;
             if (!role) return null;
             data = rawValue(role, ctx, 0);
-            kind = {label:tr("Role"), icon:[8895, "ShieldUserIcon"]};
+            kind = {label:tr("Role"), icon:[9172, "ShieldUserIcon"]};
             title = role.name ? String(role.name) : "";
             accent = rawColor(role);
         } else return null;
@@ -20929,12 +20929,12 @@
         const Sheet = ui.ActionSheet || RN.View;
         if (!snap) return el(Sheet, {header}, el(RN.View, {style:{padding:24}},
             serverText(tr("Nothing to show right now."), "text-md/medium", "text-muted", {color:"#949ba4", fontSize:16})));
-        const Button = inspectedExport(5479, "Button"), Press = RN.Pressable || RN.View, Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
+        const Button = inspectedExport(5790, "Button"), Press = RN.Pressable || RN.View, Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
         const showContent = snap.content !== null && tab === "content", text = showContent ? snap.content : snap.json;
         const shown = text.length > RAW_SHOWN ? text.slice(0, RAW_SHOWN) : text, wrap = !!settings.viewRawWrap;
         // The sheet scrolls through react-native-gesture-handler, which takes every pan from React Native's own ScrollView,
         // so with wrapping off the lines couldn't be scrolled sideways (#145). Gesture handler's ScrollView takes part.
-        const SideScroll = inspectedExport(6727, "LegacyScrollView") || RN.ScrollView;
+        const SideScroll = inspectedExport(5452, "LegacyScrollView") || RN.ScrollView;
         const copy = () => { if (showContent) serverCopy(snap.content, "Raw content copied"); else serverCopy(snap.json, "Raw data copied"); };
         const copyLabel = showContent ? tr("Copy raw content") : tr("Copy raw data"), empty = showContent && !snap.content;
         const Icon = venusIcon(snap.kind.icon[0], snap.kind.icon[1]);
@@ -20959,16 +20959,16 @@
             el(RN.View, {key:"code", style:s.card}, code),
             notes.length ? el(RN.View, {key:"notes", style:{paddingHorizontal:4, gap:2}}, notes.map(note => serverText(note, "text-xs/medium", "text-muted", {color:"#949ba4", fontSize:12}, {key:note}))) : null,
             copyButton,
-            Switch ? el(Group, {key:"view"}, switchRow(Switch, "viewRawWrap", "Wrap lines", "Long lines wrap instead of scrolling sideways.", rowIcon(8480, "TextIcon"))) : null];
+            Switch ? el(Group, {key:"view"}, switchRow(Switch, "viewRawWrap", "Wrap lines", "Long lines wrap instead of scrolling sideways.", rowIcon(8756, "TextIcon"))) : null];
         const content = el(RN.View, {style:{paddingHorizontal:12, paddingBottom:24, gap:16}}, body.filter(Boolean));
-        const Scroll = inspectedExport(6584, "BottomSheetScrollView");
+        const Scroll = inspectedExport(5424, "BottomSheetScrollView");
         return Scroll ? el(Sheet, {header, scrollable:true}, el(Scroll, null, content)) :
             el(Sheet, {header}, RN.ScrollView ? el(RN.ScrollView, null, content) : content);
     }
     function openViewRaw(spec) {
         if (!enabled("viewRaw") || !React || !RN || !spec) return;
         const ui = reviewUI();
-        if (!ui.ActionSheet || typeof ui.showSheet !== "function") { reviewToast(ui, "The raw data viewer is unavailable right now.", venusIcon(6573, "CircleXIcon")); return; }
+        if (!ui.ActionSheet || typeof ui.showSheet !== "function") { reviewToast(ui, "The raw data viewer is unavailable right now.", venusIcon(7191, "CircleXIcon")); return; }
         const key = "VenusViewRaw:" + spec.kind + ":" + (spec.id || spec.message && spec.message.id);
         try { ui.showSheet({key, content:el(ViewRawSheet, {spec, sheetKey:key}), stackingBehavior:"stack"}); } catch (_) {}
     }
@@ -20976,7 +20976,7 @@
     function viewRawMessageSheet(orig, self, args) {
         const tree = orig.apply(self, args), props = args[0], message = props && props.message;
         if (!enabled("viewRaw") || !settings.viewRawMessages || !React || !tree || !message || !message.id) return tree;
-        return sheetAddRow(tree, props, "venus-view-raw", tr("View raw data"), venusIcon(12003, "FileIcon"), () => openViewRaw({kind:"message", message}));
+        return sheetAddRow(tree, props, "venus-view-raw", tr("View raw data"), venusIcon(11226, "FileIcon"), () => openViewRaw({kind:"message", message}));
     }
     // Channel, thread and forum post menus (the same shape; only the sheet's key differs).
     function viewRawChannelHook(sheetKey) {
@@ -20985,7 +20985,7 @@
             const channel = props.channel || props.thread || props.post;
             const id = String(props.channelId || channel && channel.id || "");
             if (!rawId(id)) return tree;
-            return sheetAddRow(tree, props, "venus-view-raw", tr("View raw data"), venusIcon(12003, "FileIcon"), () => openViewRaw({kind:"channel", id}), sheetKey(id));
+            return sheetAddRow(tree, props, "venus-view-raw", tr("View raw data"), venusIcon(11226, "FileIcon"), () => openViewRaw({kind:"channel", id}), sheetKey(id));
         });
     }
     const viewRawChannelMenu = viewRawChannelHook(id => "ChannelLongPress-" + id);
@@ -20995,14 +20995,14 @@
     function viewRawServerMenu(orig, self, args) {
         const items = orig.apply(self, args), guildId = args[0] == null ? null : String(args[0]);
         if (!enabled("viewRaw") || !settings.viewRawServers || !Array.isArray(items) || !rawId(guildId)) return items;
-        return items.concat([{IconComponent:venusIcon(12003, "FileIcon"), label:tr("View raw data"), action:() => openViewRaw({kind:"server", id:guildId})}]);
+        return items.concat([{IconComponent:venusIcon(11226, "FileIcon"), label:tr("View raw data"), action:() => openViewRaw({kind:"server", id:guildId})}]);
     }
     // A person's ⋯ menu. The row goes in its own group, above the one with Block and Report when there is one.
     function viewRawProfileMenu(orig, self, args) {
         const rendered = orig.apply(self, args), props = args[0];
         if (!enabled("viewRaw") || !settings.viewRawPeople || !React || !rendered || !props) return rendered;
         const userId = String(props.userId || props.user && props.user.id || ""), guildId = props.guildId ? String(props.guildId) : "";
-        const Menu = inspectedExport(9662, "ContextMenu");
+        const Menu = inspectedExport(10029, "ContextMenu");
         if (!Menu || !rawId(userId)) return rendered;
         const item = {label:tr("View raw data"), venusRaw:true, action:() => later(() => openViewRaw({kind:"user", id:userId, guildId:rawId(guildId) ? guildId : ""}), 60)};
         return cloneTree(rendered, (node, nodeProps) => {
@@ -21064,7 +21064,7 @@
             if (!RN || !RN.Pressable) return out;
             // Discord's own chip pressable (the one Developer Mode uses) is swapped in for the plain view, with its style and
             // content, so holding a role shows the same pressed highlight.
-            const Highlight = inspectedExport(6462, "PressableHighlight");
+            const Highlight = inspectedExport(7076, "PressableHighlight");
             if (Highlight && out && typeof out === "object" && out.props && (out.type === RN.View || typeof out.type === "string")) {
                 return el(Highlight, {onLongPress:openRaw, accessibilityRole:"button", style:out.props.style}, out.props.children);
             }
@@ -21086,7 +21086,7 @@
         if (!ctx || !params || params.key !== "RoleItem" || !Array.isArray(params.options) || !enabled("viewRaw") || !settings.viewRawRoles) return orig.apply(self, args);
         viewRawRole = null;
         const id = String(ctx.role.id), guildId = ctx.guildId ? String(ctx.guildId) : "";
-        const option = {label:tr("View raw data"), icon:params.options.some(o => o && o.icon) ? venusIcon(12003, "FileIcon") : undefined, onPress:() => later(() => openViewRaw({kind:"role", id, guildId:rawId(guildId) ? guildId : "", role:ctx.role}), 60)};
+        const option = {label:tr("View raw data"), icon:params.options.some(o => o && o.icon) ? venusIcon(11226, "FileIcon") : undefined, onPress:() => later(() => openViewRaw({kind:"role", id, guildId:rawId(guildId) ? guildId : "", role:ctx.role}), 60)};
         const next = Array.from(args);
         next[0] = Object.assign({}, params, {options:params.options.concat([option])});
         return orig.apply(self, next);
@@ -21098,18 +21098,18 @@
         if (!React || !RN) return null;
         const on = enabled("viewRaw"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
         const groups = [
-            on ? null : offCard("status", venusIcon(12003, "FileIcon"), "viewRaw"),
+            on ? null : offCard("status", venusIcon(11226, "FileIcon"), "viewRaw"),
             el(RN.View, {key:"preview", style:[s.card, {opacity:on ? 1 : 0.5}], pointerEvents:"none"},
                 el(RN.View, {style:s.pad}, el(RN.Text, {style:s.code}, VIEW_RAW_SAMPLE))),
             el(Group, {key:"where", title:tr("Where to show it")},
-                switchRow(Switch, "viewRawMessages", "Messages", "In the menu when you hold a message.", rowIcon(8471, "ChatIcon")),
-                switchRow(Switch, "viewRawChannels", "Channels", "In the menu for channels, threads, forum posts and DMs.", rowIcon(18679, "ChannelListIcon")),
-                switchRow(Switch, "viewRawServers", "Servers", "In the menu when you hold a server's icon.", rowIcon(9545, "ServerIcon")),
-                switchRow(Switch, "viewRawPeople", "People", "In the \u22ef menu on a profile.", rowIcon(11671, "UserIcon")),
-                switchRow(Switch, "viewRawRoles", "Roles", "In the menu when you hold a role on a profile.", rowIcon(8895, "ShieldUserIcon"))),
+                switchRow(Switch, "viewRawMessages", "Messages", "In the menu when you hold a message.", rowIcon(8747, "ChatIcon")),
+                switchRow(Switch, "viewRawChannels", "Channels", "In the menu for channels, threads, forum posts and DMs.", rowIcon(20099, "ChannelListIcon")),
+                switchRow(Switch, "viewRawServers", "Servers", "In the menu when you hold a server's icon.", rowIcon(9881, "ServerIcon")),
+                switchRow(Switch, "viewRawPeople", "People", "In the \u22ef menu on a profile.", rowIcon(12318, "UserIcon")),
+                switchRow(Switch, "viewRawRoles", "Roles", "In the menu when you hold a role on a profile.", rowIcon(9172, "ShieldUserIcon"))),
             el(Group, {key:"viewer", title:tr("Viewer")},
-                switchRow(Switch, "viewRawHideContact", "Leave out email and phone", "Hides them from a person's raw data. Yours too.", rowIcon(13951, "ShieldLockIcon")),
-                switchRow(Switch, "viewRawWrap", "Wrap lines", "Long lines wrap instead of scrolling sideways.", rowIcon(8480, "TextIcon")))];
+                switchRow(Switch, "viewRawHideContact", "Leave out email and phone", "Hides them from a person's raw data. Yours too.", rowIcon(15004, "ShieldLockIcon")),
+                switchRow(Switch, "viewRawWrap", "Wrap lines", "Long lines wrap instead of scrolling sideways.", rowIcon(8756, "TextIcon")))];
         return settingsBody(ui, groups);
     }
     // Mutual group DMs: a line under a profile's mutual servers and friends, and a list of the group DMs you share.
@@ -21133,7 +21133,7 @@
         return count ? el(React.Fragment, null, result, el(MutualGroupsRow, {key:"venus-mutual-groups", userId:user.id, count})) : result;
     }
     function MutualGroupsRow(props) {
-        const Text = inspectedExport(5187, "Text"), Press = RN.Pressable || RN.TouchableOpacity || RN.View, Icon = venusIcon(8489, "GroupIcon"), Chevron = venusIcon(7182, "ChevronSmallRightIcon");
+        const Text = inspectedExport(5783, "Text"), Press = RN.Pressable || RN.TouchableOpacity || RN.View, Icon = venusIcon(8765, "GroupIcon"), Chevron = venusIcon(7471, "ChevronSmallRightIcon");
         const label = pl(props.count, "{n} mutual group DM", "{n} mutual group DMs");
         return el(Press, {onPress:() => { haptic("SELECTION"); mutualGroupsOpen(props.userId); }, accessibilityRole:"button", accessibilityLabel:label,
             style:{flexDirection:"row", alignItems:"center", gap:6, paddingVertical:8}},
@@ -21147,7 +21147,7 @@
     function mutualGroupGo(channelId) {
         const ui = reviewUI();
         try { if (ui.sheets && typeof ui.sheets.hideAllActionSheets === "function") ui.sheets.hideAllActionSheets(); } catch (_) {}
-        const go = inspectedExport(1114, "transitionTo");
+        const go = inspectedExport(1099, "transitionTo");
         if (typeof go === "function") later(() => { try { go("/channels/@me/" + channelId); } catch (_) {} }, 250);
     }
     function MutualGroupsSheet(props) {
@@ -21155,7 +21155,7 @@
         const ui = reviewUI(), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow;
         const close = () => hideReviewSheet(ui, MUTUAL_GROUPS_SHEET);
         const header = ui.Header ? el(ui.Header, {title:tr("Mutual group DMs"), trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : null;
-        const rows = Row ? mutualGroupList(props.userId).map(channel => el(Row, {key:channel.id, label:mutualGroupName(channel), arrow:true, icon:rowIcon(8489, "GroupIcon"),
+        const rows = Row ? mutualGroupList(props.userId).map(channel => el(Row, {key:channel.id, label:mutualGroupName(channel), arrow:true, icon:rowIcon(8765, "GroupIcon"),
             subLabel:pl((channel.recipients || []).length + 1, "{n} member", "{n} members"), onPress:() => { haptic("SELECTION"); mutualGroupGo(channel.id); }})) : [];
         const content = el(RN.View, {style:{paddingHorizontal:12, paddingBottom:24, gap:16}}, rows.length ? el(Group, {key:"list"}, rows) :
             footnote("none", "You don't share any group DMs."));
@@ -21199,7 +21199,7 @@
         const wanted = enabled("platformSpoof") ? settings.platformSpoofDevice : "";
         if (!features.platformSpoof || platformSpoof.applied === undefined || platformSpoof.applied === wanted || !RN) return;
         const ui = reviewUI();
-        if (!features.systemFont || !files) { reviewToast(ui, "Reopen Discord to show your new device", venusIcon(11630, "RefreshIcon")); return; }
+        if (!features.systemFont || !files) { reviewToast(ui, "Reopen Discord to show your new device", venusIcon(12423, "RefreshIcon")); return; }
         const reopen = () => { Promise.resolve().then(() => files.writeFile("documents", PREFS, settingsSnapshot(), "utf8")).then(() => files.fileExists("venus-font-v1:restart")).catch(() => {}); };
         const title = tr("Show your new device"), body = tr("Discord shows it the next time it signs in. Reopen Discord to do that now.");
         if (ui.alerts && typeof ui.alerts.show === "function") try { ui.alerts.show({title, body, confirmText:tr("Reopen now"), cancelText:tr("Later"), onConfirm:reopen}); return; } catch (_) {}
@@ -21242,7 +21242,7 @@
     }
     // The notification's title (Voice message, or the audio file's name), the sender, the chat, the sender's picture and a link back.
     function backgroundMediaMeta(now) {
-        const messages = inspectedExport(5532, "default"), channels = inspectedExport(2068, "default"), guilds = inspectedExport(2090, "default");
+        const messages = inspectedExport(6226, "default"), channels = inspectedExport(5019, "default"), guilds = inspectedExport(5041, "default");
         const channelId = String(now.channelId || ""), messageId = String(now.messageId);
         let message = null, channel = null, guild = null;
         try { message = messages && typeof messages.getMessage === "function" ? messages.getMessage(channelId, messageId) : null; } catch (_) {}
@@ -21278,7 +21278,7 @@
         }, [playing]);
         const seek = delta => { haptic("SELECTION"); setState(st => ({at:Math.max(0, Math.min(MEDIA_PREVIEW_MS - 500, st.at + delta)), playing:st.playing})); };
         const toggle = () => { haptic("SELECTION"); setState(st => ({at:st.at, playing:!st.playing})); };
-        const Play = venusIcon(8674, "PlayIcon"), Pause = venusIcon(8676, "PauseIcon"), Skip = venusIcon(11632, "RetryIcon"), Phones = venusIcon(13214, "HeadphonesIcon");
+        const Play = venusIcon(8955, "PlayIcon"), Pause = venusIcon(8957, "PauseIcon"), Skip = venusIcon(11247, "RetryIcon"), Phones = venusIcon(14375, "HeadphonesIcon");
         const width = (Math.max(0, Math.min(1, state.at / MEDIA_PREVIEW_MS)) * 100).toFixed(1) + "%";
         const caption = text => el(RN.Text, {style:[s.muted, {fontSize:12, fontWeight:"700", letterSpacing:0.3}]}, text);
         const skipButton = (key, forward, big, color, live) => el(Press, {key, disabled:!live, onPress:() => seek((forward ? 1 : -1) * skip * 1000),
@@ -21332,14 +21332,14 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("backgroundMedia"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(8674, "PlayIcon");
+        const Icon = venusIcon(8955, "PlayIcon");
         const any = !!(settings.backgroundMediaAudio || settings.backgroundMediaVideo);
         const groups = [
             !on ? offCard("status", Icon, "backgroundMedia") : !any ? statusCard("status", "Turn on at least one option below.", {title:tr("Nothing keeps playing"), IconComponent:Icon}) : null,
             el(BackgroundMediaPreview, {key:"preview", on}),
             el(Group, {key:"what", title:tr("When you leave Discord")},
-                switchRow(Switch, "backgroundMediaAudio", "Voice messages and audio", "Keep playing in the background, with controls in your notifications and on the lock screen.", rowIcon(13214, "HeadphonesIcon")),
-                switchRow(Switch, "backgroundMediaVideo", "Videos", "Pop out into a small window over other apps, with play and skip buttons.", rowIcon(11187, "VideoIcon"))),
+                switchRow(Switch, "backgroundMediaAudio", "Voice messages and audio", "Keep playing in the background, with controls in your notifications and on the lock screen.", rowIcon(14375, "HeadphonesIcon")),
+                switchRow(Switch, "backgroundMediaVideo", "Videos", "Pop out into a small window over other apps, with play and skip buttons.", rowIcon(11204, "VideoIcon"))),
             any ? el(RN.View, {key:"skip", style:{gap:10}},
                 groupTitle("skipTitle", "Skip buttons"),
                 venusSegmented({key:"skipSeg", value:settings.backgroundMediaSkip, disabled:!on, onChange:value => setSetting("backgroundMediaSkip", value),
@@ -21353,12 +21353,12 @@
         if (!React || !RN) return null;
         const on = enabled("platformSpoof");
         const groups = [
-            on ? null : offCard("status", venusIcon(5133, "UserPlatformIcon"), "platformSpoof"),
-            statusCard("risk", "Discord doesn't allow this. It could put your account at risk.", {title:tr("Use at your own risk"), IconComponent:venusIcon(7838, "WarningIcon")}),
+            on ? null : offCard("status", venusIcon(5879, "UserPlatformIcon"), "platformSpoof"),
+            statusCard("risk", "Discord doesn't allow this. It could put your account at risk.", {title:tr("Use at your own risk"), IconComponent:venusIcon(8129, "WarningIcon")}),
             radioGroup(ui, "device", "Show me as", "platformSpoofDevice", on, [
-                ["desktop", "Desktop", "A computer", rowIcon(9386, "ScreenIcon")],
-                ["web", "Web", "A web browser", rowIcon(9393, "GlobeEarthIcon")],
-                ["console", "Console", "A game console", rowIcon(9514, "GameControllerIcon")]]),
+                ["desktop", "Desktop", "A computer", rowIcon(9708, "ScreenIcon")],
+                ["web", "Web", "A web browser", rowIcon(9163, "GlobeEarthIcon")],
+                ["console", "Console", "A game console", rowIcon(9850, "GameControllerIcon")]]),
             footnote("note", "Anyone who sees device icons sees this. It shows the next time Discord signs in, so reopen Discord after changing it.")];
         return settingsBody(ui, groups);
     }
@@ -21397,7 +21397,7 @@
         }
     }
     function mentionUser(id, name) {
-        const users = userStore || inspectedExport(1392, "default");
+        const users = userStore || inspectedExport(1385, "default");
         if (!users) return null;
         if (id) return typeof users.getUser === "function" ? users.getUser(id) : null;
         const wanted = name.toLowerCase();
@@ -21411,11 +21411,11 @@
         return null;
     }
     function mentionOpen(id, name) {
-        const user = mentionUser(id, name), show = user && user.id ? inspectedExport(8577, "default") : null;
+        const user = mentionUser(id, name), show = user && user.id ? inspectedExport(8854, "default") : null;
         if (typeof show !== "function") return;
-        const selected = inspectedExport(2119, "default");
+        const selected = inspectedExport(5073, "default");
         const channelId = selected && typeof selected.getChannelId === "function" ? selected.getChannelId() : undefined;
-        const store = channelStore || inspectedExport(2068, "default");
+        const store = channelStore || inspectedExport(5019, "default");
         const channel = channelId && store && typeof store.getChannel === "function" ? store.getChannel(channelId) : null;
         haptic("SELECTION");
         try { if (RN && RN.Keyboard && typeof RN.Keyboard.dismiss === "function") RN.Keyboard.dismiss(); } catch (_) {}
@@ -21453,13 +21453,13 @@
     // Two diagonal arrows: pointing out when the bar can grow, pointing in when it can shrink (drawn here because Discord
     // ships only the first of them); Discord's own fullscreen icon stands in if react-native-svg isn't there.
     function expandBarGlyph(open, color, size) {
-        const Svg = inspectedExport(7846, "Svg"), Path = inspectedExport(7846, "Path");
+        const Svg = inspectedExport(8137, "Svg"), Path = inspectedExport(8137, "Path");
         if (Svg && Path) {
             const lines = open ? ["M4 14h6v6", "M20 10h-6V4", "M14 10l7-7", "M3 21l7-7"] : ["M15 3h6v6", "M21 3l-7 7", "M9 21H3v-6", "M3 21l7-7"];
             return el(Svg, {width:size, height:size, viewBox:"0 0 24 24", fill:"none"}, lines.map(d =>
                 el(Path, {key:d, d, stroke:color, strokeWidth:2, strokeLinecap:"round", strokeLinejoin:"round", fill:"none"})));
         }
-        return el(venusIcon(16089, "FullscreenEnterIcon"), {size:"sm", color});
+        return el(venusIcon(17307, "FullscreenEnterIcon"), {size:"sm", color});
     }
     // Worklets are plain functions that carry __closure, __workletHash and __initData; on the UI thread Reanimated rebuilds
     // them from __initData.code (release builds carry only the code) and binds this to the closure. The JS body does the
@@ -21467,7 +21467,7 @@
     function expandBarHeights(exports) {
         try {
             const origMax = exports && exports.getChatInputMaxHeightWorklet, origTiming = exports && exports.getChatInputHeightAnimationTimingWorklet;
-            const makeMutable = inspectedExport(1658, "makeMutable");
+            const makeMutable = inspectedExport(1652, "makeMutable");
             const mc = origMax && origMax.__closure, tc = origTiming && origTiming.__closure;
             if (typeof origMax !== "function" || typeof origTiming !== "function" || typeof makeMutable !== "function" || !mc || !tc ||
                 typeof mc.getKeyboardStateWorklet !== "function" || typeof mc.getWindowDimensionsWorklet !== "function" || !mc.KeyboardTypes ||
@@ -21478,7 +21478,7 @@
             const shared = expandBar.shared || (expandBar.shared = makeMutable(0));
             // With the keyboard closed the bar sits above the navigation bar, which the keyboard's height otherwise covers, so
             // that inset is kept free too (without it the open bar ran under the channel header and lost its top corners).
-            const insetsOf = inspectedExport(10696, "getSafeAreaInsetsWorklet");
+            const insetsOf = inspectedExport(11416, "getSafeAreaInsetsWorklet");
             const insets = typeof insetsOf === "function" && insetsOf.__workletHash ? insetsOf : null;
             const max = function () {
                 const reserve = shared.get();
@@ -21546,7 +21546,7 @@
                 // The height worklets aren't in place: use the window's height instead.
                 const win = RN && RN.Dimensions ? RN.Dimensions.get("window").height : 800;
                 top = Math.max(min * 2, win * (expandBar.expanded ? 0.45 : 0.3));
-                timing = inspectedExport(1658, "withTiming");
+                timing = inspectedExport(1652, "withTiming");
             }
             const target = expandBar.expanded ? top : Math.min(Math.max(content, min), top);
             if (settings.debugLog) dlog("I", "hooks", "expand message bar: " + (expandBar.expanded ? "open" : "close") + " to " + Math.round(target));
@@ -21695,7 +21695,7 @@
             [1400, () => {}]
         ], [settings.language]);
         const lines = on ? state.lines : 3, open = on ? state.open : false;
-        const Press = RN.View, Plus = venusIcon(10621, "PlusLargeIcon"), Send = venusIcon(5139, "SendMessageIcon");
+        const Press = RN.View, Plus = venusIcon(10979, "PlusLargeIcon"), Send = venusIcon(5885, "SendMessageIcon");
         const pill = el(RN.View, {key:"pill", style:[k.pill, {alignItems:"flex-start", alignSelf:"stretch", minHeight:open ? 190 : 40, paddingVertical:9, paddingRight:44, flexDirection:"column", gap:2}]},
             lines === 0 ? el(RN.Text, {style:[s.muted, {fontSize:15}]}, tr("Message {channel}", {channel:"#general"})) :
                 EXPAND_BAR_SAMPLE.slice(0, lines).map(line => el(RN.Text, {key:line, style:[s.text, {fontSize:15, lineHeight:20}]}, tr(line))),
@@ -21718,11 +21718,11 @@
         if (!React || !RN) return null;
         const on = enabled("expandBar"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
         const groups = [
-            !on ? offCard("status", venusIcon(16089, "FullscreenEnterIcon"), "expandBar") : null,
+            !on ? offCard("status", venusIcon(17307, "FullscreenEnterIcon"), "expandBar") : null,
             el(ExpandBarPreview, {key:"preview", on}),
             el(Group, {key:"options", title:tr("Collapse")},
-                switchRow(Switch, "expandBarSending", "Collapse after sending", "The message bar closes again when you send your message.", rowIcon(5139, "SendMessageIcon")),
-                switchRow(Switch, "expandBarChats", "Collapse when you switch chats", "Every chat starts with a normal message bar.", rowIcon(8471, "ChatIcon"))),
+                switchRow(Switch, "expandBarSending", "Collapse after sending", "The message bar closes again when you send your message.", rowIcon(5885, "SendMessageIcon")),
+                switchRow(Switch, "expandBarChats", "Collapse when you switch chats", "Every chat starts with a normal message bar.", rowIcon(8747, "ChatIcon"))),
             footnote("note", "The arrows appear once your message is longer than one line. Tap them again to shrink the bar.")];
         return settingsBody(ui, groups);
     }
@@ -21731,18 +21731,18 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("fullImages"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(12328, "ImagesIcon");
+        const Icon = venusIcon(13049, "ImagesIcon");
         const where = !!(settings.fullImagesChat || settings.fullImagesViewer || settings.fullImagesAvatars);
         const groups = [
             // On, the switches below already say what loads in full; the card only speaks up when none of them is on.
             !on ? offCard("status", Icon, "fullImages") : where ? null : VenusStatusCard({key:"status", IconComponent:Icon, accent:true,
                 title:tr("Nothing loads in full"), body:tr("Turn on at least one option below.")}),
             el(Group, {key:"where", title:tr("Load in full")},
-                switchRow(Switch, "fullImagesChat", "In chat", "Pictures in messages, as soon as they appear.", rowIcon(8471, "ChatIcon")),
-                switchRow(Switch, "fullImagesViewer", "When opened", "Pictures you tap to view full screen.", rowIcon(16089, "FullscreenEnterIcon")),
-                switchRow(Switch, "fullImagesAvatars", "Profile pictures and banners", "Sharp at any size, instead of Discord's small copy.", rowIcon(10598, "UserCircleIcon"))),
+                switchRow(Switch, "fullImagesChat", "In chat", "Pictures in messages, as soon as they appear.", rowIcon(8747, "ChatIcon")),
+                switchRow(Switch, "fullImagesViewer", "When opened", "Pictures you tap to view full screen.", rowIcon(17307, "FullscreenEnterIcon")),
+                switchRow(Switch, "fullImagesAvatars", "Profile pictures and banners", "Sharp at any size, instead of Discord's small copy.", rowIcon(10956, "UserCircleIcon"))),
             el(Group, {key:"data", title:tr("Mobile data")},
-                switchRow(Switch, "fullImagesGifs", "GIFs and animated pictures", "Loads the whole GIF instead of Discord's lighter copy. Can use a lot of data.", rowIcon(10051, "GifIcon"))),
+                switchRow(Switch, "fullImagesGifs", "GIFs and animated pictures", "Loads the whole GIF instead of Discord's lighter copy. Can use a lot of data.", rowIcon(10411, "GifIcon"))),
             footnote("note", "Only pictures people upload to Discord change, not links to other sites. Pictures over 16 megapixels stay as Discord sends them, so the app doesn't run out of memory. Pictures already on screen update when you reopen the chat.")];
         return settingsBody(ui, groups);
     }
@@ -21753,7 +21753,7 @@
     function CleanChannelsPreview(props) {
         useSettings("cleanChannels");
         const s = useChatPreviewStyles(), k = usePreviewChrome(), on = !!props.on;
-        const Hash = venusIcon(16648, "HashmarkIcon"), Speaker = venusIcon(13214, "HeadphonesIcon"), Down = venusIcon(10859, "ChevronSmallDownIcon");
+        const Hash = venusIcon(18113, "HashmarkIcon"), Speaker = venusIcon(14375, "HeadphonesIcon"), Down = venusIcon(11587, "ChevronSmallDownIcon");
         const opts = {emoji:settings.cleanChannelsEmoji, symbols:settings.cleanChannelsSymbols, fonts:settings.cleanChannelsFonts};
         const anything = opts.emoji || opts.symbols || opts.fonts;
         const show = ([type, name]) => {
@@ -21772,13 +21772,13 @@
                 el(Icon, {size:"sm", color:selected ? s.name.color : k.channel.color}),
                 popIn("n" + i + name, el(RN.Text, {style:[s.text, {flex:1, color:selected ? s.name.color : k.channel.color, fontWeight:selected ? "600" : "500"}], numberOfLines:1}, name)));
         });
-        const Chevron = venusIcon(7182, "ChevronSmallRightIcon"), Search = venusIcon(7017, "MagnifyingGlassIcon");
+        const Chevron = venusIcon(7471, "ChevronSmallRightIcon"), Search = venusIcon(7316, "MagnifyingGlassIcon");
         const server = el(RN.View, {key:"server", style:[k.header, {height:52, paddingHorizontal:16}]},
             el(RN.View, {style:{flex:1, flexDirection:"row", alignItems:"center", gap:4}},
                 el(RN.Text, {style:[k.title, {fontSize:18}], numberOfLines:1}, tr("Game Night")),
                 el(Chevron, {size:"xxs", color:k.iconMuted.color})),
             el(RN.View, {style:k.headerPill}, el(Search, {size:"sm", color:k.icon.color})),
-            el(RN.View, {style:k.headerPill}, el(venusIcon(9543, "MoreHorizontalIcon"), {size:"sm", color:k.icon.color})));
+            el(RN.View, {style:k.headerPill}, el(venusIcon(9879, "MoreHorizontalIcon"), {size:"sm", color:k.icon.color})));
         return el(RN.View, {key:"preview"},
             previewScreen(s, "preview", "Clean channel names preview", [el(RN.View, {key:"list", style:{paddingBottom:6}}, rows)], {header:server}));
     }
@@ -21787,18 +21787,18 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("cleanChannels"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(12158, "MagicWandIcon");
+        const Icon = venusIcon(11137, "MagicWandIcon");
         const hasAny = !!(settings.cleanChannelsEmoji || settings.cleanChannelsSymbols || settings.cleanChannelsFonts || settings.cleanChannelsSpaces);
         const groups = [
             !on ? offCard("status", Icon, "cleanChannels") : !hasAny ? statusCard("status", "Turn on at least one option below.",
                 {title:tr("Names stay as they are"), IconComponent:Icon}) : null,
             el(CleanChannelsPreview, {key:"preview", on}),
             el(Group, {key:"what", title:tr("Remove from names")},
-                switchRow(Switch, "cleanChannelsEmoji", "Emoji", "\ud83c\udfab, \ud83d\udee0\ufe0f, \ud83c\udf89 and flags, wherever they are in the name.", rowIcon(9252, "ReactionIcon")),
-                switchRow(Switch, "cleanChannelsSymbols", "Symbols and dividers", "\u2503, \u30fb, \u2726, \u300c\u300d and the bars around category names.", rowIcon(10946, "SlashBoxIcon")),
-                switchRow(Switch, "cleanChannelsFonts", "Fancy letters", "Turns \ud835\udc02\ud835\udc0e\ud835\udc0c\ud835\udc0c\ud835\udc14\ud835\udc0d\ud835\udc08\ud835\udc13\ud835\udc18 and \ud835\udcf0\ud835\udcee\ud835\udcf7\ud835\udcee\ud835\udcfb\ud835\udcea\ud835\udcf5 into plain letters.", rowIcon(16730, "LettersIcon"))),
+                switchRow(Switch, "cleanChannelsEmoji", "Emoji", "\ud83c\udfab, \ud83d\udee0\ufe0f, \ud83c\udf89 and flags, wherever they are in the name.", rowIcon(9566, "ReactionIcon")),
+                switchRow(Switch, "cleanChannelsSymbols", "Symbols and dividers", "\u2503, \u30fb, \u2726, \u300c\u300d and the bars around category names.", rowIcon(11676, "SlashBoxIcon")),
+                switchRow(Switch, "cleanChannelsFonts", "Fancy letters", "Turns \ud835\udc02\ud835\udc0e\ud835\udc0c\ud835\udc0c\ud835\udc14\ud835\udc0d\ud835\udc08\ud835\udc13\ud835\udc18 and \ud835\udcf0\ud835\udcee\ud835\udcf7\ud835\udcee\ud835\udcfb\ud835\udcea\ud835\udcf5 into plain letters.", rowIcon(18022, "LettersIcon"))),
             el(Group, {key:"spaces", title:tr("Text channels")},
-                switchRow(Switch, "cleanChannelsSpaces", "Spaces instead of dashes", "Shows \"general chat\" instead of \"general-chat\".", rowIcon(16648, "HashmarkIcon"))),
+                switchRow(Switch, "cleanChannelsSpaces", "Spaces instead of dashes", "Shows \"general chat\" instead of \"general-chat\".", rowIcon(18113, "HashmarkIcon"))),
             footnote("note", "Only how names look changes: links, mentions and search still use the real name. A name with nothing else in it is left as it is.")
         ];
         return settingsBody(ui, groups);
@@ -21877,11 +21877,11 @@
         if (!channel || !channel.guild_id || channel.type === 1 || channel.type === 3) return false;
         let perm = bulkDelete.managePermission;
         if (perm === undefined) {
-            const p = inspectedExport(1087, "Permissions");
+            const p = inspectedExport(1072, "Permissions");
             perm = bulkDelete.managePermission = p && p.MANAGE_MESSAGES != null ? p.MANAGE_MESSAGES : null;
         }
         if (perm == null) return false;
-        const store = permissions || (permissions = inspectedExport(4845, "default") || inspectedExport(4845));
+        const store = permissions || (permissions = inspectedExport(5102, "default") || inspectedExport(4845));
         if (!store || typeof store.can !== "function") return false;
         try { return !!(permissionsCanOrig ? permissionsCanOrig(perm, channel) : store.can(perm, channel)); } catch (_) { return false; }
     }
@@ -21920,7 +21920,7 @@
         const gId = channel && (channel.guild_id || channel.guildId);
         let guildName = "";
         if (gId) {
-            const guilds = inspectedExport(2090, "default");
+            const guilds = inspectedExport(5041, "default");
             try { const guild = guilds && typeof guilds.getGuild === "function" ? guilds.getGuild(gId) : null; if (guild && typeof guild.name === "string") guildName = guild.name; } catch (_) {}
         }
         let name = "";
@@ -21950,7 +21950,7 @@
         if (isCachedDeleted) return !!settings.bulkDeleteIncludeCached;
         if (message.state && message.state !== "SENT") return false;
         if ((Number(message.flags) || 0) & 64) return false;
-        const sets = gesture.typeSets || (gesture.typeSets = inspectedExport(1087, "MessageTypesSets"));
+        const sets = gesture.typeSets || (gesture.typeSets = inspectedExport(1072, "MessageTypesSets"));
         try { if (sets && sets.UNDELETABLE && typeof sets.UNDELETABLE.has === "function" && sets.UNDELETABLE.has(message.type)) return false; } catch (_) {}
         if (gestureOwn(message)) return true;
         return manage !== undefined ? !!manage : bulkDeleteCanManage(chId);
@@ -21963,11 +21963,11 @@
         if (!channelId || !ids || !ids.length) return;
         let d = dispatcher;
         if (!d) {
-            const mod = inspectedExport(584, "default");
+            const mod = inspectedExport(572, "default");
             if (mod && typeof mod.dispatch === "function") d = dispatcher = mod.dispatch.bind(mod);
         }
         if (typeof d !== "function") return;
-        const store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        const store = msgStore || (msgStore = inspectedExport(6226, "default"));
         if (!store || typeof store.getMessage !== "function") return;
         const restores = [], pending = bulkDelete.redrawing;
         // Kept deleted messages are drawn from Keep deleted messages' own copy, not the store's record, so changing the
@@ -22030,7 +22030,7 @@
     }
     function bulkDeleteChannelSelectableIds(channelId) {
         if (!channelId) return [];
-        const store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        const store = msgStore || (msgStore = inspectedExport(6226, "default"));
         let messages = null;
         try { messages = store && typeof store.getMessages === "function" ? store.getMessages(channelId) : null; } catch (_) {}
         const me = currentUser(), meId = me && me.id;
@@ -22135,7 +22135,7 @@
         });
         bulkDelete.manageFor = null;
         bulkDelete.selectable = null;
-        if (stoppedAfter > 0) reviewToast(reviewUI(), pl(stoppedAfter, "Deleted {n} message", "Deleted {n} messages"), venusIcon(5148, "TrashIcon"));
+        if (stoppedAfter > 0) reviewToast(reviewUI(), pl(stoppedAfter, "Deleted {n} message", "Deleted {n} messages"), venusIcon(5894, "TrashIcon"));
     }
     function bulkDeleteToggleMessage(channelId, messageId) {
         if (!bulkDelete.active || bulkDelete.deleting) return false;
@@ -22143,7 +22143,7 @@
         if (!chId) return false;
         const id = String(messageId || "");
         if (!id) return false;
-        const store = msgStore || (msgStore = inspectedExport(5532, "default"));
+        const store = msgStore || (msgStore = inspectedExport(6226, "default"));
         let msg = null;
         try { if (store && typeof store.getMessage === "function") msg = store.getMessage(chId, id); } catch (_) {}
         if (!bulkDeleteCanSelect(msg, chId, undefined, bulkDeleteManageCached(chId))) return true;
@@ -22259,7 +22259,7 @@
         notify("bulkDelete");
         if (!liveItems.length) { bulkDeleteFinish(bulkDelete.progress, []); return; }
 
-        const actions = msgActions || (msgActions = inspectedExport(7445, "default"));
+        const actions = msgActions || (msgActions = inspectedExport(7745, "default"));
         if (!actions || typeof actions.deleteMessage !== "function") { bulkDeleteFinish(bulkDelete.progress, liveItems.map(item => item.id)); return; }
         const failed = [];
         let idx = 0, tries = 0;
@@ -22318,7 +22318,7 @@
             const body = pl(left.length, "{n} message couldn't be deleted. It's still selected, so you can try again.",
                 "{n} messages couldn't be deleted. They're still selected, so you can try again.");
             if (RN && RN.Alert && typeof RN.Alert.alert === "function") RN.Alert.alert(tr("Some messages weren't deleted"), body);
-            if (count > 0) reviewToast(reviewUI(), pl(count, "Deleted {n} message", "Deleted {n} messages"), venusIcon(5148, "TrashIcon"));
+            if (count > 0) reviewToast(reviewUI(), pl(count, "Deleted {n} message", "Deleted {n} messages"), venusIcon(5894, "TrashIcon"));
             return;
         }
         animateLayout();
@@ -22333,7 +22333,7 @@
         bulkDelete.manageFor = null;
         bulkDelete.selectable = null;
         if (count > 0) {
-            reviewToast(reviewUI(), pl(count, "Deleted {n} message", "Deleted {n} messages"), venusIcon(5148, "TrashIcon"));
+            reviewToast(reviewUI(), pl(count, "Deleted {n} message", "Deleted {n} messages"), venusIcon(5894, "TrashIcon"));
         }
     }
     function bulkDeleteSheet(orig, self, args) {
@@ -22354,7 +22354,7 @@
             return !!(label && (deleteText && label === deleteText || label === tr("Delete Message") || /delete message/i.test(label)));
         };
         let added = false;
-        const Icon = venusIcon(7144, "CircleCheckIcon");
+        const Icon = venusIcon(7434, "CircleCheckIcon");
         const onPress = function () {
             const sheets = reviewUI().sheets;
             try { if (sheets && typeof sheets.hideActionSheet === "function") sheets.hideActionSheet("MessageLongPressActionSheet"); } catch (_) {}
@@ -22472,12 +22472,12 @@
             return () => { try { sub && typeof sub.remove === "function" && sub.remove(); } catch (_) {} };
         }, [shown]);
         if (!shown) return null;
-        const Press = inspectedExport(6462, "PressableOpacity") || RN.TouchableOpacity || RN.Pressable || RN.View;
+        const Press = inspectedExport(7076, "PressableOpacity") || RN.TouchableOpacity || RN.Pressable || RN.View;
         const count = bulkDelete.selected.size;
         const deleting = bulkDelete.deleting;
         const selectable = deleting ? [] : bulkDeleteChannelSelectableIds(bulkDelete.channelId);
         const allSelected = selectable.length > 0 && bulkDelete.selected.size >= selectable.length && selectable.every(id => bulkDelete.selected.has(id));
-        const Trash = venusIcon(5148, "TrashIcon"), Close = venusIcon(6573, "CircleXIcon");
+        const Trash = venusIcon(5894, "TrashIcon"), Close = venusIcon(7191, "CircleXIcon");
         const chats = deleting ? 1 : bulkDeleteByChat().size;
         const statusText = deleting ?
             tr("Deleting {done} of {total}…", {done:Math.min(bulkDelete.attempted + 1, bulkDelete.total), total:bulkDelete.total}) :
@@ -22548,13 +22548,13 @@
         const ui = reviewUI();
         hideReviewSheet(ui, BULK_REVIEW_SHEET);
         if (place.id === bulkDelete.channelId) return;
-        const go = inspectedExport(1114, "transitionTo");
+        const go = inspectedExport(1099, "transitionTo");
         if (typeof go === "function") later(() => { try { go("/channels/" + (place.guildId || "@me") + "/" + place.id); } catch (_) {} }, 250);
     }
     function BulkDeleteReviewSheet() {
         useSettings("bulkDelete");
         useLanguage();
-        const ui = reviewUI(), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Press = inspectedExport(6462, "PressableOpacity") || RN.TouchableOpacity || RN.Pressable;
+        const ui = reviewUI(), Group = ui.TableRowGroup || RN.View, Row = ui.TableRow, Press = inspectedExport(7076, "PressableOpacity") || RN.TouchableOpacity || RN.Pressable;
         const s = useBulkBarStyles();
         const close = () => hideReviewSheet(ui, BULK_REVIEW_SHEET);
         const byChat = bulkDeleteByChat(), places = [];
@@ -22570,8 +22570,8 @@
         sections.sort((a, b) => (a.dm ? 1 : 0) - (b.dm ? 1 : 0));
         const total = bulkDelete.selected.size;
         const header = ui.Header ? el(ui.Header, {title:tr("Selection"), trailing:ui.Close ? el(ui.Close, {onPress:close}) : undefined}) : null;
-        const iconFor = place => place.group ? rowIcon(8489, "GroupIcon") : place.dm ? rowIcon(8490, "AtIcon") : rowIcon(8471, "ChatIcon");
-        const Clear = venusIcon(6573, "CircleXIcon");
+        const iconFor = place => place.group ? rowIcon(8765, "GroupIcon") : place.dm ? rowIcon(8766, "AtIcon") : rowIcon(8747, "ChatIcon");
+        const Clear = venusIcon(7191, "CircleXIcon");
         const groups = sections.map(section => el(Group, {key:section.key, title:section.title},
             Row ? section.places.map(place => el(Row, {key:place.id, label:place.name, icon:iconFor(place),
                 subLabel:place.id === bulkDelete.channelId ? tr("Open now") : undefined,
@@ -22636,7 +22636,7 @@
             );
             return steps;
         }, [includeCached]);
-        const Check = venusIcon(7101, "CheckmarkSmallIcon"), Trash = venusIcon(5148, "TrashIcon"), CircleCheck = venusIcon(7144, "CircleCheckIcon");
+        const Check = venusIcon(7399, "CheckmarkSmallIcon"), Trash = venusIcon(5894, "TrashIcon"), CircleCheck = venusIcon(7434, "CircleCheckIcon");
         const selecting = on ? state.selecting : true;
         const picked = on ? state.picked : (includeCached ? ["m1", "m2", "m3", "x1"] : ["m1", "m2", "x1"]);
         const chatTwo = on && state.chat === 1;
@@ -22676,7 +22676,7 @@
         const sheet = on && state.sheet ? popIn("sheet", el(RN.View, {key:"sheet", style:[k.sheet, {borderTopLeftRadius:16, borderTopRightRadius:16, paddingTop:8, paddingBottom:10, paddingHorizontal:12, gap:4}]},
             el(RN.View, {style:{alignSelf:"center", width:36, height:4, borderRadius:2, backgroundColor:"#80848e66", marginBottom:4}}),
             el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:12, paddingVertical:8, paddingHorizontal:8, borderRadius:10}},
-                el(venusIcon(10023, "PencilIcon"), {size:"sm", color:k.icon.color}),
+                el(venusIcon(10383, "PencilIcon"), {size:"sm", color:k.icon.color}),
                 el(RN.Text, {style:[s.name, {fontSize:14}]}, tr("Edit Message"))),
             el(RN.View, {style:{flexDirection:"row", alignItems:"center", gap:12, paddingVertical:8, paddingHorizontal:8, borderRadius:10}},
                 el(Trash, {size:"sm", color:"#f23f43"}),
@@ -22711,12 +22711,12 @@
         const ui = reviewUI();
         if (!React || !RN) return null;
         const on = enabled("bulkDelete"), Group = ui.TableRowGroup || RN.View, Switch = ui.TableSwitchRow;
-        const Icon = venusIcon(7144, "CircleCheckIcon");
+        const Icon = venusIcon(7434, "CircleCheckIcon");
         const keptCount = deleted.size;
         const clearCached = () => {
             if (!keptCount) return;
             clearDeleted(true);
-            reviewToast(ui, "Cleared kept deleted messages", venusIcon(5148, "TrashIcon"));
+            reviewToast(ui, "Cleared kept deleted messages", venusIcon(5894, "TrashIcon"));
             notify("bulkDelete");
         };
         const groups = [
@@ -22728,8 +22728,8 @@
                     {title:tr("Ready in chat"), IconComponent:Icon}),
             el(BulkDeletePreview, {key:"preview", on}),
             el(Group, {key:"options", title:tr("Selection")},
-                switchRow(Switch, "bulkDeleteConfirm", "Ask before deleting", "Shows a confirmation dialog before deleting the selected messages.", rowIcon(5145, "CircleInformationIcon")),
-                features.noDelete ? switchRow(Switch, "bulkDeleteIncludeCached", "Include kept deleted messages", "Lets you select and clear deleted messages kept by Keep deleted messages.", rowIcon(5148, "TrashIcon")) : null),
+                switchRow(Switch, "bulkDeleteConfirm", "Ask before deleting", "Shows a confirmation dialog before deleting the selected messages.", rowIcon(5891, "CircleInformationIcon")),
+                features.noDelete ? switchRow(Switch, "bulkDeleteIncludeCached", "Include kept deleted messages", "Lets you select and clear deleted messages kept by Keep deleted messages.", rowIcon(5894, "TrashIcon")) : null),
             features.noDelete && keptCount > 0 ? el(Group, {key:"cached", title:tr("Kept deleted messages")},
                 actionRow(ui, "clearCached", "Clear kept deleted messages",
                     pl(keptCount, "Removes {n} cached deleted message from chat and from this phone.", "Removes {n} cached deleted messages from chat and from this phone."),
@@ -22740,7 +22740,7 @@
     }
     function activatePlugins(id, exports) {
         switch (id) {
-            case 2132:
+            case 2186:
                 if (exports && exports.default && !localeStore) {
                     localeStore = exports.default;
                     // Following Discord's language: switching it there switches Venus too.
@@ -22756,91 +22756,91 @@
                 return hookExport(exports, "default", resolveAssetSourceHook);
             case 84: return features.iconPacks ? hookAssetRegistryModule(exports) : exports;
             case 328: return features.iconPacks ? hookImageModule(exports) : exports;
-            case 4912: return features.iconPacks ? hookExport(exports, "BaseIconImage", baseIconImageHook) : exports;
-            case 9767: return features.appIcons ? hookAppIconConstants(exports) : exports;
-            case 18444: return features.appIcons ? hookAppIconPremiumManager(exports) : exports;
-            case 16589: case 16590: case 18079: return features.appIcons ? hookComponent(exports, appIconsScreen) : exports;
-            case 5032: return features.nitroThemes ? hookThemeBackgroundStore(exports) : exports;
-            case 2049: {
+            case 5873: return features.iconPacks ? hookExport(exports, "BaseIconImage", baseIconImageHook) : exports;
+            case 10134: return features.appIcons ? hookAppIconConstants(exports) : exports;
+            case 19841: return features.appIcons ? hookAppIconPremiumManager(exports) : exports;
+            case 17884: case 17885: case 19428: return features.appIcons ? hookComponent(exports, appIconsScreen) : exports;
+            case 5194: return features.nitroThemes ? hookThemeBackgroundStore(exports) : exports;
+            case 5000: {
                 const creators = (features.nitroThemes || features.accountSwitcher) && exports && exports.PreloadedUserSettingsActionCreators;
                 if (creators && typeof creators.updateAsync === "function") hookExport(creators, "updateAsync", nitroThemeUpdateAsync);
                 return exports;
             }
-            case 16326: return features.nitroThemes ? hookComponent(exports, nitroThemePicker) : exports;
-            case 589: return features.customThemes || features.materialYou ? hookSemanticColorsModule(exports) : exports;
-            case 591: return features.customThemes || features.materialYou ? hookRawColorsModule(exports) : exports;
-            case 590: return features.customThemes || features.materialYou ? hookExperimentColorsModule(exports) : exports;
-            case 11577: return (features.customThemes || features.materialYou || features.iconPacks) ? hookComponent(exports, rootThemeContextProvider, "RootThemeContextProvider") : exports;
-            case 1207: if ((features.customThemes || features.materialYou || features.iconPacks) && exports && exports.default) customThemes.themeStore = exports.default; return exports;
-            case 4926: return (features.customThemes || features.materialYou || features.iconPacks) ? hookCreateThemedContext(exports) : exports;
-            case 4934: return (features.customThemes || features.materialYou || features.iconPacks) ? hookComponent(exports, nestedThemeContextProvider, "ThemeContextProvider") : exports;
-            case 10692:
+            case 17614: return features.nitroThemes ? hookComponent(exports, nitroThemePicker) : exports;
+            case 577: return features.customThemes || features.materialYou ? hookSemanticColorsModule(exports) : exports;
+            case 579: return features.customThemes || features.materialYou ? hookRawColorsModule(exports) : exports;
+            case 578: return features.customThemes || features.materialYou ? hookExperimentColorsModule(exports) : exports;
+            case 12253: return (features.customThemes || features.materialYou || features.iconPacks) ? hookComponent(exports, rootThemeContextProvider, "RootThemeContextProvider") : exports;
+            case 1192: if ((features.customThemes || features.materialYou || features.iconPacks) && exports && exports.default) customThemes.themeStore = exports.default; return exports;
+            case 5187: return (features.customThemes || features.materialYou || features.iconPacks) ? hookCreateThemedContext(exports) : exports;
+            case 5188: return (features.customThemes || features.materialYou || features.iconPacks) ? hookComponent(exports, nestedThemeContextProvider, "ThemeContextProvider") : exports;
+            case 11407:
                 // ChatViewWrapper {channelId, stickyHeader, children}: the theme background behind chat, and the translate bar (#82)
                 // in the sticky header slot above the messages, where Discord shows its own New messages bar.
                 if (features.translate) exports = hookComponent(exports, translateBarHeader);
                 if (features.bulkDelete) exports = hookComponent(exports, bulkDeleteChatFooter);
                 return features.customThemes ? hookComponent(exports, chatViewWrapperThemeBackground) : exports;
-            case 13074: return features.accountSwitcher ? hookMultiAccountStore(exports) : exports;
-            case 13073: return features.accountSwitcher ? hookPushNotificationActions(exports) : exports;
-            case 13078: return features.accountSwitcher ? hookMultiAccountActions(exports) : exports;
-            case 6900: return features.accountSwitcher ? hookComponent(exports, addAccountLogin) : exports;
-            case 17520: return features.accountSwitcher ? hookComponent(exports, manageAccountsModalWithRegister) : exports;
-            case 17076: return features.accountSwitcher ? hookRegisterForMultiAccount(exports) : exports;
-            case 6194: return features.accountSwitcher ? hookTrackedHttpForSignUp(exports) : exports;
-            case 13076: return features.accountSwitcher ? hookIsStaffForMultiAccount(exports) : exports;
-            case 4855:
+            case 14243: return features.accountSwitcher ? hookMultiAccountStore(exports) : exports;
+            case 14242: return features.accountSwitcher ? hookPushNotificationActions(exports) : exports;
+            case 14247: return features.accountSwitcher ? hookMultiAccountActions(exports) : exports;
+            case 7212: return features.accountSwitcher ? hookComponent(exports, addAccountLogin) : exports;
+            case 18836: return features.accountSwitcher ? hookComponent(exports, manageAccountsModalWithRegister) : exports;
+            case 18370: return features.accountSwitcher ? hookRegisterForMultiAccount(exports) : exports;
+            case 6834: return features.accountSwitcher ? hookTrackedHttpForSignUp(exports) : exports;
+            case 14245: return features.accountSwitcher ? hookIsStaffForMultiAccount(exports) : exports;
+            case 5112:
                 if (features.hideBlocked && exports && exports.default) hideBlocked.relationships = exports.default;
                 if (features.userNotif && exports && exports.default) { userNotif.relationships = exports.default; userNotifSeedStatuses(); }
                 return exports;
-            case 1403: return features.experiments ? hookStaffEnv(exports) : exports;
-            case 7579: if (features.hideBlocked && exports && exports.default) hideBlocked.references = exports.default; return exports;
-            case 12809: return features.hideBlocked ? hookExport(exports, "default", hideBlockedChannelStream) : exports;
-            case 2090:
+            case 1401: return features.experiments ? hookStaffEnv(exports) : exports;
+            case 7875: if (features.hideBlocked && exports && exports.default) hideBlocked.references = exports.default; return exports;
+            case 13979: return features.hideBlocked ? hookExport(exports, "default", hideBlockedChannelStream) : exports;
+            case 5041:
                 if (features.serverEdit && exports && exports.default) exports = serverEditHookStore(exports);
                 if (features.userNotif && exports && exports.default) { userNotif.guilds = exports.default; userNotifSubscribeGuilds(); }
                 return exports;
-            case 1417: return features.serverEdit ? serverEditHookAvatars(exports) : exports;
-            case 10002: if ((features.quests || features.badges || features.userNotif || features.removedAlerts) && exports && exports.default) { bgKeepAlive.fg = exports.default; backgroundSync(); } return exports;
-            case 14713:
+            case 1411: return features.serverEdit ? serverEditHookAvatars(exports) : exports;
+            case 10362: if ((features.quests || features.badges || features.userNotif || features.removedAlerts) && exports && exports.default) { bgKeepAlive.fg = exports.default; backgroundSync(); } return exports;
+            case 15843:
                 if (features.platformSpoof) exports = platformSpoofHook(exports);
                 return (features.quests || features.badges || features.userNotif || features.removedAlerts) ? hookGatewaySocket(exports) : exports;
-            case 14748: return (features.quests || features.badges || features.userNotif || features.removedAlerts) ? hookPauseGateway(exports) : exports;
-            case 6015: if (features.dndBanners && exports && exports.default) dndBanners.presence = exports.default; return features.badges ? hookSelfPresenceStore(exports) : exports;
-            case 9839: return features.cloneExpressions ? hookComponent(exports, cloneEmojiSheet) : exports;
-            case 10078: return features.cloneExpressions ? hookComponent(exports, cloneStickerSheet) : exports;
-            case 13511: return features.dndBanners ? hookExport(exports, "shouldNotify", dndShouldNotify) : exports;
-            case 13523: return features.dndBanners ? hookExport(exports, "playInAppMessageSound", dndBannerSound) : exports;
-            case 5075: return features.landscapeFull ? hookExport(hookExport(exports, "default", landscapeChatLayoutHook), "getChatLayout", landscapeChatLayout) : exports;
-            case 8590: if (features.badges && exports && exports.default) badgesAttachStore(exports.default); return exports;
-            case 9978:
+            case 15878: return (features.quests || features.badges || features.userNotif || features.removedAlerts) ? hookPauseGateway(exports) : exports;
+            case 6657: if (features.dndBanners && exports && exports.default) dndBanners.presence = exports.default; return features.badges ? hookSelfPresenceStore(exports) : exports;
+            case 10204: return features.cloneExpressions ? hookComponent(exports, cloneEmojiSheet) : exports;
+            case 10438: return features.cloneExpressions ? hookComponent(exports, cloneStickerSheet) : exports;
+            case 11177: return features.dndBanners ? hookExport(exports, "shouldNotify", dndShouldNotify) : exports;
+            case 11190: return features.dndBanners ? hookExport(exports, "playInAppMessageSound", dndBannerSound) : exports;
+            case 5349: return features.landscapeFull ? hookExport(hookExport(exports, "default", landscapeChatLayoutHook), "getChatLayout", landscapeChatLayout) : exports;
+            case 8867: if (features.badges && exports && exports.default) badgesAttachStore(exports.default); return exports;
+            case 10340:
                 if (features.translate) exports = hookComponent(exports, translateSheet);
                 if (features.noDelete) exports = hookComponent(exports, noDeleteSheet);
                 if (features.localEdit) exports = hookComponent(exports, localEditSheet);
                 if (features.viewRaw) exports = hookComponent(exports, viewRawMessageSheet);
                 return features.bulkDelete ? hookComponent(exports, bulkDeleteSheet) : exports;
-            case 9561: return features.splitMessages ? maxLengthModule(exports) : exports;
-            case 17538: return (features.youBarSettings || features.accountSwitcher) ? hookComponent(exports, youBarButtons) : exports;
+            case 9898: return features.splitMessages ? maxLengthModule(exports) : exports;
+            case 18855: return (features.youBarSettings || features.accountSwitcher) ? hookComponent(exports, youBarButtons) : exports;
             // MurmurHashV3 is CommonJS (module.exports=function), not an ES default export.
-            case 1266: if (features.pastelize) pastelHash = typeof exports === "function" ? exports : exports.default; return exports;
-            case 2128: if (features.pastelize) guildMembers = exports.default; if (features.timeoutDuration && exports && exports.default) timeoutTag.members = exports.default; return exports;
-            case 8013:
+            case 1251: if (features.pastelize) pastelHash = typeof exports === "function" ? exports : exports.default; return exports;
+            case 5082: if (features.pastelize) guildMembers = exports.default; if (features.timeoutDuration && exports && exports.default) timeoutTag.members = exports.default; return exports;
+            case 8481:
                 if ((features.pastelize || features.noDelete || features.translate || features.messageHighlight || features.bulkDelete || features.staffTag || features.timeoutDuration || features.voiceDownload || features.localEdit) && exports.default && exports.default.prototype)
                     hookExport(exports.default.prototype, "generate", messageRow);
                 return exports;
-            case 5207: if (features.platformIndicators || features.userNotif) { presenceStore = exports.default; if (features.userNotif) userNotifSeedStatuses(); } return exports;
-            case 5211: if (features.platformIndicators) sessionsStore = exports.default; return exports;
-            case 10858:
+            case 5922: if (features.platformIndicators || features.userNotif) { presenceStore = exports.default; if (features.userNotif) userNotifSeedStatuses(); } return exports;
+            case 5927: if (features.platformIndicators) sessionsStore = exports.default; return exports;
+            case 11586:
                 if (!features.platformIndicators) return exports;
                 displayNameType = exports.DisplayName;
                 exports = hookExport(exports, "DisplayName", platformName);
                 return hookComponent(exports, (orig, self, args) => wrapProfileTree(orig.apply(self, args), displayNameType, platformName, platformWrappers));
-            case 13788: return features.platformIndicators ? hookComponent(exports, platformHeader) : exports;
-            case 17165: return features.platformIndicators ? hookComponent(exports, platformDmRow) : exports;
+            case 14840: return features.platformIndicators ? hookComponent(exports, platformHeader) : exports;
+            case 18465: return features.platformIndicators ? hookComponent(exports, platformDmRow) : exports;
             // User list rows (UserRow, default export) and voice panel rows (FormComponents' named MemberRowItem).
-            case 10531: return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList")) : exports;
-            case 9069: return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList"), "MemberRowItem") : exports;
+            case 10889: return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList")) : exports;
+            case 9345: return features.platformIndicators ? hookComponent(exports, platformPlacementHook("piUserList"), "MemberRowItem") : exports;
             // Profile "in voice" users (UserProfileActivityVoiceChannelUsers): private UserRow rows.
-            case 14076:
+            case 15146:
                 return features.platformIndicators ? hookComponent(exports, (orig, self, args) => {
                     const tree = orig.apply(self, args);
                     if (!enabled("platformIndicators") || !settings.piUserList || !React || !tree) return tree;
@@ -22855,7 +22855,7 @@
                 }) : exports;
             // Plain status dot on avatars: avatar Status (design/void/Status,
             // 15185) draws a phone badge when isMobileOnline; show the plain dot instead.
-            case 15185: {
+            case 16331: {
                 if (!features.platformIndicators) return exports;
                 const plain = (orig, self, args) => {
                     const props = args[0];
@@ -22866,98 +22866,98 @@
                     orig.call(self, props) : orig.call(self, Object.assign({}, props, {isMobileOnline:false}));
                 return hookExport(hookExport(exports, "default", plain), "StatusWithTyping", plain);
             }
-            case 17439: return features.readAll ? hookExport(exports, "default", readAllBarProps) : exports;
-            case 17433:
+            case 18737: return features.readAll ? hookExport(exports, "default", readAllBarProps) : exports;
+            case 18731:
                 // Edit locally, then Server info, after Discord's own rows.
                 if (features.serverEdit) exports = hookExport(exports, "default", serverEditMenu);
                 if (features.pauseInvites) exports = hookExport(exports, "default", pauseInvitesMenu);
                 if (features.serverInfo) exports = hookExport(exports, "default", serverInfoMenu);
                 return features.viewRaw ? hookExport(exports, "default", viewRawServerMenu) : exports;
-            case 11024: if (features.reviewDB) oauthModal = exports.default; return exports;
-            case 6542: if (features.reviewDB) nativeRowGroup = exports.TableRowGroup; return exports;
-            case 7172: if (features.reviewDB) nativeSwitchRow = exports.TableSwitchRow; return exports;
-            case 17357:
+            case 11063: if (features.reviewDB) oauthModal = exports.default; return exports;
+            case 7159: if (features.reviewDB) nativeRowGroup = exports.TableRowGroup; return exports;
+            case 7462: if (features.reviewDB) nativeSwitchRow = exports.TableSwitchRow; return exports;
+            case 18657:
                 if (!features.hiddenChannels) return exports;
                 // ChannelInfo can be consumed as default export and as named export
                 // (GuildRolesAndChannelsRow reads it by name); hook both.
                 exports = hookComponent(exports, hiddenInfo);
                 return hookExport(exports, "ChannelInfo", hiddenInfo);
-            case 14101: return features.reviewDB ? hookComponent(exports, reviewNote) : exports;
-            case 15048: return features.reviewDB ? hookExport(exports, "ContextMenuPopout", reviewMenu) : exports;
-            case 14995: return features.reviewDB ? hookComponent(exports, reviewGuild) : exports;
-            case 7098: return features.systemEmoji && exports && exports.default ? replaceValue(exports, "default", propsComponent(exports.default, systemEmojiProps)) : exports;
-            case 15602: exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG); return exports;
-            case 11084: return hookExport(exports, "createList", settingsSections);
-            case 15733: SettingsList = exports.SettingsList; return exports;
-            case 10940: return features.copyBios ? hookComponent(exports, copyBio) : exports;
-            case 5521:
+            case 15171: return features.reviewDB ? hookComponent(exports, reviewNote) : exports;
+            case 16201: return features.reviewDB ? hookExport(exports, "ContextMenuPopout", reviewMenu) : exports;
+            case 16146: return features.reviewDB ? hookComponent(exports, reviewGuild) : exports;
+            case 7396: return features.systemEmoji && exports && exports.default ? replaceValue(exports, "default", propsComponent(exports.default, systemEmojiProps)) : exports;
+            case 16783: exports.SETTING_RENDERER_CONFIG = nativeRegistry(exports.SETTING_RENDERER_CONFIG); return exports;
+            case 11717: return hookExport(exports, "createList", settingsSections);
+            case 16937: SettingsList = exports.SettingsList; return exports;
+            case 11670: return features.copyBios ? hookComponent(exports, copyBio) : exports;
+            case 5808:
                 if (!features.hiddenChannels && !features.cleanChannels) return exports;
                 exports = hookExport(exports, "computeChannelName", channelLabel);
                 return hookExport(exports, "default", useChannelLabel);
-            case 5512: return features.cleanChannels ? hookExport(exports, "getChannel", mentionChannelInfo) : exports;
-            case 7635:
+            case 6208: return features.cleanChannels ? hookExport(exports, "getChannel", mentionChannelInfo) : exports;
+            case 7933:
                 if (!features.cleanChannels) return exports;
                 exports = hookExport(exports, "createParserState", parserStateChannels);
                 if (exports && exports.default) exports = replaceValue(exports, "default", hookExport(exports.default, "createParserState", parserStateChannels));
                 return exports;
-            case 13989: return features.favouriteAnything ? hookComponent(exports, favouriteButton) : exports;
-            case 1297: return features.tenorGifs && exports && exports.HTTP ? (hookExport(hookExport(exports.HTTP, "get", tenorGet), "post", tenorPost), exports) : exports;
-            case 6145: if (features.voiceOptions && exports && exports.default) hookExport(exports.default, "disconnect", voiceLeave); return exports;
-            case 11372: return features.voiceOptions ? hookExport(exports, "playSound", voiceSoundPlay) : exports;
-            case 10036: return features.tenorGifs ? hookExport(exports, "getSearchPlaceholder", tenorPlaceholder) : exports;
-            case 10035: return features.favouriteAnything ? hookExport(exports, "addFavoriteGIF", favouriteAdd) : exports;
-            case 10038: return features.favouriteAnything ? hookExport(exports, "useFavoriteGIFsMobile", favouriteList) : exports;
-            case 14197: return features.mutualGroupDMs ? hookComponent(exports, mutualGroupsRow) : exports;
-            case 2068: channelStore = exports.default; return exports;
-            case 12849: return features.noTyping ? replaceValue(exports, "default", hookExport(hookExport(exports.default, "startTyping", typing), "stopTyping", typing)) : exports;
-            case 10596:
+            case 15040: return features.favouriteAnything ? hookComponent(exports, favouriteButton) : exports;
+            case 1282: return features.tenorGifs && exports && exports.HTTP ? (hookExport(hookExport(exports.HTTP, "get", tenorGet), "post", tenorPost), exports) : exports;
+            case 6793: if (features.voiceOptions && exports && exports.default) hookExport(exports.default, "disconnect", voiceLeave); return exports;
+            case 11192: return features.voiceOptions ? hookExport(exports, "playSound", voiceSoundPlay) : exports;
+            case 10396: return features.tenorGifs ? hookExport(exports, "getSearchPlaceholder", tenorPlaceholder) : exports;
+            case 10395: return features.favouriteAnything ? hookExport(exports, "addFavoriteGIF", favouriteAdd) : exports;
+            case 10398: return features.favouriteAnything ? hookExport(exports, "useFavoriteGIFsMobile", favouriteList) : exports;
+            case 15309: return features.mutualGroupDMs ? hookComponent(exports, mutualGroupsRow) : exports;
+            case 5019: channelStore = exports.default; return exports;
+            case 14019: return features.noTyping ? replaceValue(exports, "default", hookExport(hookExport(exports.default, "startTyping", typing), "stopTyping", typing)) : exports;
+            case 10954:
                 if (features.fastDeleteChannels) exports = hookComponent(exports, fastDeleteSheet);
                 return features.viewRaw ? hookComponent(exports, viewRawChannelMenu) : exports;
-            case 17245: return features.viewRaw ? hookComponent(exports, viewRawThreadMenu) : exports;
-            case 10780: return features.viewRaw ? hookComponent(exports, viewRawPostMenu) : exports;
-            case 14015: return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
-            case 7158: return features.viewRaw ? hookComponent(exports, viewRawRolesCard) : exports;
-            case 7167: return features.viewRaw ? hookExport(exports, "showSimpleActionSheet", viewRawSimpleSheet) : exports;
-            case 1128: if (features.quickDelete || features.noConfirmPin || features.fastDeleteChannels) locale = exports; return exports;
-            case 14082: return features.listenAlong ? hookComponent(exports, listenAlongButton, "PlayOnSpotifyButton") : exports;
-            case 9990: return features.quietReplies ? hookExport(hookExport(exports, "createPendingReply", quietReplyCreate), "createShallowPendingReply", quietReplyCreate) : exports;
-            case 5400: return features.quickDelete || features.noConfirmPin || features.fastDeleteChannels ? replaceValue(exports, "default", hookExport(exports.default, "show", quickConfirm)) : exports;
-            case 5534: if (features.noDelete) { messageRecords = exports; restoreDeleted(); } return exports;
-            case 14755: return features.fakeDeafen && exports && exports.default ? fakeDeafAttach(exports) : exports;
-            case 18341: return features.fakeDeafen ? hookComponent(exports, fakeDeafSwitch, "DeafenSwitch") : exports;
-            case 1392:
+            case 18545: return features.viewRaw ? hookComponent(exports, viewRawThreadMenu) : exports;
+            case 11298: return features.viewRaw ? hookComponent(exports, viewRawPostMenu) : exports;
+            case 15076: return features.viewRaw ? hookComponent(exports, viewRawProfileMenu) : exports;
+            case 7448: return features.viewRaw ? hookComponent(exports, viewRawRolesCard) : exports;
+            case 7456: return features.viewRaw ? hookExport(exports, "showSimpleActionSheet", viewRawSimpleSheet) : exports;
+            case 1113: if (features.quickDelete || features.noConfirmPin || features.fastDeleteChannels) locale = exports; return exports;
+            case 15152: return features.listenAlong ? hookComponent(exports, listenAlongButton, "PlayOnSpotifyButton") : exports;
+            case 10352: return features.quietReplies ? hookExport(hookExport(exports, "createPendingReply", quietReplyCreate), "createShallowPendingReply", quietReplyCreate) : exports;
+            case 6123: return features.quickDelete || features.noConfirmPin || features.fastDeleteChannels ? replaceValue(exports, "default", hookExport(exports.default, "show", quickConfirm)) : exports;
+            case 6228: if (features.noDelete) { messageRecords = exports; restoreDeleted(); } return exports;
+            case 15885: return features.fakeDeafen && exports && exports.default ? fakeDeafAttach(exports) : exports;
+            case 19778: return features.fakeDeafen ? hookComponent(exports, fakeDeafSwitch, "DeafenSwitch") : exports;
+            case 1385:
                 if (exports && exports.default && (features.validUser || features.splitMessages || features.fixEmbeds || features.translate || features.userNotif || features.removedAlerts || features.accountSwitcher || features.appIcons || features.nitroThemes || features.messageHighlight || features.serverInfo || features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels || features.gestures || features.freeNitro || features.badges || features.bulkDelete || features.experiments || features.quietReplies || features.silentEdit || features.silentDelete || features.localEdit))
                     userStore = exports.default;
                 if (features.noDelete || features.reviewDB || features.platformIndicators || features.hiddenChannels) restoreDeleted();
                 return exports;
-            case 5532:
+            case 6226:
                 if (features.jumpToTop || features.messageHighlight || features.noDelete || features.translate || features.hideBlocked || features.bulkDelete || features.silentEdit || features.silentDelete || features.localEdit) msgStore = exports.default;
                 if (features.noDelete) {
                     exports = replaceValue(exports, "default", hookExport(hookExport(msgStore, "getMessage", retainedMessage), "getMessages", retainedMessages));
                     restoreDeleted();
                 }
                 return exports;
-            case 7656: if (features.quests) questAttach(exports.default); return exports;
-            case 1498: return features.fullImages ? hookExport(exports, "getMobileOptimizedSrc", fullImagesSrc) : exports;
-            case 8666: return features.fullImages ? hookFullImagesViewer(exports) : exports;
-            case 1417: return features.fullImages ? hookFullAvatars(exports) : exports;
-            case 8766: return features.alwaysTrust && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "isTrustedDomain", alwaysTrustDomain)) : exports;
-            case 8537: return features.alwaysTrust ? hookExport(exports, "isSuspiciousDownload", alwaysTrustFile) : exports;
-            case 8046: return features.compressUploads ? hookCompressVideo(exports) : exports;
-            case 10006: return features.compressUploads ? hookExport(exports, "getPreCompressionFileSize", compressPreSize) : exports;
-            case 13422: return features.guildLurk ? hookComponent(exports, invitePreviewDetails) : exports;
-            case 7290: return features.silentLeave && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "closePrivateChannel", silentLeaveClose)) : exports;
-            case 12337: {
+            case 7955: if (features.quests) questAttach(exports.default); return exports;
+            case 1492: return features.fullImages ? hookExport(exports, "getMobileOptimizedSrc", fullImagesSrc) : exports;
+            case 8946: return features.fullImages ? hookFullImagesViewer(exports) : exports;
+            case 1411: return features.fullImages ? hookFullAvatars(exports) : exports;
+            case 9054: return features.alwaysTrust && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "isTrustedDomain", alwaysTrustDomain)) : exports;
+            case 8815: return features.alwaysTrust ? hookExport(exports, "isSuspiciousDownload", alwaysTrustFile) : exports;
+            case 8333: return features.compressUploads ? hookCompressVideo(exports) : exports;
+            case 10366: return features.compressUploads ? hookExport(exports, "getPreCompressionFileSize", compressPreSize) : exports;
+            case 14592: return features.guildLurk ? hookComponent(exports, invitePreviewDetails) : exports;
+            case 7582: return features.silentLeave && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "closePrivateChannel", silentLeaveClose)) : exports;
+            case 13057: {
                 if (features.clickableMentions && exports && exports.default) exports = replaceValue(exports, "default", propsComponent(exports.default, clickableMentionsProps));
                 return features.expandBar && exports && typeof exports.default === "function" ? replaceValue(exports, "default", expandBarWrap(exports.default)) : exports;
             }
-            case 12338: return features.expandBar ? expandBarHeights(exports) : exports;
-            case 12887: return features.expandBar ? hookExport(exports, "default", expandBarHeightHook) : exports;
-            case 12818: return features.expandBar ? hookComponent(exports, expandBarPill) : exports;
-            case 7293: return features.removedAlerts ? hookRemovedMine(exports, ["removeFriend", "removeRelationship"]) : exports;
-            case 6377: return features.removedAlerts ? hookRemovedMine(exports, ["deleteGuild"]) : exports;
-            case 8910: return features.removedAlerts ? hookRemovedMine(exports, ["leaveGuild", "deleteGuild"]) : exports;
-            case 584:
+            case 13058: return features.expandBar ? expandBarHeights(exports) : exports;
+            case 14057: return features.expandBar ? hookExport(exports, "default", expandBarHeightHook) : exports;
+            case 13987: return features.expandBar ? hookComponent(exports, expandBarPill) : exports;
+            case 7585: return features.removedAlerts ? hookRemovedMine(exports, ["removeFriend", "removeRelationship"]) : exports;
+            case 6990: return features.removedAlerts ? hookRemovedMine(exports, ["deleteGuild"]) : exports;
+            case 9187: return features.removedAlerts ? hookRemovedMine(exports, ["leaveGuild", "deleteGuild"]) : exports;
+            case 572:
                 if (features.userNotif && exports && exports.default) userNotifInit(exports.default);
                 if (features.removedAlerts && exports && exports.default) removedInit(exports.default);
                 if (features.hideBlocked && exports && exports.default) hideBlockedInit(exports.default);
@@ -22972,27 +22972,27 @@
                 if (features.voiceOptions && exports && exports.default) voiceOptionsInit(exports.default);
                 if ((features.messageHighlight || features.bulkDelete || features.localEdit) && exports && exports.default && !dispatcher)
                     dispatcher = exports.default.dispatch.bind(exports.default);
-                if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 584) {
+                if ((features.noDelete || features.reviewDB || features.hiddenChannels) && id === 572) {
                     dispatcher = exports.default.dispatch.bind(exports.default);
                     return replaceValue(exports, "default", hookExport(exports.default, "dispatch", dispatchEvent));
                 }
                 return exports;
-            case 1087: case 1098:
-                if (id === 1087 && features.customIdle) exports = customIdleApply(exports);
+            case 1072: case 1083:
+                if (id === 1072 && features.customIdle) exports = customIdleApply(exports);
                 if (features.hiddenChannels && exports.Permissions) viewPermission = exports.Permissions.VIEW_CHANNEL;
                 if (features.bulkDelete && exports.Permissions && bulkDelete.managePermission === undefined)
                     bulkDelete.managePermission = exports.Permissions.MANAGE_MESSAGES;
                 return exports;
-            case 7748:
+            case 8041:
                 if (!features.hiddenChannels) return exports;
                 exports = hookExport(exports, "openGuildVoiceModal", hiddenVoicePanel);
                 return hookExport(exports, "navigateToVoiceChannel", hiddenVoicePanel);
-            case 1114:
+            case 1099:
                 if (!features.hiddenChannels) return exports;
                 exports = hookExport(exports, "transitionTo", hiddenNavigation);
                 exports = hookExport(exports, "replaceWith", hiddenNavigation);
                 return hookExport(exports, "transitionToGuild", hiddenGuildNavigation);
-            case 4845: {
+            case 5102: {
                 const candidate = exports && exports.default && typeof exports.default.can === "function" ? exports.default :
                     exports && typeof exports.can === "function" ? exports : null;
                 if (candidate) permissions = candidate;
@@ -23015,7 +23015,7 @@
                 } catch (_) {}
                 return exports;
             }
-            case 4843: {
+            case 5100: {
                 if (!features.hiddenChannels) return exports;
                 if (exports.default && typeof exports.default.getChannels === "function" && !guildChannelsGetOrig)
                     guildChannelsGetOrig = exports.default.getChannels.bind(exports.default);
@@ -23023,19 +23023,19 @@
                 guildChannels = store;
                 return replaceValue(exports, "default", store);
             }
-            case 2119: return features.hiddenChannels && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "getChannelId", hiddenSelectedChannel)) : exports;
-            case 9683: if (features.jumpToTop || features.bulkDelete) chatHeight = exports; return exports;
-            case 12921: if (features.jumpToTop) jumpPill = exports.default; return exports;
+            case 5073: return features.hiddenChannels && exports && exports.default ? replaceValue(exports, "default", hookExport(exports.default, "getChannelId", hiddenSelectedChannel)) : exports;
+            case 10050: if (features.jumpToTop || features.bulkDelete) chatHeight = exports; return exports;
+            case 14091: if (features.jumpToTop) jumpPill = exports.default; return exports;
             // 351.11's arrow is a registered image asset: Metro exports the asset id itself, not a default.
-            case 12922: if (features.jumpToTop) jumpIcon = exports && typeof exports === "object" && "default" in exports ? exports.default : exports; return exports;
-            case 12920: return features.jumpToTop ? hookComponent(exports, jumpButton) : exports;
-            case 8254: return features.gestures ? hookExport(exports, "handleAddDefaultDoubleTapReaction", doubleTapMessage) : exports;
+            case 1118: if (features.jumpToTop) jumpIcon = exports && typeof exports === "object" && "default" in exports ? exports.default : exports; return exports;
+            case 14090: return features.jumpToTop ? hookComponent(exports, jumpButton) : exports;
+            case 8530: return features.gestures ? hookExport(exports, "handleAddDefaultDoubleTapReaction", doubleTapMessage) : exports;
             // Discord's "double-tap to react" tips, reminders and banners would point at a gesture that now replies.
-            case 13762: return features.gestures ? hookExport(exports, "DoubleTapEmojiEditNudge", hideWhenGestures) : exports;
-            case 9738: return features.gestures ? hookExport(exports, "maybeShowDoubleTapReminderToast", (orig, self, args) => enabled("gestures") ? undefined : orig.apply(self, args)) : exports;
-            case 12935: return features.gestures ? hookExport(exports, "DoubleTapToReactChatInputBanner", hideWhenGestures) : exports;
-            case 11114: return (features.gestures || features.bulkDelete || features.noDelete || features.voiceDownload) ? hookTapHandlers(exports) : exports;
-            case 7445: {
+            case 14808: return features.gestures ? hookExport(exports, "DoubleTapEmojiEditNudge", hideWhenGestures) : exports;
+            case 10105: return features.gestures ? hookExport(exports, "maybeShowDoubleTapReminderToast", (orig, self, args) => enabled("gestures") ? undefined : orig.apply(self, args)) : exports;
+            case 14104: return features.gestures ? hookExport(exports, "DoubleTapToReactChatInputBanner", hideWhenGestures) : exports;
+            case 11763: return (features.gestures || features.bulkDelete || features.noDelete || features.voiceDownload) ? hookTapHandlers(exports) : exports;
+            case 7745: {
                 let actions = exports.default;
                 if (!actions) return exports;
                 if (features.noDelete) actions = hookExport(actions, "deleteMessage", deleteMessage);
@@ -23064,13 +23064,13 @@
                 msgActions = actions;
                 return replaceValue(exports, "default", actions);
             }
-            case 15066:
+            case 16217:
                 if (!features.freeNitro && !features.appIcons && !features.nitroThemes) return exports;
                 emojiCatalog = exports;
                 return hookExport(exports, "canUserUse", catalogEligibility);
-            case 6243: if (features.freeNitro) emojiStore = exports.default; return exports;
-            case 6286: if (features.freeNitro) stickerStore = exports.default; return exports;
-            case 4864: {
+            case 6884: if (features.freeNitro) emojiStore = exports.default; return exports;
+            case 6925: if (features.freeNitro) stickerStore = exports.default; return exports;
+            case 2171: {
                 if (!features.freeNitro && !features.appIcons && !features.nitroThemes) return exports;
                 // The pinned build exports the capabilities on a default singleton;
                 // named aliases are not used by its picker. Hook the inspected object.
@@ -23097,9 +23097,9 @@
                 }
                 return exports.default ? replaceValue(exports, "default", capabilities) : capabilities;
             }
-            case 8056: return features.anonFiles ? hookExport(exports, "getUploadPayload", anonPayload) : exports;
-            case 8026: return features.anonFiles ? hookExport(exports, "getAttachmentPayload", anonPayload) : exports;
-            case 7323:
+            case 8343: return features.anonFiles ? hookExport(exports, "getUploadPayload", anonPayload) : exports;
+            case 8314: return features.anonFiles ? hookExport(exports, "getAttachmentPayload", anonPayload) : exports;
+            case 7621:
                 if (!features.freeNitro) return exports;
                 stickerRules = exports;
                 exports = hookExport(exports, "getStickerSendability", sendability);
@@ -23186,7 +23186,7 @@
     function activateModule(id, module) {
         try { debugLog.hooked.add(id); } catch (_) {}
         try {
-            if (id === 1164) {
+            if (id === 1149) {
                 const nativeFiles = module.exports.default;
                 if (nativeFiles && typeof nativeFiles.getSize === "function" &&
                     typeof nativeFiles.readFile === "function" && typeof nativeFiles.writeFile === "function")
@@ -23215,14 +23215,14 @@
                 // 7517 (the channel list) and the modules that must keep Discord's real answers get their own imports.
                 // Discord's own server settings (8910 GuildSettingsActionCreators, 8911 GuildSettingsStore, 18678 its landing page)
                 // read GuildStore without Edit servers locally, so a local name or icon can never be saved to the real server.
-                if (features.hiddenChannels && (id === 7517 || id === 6291 || id === 6362 || id === 14975 || id === 14788 || id === 17190 || id === 8727) ||
-                    features.serverEdit && (id === 8910 || id === 8911 || id === 18678)) {
+                if (features.hiddenChannels && (id === 7816 || id === 6930 || id === 6974 || id === 16126 || id === 15939 || id === 18492 || id === 9013) ||
+                    features.serverEdit && (id === 9187 || id === 9188 || id === 20098)) {
                     const factoryArgs = Array.from(arguments);
                     factoryArgs[1] = listImport(factoryArgs[1], id);
                     factoryArgs[2] = listImport(factoryArgs[2], id);
                     factoryArgs[3] = listImport(factoryArgs[3], id);
                     result = factory.apply(this, factoryArgs);
-                } else if (features.splitMessages && (id === 9995 || id === 13811)) {
+                } else if (features.splitMessages && (id === 10357 || id === 14862)) {
                     const factoryArgs = Array.from(arguments);
                     factoryArgs[1] = splitRealImport(factoryArgs[1]);
                     factoryArgs[2] = splitRealImport(factoryArgs[2]);
@@ -23234,8 +23234,8 @@
                 const module = arguments[4]; // Verified Metro factory ABI in Discord 350.8.
                 if (module && module.exports) {
                     // Before anything reads them: DraftStore keeps its length cap from the moment it loads.
-                    if (features.splitMessages && id === 1087) { try { lengthConstants(module.exports); } catch (_) {} }
-                    if (features.accountSwitcher && id === 13075) { try { multiAccountConstants(module.exports); } catch (_) {} }
+                    if (features.splitMessages && id === 1072) { try { lengthConstants(module.exports); } catch (_) {} }
+                    if (features.accountSwitcher && id === 14244) { try { multiAccountConstants(module.exports); } catch (_) {} }
                     if (id === 120) {
                         const initialize = module.exports.default;
                         let initializing = false;

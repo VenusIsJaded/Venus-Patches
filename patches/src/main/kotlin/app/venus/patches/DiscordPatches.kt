@@ -18,8 +18,8 @@ internal val discord = Compatibility(
     apkFileType = ApkFileType.APKM,
     appIconColor = 0x5865F2,
     targets = listOf(AppTarget(
-        version = "351.11 - Stable",
-        versionCode = 351011,
+        version = "354.12 - Stable",
+        versionCode = 354012,
         minSdk = 26
     ))
 )
@@ -91,54 +91,34 @@ private val runtimeAssets = rawResourcePatch {
 }
 
 private object BundleLoader : Fingerprint(
-    definingClass = INSTANCE,
-    name = "loadJSBundle",
+    definingClass = "Los/i;",
+    name = "loadScriptFromFile",
     returnType = "V",
-    parameters = listOf("Lcom/facebook/react/bridge/JSBundleLoader;")
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Z")
 )
 
 internal val packagedDiscordBundle = bytecodePatch {
     dependsOn(discordBundleGuard)
     execute {
         val method = BundleLoader.method
-        val owner = BundleLoader.originalClassDef
-        if (owner.fields.none {
-            it.name == "context" && it.type == "Lcom/facebook/react/runtime/BridgelessReactContext;"
-        }) throw PatchException("Discord's React Native context ABI changed")
-        val loader = Fingerprint(
-            definingClass = "Lcom/facebook/react/bridge/JSBundleLoader;",
-            name = "createAssetLoader",
-            parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Z")
-        ).originalMethod
-        if (loader.returnType != "Lcom/facebook/react/bridge/JSBundleLoader;")
-            throw PatchException("Asset loader factory ABI changed")
         pinPackagedDiscordBundle(method)
         skipLaunchOtaChecks(Fingerprint(
             definingClass = BUNDLE_UPDATER,
-            name = "checkForUpdate",
+            name = "b",
             returnType = "Ljava/util/concurrent/Future;",
-            parameters = listOf("I", "Lkotlin/jvm/functions/Function0;")
+            parameters = listOf(BUNDLE_UPDATER, "I", "Lq9/x;", "I")
         ).method)
     }
 }
 
-internal const val BUNDLE_UPDATER = "Lcom/discord/bundle_updater/BundleUpdater;"
+internal const val BUNDLE_UPDATER = "Lw6/z;"
 /** Instructions [skipLaunchOtaChecks] adds before Discord's own code, counting the nop its label lands on. */
 internal const val OTA_GUARD_SIZE = 4
 
-/**
- * Discord checks for an over-the-air JS bundle every time an activity opens, and after a crash it blocks
- * the first screen until that check (and any download) finishes. Venus always runs the packaged bundle
- * (see [pinPackagedDiscordBundle]), so those bundles were downloaded, unpacked and stored for nothing,
- * using network, disk and CPU while Discord starts. Launch checks pass no callback: they now return no
- * Future, which every caller already handles (Discord does the same while a check is running). A check
- * with a callback, such as the developer "check for update and reload" action, runs unchanged.
- * 5 registers, 3 of them parameters: v0 is free.
- */
 internal fun skipLaunchOtaChecks(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
     val implementation = method.implementation ?: throw PatchException("OTA check has no code")
-    if (method.definingClass != BUNDLE_UPDATER || method.parameterTypes.map { it.toString() } != listOf("I", "Lkotlin/jvm/functions/Function0;") ||
-        method.returnType != "Ljava/util/concurrent/Future;" || implementation.registerCount - 3 < 1)
+    if (method.definingClass != BUNDLE_UPDATER || method.parameterTypes.map { it.toString() } != listOf(BUNDLE_UPDATER, "I", "Lq9/x;", "I") ||
+        method.returnType != "Ljava/util/concurrent/Future;" || implementation.registerCount - 4 < 1)
         throw PatchException("BundleUpdater.checkForUpdate ABI changed")
     requireUnpatched(method, "venus-")
     method.addInstructions(0, """
@@ -153,15 +133,18 @@ internal fun skipLaunchOtaChecks(method: app.morphe.patcher.util.proxy.mutableTy
 
 internal fun pinPackagedDiscordBundle(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
     // Pin JS execution to the inspected packaged bundle, avoiding incompatible OTA cache bundles.
-    // 350.8 has two scratch locals; p1 is deliberately replaced with an asset loader.
-    if ((method.implementation?.registerCount ?: 0) - 2 < 2)
-        throw PatchException("Bundle loader no longer has two safe scratch registers")
+    if ((method.implementation?.registerCount ?: 0) - 4 < 1)
+        throw PatchException("Bundle loader no longer has a safe scratch register")
     method.addInstructions(0, """
-        iget-object v0, p0, $INSTANCE->context:Lcom/facebook/react/runtime/BridgelessReactContext;
-        const-string v1, "assets://index.android.bundle"
-        const/4 p1, 0x0
-        invoke-static {v0, v1, p1}, Lcom/facebook/react/bridge/JSBundleLoader;->createAssetLoader(Landroid/content/Context;Ljava/lang/String;Z)Lcom/facebook/react/bridge/JSBundleLoader;
-        move-result-object p1
+        iget-object v0, p0, Los/i;->d:Ljava/lang/Object;
+        check-cast v0, $INSTANCE
+        iget-object v0, v0, $INSTANCE->a:Lum/f;
+        invoke-virtual {v0}, Landroid/content/Context;->getAssets()Landroid/content/res/AssetManager;
+        move-result-object v0
+        const-string p1, "assets://index.android.bundle"
+        const/4 p2, 0x0
+        invoke-virtual {p0, v0, p1, p2}, Los/i;->loadScriptFromAssets(Landroid/content/res/AssetManager;Ljava/lang/String;Z)V
+        return-void
     """)
 }
 
@@ -636,23 +619,7 @@ internal fun pastelReplyText(method: app.morphe.patcher.util.proxy.mutableTypes.
 }
 
 @Suppress("unused")
-val pastelize = bytecodePatch(
-    name = "Pastel name colors",
-    description = "Names without a role color get a soft pastel one."
-) {
-    compatibleWith(discord)
-    section(PLUGINS)
-    dependsOn(venusSettings)
-    execute {
-        additionalSelections += "pastelize"
-        pastelReplyText(Fingerprint(
-            // The lambda's number changes between builds ($9 in 349.9, $2 in 350.8); its signature is unique.
-            definingClass = REPLY_PREVIEW,
-            returnType = "Lkotlin/Unit;",
-            parameters = listOf("Lcom/discord/chat/bridge/structurabletext/StructurableText;", REPLY_PREVIEW, BRIDGE_MESSAGE, "I")
-        ).method)
-    }
-}
+val pastelize = bundledPlugin("pastelize", "Pastel name colors", "Names without a role color get a soft pastel one.")
 
 @Suppress("unused")
 val platformIndicators = bundledPlugin("platformIndicators", "Show device indicators", "Desktop, mobile, web, console or VR icons next to names, colored by status.")
@@ -669,17 +636,12 @@ val serverInfo = bundledPlugin("serverInfo", "Server info", "Hold a server's ico
 @Suppress("unused")
 val serverEdit = bundledPlugin("serverEdit", "Edit servers locally", "Give any server your own name and icon. Only you see them. Based on EditServers by mwittrien.")
 
-internal const val FONT_MANAGER = "Lcom/facebook/react/common/assets/ReactFontManager;"
-internal const val FONT_STYLE = "Lcom/facebook/react/common/assets/ReactFontManager\$TypefaceStyle;"
+internal const val FONT_MANAGER = "Lil/c;"
+internal const val FONT_STYLE = "Lil/b;"
 internal const val SYSTEM_FONT = "Lapp/venus/font/SystemFont;"
 /** Instructions [useSystemFont] adds before Discord's own font lookup, counting the nop its label lands on. */
-internal const val SYSTEM_FONT_GUARD_SIZE = 9
+internal const val SYSTEM_FONT_GUARD_SIZE = 10
 
-/**
- * Every Discord text, React Native or native chat, gets its font from this one ReactFontManager method.
- * When Force system font is on, Discord's own families come back as the phone's font; everything else,
- * and every lookup while it's off, runs Discord's code untouched. 6 registers, 4 of them parameters: v0-v1 are free.
- */
 internal fun useSystemFont(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
     val implementation = method.implementation ?: throw PatchException("Font lookup has no code")
     if (method.parameterTypes.map { it.toString() } != listOf("Ljava/lang/String;", FONT_STYLE, "Landroid/content/res/AssetManager;") ||
@@ -688,11 +650,12 @@ internal fun useSystemFont(method: app.morphe.patcher.util.proxy.mutableTypes.Mu
     method.addInstructions(0, """
         sget-boolean v0, $SYSTEM_FONT->enabled:Z
         if-eqz v0, :venus_discord_font
-        invoke-virtual {p2}, $FONT_STYLE->getNearestStyle()I
-        move-result v0
+        const/4 v0, 0x0
         invoke-static {p1, v0}, $SYSTEM_FONT->typeface(Ljava/lang/String;I)Landroid/graphics/Typeface;
         move-result-object v0
         if-eqz v0, :venus_discord_font
+        invoke-virtual {p2, v0}, $FONT_STYLE->a(Landroid/graphics/Typeface;)Landroid/graphics/Typeface;
+        move-result-object v0
         return-object v0
         :venus_discord_font
         nop
@@ -748,7 +711,7 @@ val forceSystemFont = bytecodePatch(
         additionalSelections += "systemFont"
         useSystemFont(Fingerprint(
             definingClass = FONT_MANAGER,
-            name = "getTypeface",
+            name = "a",
             returnType = "Landroid/graphics/Typeface;",
             parameters = listOf("Ljava/lang/String;", FONT_STYLE, "Landroid/content/res/AssetManager;")
         ).method)
@@ -767,7 +730,7 @@ val forceSystemFont = bytecodePatch(
     }
 }
 
-internal const val SURROGATES = "Lcom/discord/emoji/Surrogates;"
+internal const val SURROGATES = "Lxu/b;"
 internal const val SYSTEM_EMOJI = "Lapp/venus/emoji/SystemEmoji;"
 /** Instructions [useSystemEmoji] adds before Discord's own emoji picture lookup, counting the nop its label lands on. */
 internal const val SYSTEM_EMOJI_GUARD_SIZE = 7
@@ -843,7 +806,7 @@ val forceSystemEmojis = bytecodePatch(
         additionalSelections += "systemEmoji"
         useSystemEmoji(Fingerprint(
             definingClass = SURROGATES,
-            name = "toAssetUrl-impl",
+            name = "v0",
             returnType = "Ljava/lang/String;",
             parameters = listOf("Ljava/lang/String;")
         ).method)
@@ -927,7 +890,7 @@ private val nativeThemeColors = bytecodePatch {
         ).method)
         materialYouNativeColors(Fingerprint(
             definingClass = COLOR_UTILS,
-            name = "applySaturationFactor",
+            name = "a",
             returnType = "I",
             parameters = listOf("I")
         ).method)
@@ -958,32 +921,21 @@ val customThemes = bytecodePatch(
 val iconPacks = bundledPlugin("iconPacks", "Icon packs",
     "Replace Discord's icons with community icon packs or a custom icon pack link. Works with Themes+ icon packs.")
 
-internal const val HIGHLIGHT_DRAWER = "Lcom/discord/chat/presentation/message/decorations/HighlightedMessageDrawer;"
-internal const val CHAT_R_DIMEN = "Lcom/discord/chat/R\$dimen;"
+internal const val HIGHLIGHT_DRAWER = "Ll50/w;"
 internal const val BULK_DELETE_DRAWER = "Lapp/venus/chat/BulkDeleteDrawer;"
 /** Instructions [scaleMessageGutterWidth] adds before Discord's own drawHighlight code, counting the nop its label lands on. */
-internal const val MESSAGE_GUTTER_GUARD_SIZE = 35
+internal const val MESSAGE_GUTTER_GUARD_SIZE = 36
 
-/**
- * Discord's native HighlightedMessageDrawer sets gutterWidth once from R.dimen.message_gutter_width (2dp)
- * in its constructor, and paints the left bar with gutterPaintColor.
- * - Message highlights encodes a width multiplier (2x..8x) in gutterPaintColor's alpha byte (`code = 256 - alpha` in 2..8).
- * - Bulk delete messages encodes a right-side selection circle in gutterPaintColor's alpha byte (`code = 256 - alpha` in 16..40,
- *   where bit 5 is selected vs unselected and `code & 15` is the optional left-bar width multiplier 0..8).
- * Normal 0xFF colors reset gutterWidth to 1x so toggling or changing thickness updates every row live without restarting Discord (#60, #94).
- * 12 registers, 5 of them parameters (p0..p4 = v7..v11): v0-v2 are free until Discord's first const-string.
- */
 internal fun scaleMessageGutterWidth(method: app.morphe.patcher.util.proxy.mutableTypes.MutableMethod) {
     val implementation = method.implementation ?: throw PatchException("HighlightedMessageDrawer.drawHighlight has no code")
-    if (method.definingClass != HIGHLIGHT_DRAWER || method.parameterTypes.map { it.toString() } != listOf("Landroid/graphics/Canvas;", "Landroid/view/View;", "I", "I") ||
-        method.returnType != "V" || implementation.registerCount - 5 < 3)
+    if (method.definingClass != HIGHLIGHT_DRAWER || method.parameterTypes.map { it.toString() } != listOf("Landroid/graphics/Canvas;", "Landroid/view/View;") ||
+        method.returnType != "V" || implementation.registerCount - 3 < 3)
         throw PatchException("HighlightedMessageDrawer.drawHighlight ABI changed")
-    if (implementation.instructions.firstOrNull()?.opcode == com.android.tools.smali.dexlib2.Opcode.IGET_OBJECT)
-        throw PatchException("${method.definingClass}->${method.name} already has a Venus guard; each method may only get one")
     requireUnpatched(method, "venus-")
     method.addInstructions(0, """
-        iget-object v0, p0, $HIGHLIGHT_DRAWER->gutterPaintColor:Ljava/lang/Integer;
+        iget-object v0, p0, $HIGHLIGHT_DRAWER->i:Ljava/io/Serializable;
         if-eqz v0, :venus_gutter_done
+        check-cast v0, Ljava/lang/Integer;
         invoke-virtual {v0}, Ljava/lang/Integer;->intValue()I
         move-result v0
         ushr-int/lit8 v1, v0, 0x18
@@ -996,7 +948,7 @@ internal fun scaleMessageGutterWidth(method: app.morphe.patcher.util.proxy.mutab
         move-result v1
         if-nez v1, :venus_gutter_restore_color
         const/4 v0, 0x0
-        iput-object v0, p0, $HIGHLIGHT_DRAWER->gutterPaintColor:Ljava/lang/Integer;
+        iput-object v0, p0, $HIGHLIGHT_DRAWER->i:Ljava/io/Serializable;
         goto :venus_gutter_done
         :venus_gutter_check_mult
         const/4 v2, 0x2
@@ -1008,18 +960,18 @@ internal fun scaleMessageGutterWidth(method: app.morphe.patcher.util.proxy.mutab
         or-int/2addr v0, v2
         invoke-static {v0}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
         move-result-object v0
-        iput-object v0, p0, $HIGHLIGHT_DRAWER->gutterPaintColor:Ljava/lang/Integer;
+        iput-object v0, p0, $HIGHLIGHT_DRAWER->i:Ljava/io/Serializable;
         goto :venus_gutter_scale
         :venus_gutter_default
         const/4 v1, 0x1
         :venus_gutter_scale
         invoke-virtual {p2}, Landroid/view/View;->getResources()Landroid/content/res/Resources;
         move-result-object v0
-        sget v2, $CHAT_R_DIMEN->message_gutter_width:I
+        const v2, 0x7f070377
         invoke-virtual {v0, v2}, Landroid/content/res/Resources;->getDimensionPixelSize(I)I
         move-result v0
         mul-int/2addr v0, v1
-        iput v0, p0, $HIGHLIGHT_DRAWER->gutterWidth:I
+        iput v0, p0, $HIGHLIGHT_DRAWER->b:I
         :venus_gutter_done
         nop
     """)
@@ -1040,9 +992,9 @@ val messageHighlights = bytecodePatch(
             messageGutterGuarded = true
             scaleMessageGutterWidth(Fingerprint(
                 definingClass = HIGHLIGHT_DRAWER,
-                name = "drawHighlight",
+                name = "b",
                 returnType = "V",
-                parameters = listOf("Landroid/graphics/Canvas;", "Landroid/view/View;", "I", "I")
+                parameters = listOf("Landroid/graphics/Canvas;", "Landroid/view/View;")
             ).method)
         }
     }
@@ -1084,49 +1036,12 @@ internal fun keepDesktopQuestAgent(method: app.morphe.patcher.util.proxy.mutable
 }
 
 @Suppress("unused")
-val questCompleter = bytecodePatch(
-    name = "Complete Quests automatically",
-    description = "Finishes video, Play and Activity Quests in the background. Discord may pause Quests on accounts that do this."
-) {
-    compatibleWith(discord)
-    section(PLUGINS)
-    dependsOn(venusSettings)
-    execute {
-        additionalSelections += "quests"
-        // Play and Activity time only counts when it comes from the desktop app.
-        if (!questAgentGuarded) {
-            questAgentGuarded = true
-            keepDesktopQuestAgent(Fingerprint(
-                definingClass = USER_AGENT_INTERCEPTOR,
-                name = "intercept",
-                returnType = "Lokhttp3/Response;",
-                parameters = listOf("Lokhttp3/Interceptor\$Chain;")
-            ).method)
-        }
-    }
-}
+val questCompleter = bundledPlugin("quests", "Complete Quests automatically",
+    "Finishes video, Play and Activity Quests in the background. Discord may pause Quests on accounts that do this.")
 
 @Suppress("unused")
-val badgeCompleter = bytecodePatch(
-    name = "Complete badges automatically",
-    description = "Plays real PC games in the background, up to 3 at once, toward your Hours Played and Unique Games Played badges."
-) {
-    compatibleWith(discord)
-    section(PLUGINS)
-    dependsOn(venusSettings)
-    execute {
-        additionalSelections += "badges"
-        if (!questAgentGuarded) {
-            questAgentGuarded = true
-            keepDesktopQuestAgent(Fingerprint(
-                definingClass = USER_AGENT_INTERCEPTOR,
-                name = "intercept",
-                returnType = "Lokhttp3/Response;",
-                parameters = listOf("Lokhttp3/Interceptor\$Chain;")
-            ).method)
-        }
-    }
-}
+val badgeCompleter = bundledPlugin("badges", "Complete badges automatically",
+    "Plays real PC games in the background, up to 3 at once, toward your Hours Played and Unique Games Played badges.")
 
 internal const val SYSTEM_COLORS = "Lapp/venus/monet/SystemColors;"
 /** Instructions [materialYouBridge] adds before Discord's own getFileHash code, counting the nop its label lands on. */
@@ -1158,7 +1073,7 @@ internal fun materialYouBridge(method: app.morphe.patcher.util.proxy.mutableType
     """)
 }
 
-internal const val COLOR_UTILS = "Lcom/discord/theme/utils/ColorUtilsKt;"
+internal const val COLOR_UTILS = "Lvh/c;"
 /** Instructions [materialYouNativeColors] adds before Discord's saturation code, counting the nop its label lands on. */
 internal const val MATERIAL_YOU_NATIVE_SIZE = 5
 
@@ -1211,14 +1126,14 @@ internal fun materialYouDirectColors(method: app.morphe.patcher.util.proxy.mutab
 
 /** The native views that read brand colors directly: class, method name, parameter types. */
 internal val MATERIAL_YOU_DIRECT_READS = listOf(
-    Triple("Lcom/discord/chat/presentation/message/view/CtaButtonView;", "configureButton-CMNjcK4",
-        listOf("Lcom/discord/core/DCDButton;", "Lcom/discord/chat/bridge/ctabutton/CtaButton;", "J", "Ljava/lang/String;", "Lkotlin/jvm/functions/Function3;")),
-    Triple("Lcom/discord/chat/presentation/message/view/ForumPostActionBarView;", "<init>",
-        listOf("Landroid/content/Context;", "Landroid/util/AttributeSet;", "I")),
-    Triple("Lcom/discord/chat/presentation/message/view/voicemessages/AudioPlayerView;", "configureAudioProgressView",
-        listOf("Lcom/discord/chat/presentation/message/view/voicemessages/AudioPlayerViewState;")),
-    Triple("Lcom/discord/chat/presentation/message/view/voicemessages/AudioPlayerWipeAnimatorManager;", "<init>",
-        listOf("Landroid/content/Context;", "Lcom/discord/chat/databinding/AudioPlayerViewBinding;"))
+    Triple("Lq9/m;", "v",
+        listOf("Lcom/discord/core/DCDButton;", "Lk7/c;", "J", "Ljava/lang/String;", "Lea/o;")),
+    Triple("Lq9/c0;", "<init>",
+        listOf("Landroid/content/Context;")),
+    Triple("Lcom/discord/chat/presentation/message/view/voicemessages/AudioPlayerView;", "h",
+        listOf("Lda/p;")),
+    Triple("Lda/t;", "<init>",
+        listOf("Landroid/content/Context;", "Lq8/c;"))
 )
 
 /** Loads the saved native Material You colors once, right after Application.onCreate's super call. */
@@ -1264,9 +1179,9 @@ val bulkDelete = bytecodePatch(
             messageGutterGuarded = true
             scaleMessageGutterWidth(Fingerprint(
                 definingClass = HIGHLIGHT_DRAWER,
-                name = "drawHighlight",
+                name = "b",
                 returnType = "V",
-                parameters = listOf("Landroid/graphics/Canvas;", "Landroid/view/View;", "I", "I")
+                parameters = listOf("Landroid/graphics/Canvas;", "Landroid/view/View;")
             ).method)
         }
     }
@@ -1287,13 +1202,13 @@ internal val HANDSFREE_CALLS = mapOf(
  * DiscordAudioManager runs below Android 13 (SCO), DiscordAudioManager2 on Android 13 and newer (communication device).
  */
 internal val HANDSFREE_SITES = listOf(
-    Quad4("Lcom/discord/audio/DiscordAudioManager;", "setCommunicationModeOn", listOf("Z"), 3),
-    Quad4("Lcom/discord/audio/DiscordAudioManager;", "setActiveAudioDevice", listOf("Lcom/discord/audio/SimpleDeviceType;"), 1),
-    Quad4("Lcom/discord/audio/DiscordAudioManager\$setupAudioDeviceCallback\$1;", "onAudioDevicesAdded", listOf("[Landroid/media/AudioDeviceInfo;"), 1),
-    Quad4("Lcom/discord/audio/DiscordAudioManager\$audioManagerBroadcastReceiver\$1;", "onReceive", listOf("Landroid/content/Context;", "Landroid/content/Intent;"), 1),
-    Quad4("Lcom/discord/audio/DiscordAudioManager2;", "setCommunicationModeOn", listOf("Z"), 2),
-    Quad4("Lcom/discord/audio/DiscordAudioManager2;", "setActiveAudioDevice", listOf("Landroid/media/AudioDeviceInfo;"), 1),
-    Quad4("Lcom/discord/audio/DiscordAudioManager2\$setupAudioDeviceCallback\$1;", "onAudioDevicesAdded", listOf("[Landroid/media/AudioDeviceInfo;"), 2)
+    Quad4("Lh6/n;", "g", listOf("Z"), 3),
+    Quad4("Lh6/n;", "k", listOf("Lh6/q;"), 1),
+    Quad4("Lh6/j;", "onAudioDevicesAdded", listOf("[Landroid/media/AudioDeviceInfo;"), 1),
+    Quad4("Lar/x;", "onReceive", listOf("Landroid/content/Context;", "Landroid/content/Intent;"), 1),
+    Quad4("Lh6/m;", "g", listOf("Z"), 2),
+    Quad4("Lh6/m;", "i", listOf("Landroid/media/AudioDeviceInfo;"), 1),
+    Quad4("Lh6/l;", "onAudioDevicesAdded", listOf("[Landroid/media/AudioDeviceInfo;"), 2)
 )
 
 internal data class Quad4(val owner: String, val name: String, val parameters: List<String>, val calls: Int)

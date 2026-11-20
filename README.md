@@ -4,7 +4,7 @@ Extra features and privacy options for Discord on Android, patched in with **[Mo
 
 [**Add to Morphe**](https://morphe.software/add-source?github=VenusIsJaded/Venus-Patches&name=Venus%20Patches) · [Downloads](https://github.com/VenusIsJaded/Venus-Patches/releases) · [What's new](CHANGELOG.md) · [Report a problem](https://github.com/VenusIsJaded/Venus-Patches/issues)
 
-**Works with:** Discord **351.11 - Stable** (the original APKM).
+**Works with:** Discord **354.12 - Stable** (the original APKM).
 
 ## Install
 

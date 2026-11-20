@@ -1,3 +1,9 @@
+## [1.22.0](https://github.com/VenusIsJaded/Venus-Patches/compare/v1.21.1...v1.22.0) (2026-11-20)
+
+### 🚀 Updated App Support
+
+* **Discord:** Add support for `354.12 - Stable`
+
 ## [1.21.1](https://github.com/VenusIsJaded/Venus-Patches/compare/v1.21.0...v1.21.1) (2026-11-03)
 
 ### 🐛 Bug Fixes

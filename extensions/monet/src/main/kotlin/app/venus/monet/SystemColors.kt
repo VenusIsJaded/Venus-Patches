@@ -181,8 +181,8 @@ object SystemColors {
      */
     private fun refreshThemeObjects() {
         try {
-            val manager = Class.forName("com.discord.theme.ThemeManager")
-            val field = manager.getDeclaredField("themes")
+            val manager = Class.forName("uh.l0")
+            val field = manager.getDeclaredField("a")
             field.isAccessible = true
             @Suppress("UNCHECKED_CAST")
             val themes = field.get(null) as? MutableMap<Any?, Any?> ?: return
@@ -191,8 +191,7 @@ object SystemColors {
             while (entries.hasNext()) { val entry = entries.next(); held.add(entry.key); held.add(entry.value) }
             themes.clear()
             if (held.size == 0) return
-            val instance = manager.getField("INSTANCE").get(null)
-            val getTheme = manager.getMethod("getTheme", Class.forName("com.discord.theme.DiscordTheme"))
+            val getTheme = manager.getMethod("b", Class.forName("uh.t"))
             var i = 0
             while (i < held.size) {
                 val key = held[i]
@@ -200,7 +199,7 @@ object SystemColors {
                 i += 2
                 if (old == null) continue
                 try {
-                    val fresh = getTheme.invoke(instance, key) ?: continue
+                    val fresh = getTheme.invoke(null, key) ?: continue
                     if (fresh.javaClass != old.javaClass) continue
                     var type: Class<*>? = old.javaClass
                     while (type != null && type != Any::class.java) {
@@ -228,9 +227,8 @@ object SystemColors {
     /** Window background and system bars the way Discord redraws them on a theme change, then every native list. */
     private fun refresh(activity: Activity) {
         try {
-            val utils = Class.forName("com.discord.theme.utils.ActivityThemeUtils")
-            val instance = utils.getField("INSTANCE").get(null)
-            utils.getMethod("updateActivityTheming\$theme_release", Activity::class.java).invoke(instance, activity)
+            val utils = Class.forName("vh.d")
+            utils.getMethod("a", Activity::class.java).invoke(null, activity)
         } catch (_: Throwable) { }
         try { sweep(activity.window.decorView, 0) } catch (_: Throwable) { }
     }

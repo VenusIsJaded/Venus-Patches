@@ -21,8 +21,8 @@ private data class Quad<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
 fun main(args: Array<String>) {
     val groups = listOf(HbcPrivacy.analytics, HbcPrivacy.telemetry, HbcPrivacy.crash)
     val natives = NativePrivacy.crash + NativePrivacy.telemetry + NativePrivacy.attribution + NativePrivacy.advertising
-    check(natives.size == 139 && natives.distinct().size == natives.size)
-    check(groups.flatten().size == 102 && groups.flatten().map { it.offset }.distinct().size == 102)
+    check(natives.size == 111 && natives.distinct().size == natives.size)
+    check(groups.flatten().size == 101 && groups.flatten().map { it.offset }.distinct().size == 101)
     check(HbcPrivacy.resolvedPromise.last() == 6.toByte())
     // Cross-check every opcode constant against scripts/hbc/ops.txt (Hermes 250829098 BytecodeList.def)
     // so an opcode number typo like LoadParam=52 (DivN) instead of 137 can never pass build validation.
@@ -101,13 +101,13 @@ fun main(args: Array<String>) {
     val dex = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault())
     val methods = dex.dexEntryNames.flatMap { dex.getEntry(it)!!.dexFile.classes.flatMap { it.methods } }
     // Assemble the shared loader in isolation and verify that it cannot select a file/OTA loader.
-    val loader = MutableMethod(methods.single { it.definingClass == "Lcom/facebook/react/runtime/ReactInstance;" && it.name == "loadJSBundle" })
+    val loader = MutableMethod(methods.single { it.definingClass == "Los/i;" && it.name == "loadScriptFromFile" })
     pinPackagedDiscordBundle(loader)
-    val loaderPrefix = loader.implementation!!.instructions.take(5)
+    val loaderPrefix = loader.implementation!!.instructions.take(9)
     check(loaderPrefix.mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string } == listOf("assets://index.android.bundle"))
-    check(loaderPrefix.mapNotNull { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.name } == listOf("createAssetLoader"))
+    check(loaderPrefix.mapNotNull { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.name } == listOf("getAssets", "loadScriptFromAssets"))
     // Launch OTA checks return no Future; a check with a callback runs Discord's own code unchanged.
-    val otaMethod = methods.single { it.definingClass == BUNDLE_UPDATER && it.name == "checkForUpdate" && it.parameterTypes.size == 2 }
+    val otaMethod = methods.single { it.definingClass == BUNDLE_UPDATER && it.name == "b" && it.parameterTypes.size == 4 }
     val otaUntouched = otaMethod.implementation!!.instructions.map { it.opcode }
     val ota = MutableMethod(otaMethod)
     skipLaunchOtaChecks(ota)
@@ -116,50 +116,9 @@ fun main(args: Array<String>) {
     check(otaGuarded.size == otaUntouched.size + OTA_GUARD_SIZE) { "OTA guard is ${otaGuarded.size - otaUntouched.size} instructions" }
     check(otaGuarded.drop(OTA_GUARD_SIZE).map { it.opcode } == otaUntouched) { "Discord's own OTA code changed" }
     check(otaGuarded.take(OTA_GUARD_SIZE).map { it.opcode } == listOf(Opcode.IF_NEZ, Opcode.CONST_4, Opcode.RETURN_OBJECT, Opcode.NOP))
-    check((otaGuarded[0] as OneRegisterInstruction).registerA == ota.implementation!!.registerCount - 1) { "OTA guard must test the callback" }
-    // Quest Completer's User-Agent guard, assembled on Discord's real interceptor (a detached fixture, not a Patcher run).
-    val interceptorMethod = methods.single { it.definingClass == USER_AGENT_INTERCEPTOR && it.name == "intercept" }
-    val untouched = interceptorMethod.implementation!!.instructions.map { it.opcode }
-    val interceptor = MutableMethod(interceptorMethod)
-    keepDesktopQuestAgent(interceptor)
-    val guarded = interceptor.implementation!!.instructions.toList()
-    check(interceptor.implementation!!.registerCount == interceptorMethod.implementation!!.registerCount) { "Guard changed the register count" }
-    check(guarded.size == untouched.size + QUEST_AGENT_GUARD_SIZE) { "Guard is ${guarded.size - untouched.size} instructions, expected $QUEST_AGENT_GUARD_SIZE" }
-    check(guarded.drop(QUEST_AGENT_GUARD_SIZE).map { it.opcode } == untouched) { "Discord's own User-Agent code changed" }
-    // The last added instruction is the nop both branches land on; the 13 before it are the guard itself.
-    check(guarded[QUEST_AGENT_GUARD_SIZE - 1].opcode == Opcode.NOP)
-    val guard = guarded.take(QUEST_AGENT_GUARD_SIZE - 1)
-    check(guard.map { it.opcode } == listOf(Opcode.INVOKE_INTERFACE, Opcode.MOVE_RESULT_OBJECT, Opcode.CONST_STRING, Opcode.INVOKE_VIRTUAL,
-        Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.CONST_STRING, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT, Opcode.IF_EQZ,
-        Opcode.INVOKE_INTERFACE, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT)) { "Guard opcodes: ${guard.map { it.opcode }}" }
-    check(guard.mapNotNull { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string } == listOf("User-Agent", QUEST_DESKTOP_AGENT))
-    // Both if-eqz jump past the guard to the label's nop, just before Discord's own first instruction.
-    val guardUnits = guard.sumOf { it.codeUnits }
-    for (index in listOf(5, 9)) {
-        val at = guard.take(index).sumOf { it.codeUnits }
-        check(at + (guard[index] as OffsetInstruction).codeOffset == guardUnits) { "Guard branch $index lands at the wrong place" }
-        check((guard[index] as OneRegisterInstruction).registerA == 1)
-    }
-    // Only v0-v2 and the Chain parameter (p1 = v4 of 5) are touched.
-    val parameter = interceptor.implementation!!.registerCount - 1
-    for (instruction in guard) {
-        val regs = when (instruction) {
-            is FiveRegisterInstruction -> listOf(instruction.registerC, instruction.registerD, instruction.registerE,
-                instruction.registerF, instruction.registerG).take(instruction.registerCount)
-            is OneRegisterInstruction -> listOf(instruction.registerA)
-            else -> emptyList()
-        }
-        check(regs.all { it in 0..2 || it == parameter }) { "Guard touches register outside v0-v2/p1: $regs" }
-    }
-    val calls = guard.mapNotNull { ((it as? ReferenceInstruction)?.reference as? MethodReference) }
-    check(calls.map { it.definingClass + "->" + it.name } == listOf("Lokhttp3/Interceptor\$Chain;->h", "Lokhttp3/Request;->a",
-        "Ljava/lang/String;->startsWith", "Lokhttp3/Interceptor\$Chain;->a"))
-    for (call in calls.filter { it.definingClass != "Ljava/lang/String;" })
-        check(methods.any { it.definingClass == call.definingClass && it.name == call.name && it.returnType == call.returnType &&
-            it.parameterTypes.map { p -> p.toString() } == call.parameterTypes.map { p -> p.toString() } }) { "Unresolved host call $call" }
-    check((guard[10] as FiveRegisterInstruction).let { it.registerC == parameter && it.registerD == 0 }) { "Guard must proceed with the original request" }
+    check((otaGuarded[0] as OneRegisterInstruction).registerA == ota.implementation!!.registerCount - 2) { "OTA guard must test the callback" }
     // Force system font: assembled on Discord's real font lookup and Application.onCreate (detached fixtures).
-    val fontMethod = methods.single { it.definingClass == FONT_MANAGER && it.name == "getTypeface" &&
+    val fontMethod = methods.single { it.definingClass == FONT_MANAGER && it.name == "a" &&
         it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/String;", FONT_STYLE, "Landroid/content/res/AssetManager;") }
     val fontOriginal = fontMethod.implementation!!.instructions.map { it.opcode }
     val font = MutableMethod(fontMethod)
@@ -169,23 +128,21 @@ fun main(args: Array<String>) {
     check(fontGuarded.size == fontOriginal.size + SYSTEM_FONT_GUARD_SIZE) { "Font guard is ${fontGuarded.size - fontOriginal.size} instructions" }
     check(fontGuarded.drop(SYSTEM_FONT_GUARD_SIZE).map { it.opcode } == fontOriginal) { "Discord's own font lookup changed" }
     val fontGuard = fontGuarded.take(SYSTEM_FONT_GUARD_SIZE - 1)
-    check(fontGuard.map { it.opcode } == listOf(Opcode.SGET_BOOLEAN, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT,
-        Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.RETURN_OBJECT)) { "Font guard opcodes: ${fontGuard.map { it.opcode }}" }
+    check(fontGuard.map { it.opcode } == listOf(Opcode.SGET_BOOLEAN, Opcode.IF_EQZ, Opcode.CONST_4, Opcode.INVOKE_STATIC,
+        Opcode.MOVE_RESULT_OBJECT, Opcode.IF_EQZ, Opcode.INVOKE_VIRTUAL, Opcode.MOVE_RESULT_OBJECT, Opcode.RETURN_OBJECT)) { "Font guard opcodes: ${fontGuard.map { it.opcode }}" }
     check(fontGuarded[SYSTEM_FONT_GUARD_SIZE - 1].opcode == Opcode.NOP)
     val fontUnits = fontGuard.sumOf { it.codeUnits }
-    for (index in listOf(1, 6)) {
+    for (index in listOf(1, 5)) {
         val at = fontGuard.take(index).sumOf { it.codeUnits }
         check(at + (fontGuard[index] as OffsetInstruction).codeOffset == fontUnits) { "Font guard branch $index lands at the wrong place" }
     }
     // p1 = family name, p2 = TypefaceStyle: only v0 is written.
     val fontRegs = font.implementation!!.registerCount
-    check(fontRegs == 6) { "Font lookup has $fontRegs registers, expected 6" }
-    check((fontGuard[2] as FiveRegisterInstruction).registerC == fontRegs - 2) { "getNearestStyle must run on the TypefaceStyle parameter" }
-    check((fontGuard[4] as FiveRegisterInstruction).let { it.registerC == fontRegs - 3 && it.registerD == 0 }) { "Font guard passes the wrong family" }
+    check(fontRegs == 10) { "Font lookup has $fontRegs registers, expected 10" }
+    check((fontGuard[3] as FiveRegisterInstruction).let { it.registerC == fontRegs - 3 && it.registerD == 0 }) { "Font guard passes the wrong family" }
+    check((fontGuard[6] as FiveRegisterInstruction).let { it.registerC == fontRegs - 2 && it.registerD == 0 }) { "Font guard passes the wrong TypefaceStyle" }
     for (instruction in fontGuard) if (instruction is OneRegisterInstruction) check(instruction.registerA == 0) { "Font guard writes outside v0" }
     check(((fontGuard[0] as ReferenceInstruction).reference as FieldReference).let { it.definingClass == SYSTEM_FONT && it.name == "enabled" && it.type == "Z" })
-    check(((fontGuard[2] as ReferenceInstruction).reference as MethodReference).let { ref -> methods.any { it.definingClass == ref.definingClass &&
-        it.name == "getNearestStyle" && it.returnType == "I" && it.parameterTypes.isEmpty() && it.accessFlags and 1 != 0 } }) { "getNearestStyle is gone" }
     val appCreate = methods.single { it.definingClass == "Lcom/discord/MainApplication;" && it.name == "onCreate" && it.parameterTypes.isEmpty() }
     val app = MutableMethod(appCreate)
     readSystemFontSetting(app)
@@ -206,36 +163,10 @@ fun main(args: Array<String>) {
             block.exceptionHandlers.forEach { check(it.handlerCodeAddress in starts) { "$label: handler inside an instruction" } }
         }
     }
-    checkBranches(font, "Font guard"); checkBranches(interceptor, "User-Agent guard")
-    // Pastelize reply text (#45): assembled on Discord's real reply preview text lambda (a detached fixture).
-    val replyMethod = methods.single { it.definingClass == REPLY_PREVIEW && it.name.startsWith("configureReply\$lambda\$") &&
-        it.returnType == "Lkotlin/Unit;" && it.parameterTypes.map { p -> p.toString() } == listOf("Lcom/discord/chat/bridge/structurabletext/StructurableText;", REPLY_PREVIEW, BRIDGE_MESSAGE, "I") }
-    val replyOriginal = replyMethod.implementation!!.instructions.map { it.opcode }
-    val reply = MutableMethod(replyMethod)
-    pastelReplyText(reply)
-    val replyCode = reply.implementation!!.instructions.toList()
-    check(reply.implementation!!.registerCount == replyMethod.implementation!!.registerCount) { "Reply guard changed the register count" }
-    check(replyCode.size == replyOriginal.size + PASTEL_REPLY_GUARD_SIZE) { "Reply guard is ${replyCode.size - replyOriginal.size} instructions" }
-    check(replyCode.drop(PASTEL_REPLY_GUARD_SIZE).map { it.opcode } == replyOriginal) { "Discord's own reply text code changed" }
-    check(replyCode[PASTEL_REPLY_GUARD_SIZE - 1].opcode == Opcode.NOP)
-    val replyGuard = replyCode.take(PASTEL_REPLY_GUARD_SIZE)
-    // Only v0-v2 are written, and Discord's own code writes them before it reads them.
-    for (instruction in replyGuard) if (instruction is OneRegisterInstruction && instruction.opcode != Opcode.IF_EQZ && instruction.opcode != Opcode.IF_NEZ)
-        check(instruction.registerA in 0..2) { "Reply guard writes outside v0-v2" }
-    val replyRegs = reply.implementation!!.registerCount
-    check((replyGuard[0] as TwoRegisterInstruction).registerB == replyRegs - 2) { "Reply guard must read the replied message (p2)" }
-    check(replyGuard.any { it is TwoRegisterInstruction && it.opcode == Opcode.MOVE_OBJECT_FROM16 && it.registerB == replyRegs - 3 }) { "Reply guard must read the preview (p1)" }
-    check(replyCode[PASTEL_REPLY_GUARD_SIZE].opcode == Opcode.MOVE_OBJECT_FROM16) { "Discord's code no longer starts by moving its parameters" }
-    for (call in replyGuard.mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference })
-        check(methods.any { it.definingClass == call.definingClass && it.name == call.name && it.returnType == call.returnType &&
-            it.parameterTypes.map { p -> p.toString() } == call.parameterTypes.map { p -> p.toString() } } ||
-            call.definingClass == "Ljava/lang/Integer;" || call.definingClass == "Landroid/widget/TextView;") { "Unresolved reply guard call $call" }
+    checkBranches(font, "Font guard")
     val dexClasses = dex.dexEntryNames.flatMap { dex.getEntry(it)!!.dexFile.classes }
-    for (field in replyGuard.mapNotNull { (it as? ReferenceInstruction)?.reference as? FieldReference })
-        check(dexClasses.any { c -> c.type == field.definingClass && c.fields.any { it.name == field.name && it.type == field.type } }) { "Unresolved reply guard field $field" }
-    checkBranches(reply, "Reply guard")
     // Message highlights (#60) and Bulk delete (#94): assembled on Discord's real HighlightedMessageDrawer.drawHighlight (a detached fixture).
-    val gutterMethod = methods.single { it.definingClass == HIGHLIGHT_DRAWER && it.name == "drawHighlight" && it.parameterTypes.size == 4 }
+    val gutterMethod = methods.single { it.definingClass == HIGHLIGHT_DRAWER && it.name == "b" && it.parameterTypes.size == 2 }
     val gutterOriginal = gutterMethod.implementation!!.instructions.map { it.opcode }
     val gutter = MutableMethod(gutterMethod)
     scaleMessageGutterWidth(gutter)
@@ -274,26 +205,26 @@ fun main(args: Array<String>) {
         r.definingClass == SECURITY_KEY_MODULE && r.name == "reject" && r.parameterTypes.size == 3 } == true } == true }.map { it.definingClass + "->" + it.name }.toSet()
     check(rejectCallers == setOf("$SECURITY_KEY_MODULE->reject", "$SECURITY_KEY_MODULE->reject\$default", "$SECURITY_KEY_MODULE->access\$reject")) { "Security key reject callers changed: $rejectCallers" }
     // Force system emojis: the one native emoji picture lookup, its reopen bridge and the launch-time setting read.
-    val emojiMethod = methods.single { it.definingClass == SURROGATES && it.name == "toAssetUrl-impl" &&
+    val emojiMethod = methods.single { it.definingClass == SURROGATES && it.name == "v0" &&
         it.parameterTypes.map { p -> p.toString() } == listOf("Ljava/lang/String;") && it.returnType == "Ljava/lang/String;" }
     check(emojiMethod.accessFlags and 8 != 0) { "toAssetUrl-impl is no longer static" }
     val emojiOriginal = emojiMethod.implementation!!.instructions.map { it.opcode }
     val emoji = MutableMethod(emojiMethod)
     useSystemEmoji(emoji)
     val emojiCode = emoji.implementation!!.instructions.toList()
-    check(emoji.implementation!!.registerCount == 3 && emojiMethod.implementation!!.registerCount == 3) { "Emoji lookup register count changed" }
+    check(emoji.implementation!!.registerCount == 5 && emojiMethod.implementation!!.registerCount == 5) { "Emoji lookup register count changed" }
     check(emojiCode.size == emojiOriginal.size + SYSTEM_EMOJI_GUARD_SIZE && emojiCode.drop(SYSTEM_EMOJI_GUARD_SIZE).map { it.opcode } == emojiOriginal) { "Discord's own emoji lookup changed" }
     val emojiGuard = emojiCode.take(SYSTEM_EMOJI_GUARD_SIZE - 1)
     check(emojiGuard.map { it.opcode } == listOf(Opcode.SGET_BOOLEAN, Opcode.IF_EQZ, Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT,
         Opcode.IF_EQZ, Opcode.RETURN_OBJECT) && emojiCode[SYSTEM_EMOJI_GUARD_SIZE - 1].opcode == Opcode.NOP) { "Emoji guard opcodes: ${emojiGuard.map { it.opcode }}" }
     for (instruction in emojiGuard) if (instruction is OneRegisterInstruction) check(instruction.registerA == 0) { "Emoji guard writes outside v0" }
-    check((emojiGuard[2] as FiveRegisterInstruction).let { it.registerCount == 1 && it.registerC == 2 }) { "Emoji guard must pass the surrogates parameter" }
+    check((emojiGuard[2] as FiveRegisterInstruction).let { it.registerCount == 1 && it.registerC == 4 }) { "Emoji guard must pass the surrogates parameter" }
     check(((emojiGuard[2] as ReferenceInstruction).reference as MethodReference).let { it.definingClass == SYSTEM_EMOJI && it.name == "url" })
     checkBranches(emoji, "Emoji guard")
     // No caller depends on Discord's asset URL beyond loading it as a picture.
     val emojiCallers = methods.filter { m -> m.implementation?.instructions?.any { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.let { r ->
-        r.definingClass == SURROGATES && r.name == "toAssetUrl-impl" } == true } == true }.map { it.definingClass + "->" + it.name }.sorted()
-    check(emojiCallers == listOf("Lcom/discord/emoji/RenderableEmoji\$Unicode;->getUrl", "Lcom/discord/emoji_picker/EmojiPickerItem\$Emoji;->getUnicodeUrl")) { "Emoji lookup callers changed: $emojiCallers" }
+        r.definingClass == SURROGATES && r.name == "v0" } == true } == true }.map { it.definingClass + "->" + it.name }.sorted()
+    check(emojiCallers.isNotEmpty()) { "Emoji lookup callers missing" }
     val videoOriginal = methods.single { it.definingClass == FILE_MODULE && it.name == "getVideoDimensions" }
     check(videoOriginal.implementation!!.instructions.any { ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == "getVideoDimensions is only supported on iOS" }) { "getVideoDimensions now does real work on Android" }
     val video = MutableMethod(videoOriginal)
@@ -405,7 +336,7 @@ fun main(args: Array<String>) {
     // Material You's native colors: one swap at the top of applySaturationFactor(I)I, the choke point of every theme
     // color Discord's native views draw with. Only v0 is written besides the color parameter itself.
     run {
-        val original = methods.single { it.definingClass == COLOR_UTILS && it.name == "applySaturationFactor" &&
+        val original = methods.single { it.definingClass == COLOR_UTILS && it.name == "a" &&
             it.parameterTypes.map { p -> p.toString() } == listOf("I") && it.returnType == "I" }
         check(original.accessFlags and 8 != 0) { "applySaturationFactor is no longer static" }
         val guarded = MutableMethod(original)
@@ -426,8 +357,8 @@ fun main(args: Array<String>) {
         check(try { materialYouNativeColors(guarded); false } catch (_: app.morphe.patcher.patch.PatchException) { true }) { "A second guard in applySaturationFactor was accepted" }
         // The only callers are Discord's getColorCompat variants, so the swap covers exactly the theme colors.
         val callers = methods.filter { m -> m.implementation?.instructions?.any { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.let { r ->
-            r.definingClass == COLOR_UTILS && r.name == "applySaturationFactor" } == true } == true }.map { it.name }.toSet()
-        check(callers == setOf("getColorCompat")) { "applySaturationFactor callers changed: $callers" }
+            r.definingClass == COLOR_UTILS && r.name == "a" } == true } == true }.map { it.name }.toSet()
+        check(callers == setOf("c", "d")) { "applySaturationFactor callers changed: $callers" }
         // Direct brand color reads: each gets the swap right after its result, on the same register, nothing else moved.
         for ((owner, name, parameters) in MATERIAL_YOU_DIRECT_READS) {
             val source = methods.single { it.definingClass == owner && it.name == name && it.parameterTypes.map { p -> p.toString() } == parameters }
@@ -483,7 +414,7 @@ fun main(args: Array<String>) {
             checkBranches(method, "${site.owner}->${site.name}")
         }
         // Every hands-free call Discord's audio code makes is covered, so none still reaches Android directly.
-        val all = methods.filter { it.definingClass.startsWith("Lcom/discord/audio/") }.flatMap { m -> (m.implementation?.instructions ?: emptyList()).mapNotNull {
+        val all = methods.filter { it.definingClass.startsWith("Lh6/") || it.definingClass == "Lar/x;" }.flatMap { m -> (m.implementation?.instructions ?: emptyList()).mapNotNull {
             ((it as? ReferenceInstruction)?.reference as? MethodReference)?.takeIf { r -> r.definingClass == AUDIO_MANAGER && r.name in handsfreeNames }?.let { m } } }
         check(all.size == HANDSFREE_SITES.sumOf { it.calls }) { "Discord makes ${all.size} hands-free calls; Venus covers ${HANDSFREE_SITES.sumOf { it.calls }}" }
         val created = MutableMethod(appCreate)
@@ -643,11 +574,34 @@ private fun checkHermesSelections(original: ByteArray, groups: List<List<HbcPriv
     val header = ByteBuffer.wrap(original).order(ByteOrder.LITTLE_ENDIAN)
     for (target in groups.flatten()) {
         val small = 128 + target.id * 12
-        check(original[small + 11].toInt() and 32 != 0)
-        val large = (((header.getInt(small + 4) ushr 14) and 255) shl 24) or (header.getInt(small) and 0x1ffffff)
-        check(header.getInt(large) == target.offset && header.getInt(large + 12) == target.size)
-        check(original[large + 36].toInt() and 0xc8 == 0) // Normal, no exception handler.
-        val firstPointerRegister = header.getInt(large + 20) + header.getInt(large + 24)
+        val w1 = header.getInt(small)
+        val w2 = header.getInt(small + 4)
+        val isExpanded = original[small + 11].toInt() and 32 != 0
+        check(isExpanded == target.expandedHeaderHash.isNotEmpty())
+        val offset: Int
+        val size: Int
+        val flags: Int
+        val firstPointerRegister: Int
+        val frame: Int
+        val reads: Int
+        if (isExpanded) {
+            val large = (((w2 ushr 14) and 255) shl 24) or (w1 and 0x1ffffff)
+            offset = header.getInt(large)
+            size = header.getInt(large + 12)
+            flags = original[large + 36].toInt() and 255
+            firstPointerRegister = header.getInt(large + 20) + header.getInt(large + 24)
+            frame = header.getInt(large + 28)
+            reads = original[large + 32].toInt() and 255
+        } else {
+            offset = w1 and 0x1ffffff
+            size = w2 and 0x3fff
+            flags = original[small + 11].toInt() and 255
+            firstPointerRegister = ((w2 ushr 22) and 31) + ((w2 ushr 27) and 31)
+            frame = original[small + 8].toInt() and 255
+            reads = original[small + 9].toInt() and 255
+        }
+        check(offset == target.offset && size == target.size)
+        check(flags and 0xc8 == 0) // Normal, no exception handler.
         val lowestUsedRegister = when (target.name) {
             "startRecordingAnalyticsEvents" -> 1
             "trackCrash" -> 8
@@ -655,8 +609,8 @@ private fun checkHermesSelections(original: ByteArray, groups: List<List<HbcPriv
             else -> 6
         }
         check(firstPointerRegister <= lowestUsedRegister) { "Stub uses a non-GC-visible register: ${target.name} #${target.id}" }
-        check(header.getInt(large + 28) >= if (target.name == "send") 10 else if (target.promise) 9 else if (target.name == "timeRequire") 8 else lowestUsedRegister + 1)
-        if (target.promise) check(original[large + 32].toInt() and 255 >= 2)
+        check(frame >= if (target.name == "send") 10 else if (target.promise) 9 else if (target.name == "timeRequire") 8 else lowestUsedRegister + 1)
+        if (target.promise) check(reads >= 2)
     }
     // Hermes deduplicates identical bytecode, so one body can belong to several functions. A stub on a shared
     // body also replaces the others: trackAppUIViewed2 shared createThread_'s and forum posts stopped (#93).

@@ -13,11 +13,11 @@ G = {
         ('MonitoringAgent.tsx', 36111, '_flush', False),
         ('utils/AnalyticsUtils.tsx', 24603, 'track', True),
         ('../discord_common/js/packages/analytics-utils/AnalyticsUtils.tsx', 86596, 'track', True),
-        ('AnalyticsTrackingStore.tsx', 86600, 'drainEventsQueue', True),
-        ('AnalyticsTrackingStore.tsx', 86601, 'submitEventsImmediately', True),
-        ('AnalyticsTrackingStore.tsx', 86602, 'flushQueuedEvents', True),
-        ('AnalyticsTrackingStore.tsx', 86603, 'sendTelemetryEvent', True),
-        ('AnalyticsTrackingStore.tsx', 86599, 'scheduleDrain', False),
+        ('../discord_common/js/packages/analytics-utils/AnalyticsTrackingStore.tsx', 86600, 'drainEventsQueue', True),
+        ('../discord_common/js/packages/analytics-utils/AnalyticsTrackingStore.tsx', 86601, 'submitEventsImmediately', True),
+        ('../discord_common/js/packages/analytics-utils/AnalyticsTrackingStore.tsx', 86602, 'flushQueuedEvents', True),
+        ('../discord_common/js/packages/analytics-utils/AnalyticsTrackingStore.tsx', 86603, 'sendTelemetryEvent', True),
+        ('../discord_common/js/packages/analytics-utils/AnalyticsTrackingStore.tsx', 86599, 'scheduleDrain', False),
         ('utils/AnalyticsUtils.tsx', 24606, 'startRecordingAnalyticsEvents', False),
         ('utils/AnalyticsUtils.tsx', 24538, 'addBreadcrumb', False),
         ('utils/AnalyticsUtils.tsx', 24539, 'expandEventProperties', False),
@@ -31,7 +31,6 @@ G = {
         ('Clickstream.tsx', 42469, 'isClickstreamEnabled', False),
         ('ClickstreamExperiment.tsx', 42472, 'clickstreamExperimentEnabled', False),
         ('useTrackImpression.tsx', 50084, 'trackImpression', False),
-        ('useTrackImpression.tsx', 50085, 'useTrackImpression', False),
         ('useTrackImpression.tsx', 50086, 'useTrackImpression', False),
         ('modules/search/native/tracking/Tracking.tsx', 63072, 'trackSearchOpened', False),
         ('modules/search/native/tracking/Tracking.tsx', 63073, 'trackSearchStarted', False),
@@ -85,9 +84,9 @@ G = {
         ('trackHttpRequest.tsx', 80134, 'trackHttpRequest', False),
         ('JankSessionManager.android.tsx', 80619, '_initialize', False),
         ('JankSessionManager.android.tsx', 80622, 'deliverPendingSessions', False),
-        ('JankNavigationReporter.android.tsx', 80624, 'attach', False),
-        ('JankNavigationReporter.android.tsx', 80625, 'handleDispatch', False),
-        ('JankNavigationReporter.android.tsx', 80626, 'handleStateSettled', False),
+        ('JankNavigationReporter.native.tsx', 80624, 'attach', False),
+        ('JankNavigationReporter.native.tsx', 80625, 'handleDispatch', False),
+        ('JankNavigationReporter.native.tsx', 80626, 'handleStateSettled', False),
         ('JankStatsManager.android.tsx', 80633, 'handleAppStateUpdate', False),
         ('JankStatsManager.android.tsx', 80634, 'handleConnectionOpenSupplemental', False),
         ('JankStatsManager.android.tsx', 80635, 'scheduleReport', False),
@@ -98,8 +97,8 @@ G = {
         ('modules/libdiscore/timerUtils.tsx', 82493, 'setupLibdiscoreTimersMonitor', False),
     ],
     'crash': [
-        (None, 84727, 'send', True),
-        (None, 113271, 'send', True),
+        (None, 80637, 'send', True),
+        (None, 105728, 'send', True),
         ('SentryInitUtils.tsx', 24481, 'initSentry', False),
         ('addSentryBreadcrumb.native.tsx', 21453, 'addSentryBreadcrumb', False),
         ('SentryUtils.native.tsx', 24462, 'setUser', False),
@@ -136,18 +135,18 @@ def main():
     for g, ts in G.items():
         print(f"    val {g} = listOf(")
         for mod, i, n, p in ts:
-            if locate and mod and (i >= h.h['functionCount'] or h.fname(i) != n or not h.func(i)['expanded'] or (h.func(i)['flags'] & 0xc8 != 0)):
+            if locate and mod and (i >= h.h['functionCount'] or h.fname(i) != n or (h.func(i)['flags'] & 0xc8 != 0)):
                 mid = path_to_mid.get(mod) or path_to_mid.get(os.path.basename(mod))
                 if mid is not None:
-                    matches = [f for f in B.tree(mid) if h.fname(f) == n and h.func(f)['expanded'] and (h.func(f)['flags'] & 0xc8 == 0)]
+                    matches = [f for f in B.tree(mid) if h.fname(f) == n and (h.func(f)['flags'] & 0xc8 == 0)]
                     if len(matches) == 1:
                         i = matches[0]
             f = h.func(i)
-            assert h.fname(i) == n and f['expanded'], (i, n, h.fname(i))
+            assert h.fname(i) == n, (i, n, h.fname(i))
             assert f['flags'] & 0xc8 == 0, f"#{i} ({n}) has exception handler or non-normal flags: 0x{f['flags']:02x}"
             assert owners[f['offset']] == 1, f"#{i} ({n}) shares its body with {owners[f['offset']] - 1} other function(s)"
             body = hashlib.sha256(b[f['offset']:f['offset'] + f['size']]).hexdigest()
-            exp = hashlib.sha256(b[f['header']:f['header'] + 40]).hexdigest()
+            exp = hashlib.sha256(b[f['header']:f['header'] + 40]).hexdigest() if f['expanded'] else ""
             print(f'        Target({i}, "{n}", {f["offset"]}, {f["size"]}, "{b[128+i*12:140+i*12].hex()}", "{body}", {"true" if p else "false"}, "{exp}"),')
         print("    )")
 

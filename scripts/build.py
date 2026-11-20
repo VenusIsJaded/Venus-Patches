@@ -48,7 +48,11 @@ DEPENDENCIES = {
 
 
 def run(*args, cwd=ROOT, env=None):
-    subprocess.run([str(a) for a in args], cwd=cwd, check=True,
+    cmd = [str(a) for a in args]
+    if os.name == "nt" and cmd and cmd[0].endswith("kotlinc.bat"):
+        cmd = ["java", "-Xmx384m", "-cp", str(TOOLS / "kotlinc/lib/kotlin-compiler.jar"),
+               "org.jetbrains.kotlin.cli.jvm.K2JVMCompiler", *cmd[1:]]
+    subprocess.run(cmd, cwd=cwd, check=True,
                    env={**os.environ, "JAVA_OPTS": "-Xmx384m", **(env or {})})
 
 
@@ -79,8 +83,15 @@ def tools():
     with tarfile.open(TOOLS / "acorn.tgz") as archive:
         (TOOLS / "acorn.js").write_bytes(archive.extractfile("package/dist/acorn.js").read())
     with tarfile.open(TOOLS / "hermes-compiler.tgz") as archive:
-        (TOOLS / "hermesc").write_bytes(archive.extractfile("package/hermesc/linux64-bin/hermesc").read())
-    (TOOLS / "hermesc").chmod(0o755)
+        if os.name == "nt":
+            hermes_dir = TOOLS / "hermesc-win"
+            hermes_dir.mkdir(parents=True, exist_ok=True)
+            for member in archive.getmembers():
+                if member.name.startswith("package/hermesc/win64-bin/") and member.isfile():
+                    (hermes_dir / Path(member.name).name).write_bytes(archive.extractfile(member).read())
+        else:
+            (TOOLS / "hermesc").write_bytes(archive.extractfile("package/hermesc/linux64-bin/hermesc").read())
+            (TOOLS / "hermesc").chmod(0o755)
     # Always extract the pinned compiler, not an arbitrary previously installed version.
     with zipfile.ZipFile(TOOLS / "kotlin24.zip") as compiler:
         for entry in compiler.infolist():
@@ -88,7 +99,7 @@ def tools():
             if not target.is_relative_to(TOOLS.resolve()):
                 raise SystemExit("Unsafe compiler archive path")
         compiler.extractall(TOOLS)
-    (TOOLS / "kotlinc/bin/kotlinc").chmod(0o755)
+    (TOOLS / ("kotlinc/bin/kotlinc.bat" if os.name == "nt" else "kotlinc/bin/kotlinc")).chmod(0o755)
     with zipfile.ZipFile(TOOLS / "android-platform.zip") as platform:
         (TOOLS / "android.jar").write_bytes(platform.read("android-35/android.jar"))
 
@@ -624,7 +635,8 @@ function jsonLiterals(code) {
     precompile = BUILD / "bootstrap.precompile.js"
     precompile.write_text(content.replace("/*__FEATURES__*/", "globalThis.__venusFeatures"))
     hbc_output = BUILD / "bootstrap.hbc"
-    run(TOOLS / "hermesc", "-emit-binary", "-O", "-g0", "-w", f"-out={hbc_output}", precompile)
+    hermesc = TOOLS / ("hermesc-win/hermesc.exe" if os.name == "nt" else "hermesc")
+    run(hermesc, "-emit-binary", "-O", "-g0", "-w", f"-out={hbc_output}", precompile)
     print(f"Prelude characters: {len(source.read_text())} -> {len(content)} (HBC98: {hbc_output.stat().st_size} bytes)", flush=True)
     return output
 
@@ -658,14 +670,14 @@ def build():
     libs.mkdir(parents=True, exist_ok=True)
     # Compile-only bridge ABI stubs are on the classpath, never in the extension DEX.
     stubs = BUILD / "bridge-stubs.jar"
-    compiler = TOOLS / "kotlinc/bin/kotlinc"
+    compiler = TOOLS / ("kotlinc/bin/kotlinc.bat" if os.name == "nt" else "kotlinc/bin/kotlinc")
     run(compiler, "-no-stdlib", "-no-reflect", "-cp", TOOLS / "morphe.jar",
         *sorted((ROOT / "extensions/voice/stubs").rglob("*.kt")), "-d", stubs)
     voice_classes = BUILD / "voice-classes.jar"
     voice_sources = sorted((ROOT / "extensions/voice/src/main/kotlin").rglob("*.kt"))
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
         "-jvm-target", "11", "-Xlambdas=class", "-cp",
-        f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *voice_sources, "-d", voice_classes)
     # The Android host obfuscates collection/text/Result/Unit helpers. A JVM compile
     # alone can succeed with dependencies that will not link inside Discord.
@@ -688,7 +700,7 @@ def build():
     # Force system font: the same Java-only rules as the voice extension.
     font_classes = BUILD / "font-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/font/src/main/kotlin").rglob("*.kt")), "-d", font_classes)
     with zipfile.ZipFile(font_classes) as native:
         for name in native.namelist():
@@ -708,7 +720,7 @@ def build():
     # Force system emojis: the same Java-only rules again.
     emoji_classes = BUILD / "emoji-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/emoji/src/main/kotlin").rglob("*.kt")), "-d", emoji_classes)
     with zipfile.ZipFile(emoji_classes) as native:
         for name in native.namelist():
@@ -728,7 +740,7 @@ def build():
     # Settings languages: the same Java-only rules again.
     i18n_classes = BUILD / "i18n-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/i18n/src/main/kotlin").rglob("*.kt")), "-d", i18n_classes)
     with zipfile.ZipFile(i18n_classes) as native:
         for name in native.namelist():
@@ -748,7 +760,7 @@ def build():
     # Material You colors: the same Java-only rules again.
     monet_classes = BUILD / "monet-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/monet/src/main/kotlin").rglob("*.kt")), "-d", monet_classes)
     with zipfile.ZipFile(monet_classes) as native:
         for name in native.namelist():
@@ -768,7 +780,7 @@ def build():
     # Chat row decorations (Bulk delete right-side selection circle): Java-only rules again.
     chat_classes = BUILD / "chat-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/chat/src/main/kotlin").rglob("*.kt")), "-d", chat_classes)
     with zipfile.ZipFile(chat_classes) as native:
         for name in native.namelist():
@@ -788,7 +800,7 @@ def build():
     # Keep Bluetooth audio clear in calls: Java-only rules again.
     audio_classes = BUILD / "audio-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/audio/src/main/kotlin").rglob("*.kt")), "-d", audio_classes)
     with zipfile.ZipFile(audio_classes) as native:
         for name in native.namelist():
@@ -808,7 +820,7 @@ def build():
     # Keep media playing: Java-only rules again (it reaches Discord's player through reflection, so no host stubs).
     media_classes = BUILD / "media-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/media/src/main/kotlin").rglob("*.kt")), "-d", media_classes)
     with zipfile.ZipFile(media_classes) as native:
         for name in native.namelist():
@@ -829,7 +841,7 @@ def build():
     # Crash screen and troubleshooting logs (part of Venus settings): Java-only rules again.
     diag_classes = BUILD / "diag-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/diag/src/main/kotlin").rglob("*.kt")), "-d", diag_classes)
     with zipfile.ZipFile(diag_classes) as native:
         for name in native.namelist():
@@ -850,7 +862,7 @@ def build():
     # Compress big files (photos and audio): the same Java-only rules again.
     compress_classes = BUILD / "compress-classes.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-language-version", "2.1", "-api-version", "2.1", "-Xsuppress-version-warnings",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}:{TOOLS / 'morphe.jar'}:{stubs}",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'android.jar'}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{stubs}",
         *sorted((ROOT / "extensions/compress/src/main/kotlin").rglob("*.kt")), "-d", compress_classes)
     with zipfile.ZipFile(compress_classes) as native:
         for name in native.namelist():
@@ -871,15 +883,15 @@ def build():
     check_languages()
     classes = BUILD / "classes.jar"
     sources = sorted((ROOT / "patches/src/main/kotlin").rglob("*.kt"))
-    run(TOOLS / "kotlinc/bin/kotlinc", "-no-stdlib", "-no-reflect",
-        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'morphe.jar'}:{TOOLS / 'gson.jar'}",
+    run(TOOLS / ("kotlinc/bin/kotlinc.bat" if os.name == "nt" else "kotlinc/bin/kotlinc"), "-no-stdlib", "-no-reflect",
+        "-jvm-target", "11", "-Xlambdas=class", "-cp", f"{TOOLS / 'morphe.jar'}{os.pathsep}{TOOLS / 'gson.jar'}",
         *sources, "-d", classes)
     # Static privacy ABI checks and detached assembler fixtures, never the APK patching engine.
     privacy_tests = BUILD / "privacy-tests.jar"
     run(compiler, "-no-stdlib", "-no-reflect", "-Xfriend-paths=" + str(classes),
-        "-cp", f"{classes}:{TOOLS / 'morphe.jar'}", ROOT / "tests/native/PrivacyTest.kt", "-d", privacy_tests)
+        "-cp", f"{classes}{os.pathsep}{TOOLS / 'morphe.jar'}", ROOT / "tests/native/PrivacyTest.kt", "-d", privacy_tests)
     original_apk = os.environ.get("VENUS_ORIGINAL_APK")
-    run("java", "-Xmx384m", "-cp", f"{privacy_tests}:{classes}:{TOOLS / 'morphe.jar'}",
+    run("java", "-Xmx384m", "-cp", f"{privacy_tests}{os.pathsep}{classes}{os.pathsep}{TOOLS / 'morphe.jar'}",
         "app.venus.patches.PrivacyTestKt", *([original_apk, str(BUILD / "privacy-fixtures")] if original_apk else []))
     dex = BUILD / "dex"
     dex.mkdir(exist_ok=True)
@@ -928,7 +940,7 @@ def build():
         add("extensions/compress.mpe", (compress_dex / "classes.dex").read_bytes())
         for path in sorted(dex.glob("classes*.dex")):
             add(path.name, path.read_bytes())
-    run("java", "-Xmx256m", "-cp", f"{bundle}:{TOOLS / 'morphe.jar'}:{TOOLS / 'gson.jar'}",
+    run("java", "-Xmx256m", "-cp", f"{bundle}{os.pathsep}{TOOLS / 'morphe.jar'}{os.pathsep}{TOOLS / 'gson.jar'}",
         "util.PatchListGeneratorKt", bundle, cwd=ROOT / "patches")
     checksum = libs / "SHA256SUMS"
     checksum.write_text(f"{digest(bundle)}  {bundle.name}\n")
@@ -982,7 +994,7 @@ def check_metadata(metadata):
     # Morphe Manager parses created_at as a kotlinx LocalDateTime: no UTC offset or "Z".
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,9})?)?", metadata["created_at"]):
         raise SystemExit("patches-bundle.json: created_at must be a LocalDateTime without a UTC offset")
-    if not metadata["download_url"].startswith("https://github.com/VenusIsJaded/Venus-Patches/releases/download/"):
+    if not metadata["download_url"].startswith("https://github.com/x2tora/Venus-Patches/releases/download/"):
         raise SystemExit("patches-bundle.json: unexpected download_url")
     # The fallback release notes must split into Morphe's sections, like CHANGELOG.md does.
     if not re.search(r"^### \S", metadata["description"], re.M) or not re.search(r"^\* \*\*Discord", metadata["description"], re.M):
@@ -1001,8 +1013,8 @@ def release_metadata():
     metadata = {
         "created_at": created_at,
         "description": release_summary(),
-        "download_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
-        "page_url": f"https://github.com/VenusIsJaded/Venus-Patches/releases/tag/{RELEASE_TAG}",
+        "download_url": f"https://github.com/x2tora/Venus-Patches/releases/download/{RELEASE_TAG}/{ASSET_NAME}",
+        "page_url": f"https://github.com/x2tora/Venus-Patches/releases/tag/{RELEASE_TAG}",
         "signature_download_url": "",
         "version": VERSION,
     }

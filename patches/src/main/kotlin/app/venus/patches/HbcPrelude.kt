@@ -8,13 +8,13 @@ import java.security.MessageDigest
 
 /** Single-load prelude for the SHA-256-pinned HBC98 asset. No rebundling or native JNI hooks. */
 internal object HbcPrelude {
-    // Pinned Discord 351.11 - Stable HBC98 bundle: function count, global function body and string IDs.
-    const val FUNCTION_COUNT = 160594
-    const val GLOBAL_OFFSET = 14916476
-    const val GLOBAL_SIZE = 631883
-    const val GLOBAL_SHA256 = "652434dade35533c99407ee21160d2b5f37e7edb3f03526272b6243848f843d2"
-    const val JOIN_ID = 152
-    const val EVAL_ID = 35211
+    // Pinned Discord 354.12 - Stable HBC98 bundle: function count, global function body and string IDs.
+    const val FUNCTION_COUNT = 143937
+    const val GLOBAL_OFFSET = 14996448
+    const val GLOBAL_SIZE = 680378
+    const val GLOBAL_SHA256 = "480bc9634fdd2111315d22bf5c876057e71a60ac7e91249b1579e7a153521e10"
+    const val JOIN_ID = 158
+    const val EVAL_ID = 34553
     /** Longest existing string reused as one prelude piece; longer ones barely shorten the prelude. */
     const val MAX_PIECE = 64
     data class Result(val prefixSize: Int, val originalCodeSize: Int, val codeOffset: Int)
