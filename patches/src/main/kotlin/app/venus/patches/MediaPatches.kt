@@ -6,6 +6,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -91,8 +92,9 @@ internal fun keepAudioPlaying(method: MutableMethod) {
     requireLocals(method, 1)
     requireLowRegisters(method)
     requireUnpatched(method, "venus-")
+    val arg = if (AccessFlags.STATIC.isSet(method.accessFlags)) "p0" else "p1"
     method.addInstructions(0, """
-        invoke-static {p1}, $BACKGROUND_MEDIA->keepAudio(Z)Z
+        invoke-static {$arg}, $BACKGROUND_MEDIA->keepAudio(Z)Z
         move-result v0
         if-eqz v0, :venus_pause_audio
         return-void
