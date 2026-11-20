@@ -184,10 +184,12 @@ object SystemColors {
             val manager = Class.forName("uh.l0")
             val field = manager.getDeclaredField("a")
             field.isAccessible = true
+            val raw = field.get(null)
+            if (raw !is Map<*, *>) return
             @Suppress("UNCHECKED_CAST")
-            val themes = field.get(null) as? MutableMap<Any?, Any?> ?: return
-            val held = java.util.ArrayList<Any?>(themes.size * 2)
-            val entries = themes.entries.iterator()
+            val themes = raw as java.util.Map<Any?, Any?>
+            val held = java.util.ArrayList<Any?>(themes.size() * 2)
+            val entries = themes.entrySet().iterator()
             while (entries.hasNext()) { val entry = entries.next(); held.add(entry.key); held.add(entry.value) }
             themes.clear()
             if (held.size == 0) return

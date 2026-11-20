@@ -852,6 +852,25 @@ def build():
                            b"kotlin/jvm/functions/"):
                 if unsafe in content:
                     raise SystemExit(f"Unsafe host Kotlin helper in {name}: {unsafe.decode()}; use Java APIs")
+    kotlin_helpers = [
+        "kotlin/jvm/internal/Intrinsics.class",
+        "kotlin/jvm/internal/Intrinsics$Kotlin.class",
+        "kotlin/jvm/internal/Ref.class",
+        "kotlin/jvm/internal/Ref$BooleanRef.class",
+        "kotlin/jvm/internal/Ref$IntRef.class",
+        "kotlin/jvm/internal/Ref$LongRef.class",
+        "kotlin/jvm/internal/Ref$ObjectRef.class",
+        "kotlin/KotlinNothingValueException.class",
+        "kotlin/KotlinNullPointerException.class",
+        "kotlin/UninitializedPropertyAccessException.class",
+    ]
+    diag_with_helpers = BUILD / "diag-classes-with-helpers.jar"
+    with zipfile.ZipFile(diag_classes) as src_jar, zipfile.ZipFile(TOOLS / "kotlinc/lib/kotlin-stdlib.jar") as stdlib, zipfile.ZipFile(diag_with_helpers, "w", zipfile.ZIP_DEFLATED) as dst_jar:
+        for item in src_jar.infolist():
+            dst_jar.writestr(item, src_jar.read(item.filename))
+        for helper in kotlin_helpers:
+            dst_jar.writestr(helper, stdlib.read(helper))
+    diag_classes = diag_with_helpers
     diag_dex = BUILD / "diag-dex"
     diag_dex.mkdir(exist_ok=True)
     for stale in diag_dex.glob("classes*.dex"):
